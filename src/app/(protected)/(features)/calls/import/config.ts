@@ -5,7 +5,8 @@ export const callImportConfig = {
     'If a Customer or Product does not exist, it will be automatically created.',
     'For new customers, Zip Code is required and must be a valid 6-digit area pincode in the system.',
     'Zip Code validation: Must be exactly 6 digits and match an active area in the system.',
-    'All other fields are required except External ID, Customer phone number, Product Code, and Sub Call Type which are optional. Required fields must match existing master data exactly (no new masters created during import)',
+    'All other fields are required except External ID, Customer phone number, Product Code, Sub Call Type, and Remark which are optional. Required fields must match existing master data exactly (no new masters created during import)',
+    'Remark field is optional and can contain additional notes about the call (maximum 2000 characters)',
     'Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped',
     'Failed rows can be edited inline and saved individually after validation',
     'Download error report CSV from response for failed rows details',
@@ -76,6 +77,12 @@ export const callImportConfig = {
       header: 'Call Status',
       description: 'CallStatus name (Required) - must match existing CallStatus exactly',
       example: 'Open',
+    },
+    {
+      column: 'K',
+      header: 'Remark',
+      description: 'Remark or notes (Optional) - Additional information about the call. Maximum 2000 characters.',
+      example: 'Customer requested callback after 2 PM',
     },
   ],
 };

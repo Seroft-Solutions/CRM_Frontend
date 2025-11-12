@@ -43,6 +43,16 @@ interface StatusOption {
   color: string;
 }
 
+export type LatestRemarksMap = Record<
+  number,
+  {
+    remark: string;
+    dateTime?: string;
+  }
+>;
+
+const MAX_REMARK_LENGTH = 120;
+
 interface CallTableRowProps {
   call: CallDTO;
   onArchive: (id: number) => void;
@@ -59,11 +69,13 @@ interface CallTableRowProps {
     isBulkOperation?: boolean
   ) => Promise<void>;
   updatingCells?: Set<string>;
+  latestRemarksMap: LatestRemarksMap;
+  isLatestRemarksLoading: boolean;
   visibleColumns: Array<{
     id: string;
     label: string;
     accessor: string;
-    type: 'field' | 'relationship';
+    type: 'field' | 'relationship' | 'custom';
     visible: boolean;
     sortable: boolean;
   }>;
@@ -80,6 +92,8 @@ export function CallTableRow({
   relationshipConfigs = [],
   onRelationshipUpdate,
   updatingCells = new Set(),
+  latestRemarksMap,
+  isLatestRemarksLoading,
   visibleColumns,
 }: CallTableRowProps) {
   const currentStatus = call.status;
@@ -104,281 +118,334 @@ export function CallTableRow({
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
         <Checkbox checked={isSelected} onCheckedChange={() => call.id && onSelect(call.id)} />
       </TableCell>
-      {visibleColumns.map((column, index) => (
-        <TableCell
-          key={column.id}
-          className={`
-            px-2 sm:px-3 py-2 
-            ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
-            whitespace-nowrap overflow-hidden text-ellipsis
-          `}
-        >
-          {column.type === 'field'
-            ? (() => {
-                const field = call[column.accessor as keyof typeof call];
+      {visibleColumns.map((column, index) => {
+        const renderRemarksCell = () => {
+          const callId = call.id;
+          if (!callId) {
+            return isLatestRemarksLoading ? (
+              <span className="text-xs text-muted-foreground">Loading...</span>
+            ) : (
+              <span className="text-muted-foreground">--</span>
+            );
+          }
 
-                if (column.id === 'leadNo' && call.id) {
-                  const displayValue = field?.toString() || '';
-                  if (!displayValue) {
-                    return '';
-                  }
+          const remarkEntry = latestRemarksMap[callId];
 
-                  return (
-                    <Link
-                      href={`/calls/${call.id}`}
-                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                    >
-                      {displayValue}
-                    </Link>
-                  );
+          if (!remarkEntry) {
+            return isLatestRemarksLoading ? (
+              <span className="text-xs text-muted-foreground">Loading...</span>
+            ) : (
+              <span className="text-muted-foreground">--</span>
+            );
+          }
+
+          const trimmedRemark = remarkEntry.remark.trim();
+          if (!trimmedRemark) {
+            return <span className="text-muted-foreground">--</span>;
+          }
+
+          const truncatedRemark =
+            trimmedRemark.length > MAX_REMARK_LENGTH
+              ? `${trimmedRemark.slice(0, MAX_REMARK_LENGTH - 3)}...`
+              : trimmedRemark;
+
+          return (
+            <span title={trimmedRemark} className="block max-w-full">
+              {truncatedRemark}
+            </span>
+          );
+        };
+
+        const renderFieldCell = () => {
+          const field = call[column.accessor as keyof typeof call];
+
+          if (column.id === 'leadNo' && call.id) {
+            const displayValue = field?.toString() || '';
+            if (!displayValue) {
+              return '';
+            }
+
+            return (
+              <Link
+                href={`/calls/${call.id}`}
+                className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+              >
+                {displayValue}
+              </Link>
+            );
+          }
+
+          if (column.id === 'status') {
+            return getStatusBadge(field as string);
+          }
+
+          if (column.id === 'externalId') {
+            return field?.toString() || '';
+          }
+
+          if (column.id === 'createdBy') {
+            return field?.toString() || '';
+          }
+
+          if (column.id === 'createdDate') {
+            return field ? format(new Date(field as string), 'PPp') : '';
+          }
+
+          if (column.id === 'lastModifiedBy') {
+            return field?.toString() || '';
+          }
+
+          if (column.id === 'lastModifiedDate') {
+            return field ? format(new Date(field as string), 'PPp') : '';
+          }
+
+          return field?.toString() || '';
+        };
+
+        const renderRelationshipCell = () => {
+          if (column.id === 'priority') {
+            const cellKey = `${call.id}-priority`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="priority"
+                currentValue={call.priority}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'priority')?.options || []
                 }
-
-                if (column.id === 'status') {
-                  return getStatusBadge(field as string);
+                displayField="name"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
                 }
-
-                if (column.id === 'externalId') {
-                  return field?.toString() || '';
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'priority')?.isEditable ||
+                  false
                 }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="priorities"
+                showNavigationIcon={true}
+              />
+            );
+          }
 
-                if (column.id === 'createdBy') {
-                  return field?.toString() || '';
+          if (column.id === 'callType') {
+            return call.callType?.name || '';
+          }
+
+          if (column.id === 'subCallType') {
+            return call.subCallType?.name || '';
+          }
+
+          if (column.id === 'source') {
+            const cellKey = `${call.id}-source`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="source"
+                currentValue={call.source}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'source')?.options || []
                 }
-
-                if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPp') : '';
+                displayField="name"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
                 }
-
-                if (column.id === 'lastModifiedBy') {
-                  return field?.toString() || '';
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'source')?.isEditable ||
+                  false
                 }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="sources"
+                showNavigationIcon={true}
+              />
+            );
+          }
 
-                if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPp') : '';
+          if (column.id === 'customer') {
+            const cellKey = `${call.id}-customer`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="customer"
+                currentValue={call.customer}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'customer')?.options || []
                 }
-
-                return field?.toString() || '';
-              })()
-            : (() => {
-                if (column.id === 'priority') {
-                  const cellKey = `${call.id}-priority`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="priority"
-                      currentValue={call.priority}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'priority')?.options ||
-                        []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'priority')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="priorities"
-                      showNavigationIcon={true}
-                    />
-                  );
+                displayField="customerBusinessName"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
                 }
-
-                if (column.id === 'callType') {
-                  return call.callType?.name || '';
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'customer')?.isEditable ||
+                  false
                 }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="customers"
+                showNavigationIcon={true}
+              />
+            );
+          }
 
-                if (column.id === 'subCallType') {
-                  return call.subCallType?.name || '';
+          if (column.id === 'product') {
+            const cellKey = `${call.id}-product`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="product"
+                currentValue={call.product}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'product')?.options || []
                 }
-
-                if (column.id === 'source') {
-                  const cellKey = `${call.id}-source`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="source"
-                      currentValue={call.source}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'source')?.options ||
-                        []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'source')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="sources"
-                      showNavigationIcon={true}
-                    />
-                  );
+                displayField="name"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
                 }
-
-                if (column.id === 'customer') {
-                  const cellKey = `${call.id}-customer`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="customer"
-                      currentValue={call.customer}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'customer')?.options ||
-                        []
-                      }
-                      displayField="customerBusinessName"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'customer')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="customers"
-                      showNavigationIcon={true}
-                    />
-                  );
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'product')?.isEditable ||
+                  false
                 }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="products"
+                showNavigationIcon={true}
+              />
+            );
+          }
 
-                if (column.id === 'product') {
-                  const cellKey = `${call.id}-product`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="product"
-                      currentValue={call.product}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'product')?.options ||
-                        []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'product')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="products"
-                      showNavigationIcon={true}
-                    />
-                  );
+          if (column.id === 'channelType') {
+            const cellKey = `${call.id}-channelType`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="channelType"
+                currentValue={call.channelType}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'channelType')?.options ||
+                  []
                 }
-
-                if (column.id === 'channelType') {
-                  const cellKey = `${call.id}-channelType`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="channelType"
-                      currentValue={call.channelType}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'channelType')
-                          ?.options || []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'channelType')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="channel-types"
-                      showNavigationIcon={true}
-                    />
-                  );
+                displayField="name"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
                 }
-
-                if (column.id === 'channelParties') {
-                  const cellKey = `${call.id}-channelParties`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="channelParties"
-                      currentValue={call.channelParties}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'channelParties')
-                          ?.options || []
-                      }
-                      displayField="displayName"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'channelParties')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="user-profiles"
-                      showNavigationIcon={true}
-                    />
-                  );
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'channelType')
+                    ?.isEditable || false
                 }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="channel-types"
+                showNavigationIcon={true}
+              />
+            );
+          }
 
-                if (column.id === 'assignedTo') {
-                  const cellKey = `${call.id}-assignedTo`;
-                  return (
-                    <RelationshipCell
-                      entityId={call.id || 0}
-                      relationshipName="assignedTo"
-                      currentValue={call.assignedTo}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'assignedTo')
-                          ?.options || []
-                      }
-                      displayField="displayName"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'assignedTo')
-                          ?.isEditable || false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="user-profiles"
-                      showNavigationIcon={true}
-                    />
-                  );
+          if (column.id === 'channelParties') {
+            const cellKey = `${call.id}-channelParties`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="channelParties"
+                currentValue={call.channelParties}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'channelParties')?.options ||
+                  []
                 }
-
-                if (column.id === 'callStatus') {
-                  return call.callStatus?.name || '';
+                displayField="displayName"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
                 }
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'channelParties')
+                    ?.isEditable || false
+                }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="user-profiles"
+                showNavigationIcon={true}
+              />
+            );
+          }
 
-                return null;
-              })()}
-        </TableCell>
-      ))}
+          if (column.id === 'assignedTo') {
+            const cellKey = `${call.id}-assignedTo`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="assignedTo"
+                currentValue={call.assignedTo}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'assignedTo')?.options ||
+                  []
+                }
+                displayField="displayName"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
+                }
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'assignedTo')?.isEditable ||
+                  false
+                }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+                relatedEntityRoute="user-profiles"
+                showNavigationIcon={true}
+              />
+            );
+          }
+
+          if (column.id === 'callStatus') {
+            return call.callStatus?.name || '';
+          }
+
+          return null;
+        };
+
+        const renderCellContent = () => {
+          if (column.id === 'remarks') {
+            return renderRemarksCell();
+          }
+
+          if (column.type === 'field') {
+            return renderFieldCell();
+          }
+
+          if (column.type === 'relationship') {
+            return renderRelationshipCell();
+          }
+
+          return null;
+        };
+
+        return (
+          <TableCell
+            key={column.id}
+            className={`
+              px-2 sm:px-3 py-2 
+              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'} 
+              whitespace-nowrap overflow-hidden text-ellipsis
+            `}
+          >
+            {renderCellContent()}
+          </TableCell>
+        );
+      })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="call:read">
