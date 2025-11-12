@@ -313,7 +313,9 @@ export function CallTable() {
   const [statusChangeId, setStatusChangeId] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<string | null>(null);
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
-  const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
+  const [activeStatusTab, setActiveStatusTab] = useState<string>(
+    isBusinessPartner ? 'business-partners' : 'crm-leads'
+  );
   const [isArchiveCompleted, setIsArchiveCompleted] = useState(false);
 
   const handleArchiveSuccess = () => {
@@ -564,6 +566,8 @@ export function CallTable() {
     return !!call.channelType && !!call.channelParties;
   };
 
+  const isCrmLeadCall = (call: any) => !isBusinessPartnerCall(call) && !call.externalId;
+
   const statusOptions = [
     {
       value: CallDTOStatus.DRAFT,
@@ -589,6 +593,8 @@ export function CallTable() {
 
   const getStatusFilter = () => {
     switch (activeStatusTab) {
+      case 'crm-leads':
+        return { 'externalId.specified': false };
       case 'business-partners':
         return { 'status.equals': CallDTOStatus.ACTIVE, 'externalId.specified': false };
       case 'draft':
@@ -826,12 +832,16 @@ export function CallTable() {
   const filteredData = useMemo(() => {
     if (!data) return data;
 
+    if (activeStatusTab === 'crm-leads') {
+      return data.filter(isCrmLeadCall);
+    }
+
     if (activeStatusTab === 'business-partners') {
       return data.filter(isBusinessPartnerCall);
     }
 
     if (activeStatusTab === 'active') {
-      return data.filter((call) => !isBusinessPartnerCall(call) && !call.externalId);
+      return data.filter((call) => call.status === CallDTOStatus.ACTIVE);
     }
 
     if (activeStatusTab === 'external') {
@@ -844,7 +854,11 @@ export function CallTable() {
   const filteredCount = useMemo(() => {
     if (!countData) return 0;
 
-    if (activeStatusTab === 'business-partners' || activeStatusTab === 'active') {
+    if (
+      activeStatusTab === 'business-partners' ||
+      activeStatusTab === 'active' ||
+      activeStatusTab === 'crm-leads'
+    ) {
       return filteredData?.length || 0;
     }
 
@@ -1629,25 +1643,35 @@ export function CallTable() {
       <div className="w-full space-y-4">
         {/* Status Filter Tabs */}
         <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
-          <TabsList
-            className={`grid w-full ${isBusinessPartner ? 'grid-cols-5' : 'grid-cols-6'} bg-gray-100 p-1`}
-          >
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 bg-gray-100 p-1">
+            <TabsTrigger
+              value="crm-leads"
+              className="flex items-center gap-2 data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-sky-500 data-[state=active]:bg-white rounded-full"></div>
+              CRM Leads
+            </TabsTrigger>
             <TabsTrigger
               value="business-partners"
               className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-blue-500 data-[state=active]:bg-white rounded-full"></div>
-              Business Partners
+              Business Partner
             </TabsTrigger>
-            {!isBusinessPartner && (
-              <TabsTrigger
-                value="active"
-                className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-              >
-                <div className="w-2 h-2 bg-green-500 data-[state=active]:bg-white rounded-full"></div>
-                Active
-              </TabsTrigger>
-            )}
+            <TabsTrigger
+              value="external"
+              className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-indigo-500 data-[state=active]:bg-white rounded-full"></div>
+              External Leads
+            </TabsTrigger>
+            <TabsTrigger
+              value="active"
+              className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              <div className="w-2 h-2 bg-green-500 data-[state=active]:bg-white rounded-full"></div>
+              Active
+            </TabsTrigger>
             <TabsTrigger
               value="draft"
               className="flex items-center gap-2 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
@@ -1660,7 +1684,7 @@ export function CallTable() {
               className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-red-500 data-[state=active]:bg-white rounded-full"></div>
-              Archived
+              Archive
             </TabsTrigger>
 
             <TabsTrigger
@@ -1668,12 +1692,6 @@ export function CallTable() {
               className="data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               All
-            </TabsTrigger>
-            <TabsTrigger
-              value="external"
-              className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-            >
-              External Data
             </TabsTrigger>
           </TabsList>
         </Tabs>
