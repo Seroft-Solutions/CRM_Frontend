@@ -34,7 +34,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
               <div className="w-48"></div>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden bg-slate-50">
+          <div className="flex flex-1 min-w-0 flex-col gap-4 p-4 overflow-x-hidden bg-slate-50">
             <div className="container mx-auto">{children}</div>
           </div>
         </SidebarInset>

@@ -3,9 +3,11 @@ export const callImportConfig = {
     'Fill in the data starting from row 2 (row 1 contains headers)',
     'Maximum 500 data rows per upload',
     'If a Customer or Product does not exist, it will be automatically created.',
-    'For new customers, Zip Code is required to determine the area.',
+    'For new customers, Zip Code is required and must be a valid 6-digit area pincode in the system.',
+    'Zip Code validation: Must be exactly 6 digits and match an active area in the system.',
     'All other fields are required except External ID, Customer phone number, Product Code, and Sub Call Type which are optional. Required fields must match existing master data exactly (no new masters created during import)',
     'Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped',
+    'Failed rows can be edited inline and saved individually after validation',
     'Download error report CSV from response for failed rows details',
     'Save the file as .xlsx or .xls format',
   ],
@@ -34,8 +36,8 @@ export const callImportConfig = {
     {
       column: 'D',
       header: 'Zip code',
-      description: 'Zip code (Required for new customers)',
-      example: '12345',
+      description: 'Zip code (Required for new customers) - Must be exactly 6 digits and exist as a valid area pincode',
+      example: '110001',
     },
     {
       column: 'E',
