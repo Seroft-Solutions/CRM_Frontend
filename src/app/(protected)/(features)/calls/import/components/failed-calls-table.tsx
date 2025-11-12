@@ -14,6 +14,7 @@ import {
   useGetAllImportHistories,
   useProcessImportHistory,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
+import { useSearchGeography } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { ImportHistoryDTO } from '@/core/api/generated/spring/schemas';
 import { AdvancedPagination, usePaginationState } from './advanced-pagination';
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -22,6 +23,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertCircle, Check, ChevronsUpDown, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -175,6 +177,10 @@ export function FailedCallsTable() {
   const [editableData, setEditableData] = useState<ImportHistoryDTO[]>([]);
   const [pendingRowIds, setPendingRowIds] = useState<Set<number>>(new Set());
   const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [rowToSave, setRowToSave] = useState<(ImportHistoryDTO & { customerIsNew?: boolean; productIsNew?: boolean }) | null>(null);
+  const [pincodeValidationCache, setPincodeValidationCache] = useState<Record<string, boolean>>({});
+  const [validatedRowIds, setValidatedRowIds] = useState<Set<number>>(new Set());
 
   const apiPage = Math.max(page - 1, 0);
 
@@ -277,6 +283,38 @@ export function FailedCallsTable() {
     callstatusOptions.length
   );
 
+  // Pincode validation helper
+  const validatePincodeFormat = useCallback((pincode: string): boolean => {
+    const PINCODE_REGEX = /^[0-9]{6}$/;
+    return PINCODE_REGEX.test(pincode?.trim() || '');
+  }, []);
+
+  const validatePincodeExists = useCallback(async (pincode: string): Promise<boolean> => {
+    // Check cache first
+    if (pincodeValidationCache[pincode] !== undefined) {
+      return pincodeValidationCache[pincode];
+    }
+
+    try {
+      // Import searchGeography function directly
+      const { searchGeography } = await import('@/core/api/generated/spring/endpoints/area-resource/area-resource.gen');
+      const areas = await searchGeography({ term: pincode, size: 1 });
+      const isValid = Boolean(
+        areas &&
+        areas.length > 0 &&
+        areas[0].pincode === pincode &&
+        areas[0].status === 'ACTIVE'
+      );
+
+      // Cache the result
+      setPincodeValidationCache(prev => ({ ...prev, [pincode]: isValid }));
+      return isValid;
+    } catch (error) {
+      debugLog('Pincode validation error', { pincode, error });
+      return false;
+    }
+  }, [pincodeValidationCache]);
+
   const computeInvalidFields = useCallback(
     (row: ImportHistoryDTO) => {
       const invalid = new Set<keyof ImportHistoryDTO>();
@@ -335,9 +373,13 @@ export function FailedCallsTable() {
         invalid.add('callStatus');
       }
 
+      // Enhanced zipcode validation
       if (!row.zipCode || row.zipCode.trim().length === 0) {
         invalid.add('zipCode');
+      } else if (!validatePincodeFormat(row.zipCode)) {
+        invalid.add('zipCode');
       }
+      // Note: Async pincode existence check will be done in getComputedIssues
 
       // External ID is optional in the template; leave it blank if importer didn't supply one
 
@@ -352,6 +394,7 @@ export function FailedCallsTable() {
       callStatusMap,
       calltypeOptions,
       subcalltypeOptions,
+      validatePincodeFormat,
     ]
   );
 
@@ -382,7 +425,12 @@ export function FailedCallsTable() {
             issues.push('Call Status is required and must match master data.');
             break;
           case 'zipCode':
-            issues.push('Zip Code is required.');
+            if (!row.zipCode || row.zipCode.trim().length === 0) {
+              issues.push('Zip Code is required.');
+            } else if (!validatePincodeFormat(row.zipCode)) {
+              issues.push('Zip Code must be exactly 6 digits.');
+            }
+            // Additional async check for existence will be done in handleSaveRow
             break;
           default:
             break;
@@ -390,7 +438,7 @@ export function FailedCallsTable() {
       });
       return issues;
     },
-    [canResolveReferences]
+    [canResolveReferences, validatePincodeFormat]
   );
   const {
     mutateAsync: deleteAllCallImportHistoriesAsync,
@@ -491,7 +539,6 @@ export function FailedCallsTable() {
   );
 
   const handleFieldChange = (rowIndex: number, fieldName: keyof ImportHistoryDTO, value: string) => {
-    let updatedRow: ImportHistoryDTO | null = null;
     setEditableData((prev) => {
       const updated = [...prev];
       const original = updated[rowIndex];
@@ -505,54 +552,185 @@ export function FailedCallsTable() {
         current.subCallType = '';
       }
       updated[rowIndex] = current;
-      updatedRow = current;
       return updated;
     });
 
-    if (updatedRow?.id) {
-      setRowErrors((prev) => {
-        if (!updatedRow?.id || !prev[updatedRow.id]) {
-          return prev;
-        }
-        const next = { ...prev };
-        delete next[updatedRow.id];
-        return next;
-      });
-      debugLog('Field updated', { rowId: updatedRow.id, fieldName, value });
-      if (fieldName !== 'callType') {
-        processRow(updatedRow);
+    // Clear any previous errors for this row
+    setEditableData((prev) => {
+      const row = prev[rowIndex];
+      if (row?.id && rowErrors[row.id]) {
+        setRowErrors((prevErrors) => {
+          const next = { ...prevErrors };
+          delete next[row.id!];
+          return next;
+        });
       }
-    }
+      return prev;
+    });
+
+    debugLog('Field updated - no auto-save', { rowIndex, fieldName, value });
   };
 
-  useEffect(() => {
-    if (!canResolveReferences) {
-      debugLog('Reference data not ready; auto-save paused');
+  // New function to handle save with validation and confirmation
+  const handleSaveRow = useCallback(async (row: ImportHistoryDTO) => {
+    if (!row?.id) return;
+
+    // Client-side validation first
+    const invalid = computeInvalidFields(row);
+    if (invalid.size > 0) {
+      const issues = getComputedIssues(row, invalid);
+      toast.error('Please fix all validation errors before saving:\n' + issues.join('\n'));
       return;
     }
 
-    editableData.forEach((row) => {
-      const hasError = row.id ? Boolean(rowErrors[row.id]) : false;
-      if (!row.id || pendingRowIds.has(row.id) || hasError) {
+    // Check if customer/product will be auto-created
+    const customerIsNew = !customerMap.has(normalizeKey(row.customerBusinessName));
+    const productIsNew = !productMap.has(normalizeKey(row.productName));
+
+    // Async pincode validation for new customers
+    if (customerIsNew && row.zipCode) {
+      const pincodeValid = await validatePincodeExists(row.zipCode);
+      if (!pincodeValid) {
+        toast.error('Zip Code is not a valid area pincode in the system. Please verify and try again.');
         return;
       }
-      const invalid = computeInvalidFields(row);
-      if (invalid.size === 0) {
-        setRowErrors((prev) => {
-          if (!row.id || !prev[row.id]) {
-            return prev;
-          }
-          const next = { ...prev };
-          delete next[row.id];
-          return next;
-        });
-        debugLog('Auto-save triggered via effect', { rowId: row.id, externalId: row.externalId });
-        processRow(row);
+    }
+
+    // Show confirmation dialog
+    setRowToSave({ ...row, customerIsNew, productIsNew });
+    setShowSaveDialog(true);
+  }, [computeInvalidFields, getComputedIssues, customerMap, productMap, validatePincodeExists]);
+
+  // Confirm and process the row
+  const confirmSaveRow = useCallback(async () => {
+    if (!rowToSave?.id) return;
+
+    try {
+      setPendingRowIds((prev) => {
+        const next = new Set(prev);
+        next.add(rowToSave.id!);
+        return next;
+      });
+
+      await processImportHistoryAsync({ id: rowToSave.id, data: rowToSave });
+
+      // Remove from local state
+      setEditableData((prev) => prev.filter((item) => item.id !== rowToSave.id));
+
+      // Remove from validated set
+      setValidatedRowIds((prev) => {
+        const next = new Set(prev);
+        next.delete(rowToSave.id!);
+        return next;
+      });
+
+      // Update pagination if needed
+      const newTotalItems = totalItems - 1;
+      if (editableData.length === 1 && page > 1) {
+        handlePageChange(page - 1);
       } else {
-        debugLog('Row still invalid after refresh', { rowId: row.id, invalid: Array.from(invalid) });
+        refetch();
       }
-    });
-  }, [canResolveReferences, editableData, computeInvalidFields, processRow, pendingRowIds, rowErrors]);
+
+      toast.success(
+        `Call saved successfully. ${rowToSave.customerBusinessName} - ${rowToSave.productName}`,
+        { duration: 5000 }
+      );
+
+      setShowSaveDialog(false);
+      setRowToSave(null);
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Unknown error';
+      toast.error(`Failed to save: ${errorMessage}`);
+      if (rowToSave.id) {
+        setRowErrors((prev) => ({ ...prev, [rowToSave.id!]: errorMessage }));
+      }
+    } finally {
+      setPendingRowIds((prev) => {
+        const next = new Set(prev);
+        next.delete(rowToSave.id!);
+        return next;
+      });
+    }
+  }, [rowToSave, processImportHistoryAsync, editableData, totalItems, page, handlePageChange, refetch]);
+
+  // Auto-trigger save dialog when row becomes fully validated
+  useEffect(() => {
+    if (!canResolveReferences || showSaveDialog || pendingRowIds.size > 0) {
+      return;
+    }
+
+    const checkAndAutoSave = async () => {
+      for (const row of editableData) {
+        if (!row.id || pendingRowIds.has(row.id) || validatedRowIds.has(row.id)) {
+          continue;
+        }
+
+        const invalid = computeInvalidFields(row);
+        if (invalid.size === 0) {
+          // Mark as validated to prevent repeated checks
+          setValidatedRowIds((prev) => {
+            const next = new Set(prev);
+            next.add(row.id!);
+            return next;
+          });
+
+          // Check if customer/product will be auto-created
+          const customerIsNew = !customerMap.has(normalizeKey(row.customerBusinessName));
+          const productIsNew = !productMap.has(normalizeKey(row.productName));
+
+          // Async pincode validation for new customers
+          if (customerIsNew && row.zipCode) {
+            const pincodeValid = await validatePincodeExists(row.zipCode);
+            if (!pincodeValid) {
+              setRowErrors((prev) => ({
+                ...prev,
+                [row.id!]: 'Zip Code is not a valid area pincode in the system.',
+              }));
+              // Remove from validated set so it can be checked again after fix
+              setValidatedRowIds((prev) => {
+                const next = new Set(prev);
+                next.delete(row.id!);
+                return next;
+              });
+              continue;
+            }
+          }
+
+          // Show confirmation dialog
+          setRowToSave({ ...row, customerIsNew, productIsNew });
+          setShowSaveDialog(true);
+          break; // Only show one dialog at a time
+        }
+      }
+    };
+
+    checkAndAutoSave();
+  }, [
+    canResolveReferences,
+    editableData,
+    computeInvalidFields,
+    customerMap,
+    productMap,
+    validatePincodeExists,
+    pendingRowIds,
+    showSaveDialog,
+    validatedRowIds,
+  ]);
+
+  // Clear validated row IDs when dialog closes without saving
+  useEffect(() => {
+    if (!showSaveDialog && rowToSave) {
+      // Dialog was closed, allow re-checking this row
+      setValidatedRowIds((prev) => {
+        const next = new Set(prev);
+        if (rowToSave.id) {
+          next.delete(rowToSave.id);
+        }
+        return next;
+      });
+    }
+  }, [showSaveDialog, rowToSave]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -683,13 +861,15 @@ export function FailedCallsTable() {
                     const rowSaving = row.id ? pendingRowIds.has(row.id) : false;
                     const rowHasInvalid = invalidFields.size > 0;
                     const rowNeedsAttention = allIssues.length > 0;
+                    const isValidated = !rowHasInvalid && !rowNeedsAttention;
                     return (
                       <TableRow
                         key={row.id}
                         className={cn(
                           'hover:bg-gray-50 transition-colors',
                           rowHasInvalid && 'bg-red-50/40',
-                          !rowHasInvalid && rowNeedsAttention && 'bg-amber-50/80'
+                          !rowHasInvalid && rowNeedsAttention && 'bg-amber-50/80',
+                          isValidated && 'bg-green-50/30'
                         )}
                       >
                         {HEADERS.map((header, cellIndex) => {
@@ -702,45 +882,103 @@ export function FailedCallsTable() {
                               key={header}
                               className={`px-2 sm:px-3 py-2 text-sm align-top ${
                                 cellIndex === HEADERS.length - 1
-                                  ? 'whitespace-pre-wrap min-w-[280px]'
+                                  ? 'min-w-[280px]'
                                   : 'min-w-[200px]'
                               }`}
                             >
                               {isReasonColumn ? (
-                                <span
-                                  className={cn(
-                                    'text-sm whitespace-pre-line',
-                                    allIssues.length
-                                      ? 'text-red-600 font-medium'
-                                      : 'text-muted-foreground'
-                                  )}
-                                >
-                                  {allIssues.length ? allIssues.join('\n') : row.issue || '—'}
-                                </span>
+                                allIssues.length > 0 ? (
+                                  <TooltipProvider delayDuration={300}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span
+                                          className={cn(
+                                            'text-sm cursor-help text-red-600 font-medium truncate block max-w-[260px]'
+                                          )}
+                                        >
+                                          {allIssues.join(', ')}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent
+                                        side="left"
+                                        className="max-w-md p-3 bg-white border shadow-lg"
+                                      >
+                                        <div className="space-y-1">
+                                          <p className="font-semibold text-sm text-red-700 mb-2">
+                                            Validation Errors:
+                                          </p>
+                                          <ul className="list-disc pl-4 space-y-1">
+                                            {allIssues.map((issue, idx) => (
+                                              <li key={idx} className="text-sm text-gray-700">
+                                                {issue}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground italic">
+                                    null
+                                  </span>
+                                )
                               ) : options ? (
-                                <SearchableSelect
-                                  value={(row[fieldName] as string) || ''}
-                                  options={options}
-                          placeholder={
-                            header === 'Sub Call Type' && options.length === 1 && !options[0].value
-                              ? 'N/A'
-                              : `Select ${header}`
-                          }
-                                  onSelect={(value) => handleFieldChange(rowIndex, fieldName, value)}
-                                  disabled={rowSaving}
-                                  invalid={invalidFields.has(fieldName)}
-                                />
+                                <div className="flex items-center gap-2">
+                                  <SearchableSelect
+                                    value={(row[fieldName] as string) || ''}
+                                    options={options}
+                            placeholder={
+                              header === 'Sub Call Type' && options.length === 1 && !options[0].value
+                                ? 'N/A'
+                                : `Select ${header}`
+                            }
+                                    onSelect={(value) => handleFieldChange(rowIndex, fieldName, value)}
+                                    disabled={rowSaving}
+                                    invalid={invalidFields.has(fieldName)}
+                                  />
+                                  {header === 'Customer name' &&
+                                    row.customerBusinessName &&
+                                    !customerMap.has(normalizeKey(row.customerBusinessName)) && (
+                                      <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                                        New
+                                      </Badge>
+                                    )}
+                                  {header === 'Product Name' &&
+                                    row.productName &&
+                                    !productMap.has(normalizeKey(row.productName)) && (
+                                      <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                                        New
+                                      </Badge>
+                                    )}
+                                </div>
                               ) : (
-                                <Input
-                                  value={(row[fieldName] as string) || ''}
-                                  onChange={(e) => handleFieldChange(rowIndex, fieldName, e.target.value)}
-                                  className={cn(
-                                    'h-8 text-xs',
-                                    invalidFields.has(fieldName) &&
-                                      'border-destructive text-destructive placeholder:text-destructive bg-red-50'
-                                  )}
-                                  disabled={rowSaving}
-                                />
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    value={(row[fieldName] as string) || ''}
+                                    onChange={(e) => handleFieldChange(rowIndex, fieldName, e.target.value)}
+                                    className={cn(
+                                      'h-8 text-xs',
+                                      invalidFields.has(fieldName) &&
+                                        'border-destructive text-destructive placeholder:text-destructive bg-red-50'
+                                    )}
+                                    disabled={rowSaving}
+                                  />
+                                  {header === 'Customer name' &&
+                                    row.customerBusinessName &&
+                                    !customerMap.has(normalizeKey(row.customerBusinessName)) && (
+                                      <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                                        New
+                                      </Badge>
+                                    )}
+                                  {header === 'Product Name' &&
+                                    row.productName &&
+                                    !productMap.has(normalizeKey(row.productName)) && (
+                                      <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                                        New
+                                      </Badge>
+                                    )}
+                                </div>
                               )}
                             </TableCell>
                           );
@@ -751,17 +989,8 @@ export function FailedCallsTable() {
                             variant="outline"
                             disabled={rowHasInvalid || rowSaving || !canResolveReferences}
                             onClick={() => {
-                              if (!row.id) return;
-                              setRowErrors((prev) => {
-                                if (!row.id || !prev[row.id]) {
-                                  return prev;
-                                }
-                                const next = { ...prev };
-                                delete next[row.id];
-                                return next;
-                              });
-                              debugLog('Manual update clicked', { rowId: row.id });
-                              processRow(row);
+                              debugLog('Save button clicked', { rowId: row.id });
+                              handleSaveRow(row);
                             }}
                           >
                             {rowSaving ? (
@@ -770,7 +999,7 @@ export function FailedCallsTable() {
                                 Saving
                               </span>
                             ) : (
-                              'Update Row'
+                              'Save Row'
                             )}
                           </Button>
                         </TableCell>
@@ -795,6 +1024,60 @@ export function FailedCallsTable() {
           />
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog for Saving Row */}
+      <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Save</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Are you sure you want to save this call record?</p>
+              {rowToSave?.customerIsNew && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <strong className="text-blue-800">New Customer Will Be Created:</strong>
+                  <div className="mt-1 text-sm text-blue-700">
+                    <div><strong>Business Name:</strong> {rowToSave.customerBusinessName}</div>
+                    {rowToSave.phoneNumber && <div><strong>Phone:</strong> {rowToSave.phoneNumber}</div>}
+                    <div><strong>Zip Code:</strong> {rowToSave.zipCode}</div>
+                  </div>
+                </div>
+              )}
+              {rowToSave?.productIsNew && (
+                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <strong className="text-green-800">New Product Will Be Created:</strong>
+                  <div className="mt-1 text-sm text-green-700">
+                    <div><strong>Product Name:</strong> {rowToSave.productName}</div>
+                    {rowToSave.productCode && <div><strong>Product Code:</strong> {rowToSave.productCode}</div>}
+                  </div>
+                </div>
+              )}
+              {!rowToSave?.customerIsNew && !rowToSave?.productIsNew && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  This will create a new call record using existing customer and product data.
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={pendingRowIds.has(rowToSave?.id ?? 0)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmSaveRow}
+              disabled={pendingRowIds.has(rowToSave?.id ?? 0)}
+            >
+              {pendingRowIds.has(rowToSave?.id ?? 0) ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </span>
+              ) : (
+                'Confirm Save'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
