@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { CallTypeDTO } from '@/core/api/generated/spring/schemas/CallTypeDTO';
 import { CallTypeDTOStatus } from '@/core/api/generated/spring/schemas/CallTypeDTOStatus';
 
@@ -118,6 +119,15 @@ export function CallTypeTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = callType[column.accessor as keyof typeof callType];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="call-types"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

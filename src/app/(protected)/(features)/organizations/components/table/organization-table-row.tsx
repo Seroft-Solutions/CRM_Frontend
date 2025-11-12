@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { OrganizationDTO } from '@/core/api/generated/spring/schemas/OrganizationDTO';
 import { OrganizationDTOStatus } from '@/core/api/generated/spring/schemas/OrganizationDTOStatus';
 
@@ -153,6 +154,15 @@ export function OrganizationTableRow({
 
                 if (column.id === 'lastModifiedDate') {
                   return field ? format(new Date(field as string), 'PPP') : '';
+                }
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="organizations"
+                    />
+                  );
                 }
 
                 return field?.toString() || '';

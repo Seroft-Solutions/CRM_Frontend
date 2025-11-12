@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { MeetingReminderDTO } from '@/core/api/generated/spring/schemas/MeetingReminderDTO';
 import { MeetingReminderDTOStatus } from '@/core/api/generated/spring/schemas/MeetingReminderDTOStatus';
@@ -119,6 +120,15 @@ export function MeetingReminderTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = meetingReminder[column.accessor as keyof typeof meetingReminder];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="meeting-reminders"
+                    />
+                  );
+                }
 
                 if (column.id === 'reminderType') {
                   return field?.toString() || '';

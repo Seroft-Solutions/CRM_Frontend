@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRemarkDTO';
 import { CallRemarkDTOStatus } from '@/core/api/generated/spring/schemas/CallRemarkDTOStatus';
@@ -119,6 +120,15 @@ export function CallRemarkTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = callRemark[column.accessor as keyof typeof callRemark];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="call-remarks"
+                    />
+                  );
+                }
 
                 if (column.id === 'remark') {
                   return field?.toString() || '';

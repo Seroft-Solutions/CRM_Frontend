@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
 import { AreaDTOStatus } from '@/core/api/generated/spring/schemas/AreaDTOStatus';
@@ -116,6 +117,15 @@ export function AreaTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = area[column.accessor as keyof typeof area];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="areas"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

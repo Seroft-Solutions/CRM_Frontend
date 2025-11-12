@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { ChannelTypeDTO } from '@/core/api/generated/spring/schemas/ChannelTypeDTO';
 import { ChannelTypeDTOStatus } from '@/core/api/generated/spring/schemas/ChannelTypeDTOStatus';
 
@@ -118,6 +119,15 @@ export function ChannelTypeTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = channelType[column.accessor as keyof typeof channelType];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="channel-types"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

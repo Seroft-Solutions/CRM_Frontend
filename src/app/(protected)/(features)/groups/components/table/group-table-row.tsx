@@ -154,6 +154,15 @@ export function GroupTableRow({
                   return field ? format(new Date(field as string), 'PPP') : '';
                 }
 
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="groups"
+                    />
+                  );
+                }
+
                 return field?.toString() || '';
               })()
             : (() => {

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { CallStatusDTO } from '@/core/api/generated/spring/schemas/CallStatusDTO';
 import { CallStatusDTOStatus } from '@/core/api/generated/spring/schemas/CallStatusDTOStatus';
 
@@ -118,6 +119,15 @@ export function CallStatusTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = callStatus[column.accessor as keyof typeof callStatus];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="call-statuses"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

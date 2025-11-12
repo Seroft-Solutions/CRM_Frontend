@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { ProductCategoryDTO } from '@/core/api/generated/spring/schemas/ProductCategoryDTO';
 import { ProductCategoryDTOStatus } from '@/core/api/generated/spring/schemas/ProductCategoryDTOStatus';
 
@@ -118,6 +119,15 @@ export function ProductCategoryTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = productCategory[column.accessor as keyof typeof productCategory];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="product-categories"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

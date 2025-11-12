@@ -16,6 +16,7 @@ import {
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
+import { ClickableId } from '@/components/clickable-id';
 import type { MeetingParticipantDTO } from '@/core/api/generated/spring/schemas/MeetingParticipantDTO';
 import { MeetingParticipantDTOStatus } from '@/core/api/generated/spring/schemas/MeetingParticipantDTOStatus';
 
@@ -163,6 +164,15 @@ export function MeetingParticipantTableRow({
 
                 if (column.id === 'lastModifiedDate') {
                   return field ? format(new Date(field as string), 'PPP') : '';
+                }
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="meeting-participants"
+                    />
+                  );
                 }
 
                 return field?.toString() || '';

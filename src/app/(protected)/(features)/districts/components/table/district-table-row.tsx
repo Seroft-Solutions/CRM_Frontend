@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { DistrictDTO } from '@/core/api/generated/spring/schemas/DistrictDTO';
 import { DistrictDTOStatus } from '@/core/api/generated/spring/schemas/DistrictDTOStatus';
@@ -130,6 +131,15 @@ export function DistrictTableRow({
             ? // Render field column
               (() => {
                 const field = district[column.accessor as keyof typeof district];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="districts"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { UserAvailabilityDTO } from '@/core/api/generated/spring/schemas/UserAvailabilityDTO';
 import { UserAvailabilityDTOStatus } from '@/core/api/generated/spring/schemas/UserAvailabilityDTOStatus';
@@ -119,6 +120,15 @@ export function UserAvailabilityTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = userAvailability[column.accessor as keyof typeof userAvailability];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="user-availabilities"
+                    />
+                  );
+                }
 
                 if (column.id === 'dayOfWeek') {
                   return field?.toString() || '';

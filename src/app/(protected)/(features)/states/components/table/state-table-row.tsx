@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { StateDTO } from '@/core/api/generated/spring/schemas/StateDTO';
 import { StateDTOStatus } from '@/core/api/generated/spring/schemas/StateDTOStatus';
 
@@ -115,6 +116,15 @@ export function StateTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = state[column.accessor as keyof typeof state];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="states"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

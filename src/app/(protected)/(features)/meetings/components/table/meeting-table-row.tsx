@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { MeetingDTO } from '@/core/api/generated/spring/schemas/MeetingDTO';
 import { MeetingDTOStatus } from '@/core/api/generated/spring/schemas/MeetingDTOStatus';
@@ -116,6 +117,15 @@ export function MeetingTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = meeting[column.accessor as keyof typeof meeting];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="meetings"
+                    />
+                  );
+                }
 
                 if (column.id === 'meetingDateTime') {
                   return field ? format(new Date(field as string), 'PPP') : '';

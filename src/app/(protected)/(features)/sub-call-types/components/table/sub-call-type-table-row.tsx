@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { SubCallTypeDTO } from '@/core/api/generated/spring/schemas/SubCallTypeDTO';
 import { SubCallTypeDTOStatus } from '@/core/api/generated/spring/schemas/SubCallTypeDTOStatus';
@@ -119,6 +120,15 @@ export function SubCallTypeTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = subCallType[column.accessor as keyof typeof subCallType];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="sub-call-types"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

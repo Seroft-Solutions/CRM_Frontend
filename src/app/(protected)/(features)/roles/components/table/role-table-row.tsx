@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { RoleDTO } from '@/core/api/generated/spring/schemas/RoleDTO';
 import { RoleDTOStatus } from '@/core/api/generated/spring/schemas/RoleDTOStatus';
@@ -116,6 +117,15 @@ export function RoleTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = role[column.accessor as keyof typeof role];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="roles"
+                    />
+                  );
+                }
 
                 if (column.id === 'keycloakRoleId') {
                   return field?.toString() || '';

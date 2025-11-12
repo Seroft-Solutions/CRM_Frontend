@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { PriorityDTO } from '@/core/api/generated/spring/schemas/PriorityDTO';
 import { PriorityDTOStatus } from '@/core/api/generated/spring/schemas/PriorityDTOStatus';
 
@@ -118,6 +119,15 @@ export function PriorityTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = priority[column.accessor as keyof typeof priority];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="priorities"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

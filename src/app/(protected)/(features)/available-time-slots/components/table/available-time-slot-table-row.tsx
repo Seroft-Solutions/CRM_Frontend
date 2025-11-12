@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { AvailableTimeSlotDTO } from '@/core/api/generated/spring/schemas/AvailableTimeSlotDTO';
 import { AvailableTimeSlotDTOStatus } from '@/core/api/generated/spring/schemas/AvailableTimeSlotDTOStatus';
@@ -119,6 +120,15 @@ export function AvailableTimeSlotTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = availableTimeSlot[column.accessor as keyof typeof availableTimeSlot];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="available-time-slots"
+                    />
+                  );
+                }
 
                 if (column.id === 'slotDateTime') {
                   return field ? format(new Date(field as string), 'PPP') : '';

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import type { SourceDTO } from '@/core/api/generated/spring/schemas/SourceDTO';
 import { SourceDTOStatus } from '@/core/api/generated/spring/schemas/SourceDTOStatus';
 
@@ -115,6 +116,15 @@ export function SourceTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = source[column.accessor as keyof typeof source];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="sources"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';

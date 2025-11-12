@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { UserProfileDTO } from '@/core/api/generated/spring/schemas/UserProfileDTO';
 import { UserProfileDTOStatus } from '@/core/api/generated/spring/schemas/UserProfileDTOStatus';
@@ -119,6 +120,15 @@ export function UserProfileTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = userProfile[column.accessor as keyof typeof userProfile];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="user-profiles"
+                    />
+                  );
+                }
 
                 if (column.id === 'keycloakId') {
                   return field?.toString() || '';

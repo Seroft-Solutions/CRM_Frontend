@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { ClickableId } from '@/components/clickable-id';
 import { RelationshipCell } from './relationship-cell';
 import type { CityDTO } from '@/core/api/generated/spring/schemas/CityDTO';
 import { CityDTOStatus } from '@/core/api/generated/spring/schemas/CityDTOStatus';
@@ -116,6 +117,15 @@ export function CityTableRow({
           {column.type === 'field'
             ? (() => {
                 const field = city[column.accessor as keyof typeof city];
+
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="cities"
+                    />
+                  );
+                }
 
                 if (column.id === 'name') {
                   return field?.toString() || '';
