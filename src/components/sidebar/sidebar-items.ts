@@ -181,16 +181,10 @@ export const sidebarItems: SidebarItem[] = [
       },
       {
         key: 'product',
-        label: 'Product Master',
+        label: 'Manage Products',
         path: '/products',
         requiredPermission: 'product:sidebar',
       },
     ],
-  },
-  {
-    key: 'import',
-    label: 'Bulk Import',
-    path: '/import',
-    icon: ArrowDownToLine,
   },
 ];
