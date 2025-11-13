@@ -254,7 +254,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                 }`}
               >
                 {callType === 'business-partner' && (
-                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3 text-bp-foreground" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -266,20 +266,20 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <UserCheck
                   className={`h-4 w-4 flex-shrink-0 ${
-                    callType === 'business-partner' ? 'text-bp-600' : 'text-gray-500'
+                    callType === 'business-partner' ? 'text-bp-foreground' : 'text-gray-500'
                   }`}
                 />
                 <div className="min-w-0">
                   <div
                     className={`font-medium text-sm ${
-                      callType === 'business-partner' ? 'text-bp-900' : 'text-gray-900'
+                      callType === 'business-partner' ? 'text-bp-foreground' : 'text-gray-900'
                     }`}
                   >
                     Business Partner
                   </div>
                   <div
                     className={`text-xs ${
-                      callType === 'business-partner' ? 'text-bp-700' : 'text-gray-500'
+                      callType === 'business-partner' ? 'text-bp-foreground' : 'text-gray-500'
                     }`}
                   >
                     Enable for external calls

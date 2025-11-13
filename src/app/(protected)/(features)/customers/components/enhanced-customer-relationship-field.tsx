@@ -337,7 +337,9 @@ export function EnhancedCustomerRelationshipField({
                   )}
                   title="Create new customer"
                 >
-                  <Plus className="h-4 w-4 text-white" />
+                  <Plus
+                    className={`h-4 w-4 ${isBusinessPartner ? 'text-bp-foreground' : 'text-white'}`}
+                  />
                 </Button>
               }
             />
