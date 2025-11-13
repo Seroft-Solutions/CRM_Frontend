@@ -23,7 +23,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     >
       <div className="space-y-6">
         {/* Professional Header with Dotted Background */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 shadow-lg relative overflow-hidden">
+        <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
           {/* Dotted background pattern */}
           <div
             className="absolute inset-0 opacity-20"

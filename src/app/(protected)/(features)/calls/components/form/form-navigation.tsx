@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useEntityForm } from './call-form-provider';
 
 interface FormNavigationProps {
@@ -107,11 +108,10 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
           <Button
             type="button"
             onClick={handleNext}
-            className={`flex items-center gap-2 justify-center transition-colors ${
-              isBusinessPartner
-                ? 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
-                : ''
-            }`}
+            className={cn(
+              'flex items-center gap-2 justify-center btn-sidebar-accent font-semibold',
+              isBusinessPartner && 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
+            )}
             disabled={isSubmitting}
           >
             Next Step

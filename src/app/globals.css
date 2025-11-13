@@ -84,6 +84,9 @@
     --sidebar-accent-foreground: #0f172a;
     --sidebar-border: #0b1425;
     --sidebar-ring: oklch(0.623 0.214 259.815);
+    --feature-header-bg: oklch(0.45 0.06 243);
+    --feature-header-accent: #f5b81d;
+    --feature-header-text: #0f172a;
 
     --business-partner-primary: 44 91% 54%;
     --business-partner-primary-hover: 44 91% 46%;
@@ -123,6 +126,9 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.488 0.243 264.376);
+    --feature-header-bg: oklch(0.45 0.06 243);
+    --feature-header-accent: #f5b81d;
+    --feature-header-text: #0f172a;
 
     /* Business Partner Theme Colors (Dark Mode - Yellow from Image) */
     --business-partner-primary: 44 91% 54%;
@@ -178,6 +184,121 @@
 
     .text-bp-600 {
         color: hsl(var(--business-partner-primary) / 0.85);
+    }
+
+    .bg-sidebar-accent {
+        background-color: var(--sidebar-accent);
+    }
+
+    .bg-sidebar-accent-soft {
+        background-color: color-mix(in srgb, var(--sidebar-accent) 35%, white);
+    }
+
+    .btn-sidebar-accent {
+        background-color: var(--sidebar-accent) !important;
+        color: var(--feature-header-text) !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .btn-sidebar-accent:hover {
+        background-color: color-mix(in srgb, var(--sidebar-accent), black 10%) !important;
+    }
+
+    /* Feature header styling */
+    .feature-header {
+        background-color: var(--feature-header-bg);
+        color: var(--feature-header-text);
+        border: 1px solid color-mix(in oklch, var(--feature-header-bg) 85%, white 15%);
+    }
+
+    .feature-header .flex.items-center.gap-4 svg {
+        color: var(--feature-header-text) !important;
+    }
+
+    .feature-header button svg,
+    .feature-header a svg {
+        color: currentColor !important;
+    }
+
+    .feature-header-pill,
+    .feature-header .flex.items-center.gap-4 > .text-white {
+        background-color: var(--sidebar-accent);
+        color: var(--feature-header-text) !important;
+        border-radius: 9999px;
+        padding: 0.85rem 1.75rem;
+        display: inline-flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        box-shadow: none !important;
+        border: none;
+    }
+
+    .feature-header-pill h1,
+    .feature-header .flex.items-center.gap-4 > .text-white h1 {
+        color: var(--feature-header-text);
+        font-weight: 800;
+        letter-spacing: 0.01em;
+    }
+
+    .feature-header-pill p,
+    .feature-header .flex.items-center.gap-4 > .text-white p {
+        color: color-mix(in srgb, var(--feature-header-text), #000 30%);
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .feature-header-icon,
+    .feature-header .flex.items-center.gap-4 > .w-10 {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        border: 1px solid color-mix(in srgb, var(--feature-header-accent) 65%, #fff);
+        background:
+            radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.6), transparent 58%),
+            linear-gradient(135deg, color-mix(in srgb, var(--feature-header-accent) 25%, #fff), color-mix(in srgb, var(--feature-header-accent) 85%, #000 5%));
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        color: var(--feature-header-text) !important;
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25), 0 12px 24px rgb(15 23 42 / 0.18);
+    }
+
+    .feature-header-icon::after,
+    .feature-header .flex.items-center.gap-4 > .w-10::after {
+        content: '';
+        position: absolute;
+        inset: 2px;
+        border-radius: inherit;
+        border: 1px solid rgb(255 255 255 / 0.25);
+        pointer-events: none;
+    }
+
+    .feature-header-icon svg,
+    .feature-header .flex.items-center.gap-4 > .w-10 svg {
+        color: color-mix(in srgb, var(--feature-header-text), #000 15%) !important;
+    }
+
+    .feature-header .bg-yellow-400,
+    .feature-header .hover\:bg-yellow-500,
+    .feature-header .hover\:bg-yellow-500:hover {
+        background-color: var(--sidebar-accent) !important;
+        color: var(--feature-header-text) !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .feature-header .bg-yellow-400 {
+        background-color: var(--feature-header-accent) !important;
+        color: var(--feature-header-text) !important;
+        border: none;
+        box-shadow: none;
+    }
+
+    .feature-header .bg-yellow-400:hover {
+        background-color: color-mix(in srgb, var(--feature-header-accent), white 12%) !important;
     }
 
     /* Progress bar fill color for Business Partner */

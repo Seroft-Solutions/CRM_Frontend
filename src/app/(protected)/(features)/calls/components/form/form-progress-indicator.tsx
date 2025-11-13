@@ -49,7 +49,8 @@ export function FormProgressIndicator() {
             </div>
             <Progress
               value={progress}
-              className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`}
+              className="h-2 bg-sidebar-accent-soft"
+              indicatorClassName={isBusinessPartner ? 'bg-bp-primary' : 'bg-sidebar-accent'}
             />
           </div>
 
@@ -68,9 +69,9 @@ export function FormProgressIndicator() {
                             ? 'border-bp-primary text-bp-600 bg-bp-50'
                             : 'border-muted-foreground/30 text-muted-foreground'
                         : index < state.currentStep
-                          ? 'bg-primary border-primary text-primary-foreground'
+                          ? 'bg-sidebar-accent border-sidebar-accent text-slate-900'
                           : index === state.currentStep
-                            ? 'border-primary text-primary bg-primary/10'
+                            ? 'border-sidebar-accent text-slate-900 bg-sidebar-accent-soft'
                             : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
                         (isBusinessPartner
@@ -123,7 +124,8 @@ export function FormProgressIndicator() {
             </div>
             <Progress
               value={progress}
-              className={`h-2 ${isBusinessPartner ? '[&>div]:bg-bp-primary' : ''}`}
+              className="h-2 bg-sidebar-accent-soft"
+              indicatorClassName={isBusinessPartner ? 'bg-bp-primary' : 'bg-sidebar-accent'}
             />
           </div>
 
@@ -142,9 +144,9 @@ export function FormProgressIndicator() {
                             ? 'border-bp-primary text-bp-600 bg-bp-50'
                             : 'border-muted-foreground/30 text-muted-foreground'
                         : index < state.currentStep
-                          ? 'bg-primary border-primary text-primary-foreground'
+                          ? 'bg-sidebar-accent border-sidebar-accent text-slate-900'
                           : index === state.currentStep
-                            ? 'border-primary text-primary bg-primary/10'
+                            ? 'border-sidebar-accent text-slate-900 bg-sidebar-accent-soft'
                             : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
                         (isBusinessPartner
