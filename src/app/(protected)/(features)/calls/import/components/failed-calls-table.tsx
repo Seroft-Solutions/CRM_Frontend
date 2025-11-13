@@ -129,6 +129,7 @@ export function FailedCallsTable() {
           validatedRowCount={validatedRowCount}
           isBulkSaving={isBulkSaving}
         />
+
         <CardContent>
           <FailedCallsTableBody
             headers={HEADERS}
