@@ -31,7 +31,11 @@ export function FormProgressIndicator() {
               </span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress
+              value={progress}
+              className="h-2 bg-sidebar-accent-soft"
+              indicatorClassName="bg-sidebar-accent"
+            />
           </div>
 
           {/* Step Indicators */}
@@ -94,7 +98,11 @@ export function FormProgressIndicator() {
               </div>
               <span>{Math.round(progress)}% Complete</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress
+              value={progress}
+              className="h-2 bg-sidebar-accent-soft"
+              indicatorClassName="bg-sidebar-accent"
+            />
           </div>
 
           {/* Step Indicators */}

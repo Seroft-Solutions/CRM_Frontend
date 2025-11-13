@@ -78,7 +78,7 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
           <Button
             type="button"
             onClick={handleNext}
-            className="flex items-center gap-2 justify-center"
+            className="flex items-center gap-2 justify-center btn-sidebar-accent font-semibold"
             disabled={isSubmitting}
           >
             Next Step

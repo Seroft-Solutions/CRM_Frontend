@@ -33,7 +33,7 @@ export default function CreateCallPage() {
         {/* Professional Header with Dotted Background - Dynamic Color */}
         <div
           className={`rounded-lg p-6 shadow-lg relative overflow-hidden transition-colors duration-300 ${
-            isBusinessPartner ? 'bg-bp-primary' : 'bg-gradient-to-r from-blue-600 to-blue-700'
+            isBusinessPartner ? 'bg-bp-primary' : 'feature-header bg-[oklch(0.45_0.06_243)]'
           }`}
         >
           {/* Dotted background pattern */}

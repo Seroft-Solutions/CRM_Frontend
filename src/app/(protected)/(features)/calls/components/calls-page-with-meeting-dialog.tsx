@@ -60,7 +60,7 @@ export function CallsPageWithMeetingDialog() {
     <>
       <div className="space-y-4">
         {/* Professional Header with Dotted Background */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 shadow-lg relative overflow-hidden">
+        <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
           {/* Dotted background pattern */}
           <div
             className="absolute inset-0 opacity-20"
@@ -96,23 +96,14 @@ export function CallsPageWithMeetingDialog() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 border-white/30 bg-white/10 text-white hover:bg-white/20 text-xs backdrop-blur-sm"
-                aria-label="Refresh List"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
               <InlinePermissionGuard requiredPermission="call:create">
                 <Button
                   asChild
                   size="sm"
-                  className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
+                  className="h-10 gap-2 bg-yellow-400 text-black hover:bg-yellow-500 text-sm font-semibold px-8 shadow-md min-w-32"
                 >
                   <Link href="/calls/new">
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">Create</span>
                   </Link>
                 </Button>
