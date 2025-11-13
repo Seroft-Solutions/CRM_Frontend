@@ -132,27 +132,30 @@ export function FailedCallRow({
                   )}
               </div>
             ) : isRemarkColumn ? (
-              row.remark && row.remark.trim().length > 0 ? (
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="relative">
-                        <Input
-                          value={row.remark || ''}
-                          onChange={(e) => onFieldChange(rowIndex, fieldName, e.target.value)}
-                          className={cn(
-                            'h-8 text-xs cursor-help truncate pr-8',
-                            invalidFields.has(fieldName) &&
-                              'border-destructive text-destructive placeholder:text-destructive bg-red-50'
-                          )}
-                          disabled={rowSaving}
-                          placeholder="Add remark..."
-                        />
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="relative">
+                      <Input
+                        value={row.remark || ''}
+                        onChange={(e) => onFieldChange(rowIndex, fieldName, e.target.value)}
+                        className={cn(
+                          'h-8 text-xs',
+                          row.remark && row.remark.trim().length > 0 && 'cursor-help truncate pr-8',
+                          invalidFields.has(fieldName) &&
+                            'border-destructive text-destructive placeholder:text-destructive bg-red-50'
+                        )}
+                        disabled={rowSaving}
+                        placeholder="Add remark..."
+                      />
+                      {row.remark && row.remark.trim().length > 0 && (
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
                           ...
                         </span>
-                      </div>
-                    </TooltipTrigger>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  {row.remark && row.remark.trim().length > 0 && (
                     <TooltipContent side="left" className="max-w-md p-3 bg-white border shadow-lg">
                       <div className="space-y-1">
                         <p className="font-semibold text-sm text-gray-800 mb-2">Full Remark:</p>
@@ -161,21 +164,9 @@ export function FailedCallRow({
                         </p>
                       </div>
                     </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : (
-                <Input
-                  value={row.remark || ''}
-                  onChange={(e) => onFieldChange(rowIndex, fieldName, e.target.value)}
-                  className={cn(
-                    'h-8 text-xs',
-                    invalidFields.has(fieldName) &&
-                      'border-destructive text-destructive placeholder:text-destructive bg-red-50'
                   )}
-                  disabled={rowSaving}
-                  placeholder="Add remark..."
-                />
-              )
+                </Tooltip>
+              </TooltipProvider>
             ) : (
               <div className="flex items-center gap-2">
                 <Input
