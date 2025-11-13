@@ -76,6 +76,8 @@ export function useFailedCallsValidation({
               invalid.add('subCallType');
             }
           }
+        } else if (row.subCallType && row.subCallType.trim().length > 0) {
+          invalid.add('subCallType');
         }
       } else if (row.subCallType) {
         const resolvedSubCallType = subcalltypeOptions.find(
