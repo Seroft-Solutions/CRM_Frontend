@@ -175,11 +175,17 @@ export function CustomerCreateSheet({
           }`}
         >
           <SheetHeader className="px-6 py-5 space-y-1">
-            <SheetTitle className="text-lg font-semibold leading-tight text-white">
+            <SheetTitle
+              className={`text-lg font-semibold leading-tight ${
+                isBusinessPartner ? 'text-bp-foreground' : 'text-white'
+              }`}
+            >
               Create New Customer
             </SheetTitle>
             <SheetDescription
-              className={`text-sm ${isBusinessPartner ? 'text-white/90' : 'text-blue-100'}`}
+              className={`text-sm ${
+                isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'
+              }`}
             >
               Capture core customer details and select their location hierarchy.
             </SheetDescription>
@@ -383,7 +389,9 @@ export function CustomerCreateSheet({
               form="customer-creation-form"
               disabled={isPending}
               className={`min-w-[160px] ${
-                isBusinessPartner ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
+                isBusinessPartner
+                  ? 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
+                  : ''
               }`}
             >
               {isPending ? (

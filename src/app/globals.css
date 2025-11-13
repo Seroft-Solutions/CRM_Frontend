@@ -85,9 +85,9 @@
     --sidebar-border: #0b1425;
     --sidebar-ring: oklch(0.623 0.214 259.815);
 
-    --business-partner-primary: 48 90% 40%;
-    --business-partner-primary-hover: 48 90% 32%;
-    --business-partner-foreground: 48 90% 90%;
+    --business-partner-primary: 44 91% 54%;
+    --business-partner-primary-hover: 44 91% 46%;
+    --business-partner-foreground: #0f172a;
 
 }
 
@@ -125,9 +125,9 @@
     --sidebar-ring: oklch(0.488 0.243 264.376);
 
     /* Business Partner Theme Colors (Dark Mode - Yellow from Image) */
-    --business-partner-primary: 46 78% 47%;
-    --business-partner-primary-hover: 46 78% 40%;
-    --business-partner-foreground: 0 0% 90%;
+    --business-partner-primary: 44 91% 54%;
+    --business-partner-primary-hover: 44 91% 46%;
+    --business-partner-foreground: #0f172a;
 
 
 }
@@ -157,7 +157,7 @@
     }
 
     .text-bp-foreground {
-        color: hsl(var(--business-partner-foreground));
+        color: var(--business-partner-foreground);
     }
 
     .border-bp-primary {

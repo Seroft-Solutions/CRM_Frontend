@@ -6,16 +6,17 @@ import { FailedCallsTable } from '../components/failed-calls-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Download } from 'lucide-react';
+import { CheckCircle, Download } from 'lucide-react';
 import Link from 'next/link';
-import {
-  useGetAllImportHistories
-} from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import * as XLSX from 'xlsx';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { callImportConfig } from '../config';
 
-type RowStatus = 'SUCCESS' | 'DUPLICATE' | 'VALIDATION_FAILED' | 'MASTER_DATA_MISSING' | 'SYSTEM_ERROR';
+type RowStatus =
+  | 'SUCCESS'
+  | 'DUPLICATE'
+  | 'VALIDATION_FAILED'
+  | 'MASTER_DATA_MISSING'
+  | 'SYSTEM_ERROR';
 
 interface ImportSummary {
   totalRows: number;
@@ -42,104 +43,28 @@ interface ImportResponse {
 }
 
 export default function ImportResultsPage() {
-    const router = useRouter();
-    const [responseData, setResponseData] = useState<ImportResponse | null>(null);
-    const {
-        data: importHistoryPreview,
-        isLoading: isImportHistoryLoading,
-        isError: isImportHistoryError,
-        error: importHistoryError,
-        refetch: refetchImportHistory,
-    } = useGetAllImportHistories(
-        {
-            page: 0,
-            size: 1,
-            sort: ['id,desc'],
-        },
-        {
-            query: {
-                staleTime: 30 * 1000,
-            },
-        }
-    );
-    const hasBackendHistory = (importHistoryPreview?.length ?? 0) > 0;
+  const router = useRouter();
+  const [responseData, setResponseData] = useState<ImportResponse | null>(null);
 
-    useEffect(() => {
-        const storedData = sessionStorage.getItem('callImportResponse');
-        if (storedData) {
-            try {
-                const data = JSON.parse(storedData);
-                setResponseData(data);
-                // Clear the data from session storage after reading it
-                sessionStorage.removeItem('callImportResponse');
-            } catch (error) {
-                console.error("Failed to parse import response data:", error);
-                router.push('/calls/import');
-            }
-        } else {
-            // If no data, redirect back to import page
-            // router.push('/calls/import');
-        }
-    }, [router]);
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('callImportResponse');
 
-    const renderImportHistorySection = () => {
-        if (isImportHistoryLoading) {
-            return (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <AlertCircle className="h-5 w-5 text-muted-foreground" />
-                            Loading Import History
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">Fetching the latest failed import rows from the backend.</p>
-                    </CardContent>
-                </Card>
-            );
-        }
+    if (storedData) {
+      try {
+        const data = JSON.parse(storedData);
 
-        if (isImportHistoryError) {
-            const errorMessage =
-                importHistoryError instanceof Error ? importHistoryError.message : 'Unable to load import history data.';
-            return (
-                <Card className="border-red-200 bg-red-50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-red-700">
-                            <AlertCircle className="h-5 w-5" />
-                            Failed to Fetch Import History
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <p className="text-sm text-red-700">{errorMessage}</p>
-                        <Button onClick={() => refetchImportHistory()} size="sm" variant="outline">
-                            Try Again
-                        </Button>
-                    </CardContent>
-                </Card>
-            );
-        }
-
-        if (!hasBackendHistory) {
-            return (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <CheckCircle className="h-5 w-5 text-green-500" />
-                            No Failed Import Rows in History
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                            We could not find any import history records. Start a new import or check back later for results.
-                        </p>
-                    </CardContent>
-                </Card>
-            );
-        }
-
-        return <FailedCallsTable />;
-    };
+        setResponseData(data);
+        // Clear the data from session storage after reading it
+        sessionStorage.removeItem('callImportResponse');
+      } catch (error) {
+        console.error('Failed to parse import response data:', error);
+        router.push('/calls/import');
+      }
+    } else {
+      // If no data, redirect back to import page
+      // router.push('/calls/import');
+    }
+  }, [router]);
 
   const tableRows = useMemo(() => {
     if (!responseData) return [];
@@ -165,12 +90,41 @@ export default function ImportResultsPage() {
 
     const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sheetRows]);
     const workbook = XLSX.utils.book_new();
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Call Import Results');
     XLSX.writeFile(workbook, 'call-import-results.xlsx');
   };
 
   if (!responseData) {
-    return <div className="space-y-6">{renderImportHistorySection()}</div>;
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <div>
+                <CardTitle>Import Summary</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Upload a file to see detailed results for this session.
+                </p>
+              </div>
+            </div>
+            <Button asChild>
+              <Link href="/calls/import">Start New Import</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              We could not find recent import session data in this browser. This can happen if the
+              page is refreshed or opened in a new tab. The failed rows section below still shows
+              the latest import history from the backend.
+            </p>
+          </CardContent>
+        </Card>
+
+        <FailedCallsTable />
+      </div>
+    );
   }
 
   return (
@@ -181,7 +135,9 @@ export default function ImportResultsPage() {
             <CheckCircle className="h-5 w-5 text-green-500" />
             <div>
               <CardTitle>Import Results</CardTitle>
-              <p className="text-sm text-muted-foreground">Review your bulk upload summary and fix issues.</p>
+              <p className="text-sm text-muted-foreground">
+                Review your bulk upload summary and fix issues.
+              </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -197,21 +153,35 @@ export default function ImportResultsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <SummaryCard label="Total Rows" value={responseData.summary.totalRows} />
-            <SummaryCard label="Successful" value={responseData.summary.successCount} tone="success" />
-            <SummaryCard label="Duplicates" value={responseData.summary.duplicateCount} tone="warning" />
+            <SummaryCard
+              label="Successful"
+              value={responseData.summary.successCount}
+              tone="success"
+            />
+            <SummaryCard
+              label="Duplicates"
+              value={responseData.summary.duplicateCount}
+              tone="warning"
+            />
             <SummaryCard label="Failed" value={responseData.summary.failedCount} tone="error" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">{responseData.summary.validationErrorCount}</p>
+              <p className="font-semibold text-foreground">
+                {responseData.summary.validationErrorCount}
+              </p>
               <p>Validation issues</p>
             </div>
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">{responseData.summary.masterMissingCount}</p>
+              <p className="font-semibold text-foreground">
+                {responseData.summary.masterMissingCount}
+              </p>
               <p>Missing master data</p>
             </div>
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">{responseData.summary.systemErrorCount}</p>
+              <p className="font-semibold text-foreground">
+                {responseData.summary.systemErrorCount}
+              </p>
               <p>System errors</p>
             </div>
           </div>
@@ -278,14 +248,29 @@ export default function ImportResultsPage() {
       {/*  </CardContent>*/}
       {/*</Card>*/}
 
-      {renderImportHistorySection()}
+      <FailedCallsTable />
     </div>
   );
 }
 
-function SummaryCard({ label, value, tone }: { label: string; value: number; tone?: 'success' | 'warning' | 'error' }) {
+function SummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: 'success' | 'warning' | 'error';
+}) {
   const variant =
-    tone === 'success' ? 'default' : tone === 'warning' ? 'secondary' : tone === 'error' ? 'destructive' : undefined;
+    tone === 'success'
+      ? 'default'
+      : tone === 'warning'
+        ? 'secondary'
+        : tone === 'error'
+          ? 'destructive'
+          : undefined;
+
   return (
     <div className="flex flex-col p-4 border rounded-lg">
       <span className="text-muted-foreground">{label}</span>

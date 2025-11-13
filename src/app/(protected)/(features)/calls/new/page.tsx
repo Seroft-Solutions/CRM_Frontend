@@ -49,7 +49,7 @@ export default function CreateCallPage() {
             {/* Icon */}
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
               <svg
-                className="w-5 h-5 text-white"
+                className={`w-5 h-5 ${isBusinessPartner ? 'text-bp-foreground' : 'text-white'}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -59,9 +59,9 @@ export default function CreateCallPage() {
               </svg>
             </div>
 
-            <div className="text-white">
+            <div className={isBusinessPartner ? 'text-bp-foreground' : 'text-white'}>
               <h1 className="text-2xl font-bold">Create Call</h1>
-              <p className="text-white/90">
+              <p className={isBusinessPartner ? '' : 'text-white/90'}>
                 {isBusinessPartner
                   ? `Enter the details below to create a new call for ${user?.name || ''}`
                   : 'Enter the details below to create a new call'}

@@ -312,7 +312,9 @@ export function EnhancedProductRelationshipField({
                   )}
                   title="Create new product"
                 >
-                  <Plus className="h-4 w-4 text-white" />
+                  <Plus
+                    className={`h-4 w-4 ${isBusinessPartner ? 'text-bp-foreground' : 'text-white'}`}
+                  />
                 </Button>
               }
             />
