@@ -3,23 +3,38 @@
 import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
 
-export default function CtaSection() {
+interface CtaSectionProps {
+  onStartBrewing?: () => void;
+}
+
+export default function CtaSection({ onStartBrewing }: CtaSectionProps) {
   const handleStartBrewing = () => {
-    signIn('keycloak', { redirectTo: '/organization' });
+    if (onStartBrewing) {
+      onStartBrewing();
+    } else {
+      signIn('keycloak', { redirectTo: '/organization' });
+    }
   };
 
   return (
-    <div className="bg-primary/10 py-20 px-4">
-      <div className="container mx-auto max-w-4xl text-center">
-        <h2 className="text-3xl font-bold mb-6">Ready to Start Brewing?</h2>
-        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Join thousands of businesses using CRM Cup to manage and grow their customer
-          relationships.
+    <section className="bg-sidebar text-white py-20 px-4">
+      <div className="container mx-auto max-w-4xl text-center space-y-6">
+        <p className="text-sm uppercase tracking-[0.4em] text-white/60">GET STARTED</p>
+        <h2 className="text-3xl md:text-4xl font-bold">
+          Ready to brew better customer relationships?
+        </h2>
+        <p className="text-lg text-white/80 max-w-2xl mx-auto">
+          Join thousands of businesses using CRM Cup to manage and grow their customer relationships
+          with confidence.
         </p>
-        <Button size="lg" onClick={handleStartBrewing}>
+        <Button
+          size="lg"
+          onClick={handleStartBrewing}
+          className="btn-sidebar-accent px-10 py-6 text-base font-semibold"
+        >
           Start Brewing Now
         </Button>
       </div>
-    </div>
+    </section>
   );
 }

@@ -186,6 +186,31 @@
         color: hsl(var(--business-partner-primary) / 0.85);
     }
 
+    .bg-sidebar {
+        background-color: var(--sidebar);
+    }
+
+    .text-sidebar {
+        color: var(--sidebar);
+    }
+
+    .text-sidebar-accent {
+        color: var(--sidebar-accent);
+    }
+
+    .home-hero {
+        background: radial-gradient(circle at 20% 20%, rgb(255 255 255 / 0.15), transparent 55%),
+        linear-gradient(135deg, color-mix(in srgb, var(--sidebar) 60%, #ffffff), color-mix(in srgb, var(--sidebar) 85%, #020617));
+    }
+
+    .home-feature-card {
+        border: 1px solid color-mix(in srgb, var(--sidebar) 15%, white);
+        background: linear-gradient(180deg, white, color-mix(in srgb, var(--sidebar) 3%, white));
+        box-shadow: 0 20px 45px rgb(15 23 42 / 0.05);
+        border-radius: 1.5rem;
+        padding: 1.25rem;
+    }
+
     .bg-sidebar-accent {
         background-color: var(--sidebar-accent);
     }

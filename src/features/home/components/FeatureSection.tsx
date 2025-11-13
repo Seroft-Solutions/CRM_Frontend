@@ -37,15 +37,15 @@ function FeatureCard({ icon, title, description }: Feature) {
   const IconComponent = iconMap[icon as keyof typeof iconMap];
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
-      <CardHeader className="pb-2">
-        <div className="mb-2">
-          {IconComponent && <IconComponent className="w-10 h-10 text-primary" />}
+    <Card className="home-feature-card">
+      <CardHeader className="pb-2 space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-sidebar-accent/15 text-sidebar-accent flex items-center justify-center">
+          {IconComponent && <IconComponent className="w-6 h-6" />}
         </div>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-lg text-sidebar leading-tight">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <CardDescription className="text-sm text-muted-foreground">{description}</CardDescription>
+        <CardDescription className="text-sm text-sidebar opacity-80">{description}</CardDescription>
       </CardContent>
     </Card>
   );
@@ -53,19 +53,24 @@ function FeatureCard({ icon, title, description }: Feature) {
 
 export default function FeatureSection({ features }: FeatureSectionProps) {
   return (
-    <div className="py-20 px-4 bg-background">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">Powerful CRM Features</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+    <section className="relative py-24 px-4 bg-[radial-gradient(circle_at_top,var(--sidebar)/8,transparent_45%)]">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+      <div className="container mx-auto max-w-6xl relative z-10">
+        <div className="text-center mb-16 space-y-4">
+          <p className="text-sm font-semibold tracking-[0.3em] text-sidebar opacity-70">CAPABILITIES</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-sidebar">
+            Powerful CRM Features
+          </h2>
+          <p className="text-sidebar opacity-70 max-w-2xl mx-auto">
             Everything you need to manage your customer relationships effectively and efficiently.
+            Built on the same palette that powers your internal platform.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <FeatureCard
-              key={index}
+              key={`${feature.title}-${index}`}
               icon={feature.icon}
               title={feature.title}
               description={feature.description}
@@ -73,6 +78,6 @@ export default function FeatureSection({ features }: FeatureSectionProps) {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
