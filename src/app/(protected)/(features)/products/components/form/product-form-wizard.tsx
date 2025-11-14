@@ -28,6 +28,58 @@ interface ProductFormProps {
 }
 
 const ORIENTATION_UPLOAD_SEQUENCE = ['frontImage', 'backImage', 'sideImage'] as const;
+const ORIENTATION_FILENAME_SUFFIX: Record<(typeof ORIENTATION_UPLOAD_SEQUENCE)[number], string> = {
+  frontImage: 'front',
+  backImage: 'back',
+  sideImage: 'side',
+};
+
+const PRODUCT_IMAGE_MIME_EXTENSION_MAP: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/jpg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
+
+const fallbackBaseName = (productId?: number) => `product-${productId ?? 'image'}`;
+
+const sanitizeProductNameForFile = (productName?: string, productId?: number) => {
+  if (!productName) {
+    return fallbackBaseName(productId);
+  }
+
+  const sanitized = productName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return sanitized || fallbackBaseName(productId);
+};
+
+const resolveFileExtension = (file: File) => {
+  const nameMatch = file.name.match(/(\.[^.]+)$/);
+  if (nameMatch?.[1]) {
+    return nameMatch[1].toLowerCase();
+  }
+  return PRODUCT_IMAGE_MIME_EXTENSION_MAP[file.type] ?? '';
+};
+
+const renameImageFileForOrientation = (
+  file: File,
+  orientationKey: (typeof ORIENTATION_UPLOAD_SEQUENCE)[number],
+  productName?: string,
+  productId?: number
+) => {
+  if (typeof File === 'undefined') {
+    return file;
+  }
+
+  const extension = resolveFileExtension(file);
+  const baseName = sanitizeProductNameForFile(productName, productId);
+  const suffix = ORIENTATION_FILENAME_SUFFIX[orientationKey];
+  const renamedFile = `${baseName}_${suffix}${extension}`;
+
+  return new File([file], renamedFile, {
+    type: file.type,
+    lastModified: file.lastModified,
+  });
+};
 
 function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: (entity: any) => void }) {
   const router = useRouter();
@@ -235,7 +287,12 @@ export function ProductForm({ id }: ProductFormProps) {
   }, [router]);
 
   const handleImageUploads = useCallback(
-    async (productId: number | undefined, attachments: Record<string, File | null | undefined>, existingImages?: ProductImageDTO[]) => {
+    async (
+      productId: number | undefined,
+      attachments: Record<string, File | null | undefined>,
+      existingImages?: ProductImageDTO[],
+      productName?: string
+    ) => {
       if (!productId) return;
 
       const filesToUpload: File[] = [];
@@ -247,7 +304,8 @@ export function ProductForm({ id }: ProductFormProps) {
 
         // If there's a new file for this orientation
         if (newFile && newFile instanceof File) {
-          filesToUpload.push(newFile);
+          const renamedFile = renameImageFileForOrientation(newFile, orientationKey, productName, productId);
+          filesToUpload.push(renamedFile);
         }
       });
 
@@ -350,7 +408,12 @@ export function ProductForm({ id }: ProductFormProps) {
             const createdProduct = await createProductAsync({
               data: productDataWithStatus as any,
             });
-            await handleImageUploads(createdProduct?.id, attachments);
+            await handleImageUploads(
+              createdProduct?.id,
+              attachments,
+              undefined,
+              createdProduct?.name ?? productDataWithStatus.name
+            );
             await invalidateProductQueries();
             handlePostCreateNavigation(createdProduct?.id);
           } catch {
@@ -360,7 +423,12 @@ export function ProductForm({ id }: ProductFormProps) {
           try {
             const entityData = { ...productDataWithStatus, id };
             await updateProductAsync({ id, data: entityData as any });
-            await handleImageUploads(id, attachments, existingEntity?.images);
+            await handleImageUploads(
+              id,
+              attachments,
+              existingEntity?.images,
+              entityData.name ?? existingEntity?.name
+            );
             await invalidateProductQueries();
             handlePostUpdateNavigation();
           } catch {
