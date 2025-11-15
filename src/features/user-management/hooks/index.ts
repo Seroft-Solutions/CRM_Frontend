@@ -232,6 +232,63 @@ export function useInviteUser() {
   };
 }
 
+interface ReinviteUserPayload {
+  organizationId: string;
+  userId: string;
+  sendPasswordReset?: boolean;
+  redirectUri?: string;
+}
+
+export function useReinviteOrganizationUser() {
+  const mutation = useMutation({
+    mutationFn: async ({
+      organizationId,
+      userId,
+      sendPasswordReset = true,
+      redirectUri,
+    }: ReinviteUserPayload) => {
+      if (!organizationId) {
+        throw new Error('Organization ID is required to resend an invitation');
+      }
+      if (!userId) {
+        throw new Error('User ID is required to resend an invitation');
+      }
+
+      const response = await fetch(
+        `/api/keycloak/organizations/${organizationId}/members/${userId}/invite`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sendPasswordReset,
+            redirectUri,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to resend user invitation');
+      }
+
+      return result;
+    },
+    onSuccess: (result) => {
+      toast.success(result.message || 'Invitation email sent again');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to resend user invitation');
+    },
+  });
+
+  return {
+    reinviteUser: mutation.mutate,
+    reinviteUserAsync: mutation.mutateAsync,
+    isReinviting: mutation.isPending,
+  };
+}
+
 export function useRemoveUser() {
   const queryClient = useQueryClient();
 
