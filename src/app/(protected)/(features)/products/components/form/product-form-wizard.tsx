@@ -18,22 +18,30 @@ import {
 import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUploadImages, useDeleteImage, useHardDeleteImage } from '@/features/product-images';
+import {
+  useUploadImages,
+  useHardDeleteImage,
+  useReorderImages,
+} from '@/features/product-images';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import { useOrganizationContext } from '@/features/user-management/hooks';
 import { toast } from 'sonner';
+import {
+  ORIENTATION_FILENAME_SUFFIX,
+  mapImagesByOrientation,
+  detectOrientationFromImage,
+  type OrientationFieldName,
+} from '@/features/product-images/utils/orientation';
 
 interface ProductFormProps {
   id?: number;
 }
 
-const ORIENTATION_UPLOAD_SEQUENCE = ['frontImage', 'backImage', 'sideImage'] as const;
-const ORIENTATION_FILENAME_SUFFIX: Record<(typeof ORIENTATION_UPLOAD_SEQUENCE)[number], string> = {
-  frontImage: 'front',
-  backImage: 'back',
-  sideImage: 'side',
-};
-
+const ORIENTATION_UPLOAD_SEQUENCE: OrientationFieldName[] = [
+  'frontImage',
+  'backImage',
+  'sideImage',
+];
 const PRODUCT_IMAGE_MIME_EXTENSION_MAP: Record<string, string> = {
   'image/jpeg': '.jpg',
   'image/jpg': '.jpg',
@@ -248,6 +256,8 @@ export function ProductForm({ id }: ProductFormProps) {
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const uploadImagesMutation = useUploadImages();
+  const hardDeleteImageMutation = useHardDeleteImage();
+  const reorderImagesMutation = useReorderImages();
   const { organizationId } = useOrganizationContext();
   const [existingEntity, setExistingEntity] = useState<any>(null);
 
@@ -295,46 +305,50 @@ export function ProductForm({ id }: ProductFormProps) {
     ) => {
       if (!productId) return;
 
-      const filesToUpload: File[] = [];
+      const existingOrientationMap = mapImagesByOrientation(existingImages);
+      const filesToUpload: { orientation: OrientationFieldName; file: File }[] = [];
       const imagesToDelete: ProductImageDTO[] = [];
+      const finalOrientationState: Record<OrientationFieldName, ProductImageDTO | null> = {
+        frontImage: existingOrientationMap.frontImage ?? null,
+        backImage: existingOrientationMap.backImage ?? null,
+        sideImage: existingOrientationMap.sideImage ?? null,
+      };
 
-      // Check each orientation for new files
       ORIENTATION_UPLOAD_SEQUENCE.forEach((orientationKey) => {
-        const newFile = attachments[orientationKey];
+        const newValue = attachments[orientationKey];
 
-        // If there's a new file for this orientation
-        if (newFile && newFile instanceof File) {
-          const renamedFile = renameImageFileForOrientation(newFile, orientationKey, productName, productId);
-          filesToUpload.push(renamedFile);
+        if (newValue instanceof File) {
+          const renamedFile = renameImageFileForOrientation(
+            newValue,
+            orientationKey,
+            productName,
+            productId
+          );
+          filesToUpload.push({ orientation: orientationKey, file: renamedFile });
+          if (existingOrientationMap[orientationKey]) {
+            imagesToDelete.push(existingOrientationMap[orientationKey]!);
+          }
+          finalOrientationState[orientationKey] = null;
+        } else if (newValue === null) {
+          if (existingOrientationMap[orientationKey]) {
+            imagesToDelete.push(existingOrientationMap[orientationKey]!);
+          }
+          finalOrientationState[orientationKey] = null;
         }
       });
 
-      // If we're uploading new files, delete ALL existing images
-      // This ensures complete replacement of all product images
-      if (filesToUpload.length > 0 && existingImages && existingImages.length > 0) {
-        imagesToDelete.push(...existingImages);
-      }
+      const uniqueImagesToDelete = Array.from(
+        new Map(
+          imagesToDelete
+            .filter((image): image is ProductImageDTO & { id: number } => Boolean(image?.id))
+            .map((image) => [image.id!, image])
+        ).values()
+      );
 
-      // If no new files were uploaded but we have existing images, check for explicit removals
-      if (filesToUpload.length === 0 && existingImages && existingImages.length > 0) {
-        // Check if any orientation fields have null/undefined values (indicating removal)
-        const hasAnyRemovals = ORIENTATION_UPLOAD_SEQUENCE.some((orientationKey) => {
-          return attachments[orientationKey] === null || attachments[orientationKey] === undefined;
-        });
-
-        if (hasAnyRemovals) {
-          // Mark all existing images for deletion
-          imagesToDelete.push(...existingImages);
-        }
-      }
-
-      // Delete old images first
-      if (imagesToDelete.length > 0) {
-        const deleteImageMutation = useHardDeleteImage();
-        for (const imageToDelete of imagesToDelete) {
-          if (!imageToDelete.id) continue;
+      if (uniqueImagesToDelete.length > 0) {
+        for (const imageToDelete of uniqueImagesToDelete) {
           try {
-            await deleteImageMutation.mutateAsync(imageToDelete.id);
+            await hardDeleteImageMutation.mutateAsync(imageToDelete.id!);
             toast.success(`Old ${imageToDelete.originalFilename || 'image'} deleted`, {
               description: 'Replaced with new image.',
             });
@@ -347,23 +361,83 @@ export function ProductForm({ id }: ProductFormProps) {
         }
       }
 
-      // Upload new images
+      let createdImages: ProductImageDTO[] = [];
+
       if (filesToUpload.length > 0) {
         try {
-          await uploadImagesMutation.mutateAsync({
+          const uploadResult = (await uploadImagesMutation.mutateAsync({
             productId,
-            files: filesToUpload,
-          });
+            files: filesToUpload.map(({ file }) => file),
+          })) as unknown;
+
+          const normalizedResult = Array.isArray(uploadResult)
+            ? uploadResult
+            : uploadResult
+              ? [uploadResult]
+              : [];
+
+          createdImages = normalizedResult as ProductImageDTO[];
+
           toast.success('Product images uploaded', {
             description: `${filesToUpload.length} image${filesToUpload.length > 1 ? 's' : ''} ready.`,
           });
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unable to upload product images.';
+          const message =
+            error instanceof Error ? error.message : 'Unable to upload product images.';
           toast.error('Image upload failed', { description: message });
+          return;
+        }
+      }
+
+      if (createdImages.length > 0) {
+        const pendingOrientations = new Set(
+          filesToUpload.map((entry) => entry.orientation) as OrientationFieldName[]
+        );
+
+        createdImages.forEach((image) => {
+          const detected = detectOrientationFromImage(image);
+          if (detected && pendingOrientations.has(detected)) {
+            finalOrientationState[detected] = image;
+            pendingOrientations.delete(detected);
+            return;
+          }
+
+          const fallback = pendingOrientations.values().next().value as
+            | OrientationFieldName
+            | undefined;
+          if (fallback) {
+            finalOrientationState[fallback] = image;
+            pendingOrientations.delete(fallback);
+          }
+        });
+      }
+
+      const shouldReorder =
+        uniqueImagesToDelete.length > 0 ||
+        filesToUpload.length > 0 ||
+        Boolean(existingImages?.length);
+
+      if (shouldReorder) {
+        const desiredOrderIds = ORIENTATION_UPLOAD_SEQUENCE.map(
+          (orientationKey) => finalOrientationState[orientationKey]?.id
+        ).filter((id): id is number => typeof id === 'number');
+
+        if (desiredOrderIds.length > 0) {
+          try {
+            await reorderImagesMutation.mutateAsync({
+              productId,
+              imageIds: desiredOrderIds,
+            });
+          } catch (error) {
+            console.error('Failed to reorder product images:', error);
+            toast.error('Unable to reorder product images', {
+              description: 'Images were uploaded but display order may be incorrect.',
+            });
+          }
         }
       }
     },
-    [uploadImagesMutation]
+    [hardDeleteImageMutation, reorderImagesMutation, uploadImagesMutation]
   );
 
   const { mutateAsync: createProductAsync } = useCreateProduct({

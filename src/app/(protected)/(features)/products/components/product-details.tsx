@@ -25,6 +25,10 @@ import {
   useGetProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas/ProductImageDTO';
+import {
+  ORIENTATION_FIELDS,
+  mapImagesByOrientation,
+} from '@/features/product-images/utils/orientation';
 
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
@@ -32,27 +36,6 @@ import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpo
 interface ProductDetailsProps {
   id: number;
 }
-
-const ORIENTATION_FIELDS = [
-  {
-    name: 'frontImage' as const,
-    label: 'Front Image',
-    badge: 'Primary',
-    description: 'Primary hero shot shown first to users.',
-  },
-  {
-    name: 'backImage' as const,
-    label: 'Back Image',
-    badge: 'Detail',
-    description: 'Secondary angle that reveals product back.',
-  },
-  {
-    name: 'sideImage' as const,
-    label: 'Side Image',
-    badge: 'Profile',
-    description: 'Side profile to highlight depth and dimension.',
-  },
-];
 
 
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
@@ -254,33 +237,7 @@ function OrientationPreviewCard({
   };
 
   const orientationImageMap = useMemo(() => {
-    const result: Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | undefined> = {
-      frontImage: undefined,
-      backImage: undefined,
-      sideImage: undefined,
-    };
-
-    if (!entity?.images?.length) {
-      return result;
-    }
-
-    const sorted = [...entity.images].sort((a, b) => {
-      const orderA = a.displayOrder ?? Number.MAX_SAFE_INTEGER;
-      const orderB = b.displayOrder ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
-
-    const primaryIndex = sorted.findIndex((img) => Boolean(img.isPrimary));
-    if (primaryIndex >= 0) {
-      result.frontImage = sorted.splice(primaryIndex, 1)[0];
-    } else {
-      result.frontImage = sorted.shift();
-    }
-
-    result.backImage = sorted.shift();
-    result.sideImage = sorted.shift();
-
-    return result;
+    return mapImagesByOrientation(entity?.images);
   }, [entity?.images]);
 
   if (isLoading) {

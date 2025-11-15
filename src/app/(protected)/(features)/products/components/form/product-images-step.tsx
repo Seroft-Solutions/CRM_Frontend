@@ -7,61 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Camera } from 'lucide-react';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
-
-const ORIENTATION_FIELDS = [
-  {
-    name: 'frontImage',
-    label: 'Front Image',
-    badge: 'Primary',
-    description: 'Primary hero shot shown first to users.',
-  },
-  {
-    name: 'backImage',
-    label: 'Back Image',
-    badge: 'Detail',
-    description: 'Secondary angle that reveals product back.',
-  },
-  {
-    name: 'sideImage',
-    label: 'Side Image',
-    badge: 'Profile',
-    description: 'Side profile to highlight depth and dimension.',
-  },
-] as const;
+import {
+  ORIENTATION_FIELDS,
+  mapImagesByOrientation,
+} from '@/features/product-images/utils/orientation';
 
 interface ProductImagesStepProps {
   form: UseFormReturn<Record<string, any>>;
   existingImages?: ProductImageDTO[];
 }
 
-const ORIENTATION_DISPLAY_ORDER: Record<(typeof ORIENTATION_FIELDS)[number]['name'], number> = {
-  frontImage: 0,
-  backImage: 1,
-  sideImage: 2,
-};
-
 export function ProductImagesStep({ form, existingImages }: ProductImagesStepProps) {
   const orientationImageMap = useMemo(() => {
-    if (!existingImages?.length) return {} as Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | undefined>;
-
-    return existingImages.reduce(
-      (acc, image) => {
-        if (image.displayOrder === undefined || image.displayOrder === null) {
-          return acc;
-        }
-
-        const entry = Object.entries(ORIENTATION_DISPLAY_ORDER).find(
-          ([, order]) => order === image.displayOrder
-        );
-
-        if (entry) {
-          acc[entry[0] as (typeof ORIENTATION_FIELDS)[number]['name']] = image;
-        }
-
-        return acc;
-      },
-      {} as Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | undefined>
-    );
+    return mapImagesByOrientation(existingImages);
   }, [existingImages]);
 
   return (
