@@ -11,6 +11,7 @@ import {
   useBulkUserOperations,
   useOrganizationContext,
   useOrganizationUsers,
+  useReinviteOrganizationUser,
   useRemoveUser,
   useUserManagementRefresh,
 } from '@/features/user-management/hooks';
@@ -73,6 +74,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Send,
   Settings,
   SlidersHorizontal,
   Users,
@@ -85,6 +87,7 @@ import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';
 import { ClickableRolesBadge } from '@/features/user-management/components/ClickableRolesBadge';
 import { ClickableGroupsBadge } from '@/features/user-management/components/ClickableGroupsBadge';
+import { toast } from 'sonner';
 
 interface OrganizationUsersProps {
   className?: string;
@@ -106,6 +109,7 @@ function OrganizationUsersContent({
 }) {
   const router = useRouter();
   const { removeUser, isRemoving } = useRemoveUser();
+  const { reinviteUserAsync } = useReinviteOrganizationUser();
   const { refreshOrganizationUsers } = useUserManagementRefresh();
   const {
     selectedUsers,
@@ -124,6 +128,7 @@ function OrganizationUsersContent({
   const [searchTerm, setSearchTerm] = useState('');
   const [userToRemove, setUserToRemove] = useState<OrganizationUser | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [reinviteUserId, setReinviteUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -197,6 +202,26 @@ function OrganizationUsersContent({
         userId: userToRemove.id!,
       });
       setUserToRemove(null);
+    }
+  };
+
+  const handleReinviteUser = async (user: OrganizationUser) => {
+    if (!organizationId) {
+      toast.error('No organization selected');
+      return;
+    }
+
+    setReinviteUserId(user.id!);
+    try {
+      await reinviteUserAsync({
+        organizationId,
+        userId: user.id!,
+        sendPasswordReset: true,
+      });
+    } catch (error) {
+      console.error('Failed to resend user invitation:', error);
+    } finally {
+      setReinviteUserId(null);
     }
   };
 
@@ -584,6 +609,19 @@ function OrganizationUsersContent({
                             <DropdownMenuItem onClick={() => handleUserDetails(user.id!)}>
                               <Settings className="h-4 w-4 mr-2" />
                               Manage User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleReinviteUser(user)}
+                              disabled={reinviteUserId === user.id}
+                            >
+                              {reinviteUserId === user.id ? (
+                                <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
+                                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                </span>
+                              ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                              )}
+                              {reinviteUserId === user.id ? 'Sending Invite...' : 'Re-invite User'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
