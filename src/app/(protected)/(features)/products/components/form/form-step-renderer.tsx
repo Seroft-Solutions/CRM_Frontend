@@ -27,33 +27,10 @@ import { ProductImagesStep } from './product-images-step';
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas/ProductImageDTO';
-
-const ORIENTATION_FIELDS = [
-  {
-    name: 'frontImage' as const,
-    label: 'Front Image',
-    badge: 'Primary',
-    description: 'Primary hero shot shown first to users.',
-  },
-  {
-    name: 'backImage' as const,
-    label: 'Back Image',
-    badge: 'Detail',
-    description: 'Secondary angle that reveals product back.',
-  },
-  {
-    name: 'sideImage' as const,
-    label: 'Side Image',
-    badge: 'Profile',
-    description: 'Side profile to highlight depth and dimension.',
-  },
-];
-
-const ORIENTATION_DISPLAY_ORDER: Record<(typeof ORIENTATION_FIELDS)[number]['name'], number> = {
-  frontImage: 0,
-  backImage: 1,
-  sideImage: 2,
-};
+import {
+  ORIENTATION_FIELDS,
+  mapImagesByOrientation,
+} from '@/features/product-images/utils/orientation';
 
 function OrientationPreviewCard({
   field,
@@ -264,24 +241,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
     // If we have existing images (during edit) AND no new file was uploaded for that position, use those instead
     if (entity?.images?.length) {
-      const existingMap = entity.images.reduce(
-        (acc, image) => {
-          if (image.displayOrder === undefined || image.displayOrder === null) {
-            return acc;
-          }
-
-          const entry = Object.entries(ORIENTATION_DISPLAY_ORDER).find(
-            ([, order]) => order === image.displayOrder
-          );
-
-          if (entry) {
-            acc[entry[0] as (typeof ORIENTATION_FIELDS)[number]['name']] = image;
-          }
-
-          return acc;
-        },
-        {} as Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO>
-      );
+      const existingMap = mapImagesByOrientation(entity.images);
 
       // Only use existing images if no new file was uploaded for that position
       if (!result.frontImage && existingMap.frontImage) result.frontImage = existingMap.frontImage;
