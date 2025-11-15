@@ -32,6 +32,7 @@ import {
   detectOrientationFromImage,
   type OrientationFieldName,
 } from '@/features/product-images/utils/orientation';
+import type { RenamableProductImageFile } from '@/features/product-images/types';
 
 interface ProductFormProps {
   id?: number;
@@ -76,6 +77,11 @@ const renameImageFileForOrientation = (
 ) => {
   if (typeof File === 'undefined') {
     return file;
+  }
+
+  const fileWithCustomName = file as RenamableProductImageFile;
+  if (fileWithCustomName?.productCustomName) {
+    return fileWithCustomName;
   }
 
   const extension = resolveFileExtension(file);

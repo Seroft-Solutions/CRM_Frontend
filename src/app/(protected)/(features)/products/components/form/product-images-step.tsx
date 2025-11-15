@@ -5,12 +5,14 @@ import { UseFormReturn, useWatch } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Camera } from 'lucide-react';
+import { Camera, PencilLine } from 'lucide-react';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import {
   ORIENTATION_FIELDS,
   mapImagesByOrientation,
 } from '@/features/product-images/utils/orientation';
+import { Input } from '@/components/ui/input';
+import type { RenamableProductImageFile } from '@/features/product-images/types';
 
 interface ProductImagesStepProps {
   form: UseFormReturn<Record<string, any>>;
@@ -56,17 +58,56 @@ interface OrientationFieldProps {
   existingImage?: ProductImageDTO;
 }
 
+const sanitizeCustomFileName = (value: string) => value.trim().replace(/[^a-zA-Z0-9_\-]+/g, '-');
+
+const getFileExtension = (filename?: string | null) => {
+  if (!filename) return '';
+  const lastDot = filename.lastIndexOf('.');
+  if (lastDot <= 0 || lastDot === filename.length - 1) {
+    return '';
+  }
+  return filename.slice(lastDot);
+};
+
+const stripExtension = (filename?: string | null) => {
+  if (!filename) return '';
+  const lastDot = filename.lastIndexOf('.');
+  if (lastDot <= 0) {
+    return filename;
+  }
+  return filename.slice(0, lastDot);
+};
+
+const attachCustomNameMetadata = (file: File, filename: string): RenamableProductImageFile => {
+  try {
+    Object.defineProperty(file, 'productCustomName', {
+      value: filename,
+      configurable: true,
+      writable: true,
+    });
+  } catch {
+    (file as RenamableProductImageFile).productCustomName = filename;
+  }
+  return file as RenamableProductImageFile;
+};
+
 function OrientationField({ form, name, label, badge, description, existingImage }: OrientationFieldProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
   const watchedFile = useWatch({
     control: form.control,
     name,
-  }) as File | null | undefined;
+  }) as RenamableProductImageFile | null | undefined;
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
   const existingImageUrl = useMemo(() => {
     if (!existingImage) return null;
     return existingImage.thumbnailUrl || existingImage.cdnUrl || null;
   }, [existingImage]);
+  const canRename = watchedFile instanceof File;
+  const fileExtension = canRename ? getFileExtension(watchedFile?.name) : '';
 
   useEffect(() => {
     if (watchedFile && typeof window !== 'undefined' && watchedFile instanceof File) {
@@ -76,6 +117,22 @@ function OrientationField({ form, name, label, badge, description, existingImage
     }
     setPreviewUrl(null);
   }, [watchedFile]);
+
+  useEffect(() => {
+    if (canRename) {
+      setRenameValue(stripExtension(watchedFile?.name) || '');
+    } else {
+      setRenameValue('');
+    }
+    setIsRenaming(false);
+    setRenameError(null);
+  }, [canRename, watchedFile]);
+
+  useEffect(() => {
+    if (isRenaming) {
+      renameInputRef.current?.focus();
+    }
+  }, [isRenaming]);
 
   const helperText = useMemo(() => {
     if (!watchedFile) {
@@ -99,8 +156,41 @@ function OrientationField({ form, name, label, badge, description, existingImage
     <FormField
       control={form.control}
       name={name}
-      render={({ field }) => (
-        <FormItem className="space-y-3">
+      render={({ field }) => {
+        const handleRenameConfirm = () => {
+          if (!canRename || !watchedFile) {
+            return;
+          }
+
+          const sanitized = sanitizeCustomFileName(renameValue);
+
+          if (!sanitized) {
+            setRenameError('Please enter a valid name');
+            return;
+          }
+
+          const finalName = `${sanitized}${fileExtension}`;
+          const renamedFile = new File([watchedFile], finalName, {
+            type: watchedFile.type,
+            lastModified: watchedFile.lastModified,
+          });
+          const fileWithMetadata = attachCustomNameMetadata(renamedFile, finalName);
+
+          field.onChange(fileWithMetadata);
+          form.trigger(name);
+          setIsRenaming(false);
+        };
+
+        const handleRenameCancel = () => {
+          setIsRenaming(false);
+          setRenameError(null);
+          if (canRename) {
+            setRenameValue(stripExtension(watchedFile?.name) || '');
+          }
+        };
+
+        return (
+          <FormItem className="space-y-3">
           <div className="flex items-center justify-between">
             <FormLabel className="text-sm font-semibold text-slate-800">{label}</FormLabel>
             <Badge variant="outline" className="text-[11px] uppercase tracking-wide">
@@ -155,7 +245,65 @@ function OrientationField({ form, name, label, badge, description, existingImage
                   )}
                 </div>
 
-                <p className="text-xs font-medium text-slate-600">{helperText}</p>
+                <div className="w-full space-y-2 text-xs font-medium text-slate-600">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="truncate">{helperText}</span>
+                    {canRename && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          if (isRenaming) {
+                            handleRenameCancel();
+                          } else {
+                            setRenameError(null);
+                            setRenameValue(stripExtension(watchedFile?.name) || '');
+                            setIsRenaming(true);
+                          }
+                        }}
+                      >
+                        <PencilLine className="h-3.5 w-3.5" />
+                        <span className="sr-only">Rename image file</span>
+                      </Button>
+                    )}
+                  </div>
+
+                  {canRename && isRenaming && (
+                    <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-left">
+                      <p className="mb-2 text-[11px] uppercase text-slate-500">Rename file</p>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          ref={renameInputRef}
+                          value={renameValue}
+                          onChange={(event) => {
+                            setRenameValue(event.target.value);
+                            if (renameError) {
+                              setRenameError(null);
+                            }
+                          }}
+                          className="h-8"
+                          placeholder="New file name"
+                        />
+                        {fileExtension && (
+                          <span className="text-xs font-mono text-muted-foreground">{fileExtension}</span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <Button type="button" size="sm" onClick={handleRenameConfirm}>
+                          Save
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={handleRenameCancel}>
+                          Cancel
+                        </Button>
+                      </div>
+                      {renameError && (
+                        <p className="mt-2 text-[11px] font-medium text-destructive">{renameError}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </FormControl>
@@ -174,7 +322,8 @@ function OrientationField({ form, name, label, badge, description, existingImage
 
           <FormMessage />
         </FormItem>
-      )}
+        );
+      }}
     />
   );
 }
