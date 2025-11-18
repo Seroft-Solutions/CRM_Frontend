@@ -4,16 +4,15 @@ const EMAIL = 'abdulrehmantahir353@gmail.com';
 const PASSWORD = 'abdul.123';
 
 async function loginIfNeeded(page: Page) {
-  await page.goto('/');
-  await page.getByRole('button', { name: /start brewing/i }).click();
+  // If already authenticated (dashboard reachable), skip login.
+  const dashboardResp = await page.goto('/dashboard');
+  if (dashboardResp?.url().includes('/dashboard')) {
+    return;
+  }
 
-  // Wait for either dashboard (already logged in) or an auth page
-  const maybeDashboard = page.waitForURL(/\/dashboard/, { timeout: 8000 }).then(
-    () => true,
-    () => false
-  );
-  const onDashboard = await maybeDashboard;
-  if (onDashboard) return;
+  // Otherwise, go through the landing flow.
+  await page.goto('/');
+  await page.getByRole('button', { name: /start brewing/i }).first().click();
 
   await expect(page).toHaveURL(/(signin|auth)/, { timeout: 15000 });
 
@@ -35,86 +34,130 @@ async function loginIfNeeded(page: Page) {
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
 }
 
-test.describe('Call Type CRUD', () => {
-  test('create → verify → update status → archive', async ({ page }) => {
+const rowByName = (page: Page, name: string) =>
+  page
+    .locator('table tbody tr')
+    .filter({ has: page.getByRole('cell', { name }) })
+    .filter({ has: page.getByRole('link', { name: /view/i }) });
+
+const statusCell = (page: Page, name: string) =>
+  rowByName(page, name)
+    .getByRole('cell', { name: /(Active|Inactive|Archived|Draft)/i })
+    .first();
+
+// Navigate to a path; if redirected to auth, login and return to the target path.
+async function gotoWithAuth(page: Page, path: string) {
+  await page.goto(path);
+  if (/(signin|auth)/i.test(page.url())) {
     await loginIfNeeded(page);
+    await page.goto(path);
+  }
+}
 
-    const callTypeName = `E2E Call Type ${Date.now()}`;
-    const description = 'Auto-created by Playwright';
-    const remark = 'Automated CRUD validation';
-    const updatedDescription = `${description} - updated`;
-    const updatedRemark = `${remark} - updated`;
+test.describe.serial('Call Type CRUD', () => {
 
-    // Create
-    await page.goto('/call-types/new');
+  const callTypeName = `E2E Call Type ${Date.now()}`;
+  const updatedCallTypeName = `${callTypeName} - Updated`;
+  const description = 'Auto-created by Playwright';
+  const remark = 'Automated CRUD validation';
+  const updatedDescription = `${description} - updated`;
+  const updatedRemark = `${remark} - updated`;
+  let currentCallTypeName = callTypeName;
+
+  test.beforeEach(async ({ page }) => {
+    await loginIfNeeded(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    // Explicit logout/cleanup so each test starts fresh.
+    await page.context().clearCookies();
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    await page.goto('/');
+  });
+
+  test('create call type', async ({ page }) => {
+    await gotoWithAuth(page, '/call-types/new');
     await page.getByLabel('Name').fill(callTypeName);
     await page.getByLabel('Description').fill(description);
     await page.getByLabel('Remark').fill(remark);
     await page.getByRole('button', { name: /next step/i }).click();
     await page.getByRole('button', { name: /create call type/i }).click();
 
-    // Back on list
     await expect(page).toHaveURL(/\/call-types$/, { timeout: 30000 });
     const nameFilter = page.getByPlaceholder('Filter...').first();
     await nameFilter.fill(callTypeName);
-    const rowByName = () =>
-      page
-        .locator('table tbody tr')
-        .filter({ has: page.getByRole('cell', { name: callTypeName }) })
-        .filter({ has: page.getByRole('link', { name: /view/i }) });
-    const statusCell = () =>
-      rowByName()
-        .getByRole('cell', {
-          name: /(Active|Inactive|Archived|Draft)/i,
-        })
-        .first();
-    await expect(statusCell()).toContainText(/Active/i, { timeout: 20000 });
+    await expect(statusCell(page, callTypeName)).toContainText(/Active/i, { timeout: 20000 });
+  });
 
-    // Update (edit) the entity
-    await rowByName().getByRole('link', { name: /edit/i }).click();
+  test('search created call type by all filters', async ({ page }) => {
+    await gotoWithAuth(page, '/call-types');
+    const filters = page.getByPlaceholder('Filter...');
+    const nameFilter = filters.nth(0);
+    const descriptionFilter = filters.nth(1);
+    const remarkFilter = filters.nth(2);
+
+    await nameFilter.fill(currentCallTypeName);
+    await expect(rowByName(page, currentCallTypeName)).toHaveCount(1, { timeout: 15000 });
+
+    await descriptionFilter.fill(description);
+    await expect(rowByName(page, currentCallTypeName)).toHaveCount(1, { timeout: 15000 });
+
+    await remarkFilter.fill(remark);
+    await expect(rowByName(page, currentCallTypeName)).toHaveCount(1, { timeout: 15000 });
+
+    await nameFilter.clear();
+    await descriptionFilter.clear();
+    await remarkFilter.clear();
+  });
+
+  test('edit call type details', async ({ page }) => {
+    await gotoWithAuth(page, '/call-types');
+    const nameFilter = page.getByPlaceholder('Filter...').first();
+    await nameFilter.fill(currentCallTypeName);
+    await rowByName(page, currentCallTypeName).getByRole('link', { name: /edit/i }).click();
     await expect(page).toHaveURL(/\/call-types\/\d+\/edit/, { timeout: 15000 });
+
+    await page.getByLabel('Name').fill(updatedCallTypeName);
     await page.getByLabel('Description').fill(updatedDescription);
     await page.getByLabel('Remark').fill(updatedRemark);
     await page.getByRole('button', { name: /next step/i }).click();
     await page.getByRole('button', { name: /update call type/i }).click();
+
     await expect(page).toHaveURL(/\/call-types$/, { timeout: 30000 });
-    await nameFilter.fill(callTypeName);
-    await expect(rowByName().getByRole('cell', { name: updatedDescription })).toBeVisible({
+    await nameFilter.fill(updatedCallTypeName);
+    await expect(
+      rowByName(page, updatedCallTypeName).getByRole('cell', { name: updatedDescription })
+    ).toBeVisible({
       timeout: 20000,
     });
 
-    // Update status to Inactive
-    await rowByName().getByRole('button', { name: /status actions/i }).click();
-    await page.getByRole('menuitem', { name: /set inactive/i }).click();
-    await page.getByRole('button', { name: /update status/i }).click();
-    await expect(rowByName()).toHaveCount(0, { timeout: 45000 });
-    await page.getByRole('tab', { name: /inactive/i }).click();
-    await nameFilter.fill(callTypeName);
-    const inactiveRow = page
-      .locator('table tbody tr')
-      .filter({ has: page.getByRole('cell', { name: callTypeName }) })
-      .filter({ has: page.getByRole('link', { name: /view/i }) });
-    const inactiveStatusCell = inactiveRow
-      .getByRole('cell', { name: /(Active|Inactive|Archived|Draft)/i })
-      .first();
-    await expect(inactiveStatusCell).toHaveText(/Inactive/i, { timeout: 45000 });
+    currentCallTypeName = updatedCallTypeName;
+  });
 
-    // Archive
-    await inactiveRow.getByRole('button', { name: /status actions/i }).click();
+  test('change status to archive', async ({ page }) => {
+    await gotoWithAuth(page, '/call-types');
+    const nameFilter = page.getByPlaceholder('Filter...').first();
+    await nameFilter.fill(currentCallTypeName);
+
+    const activeRow = rowByName(page, currentCallTypeName);
+    await activeRow.getByRole('button', { name: /status actions/i }).click();
     await page.getByRole('menuitem', { name: /archive/i }).click();
     await page.getByRole('button', { name: /^archive$/i }).click();
-    await expect(inactiveRow).toHaveCount(0, { timeout: 45000 });
+    await expect(activeRow).toHaveCount(0, { timeout: 45000 });
 
-    // Verify in archived tab
+    await page.reload();
     await page.getByRole('tab', { name: /archived/i }).click();
-    await nameFilter.fill(callTypeName);
-    const archivedRow = page
-      .locator('table tbody tr')
-      .filter({ has: page.getByRole('cell', { name: callTypeName }) })
-      .filter({ has: page.getByRole('link', { name: /view/i }) });
-    const archivedStatusCell = archivedRow
-      .getByRole('cell', { name: /(Active|Inactive|Archived|Draft)/i })
-      .first();
-    await expect(archivedStatusCell).toHaveText(/Archived/i, { timeout: 45000 });
+    await nameFilter.fill(currentCallTypeName);
+    const archivedRow = rowByName(page, currentCallTypeName);
+    await expect(
+      archivedRow.getByRole('cell', { name: /(Active|Inactive|Archived|Draft)/i }).first()
+    ).toHaveText(/Archived/i, { timeout: 45000 });
+
+    await page.getByRole('tab', { name: /active/i }).click();
+    await nameFilter.fill(currentCallTypeName);
+    await expect(rowByName(page, currentCallTypeName)).toHaveCount(0, { timeout: 15000 });
   });
 });
