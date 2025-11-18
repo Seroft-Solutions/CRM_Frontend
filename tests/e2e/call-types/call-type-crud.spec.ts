@@ -42,6 +42,8 @@ test.describe('Call Type CRUD', () => {
     const callTypeName = `E2E Call Type ${Date.now()}`;
     const description = 'Auto-created by Playwright';
     const remark = 'Automated CRUD validation';
+    const updatedDescription = `${description} - updated`;
+    const updatedRemark = `${remark} - updated`;
 
     // Create
     await page.goto('/call-types/new');
@@ -55,22 +57,37 @@ test.describe('Call Type CRUD', () => {
     await expect(page).toHaveURL(/\/call-types$/, { timeout: 30000 });
     const nameFilter = page.getByPlaceholder('Filter...').first();
     await nameFilter.fill(callTypeName);
-    const activeRow = page
-      .locator('table tbody tr')
-      .filter({ has: page.getByRole('cell', { name: callTypeName }) })
-      .filter({ has: page.getByRole('link', { name: /view/i }) });
-    const statusCell = activeRow
-      .getByRole('cell', {
-        name: /(Active|Inactive|Archived|Draft)/i,
-      })
-      .first();
-    await expect(statusCell).toContainText(/Active/i, { timeout: 20000 });
+    const rowByName = () =>
+      page
+        .locator('table tbody tr')
+        .filter({ has: page.getByRole('cell', { name: callTypeName }) })
+        .filter({ has: page.getByRole('link', { name: /view/i }) });
+    const statusCell = () =>
+      rowByName()
+        .getByRole('cell', {
+          name: /(Active|Inactive|Archived|Draft)/i,
+        })
+        .first();
+    await expect(statusCell()).toContainText(/Active/i, { timeout: 20000 });
+
+    // Update (edit) the entity
+    await rowByName().getByRole('link', { name: /edit/i }).click();
+    await expect(page).toHaveURL(/\/call-types\/\d+\/edit/, { timeout: 15000 });
+    await page.getByLabel('Description').fill(updatedDescription);
+    await page.getByLabel('Remark').fill(updatedRemark);
+    await page.getByRole('button', { name: /next step/i }).click();
+    await page.getByRole('button', { name: /update call type/i }).click();
+    await expect(page).toHaveURL(/\/call-types$/, { timeout: 30000 });
+    await nameFilter.fill(callTypeName);
+    await expect(rowByName().getByRole('cell', { name: updatedDescription })).toBeVisible({
+      timeout: 20000,
+    });
 
     // Update status to Inactive
-    await activeRow.getByRole('button', { name: /status actions/i }).click();
+    await rowByName().getByRole('button', { name: /status actions/i }).click();
     await page.getByRole('menuitem', { name: /set inactive/i }).click();
     await page.getByRole('button', { name: /update status/i }).click();
-    await expect(activeRow).toHaveCount(0, { timeout: 45000 });
+    await expect(rowByName()).toHaveCount(0, { timeout: 45000 });
     await page.getByRole('tab', { name: /inactive/i }).click();
     await nameFilter.fill(callTypeName);
     const inactiveRow = page
