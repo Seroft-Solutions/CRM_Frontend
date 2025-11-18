@@ -156,7 +156,7 @@ test.describe.serial('Call Type CRUD', () => {
       archivedRow.getByRole('cell', { name: /(Active|Inactive|Archived|Draft)/i }).first()
     ).toHaveText(/Archived/i, { timeout: 45000 });
 
-    await page.getByRole('tab', { name: /active/i }).click();
+    await page.getByRole('tab', { name: 'Active', exact: true }).click();
     await nameFilter.fill(currentCallTypeName);
     await expect(rowByName(page, currentCallTypeName)).toHaveCount(0, { timeout: 15000 });
   });
