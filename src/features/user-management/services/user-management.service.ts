@@ -64,7 +64,21 @@ export class UserManagementService {
 
       const members: EnhancedMemberRepresentation[] = await response.json();
 
-      let users: OrganizationUser[] = members.map((member) => ({
+      const filteredMembers = members.filter((member) => {
+        const groupTokens = (member.groupDetails || []).flatMap((g) => [
+          (g.name || '').toLowerCase(),
+          (g.path || '').toLowerCase(),
+        ]);
+        const roleTokens = (member.roleDetails || []).map((r) => (r.name || '').toLowerCase());
+
+        const isSuperAdmin =
+          groupTokens.some((token) => token.includes('super admin')) ||
+          roleTokens.some((token) => token.includes('super admin'));
+
+        return !isSuperAdmin;
+      });
+
+      let users: OrganizationUser[] = filteredMembers.map((member) => ({
         id: member.id,
         username: member.username,
         email: member.email,
