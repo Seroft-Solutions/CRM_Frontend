@@ -7,6 +7,7 @@ import { FailedCallsHeader } from './failed-calls-header';
 import { FailedCallsTableBody } from './failed-calls-table-body';
 import { HEADERS, tableScrollStyles } from '../constants/failed-calls';
 import { useFailedCallsTable } from '../hooks/use-failed-calls-table';
+import { useUnsavedChangesWarning } from '../hooks/use-unsaved-changes-warning';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -36,7 +37,13 @@ export function FailedCallsTable() {
     validatedRowCount,
     handleSaveValidatedRows,
     isBulkSaving,
+    hasUnsavedChanges,
   } = useFailedCallsTable();
+
+  const { dialog: unsavedDialog } = useUnsavedChangesWarning(
+    hasUnsavedChanges,
+    'You have unsaved changes in Failed Import Entries. Leaving will discard them.'
+  );
 
   if (isLoading) {
     return (
@@ -116,6 +123,7 @@ export function FailedCallsTable() {
 
   return (
     <>
+      {unsavedDialog}
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <Card className="mt-6">
         <FailedCallsHeader
