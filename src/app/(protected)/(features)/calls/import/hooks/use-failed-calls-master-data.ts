@@ -125,10 +125,8 @@ export function useFailedCallsMasterData() {
     (columnName: string, rowData: ImportHistoryDTO): SearchableOption[] | null => {
       switch (columnName) {
         case 'Customer name':
-          return customerOptions.map((c) => ({
-            value: c.customerBusinessName,
-            label: c.customerBusinessName,
-          }));
+          // Use free-text input for customer name to allow adding new customers during validation.
+          return null;
         case 'Product Name':
           return productOptions.map((p) => ({ value: p.name, label: p.name }));
         case 'Call Type':

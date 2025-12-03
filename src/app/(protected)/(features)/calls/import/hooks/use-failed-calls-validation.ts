@@ -11,6 +11,8 @@ import {
 } from '@/core/api/generated/spring/schemas';
 import { buildSubCallTypeKey, normalizeKey } from '../constants/failed-calls';
 
+const PHONE_REGEX = /^[\+]?[0-9\s\-\(\)]{10,15}$/;
+
 interface UseFailedCallsValidationProps {
   callTypeMap: Map<string, CallTypeDTO>;
   subCallTypeMap: Map<string, SubCallTypeDTO>;
@@ -40,6 +42,14 @@ export function useFailedCallsValidation({
 
       if (!row.customerBusinessName || row.customerBusinessName.trim().length === 0) {
         invalid.add('customerBusinessName');
+      }
+
+      if (row.phoneNumber && row.phoneNumber.trim().length > 0) {
+        const normalizedPhone = row.phoneNumber.trim();
+
+        if (!PHONE_REGEX.test(normalizedPhone)) {
+          invalid.add('phoneNumber');
+        }
       }
 
       if (!row.productName || row.productName.trim().length === 0) {
@@ -137,6 +147,11 @@ export function useFailedCallsValidation({
         switch (field) {
           case 'customerBusinessName':
             issues.push('Customer name is required.');
+            break;
+          case 'phoneNumber':
+            issues.push(
+              'Phone number must be 10-15 digits and may include +, spaces, dashes, or parentheses.'
+            );
             break;
           case 'productName':
             issues.push('Product name is required.');
