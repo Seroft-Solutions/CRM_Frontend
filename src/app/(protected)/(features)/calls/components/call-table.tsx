@@ -83,6 +83,8 @@ const TABLE_CONFIG = {
   centerAlignActions: true,
 };
 
+const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
+
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -583,7 +585,7 @@ export function CallTable() {
               }
 
               if (col.id === 'assignedTo' && relationship) {
-                value = relationship.displayName || '';
+                value = isExcludedAssignedUser(relationship) ? '' : relationship.displayName || '';
               }
 
               if (col.id === 'callStatus' && relationship) {
@@ -665,10 +667,22 @@ export function CallTable() {
     { query: { enabled: true } }
   );
 
+  const assignedToOptions = useMemo(
+    () =>
+      (userprofileOptions || []).filter(
+        (user: any) =>
+          user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
+      ),
+    [userprofileOptions]
+  );
+
   const { data: callstatusOptions = [] } = useGetAllCallStatuses(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
+
+  const isExcludedAssignedUser = (user: any) =>
+    user?.email?.toLowerCase?.() === EXCLUDED_ASSIGNED_EMAIL.toLowerCase();
 
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
     const entity = entities?.find((e) =>
@@ -792,7 +806,7 @@ export function CallTable() {
 
       'assignedTo.displayName': {
         apiParam: 'assignedToId.equals',
-        options: userprofileOptions,
+        options: assignedToOptions,
         displayField: 'displayName',
       },
 
@@ -1898,7 +1912,7 @@ export function CallTable() {
     {
       name: 'assignedTo',
       displayName: 'AssignedTo',
-      options: userprofileOptions || [],
+      options: assignedToOptions || [],
       displayField: 'displayName',
       isEditable: true,
     },
