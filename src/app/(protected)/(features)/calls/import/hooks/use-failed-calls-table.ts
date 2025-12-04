@@ -29,6 +29,18 @@ export function useFailedCallsTable() {
 
   const apiPage = Math.max(page - 1, 0);
 
+  const liveQueryOptions = useMemo(
+    () => ({
+      staleTime: 0,
+      cacheTime: 0,
+      refetchOnMount: 'always' as const,
+      refetchOnWindowFocus: 'always' as const,
+      refetchOnReconnect: 'always' as const,
+      keepPreviousData: false,
+    }),
+    []
+  );
+
   const {
     data: importHistoryData,
     isLoading,
@@ -39,9 +51,9 @@ export function useFailedCallsTable() {
     page: apiPage,
     size: pageSize,
     sort: ['id,desc'],
-  });
+  }, { query: liveQueryOptions });
 
-  const { data: totalCount = 0 } = useCountImportHistories({});
+  const { data: totalCount = 0 } = useCountImportHistories({}, { query: liveQueryOptions });
   const totalItems = totalCount ?? 0;
 
   useEffect(() => {

@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useDownloadCallImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
 import { callImportConfig } from '../config';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface CallDataImportProps {}
 
@@ -58,6 +59,7 @@ export function CallDataImport({}: CallDataImportProps) {
     },
   });
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     mutate: importCalls,
@@ -69,6 +71,15 @@ export function CallDataImport({}: CallDataImportProps) {
         console.log('Import successful:', data);
 
         sessionStorage.setItem('callImportResponse', JSON.stringify(data));
+
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            Array.isArray(query.queryKey) && query.queryKey[0] === '/api/import-histories',
+        });
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            Array.isArray(query.queryKey) && query.queryKey[0] === '/api/_search/import-histories',
+        });
 
         router.push('/calls/import/results');
         form.reset();
