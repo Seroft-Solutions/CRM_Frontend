@@ -79,6 +79,7 @@ interface CallTableRowProps {
     visible: boolean;
     sortable: boolean;
   }>;
+  excludedAssignedToEmail?: string;
 }
 
 export function CallTableRow({
@@ -95,6 +96,7 @@ export function CallTableRow({
   latestRemarksMap,
   isLatestRemarksLoading,
   visibleColumns,
+  excludedAssignedToEmail,
 }: CallTableRowProps) {
   const currentStatus = call.status;
   const statusInfo = statusOptions.find(
@@ -383,11 +385,16 @@ export function CallTableRow({
 
           if (column.id === 'assignedTo') {
             const cellKey = `${call.id}-assignedTo`;
+            const isExcluded =
+              excludedAssignedToEmail &&
+              call.assignedTo?.email?.toLowerCase?.() ===
+                excludedAssignedToEmail.toLowerCase();
+            const safeAssignedTo = isExcluded ? undefined : call.assignedTo;
             return (
               <RelationshipCell
                 entityId={call.id || 0}
                 relationshipName="assignedTo"
-                currentValue={call.assignedTo}
+                currentValue={safeAssignedTo}
                 options={
                   relationshipConfigs.find((config) => config.name === 'assignedTo')?.options ||
                   []
