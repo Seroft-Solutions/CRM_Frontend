@@ -69,6 +69,29 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
+    key: 'orders',
+    label: 'Order Management',
+    icon: ArrowDownToLine,
+    expandable: true,
+    children: [
+      {
+        key: 'ordersList',
+        label: 'Orders',
+        path: '/orders',
+      },
+      {
+        key: 'orderHistory',
+        label: 'Order History',
+        path: '/orders/history',
+      },
+      {
+        key: 'createOrder',
+        label: 'Create Order',
+        path: '/orders/new',
+      },
+    ],
+  },
+  {
     key: 'userManagement',
     label: 'My Staff',
     icon: Users,
