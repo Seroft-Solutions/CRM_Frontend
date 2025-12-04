@@ -299,6 +299,7 @@ export const callFormConfig: FormConfig = {
       category: 'assignment',
       customFilters: {
         'activated.equals': true,
+        'email.notEquals': 'admin@gmail.com',
       },
       api: {
         useGetAllHook: 'useGetAllUserProfiles',
