@@ -1968,6 +1968,12 @@ export function CallTable() {
               <div className="w-2 h-2 bg-sky-500 data-[state=active]:bg-white rounded-full"></div>
               CRM Leads
             </TabsTrigger>
+              <TabsTrigger
+                  value="all"
+                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              >
+                  All
+              </TabsTrigger>
             <TabsTrigger
               value="business-partners"
               className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
@@ -2002,13 +2008,6 @@ export function CallTable() {
             >
               <div className="w-2 h-2 bg-red-500 data-[state=active]:bg-white rounded-full"></div>
               Archive
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-            >
-              All
             </TabsTrigger>
           </TabsList>
         </Tabs>
