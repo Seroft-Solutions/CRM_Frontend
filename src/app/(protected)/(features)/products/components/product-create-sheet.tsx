@@ -37,7 +37,7 @@ const productCreationSchema = productFormSchemaBase
     status: true,
   })
   .extend({
-    artifactId: productFormSchemaBase.shape.artifactId,
+    articalNumber: productFormSchemaBase.shape.articalNumber,
     categoryHierarchy: productFormSchemaBase
       .pick({
         category: true,
@@ -65,7 +65,7 @@ const productCreationSchema = productFormSchemaBase
 type ProductCreationFormData = {
   name: string;
   code: string;
-  artifactId?: string;
+  articalNumber?: string;
   description?: string;
   basePrice?: string;
   discountedPrice?: string;
@@ -100,7 +100,7 @@ export function ProductCreateSheet({
       basePrice: '',
       discountedPrice: '',
       salePrice: '',
-      artifactId: '',
+      articalNumber: '',
       remark: '',
       categoryHierarchy: {
         category: undefined,
@@ -142,7 +142,7 @@ export function ProductCreateSheet({
     const productData: Partial<ProductDTO> = {
       name: data.name,
       code: data.code,
-      artifactId: data.artifactId || undefined,
+      articalNumber: data.articalNumber || undefined,
       description: data.description || undefined,
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
       discountedPrice: data.discountedPrice ? Number(data.discountedPrice) : undefined,
@@ -314,15 +314,15 @@ export function ProductCreateSheet({
 
                 <FormField
                   control={form.control}
-                  name="artifactId"
+                  name="articalNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Artifact ID
+                        Artical Number
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter artifact identifier"
+                          placeholder="Enter artical number"
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                           {...field}
                         />
