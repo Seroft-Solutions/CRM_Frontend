@@ -1,6 +1,3 @@
-'use client';
-
-import { use } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PermissionGuard } from '@/core/auth';
@@ -8,13 +5,13 @@ import { OrderDetail } from '@/app/(protected)/(features)/orders/components/orde
 import { mockOrders } from '@/app/(protected)/(features)/orders/data/mock-orders';
 
 interface OrderPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
 export default function OrderDetailPage({ params }: OrderPageProps) {
-  const { id: idParam } = use(params);
+  const { id: idParam } = params;
   const id = parseInt(idParam, 10);
   const order = mockOrders.find((item) => item.orderId === id);
 

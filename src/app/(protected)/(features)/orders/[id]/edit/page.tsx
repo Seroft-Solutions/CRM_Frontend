@@ -1,14 +1,11 @@
-'use client';
-
-import { use } from 'react';
 import { PermissionGuard } from '@/core/auth';
 import { OrderForm } from '@/app/(protected)/(features)/orders/components/order-form';
 import { mockOrders } from '@/app/(protected)/(features)/orders/data/mock-orders';
 
 interface EditOrderPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
 export const metadata = {
@@ -16,7 +13,7 @@ export const metadata = {
 };
 
 export default function EditOrderPage({ params }: EditOrderPageProps) {
-  const { id: idParam } = use(params);
+  const { id: idParam } = params;
   const id = parseInt(idParam, 10);
   const order = mockOrders.find((item) => item.orderId === id);
 

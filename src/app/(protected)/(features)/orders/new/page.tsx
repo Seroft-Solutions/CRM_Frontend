@@ -1,5 +1,3 @@
-'use client';
-
 import { PermissionGuard } from '@/core/auth';
 import { OrderForm } from '@/app/(protected)/(features)/orders/components/order-form';
 
