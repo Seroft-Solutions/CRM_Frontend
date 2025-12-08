@@ -25,6 +25,11 @@ export interface ProductDTO {
   code: string;
   /**
    * @minLength 0
+   * @maxLength 100
+   */
+  artifactId?: string;
+  /**
+   * @minLength 0
    * @maxLength 500
    */
   description?: string;
@@ -37,12 +42,12 @@ export interface ProductDTO {
    * @minimum 0
    * @maximum 999999
    */
-  minPrice?: number;
+  discountedPrice?: number;
   /**
    * @minimum 0
    * @maximum 999999
    */
-  maxPrice?: number;
+  salePrice?: number;
   /**
    * @minLength 0
    * @maxLength 1000

@@ -15,12 +15,13 @@ export const productFormConfig: FormConfig = {
       fields: [
         'name',
         'code',
+        'artifactId',
         'description',
         'remark',
         'status',
         'basePrice',
-        'minPrice',
-        'maxPrice',
+        'discountedPrice',
+        'salePrice',
       ],
       relationships: ['category', 'subCategory'],
       validation: {
@@ -81,6 +82,18 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
+      name: 'artifactId',
+      type: 'text',
+      label: 'Artifact ID',
+      placeholder: 'Enter artifact identifier',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 100,
+      },
+      ui: {},
+    },
+    {
       name: 'description',
       type: 'text',
       label: 'Description',
@@ -108,10 +121,10 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
-      name: 'minPrice',
+      name: 'discountedPrice',
       type: 'number',
-      label: 'Min Price',
-      placeholder: 'Enter min price',
+      label: 'Discounted Price',
+      placeholder: 'Enter discounted price',
       required: false,
       validation: {
         required: false,
@@ -123,10 +136,10 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
-      name: 'maxPrice',
+      name: 'salePrice',
       type: 'number',
-      label: 'Max Price',
-      placeholder: 'Enter max price',
+      label: 'Sale Price',
+      placeholder: 'Enter sale price',
       required: false,
       validation: {
         required: false,
