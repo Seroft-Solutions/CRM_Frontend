@@ -278,8 +278,8 @@ export function ProductTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
 
-  const [sort, setSort] = useState('id');
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState('lastModifiedDate');
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
