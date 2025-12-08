@@ -182,7 +182,7 @@ export const sidebarItems: SidebarItem[] = [
       },
       {
         key: 'product',
-        label: 'Manage Products',
+        label: 'Add Products',
         path: '/products',
         requiredPermission: 'product:sidebar',
       },
