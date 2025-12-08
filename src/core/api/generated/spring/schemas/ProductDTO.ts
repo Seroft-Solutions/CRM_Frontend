@@ -27,7 +27,7 @@ export interface ProductDTO {
    * @minLength 0
    * @maxLength 100
    */
-  artifactId?: string;
+  articalNumber?: string;
   /**
    * @minLength 0
    * @maxLength 500

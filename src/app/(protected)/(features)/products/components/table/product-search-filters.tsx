@@ -101,8 +101,8 @@ export function ProductSearchAndFilters({
     if (key === 'salePrice') {
       return 'salePrice';
     }
-    if (key === 'artifactId') {
-      return 'artifactId';
+    if (key === 'articalNumber') {
+      return 'articalNumber';
     }
     if (key === 'remark') {
       return 'remark';
