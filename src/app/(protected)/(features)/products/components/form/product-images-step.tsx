@@ -246,14 +246,19 @@ function OrientationField({ form, name, label, badge, description, existingImage
                 </div>
 
                 <div className="w-full space-y-2 text-xs font-medium text-slate-600">
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="truncate">{helperText}</span>
+                  <div className="flex items-center justify-center gap-2 min-w-0 w-full">
+                    <span
+                      className="block w-full max-w-[240px] sm:max-w-[320px] flex-1 min-w-0 truncate"
+                      title={helperText}
+                    >
+                      {helperText}
+                    </span>
                     {canRename && (
                       <Button
                         type="button"
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6"
+                        className="h-6 w-6 flex-shrink-0"
                         onClick={() => {
                           if (isRenaming) {
                             handleRenameCancel();
