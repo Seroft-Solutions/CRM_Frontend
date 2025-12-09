@@ -227,7 +227,14 @@ function OrientationPreviewCard({
         )}
       </div>
 
-      <p className="text-xs font-medium text-slate-600">{helperText}</p>
+      <div className="min-w-0">
+        <p
+          className="text-xs font-medium text-slate-600 truncate overflow-hidden whitespace-nowrap text-ellipsis block max-w-[240px] sm:max-w-[320px]"
+          title={helperText}
+        >
+          {helperText}
+        </p>
+      </div>
     </div>
   );
 }
