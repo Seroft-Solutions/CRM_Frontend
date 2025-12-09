@@ -29,7 +29,7 @@ export default function PriorityPage() {
             }}
           ></div>
 
-          <div className="flex items-center justify-between relative z-10">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6 relative z-10">
             <div className="flex items-center gap-4">
               {/* Icon */}
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
