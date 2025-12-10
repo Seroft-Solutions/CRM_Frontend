@@ -388,6 +388,7 @@ export * from './ProductCategoryDTOStatus';
 export * from './ProductDTO';
 export * from './ProductDTOStatus';
 export * from './ProductImageDTO';
+export * from './ProductPropertyDTO';
 export * from './ProductSubCategoryDTO';
 export * from './ProductSubCategoryDTOStatus';
 export * from './RoleDTO';

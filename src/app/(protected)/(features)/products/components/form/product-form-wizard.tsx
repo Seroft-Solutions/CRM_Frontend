@@ -151,6 +151,15 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
         }
       });
 
+      formValues.properties = entity.properties
+        ? entity.properties.map((prop: any, index: number) => ({
+            id: prop.id,
+            name: prop.name,
+            displayOrder: prop.displayOrder ?? index,
+            values: prop.values || [],
+          }))
+        : [];
+
       form.reset(formValues);
     }
 

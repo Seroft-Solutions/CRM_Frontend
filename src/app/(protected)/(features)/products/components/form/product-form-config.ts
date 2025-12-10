@@ -30,6 +30,17 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
+      id: 'properties',
+      title: 'Properties',
+      description: 'Configure custom attributes and allowed values',
+      fields: [],
+      relationships: [],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
       id: 'images',
       title: 'Product Images',
       description: 'Upload front, back, and side views',

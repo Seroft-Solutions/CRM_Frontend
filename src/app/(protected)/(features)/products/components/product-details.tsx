@@ -263,17 +263,15 @@ function OrientationPreviewCard({
     );
   }
 
-  const displaySteps = formConfig.steps.filter(
-    (step) => step.id !== 'review' && (step.fields.length > 0 || step.relationships.length > 0)
-  );
+  const displaySteps = formConfig.steps.filter((step) => step.id !== 'review');
 
   return (
     <>
       <div className="space-y-6">
         {displaySteps.map((step, index) => {
           const stepFields = [...step.fields, ...step.relationships];
-          if (stepFields.length === 0) return null;
           const isImagesStep = step.id === 'images';
+          const isPropertiesStep = step.id === 'properties';
 
           return (
             <div key={step.id} className="border rounded-lg p-4">
@@ -300,6 +298,44 @@ function OrientationPreviewCard({
                       image={orientationImageMap[field.name]}
                     />
                   ))}
+                </div>
+              ) : isPropertiesStep ? (
+                <div className="space-y-3">
+                  {(() => {
+                    const properties = entity.properties || [];
+                    if (!properties.length) {
+                      return (
+                        <p className="text-sm text-muted-foreground italic">No properties added</p>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {properties.map((prop: any, idx: number) => (
+                          <div key={`${prop.name}-${idx}`} className="space-y-2 rounded-md border p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-semibold text-foreground">
+                                {prop.name || `Property ${idx + 1}`}
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                Order: {prop.displayOrder ?? idx}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {(prop.values || []).map((val: string, valueIdx: number) => (
+                                <span
+                                  key={`${val}-${valueIdx}`}
+                                  className="rounded-full bg-muted px-2 py-0.5 text-xs text-foreground"
+                                >
+                                  {val}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

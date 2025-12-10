@@ -9,6 +9,7 @@ import type { ProductDTOStatus } from './ProductDTOStatus';
 import type { ProductCategoryDTO } from './ProductCategoryDTO';
 import type { ProductSubCategoryDTO } from './ProductSubCategoryDTO';
 import type { ProductImageDTO } from './ProductImageDTO';
+import type { ProductPropertyDTO } from './ProductPropertyDTO';
 
 export interface ProductDTO {
   id?: number;
@@ -69,4 +70,5 @@ export interface ProductDTO {
   category?: ProductCategoryDTO;
   subCategory?: ProductSubCategoryDTO;
   images?: ProductImageDTO[];
+  properties?: ProductPropertyDTO[];
 }

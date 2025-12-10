@@ -127,6 +127,8 @@ export function ProductFormProvider({
       defaults[rel.name] = rel.multiple ? [] : undefined;
     });
 
+    defaults.properties = [];
+
     return defaults;
   }
 
@@ -267,6 +269,10 @@ export function ProductFormProvider({
       const targetStep = stepIndex ?? currentStep;
       const stepConfig = config.steps[targetStep];
       if (!stepConfig) return true;
+
+      if (stepConfig.id === 'properties') {
+        return form.trigger('properties');
+      }
 
       const fieldsToValidate = [...stepConfig.fields, ...stepConfig.relationships];
       const result = await form.trigger(fieldsToValidate);
@@ -431,6 +437,41 @@ export function ProductFormProvider({
         }
       }
     });
+
+    const properties = Array.isArray(data.properties) ? data.properties : [];
+    const normalizedProperties = properties
+      .map((prop, index) => {
+        const name = typeof prop?.name === 'string' ? prop.name.trim() : '';
+        const values = Array.isArray(prop?.values)
+          ? prop.values
+              .map((val: any) => (typeof val === 'string' ? val.trim() : ''))
+              .filter((val: string) => val.length > 0)
+          : [];
+        if (!name && values.length === 0) {
+          return null;
+        }
+        const displayOrderRaw = (prop as any)?.displayOrder;
+        const displayOrder =
+          typeof displayOrderRaw === 'number'
+            ? displayOrderRaw
+            : Number.isFinite(Number(displayOrderRaw))
+              ? Number(displayOrderRaw)
+              : index;
+
+        return {
+          id: (prop as any)?.id,
+          name,
+          displayOrder,
+          values,
+        };
+      })
+      .filter(Boolean);
+
+    if (normalizedProperties.length > 0) {
+      entityToSave.properties = normalizedProperties;
+    } else {
+      entityToSave.properties = [];
+    }
 
     Object.keys(entityToSave).forEach((key) => {
       if (entityToSave[key] === undefined) {
