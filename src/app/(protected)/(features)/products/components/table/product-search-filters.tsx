@@ -95,11 +95,14 @@ export function ProductSearchAndFilters({
     if (key === 'basePrice') {
       return 'basePrice';
     }
-    if (key === 'minPrice') {
-      return 'minPrice';
+    if (key === 'discountedPrice') {
+      return 'discountedPrice';
     }
-    if (key === 'maxPrice') {
-      return 'maxPrice';
+    if (key === 'salePrice') {
+      return 'salePrice';
+    }
+    if (key === 'articalNumber') {
+      return 'articalNumber';
     }
     if (key === 'remark') {
       return 'remark';

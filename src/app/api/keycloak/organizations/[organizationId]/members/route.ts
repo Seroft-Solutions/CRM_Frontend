@@ -148,11 +148,16 @@ function parseInvitationFromUserAttributes(user: UserRepresentation): PendingInv
   }
 }
 
-async function setDefaultPassword(realm: string, userId: string, password: string = 'temp#123') {
+async function setDefaultPassword(
+  realm: string,
+  userId: string,
+  password: string = 'temp#123',
+  temporary: boolean = true
+) {
   const credential: CredentialRepresentation = {
     type: 'password',
     value: password,
-    temporary: true,
+    temporary,
   };
 
   try {
@@ -303,6 +308,7 @@ export async function POST(
     const { organizationId } = await params;
     const body = await request.json();
     const realm = keycloakService.getRealm();
+    const desiredPassword = typeof body.password === 'string' ? body.password : undefined;
     console.log('Route Checking avdul,', body);
 
     if (body.userId && !body.email) {
@@ -453,7 +459,12 @@ export async function POST(
         userId = createdUsers[0].id!;
         console.log('Found created user ID:', userId);
 
-        const passwordSet = await setDefaultPassword(realm, userId);
+        const passwordSet = await setDefaultPassword(
+          realm,
+          userId,
+          desiredPassword || undefined,
+          desiredPassword ? false : true
+        );
         if (!passwordSet) {
           console.warn('Failed to set default password, but continuing with user creation');
         }

@@ -37,6 +37,7 @@ const productCreationSchema = productFormSchemaBase
     status: true,
   })
   .extend({
+    articalNumber: productFormSchemaBase.shape.articalNumber,
     categoryHierarchy: productFormSchemaBase
       .pick({
         category: true,
@@ -46,28 +47,29 @@ const productCreationSchema = productFormSchemaBase
   })
   .refine(
     (data) => {
-      if (!data.minPrice || !data.maxPrice) {
+      if (!data.discountedPrice || !data.salePrice) {
         return true;
       }
 
-      const minPrice = Number(data.minPrice);
-      const maxPrice = Number(data.maxPrice);
+      const discountedPrice = Number(data.discountedPrice);
+      const salePrice = Number(data.salePrice);
 
-      return maxPrice > minPrice;
+      return salePrice > discountedPrice;
     },
     {
-      message: 'Maximum price must be greater than minimum price',
-      path: ['maxPrice'],
+      message: 'Sale price must be greater than discounted price',
+      path: ['salePrice'],
     }
   );
 
 type ProductCreationFormData = {
   name: string;
   code: string;
+  articalNumber?: string;
   description?: string;
   basePrice?: string;
-  minPrice?: string;
-  maxPrice?: string;
+  discountedPrice?: string;
+  salePrice?: string;
   remark?: string;
   categoryHierarchy?: {
     category?: number;
@@ -96,8 +98,9 @@ export function ProductCreateSheet({
       code: '',
       description: '',
       basePrice: '',
-      minPrice: '',
-      maxPrice: '',
+      discountedPrice: '',
+      salePrice: '',
+      articalNumber: '',
       remark: '',
       categoryHierarchy: {
         category: undefined,
@@ -139,10 +142,11 @@ export function ProductCreateSheet({
     const productData: Partial<ProductDTO> = {
       name: data.name,
       code: data.code,
+      articalNumber: data.articalNumber || undefined,
       description: data.description || undefined,
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
-      minPrice: data.minPrice ? Number(data.minPrice) : undefined,
-      maxPrice: data.maxPrice ? Number(data.maxPrice) : undefined,
+      discountedPrice: data.discountedPrice ? Number(data.discountedPrice) : undefined,
+      salePrice: data.salePrice ? Number(data.salePrice) : undefined,
       remark: data.remark || undefined,
 
       category: data.categoryHierarchy?.category
@@ -307,6 +311,26 @@ export function ProductCreateSheet({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="articalNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Artical Number
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter artical number"
+                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Pricing Information Section */}
@@ -345,11 +369,11 @@ export function ProductCreateSheet({
 
                   <FormField
                     control={form.control}
-                    name="minPrice"
+                    name="discountedPrice"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-semibold text-slate-700">
-                          Min Price
+                          Discounted Price
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -362,9 +386,9 @@ export function ProductCreateSheet({
                             onChange={(e) => {
                               field.onChange(e);
 
-                              const maxPrice = form.getValues('maxPrice');
-                              if (maxPrice) {
-                                form.trigger('maxPrice');
+                              const salePrice = form.getValues('salePrice');
+                              if (salePrice) {
+                                form.trigger('salePrice');
                               }
                             }}
                             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
@@ -377,11 +401,11 @@ export function ProductCreateSheet({
 
                   <FormField
                     control={form.control}
-                    name="maxPrice"
+                    name="salePrice"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-semibold text-slate-700">
-                          Max Price
+                          Sale Price
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -394,9 +418,9 @@ export function ProductCreateSheet({
                             onChange={(e) => {
                               field.onChange(e);
 
-                              const minPrice = form.getValues('minPrice');
-                              if (minPrice) {
-                                form.trigger('maxPrice');
+                              const discountedPrice = form.getValues('discountedPrice');
+                              if (discountedPrice) {
+                                form.trigger('salePrice');
                               }
                             }}
                             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"

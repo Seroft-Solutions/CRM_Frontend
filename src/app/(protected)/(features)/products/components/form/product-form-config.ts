@@ -11,28 +11,18 @@ export const productFormConfig: FormConfig = {
     {
       id: 'basic',
       title: 'Basic Information',
-      description: 'Enter essential details',
+      description: 'Enter essential details and categorize the product',
       fields: [
         'name',
         'code',
+        'articalNumber',
         'description',
         'remark',
         'status',
         'basePrice',
-        'minPrice',
-        'maxPrice',
+        'discountedPrice',
+        'salePrice',
       ],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
-      fields: [],
       relationships: ['category', 'subCategory'],
       validation: {
         mode: 'onBlur',
@@ -92,6 +82,18 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
+      name: 'articalNumber',
+      type: 'text',
+      label: 'Artical Number',
+      placeholder: 'Enter artical number',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 100,
+      },
+      ui: {},
+    },
+    {
       name: 'description',
       type: 'text',
       label: 'Description',
@@ -119,10 +121,10 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
-      name: 'minPrice',
+      name: 'discountedPrice',
       type: 'number',
-      label: 'Min Price',
-      placeholder: 'Enter min price',
+      label: 'Discounted Price',
+      placeholder: 'Enter discounted price',
       required: false,
       validation: {
         required: false,
@@ -134,10 +136,10 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
-      name: 'maxPrice',
+      name: 'salePrice',
       type: 'number',
-      label: 'Max Price',
-      placeholder: 'Enter max price',
+      label: 'Sale Price',
+      placeholder: 'Enter sale price',
       required: false,
       validation: {
         required: false,

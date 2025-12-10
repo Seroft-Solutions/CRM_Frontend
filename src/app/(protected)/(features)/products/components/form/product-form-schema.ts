@@ -20,6 +20,7 @@ export const productFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
     .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
+  articalNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
   description: z
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
@@ -31,14 +32,14 @@ export const productFormSchemaFields = {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
-  minPrice: z
+  discountedPrice: z
     .string()
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 999999, {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
-  maxPrice: z
+  salePrice: z
     .string()
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 999999, {
@@ -58,17 +59,17 @@ export const productFormSchemaBase = z.object(productFormSchemaFields);
 
 export const productFormSchema = productFormSchemaBase.refine(
   (data) => {
-    const minPrice = data.minPrice ? Number(data.minPrice) : null;
-    const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+    const discountedPrice = data.discountedPrice ? Number(data.discountedPrice) : null;
+    const salePrice = data.salePrice ? Number(data.salePrice) : null;
 
-    if (minPrice !== null && maxPrice !== null) {
-      return maxPrice > minPrice;
+    if (discountedPrice !== null && salePrice !== null) {
+      return salePrice > discountedPrice;
     }
     return true;
   },
   {
-    message: 'Max price must be greater than min price',
-    path: ['maxPrice'],
+    message: 'Sale price must be greater than discounted price',
+    path: ['salePrice'],
   }
 );
 
@@ -86,6 +87,7 @@ export const productFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
     .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
+  articalNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
   description: z
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
@@ -97,14 +99,14 @@ export const productFieldSchemas = {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
-  minPrice: z
+  discountedPrice: z
     .string()
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 999999, {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
-  maxPrice: z
+  salePrice: z
     .string()
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 999999, {
@@ -125,10 +127,11 @@ export const productStepSchemas = {
     .object({
       name: productFieldSchemas.name,
       code: productFieldSchemas.code,
+      articalNumber: productFieldSchemas.articalNumber,
       description: productFieldSchemas.description,
       basePrice: productFieldSchemas.basePrice,
-      minPrice: productFieldSchemas.minPrice,
-      maxPrice: productFieldSchemas.maxPrice,
+      discountedPrice: productFieldSchemas.discountedPrice,
+      salePrice: productFieldSchemas.salePrice,
       remark: productFieldSchemas.remark,
       status: productFieldSchemas.status,
       category: productFieldSchemas.category,
@@ -136,17 +139,17 @@ export const productStepSchemas = {
     })
     .refine(
       (data) => {
-        const minPrice = data.minPrice ? Number(data.minPrice) : null;
-        const maxPrice = data.maxPrice ? Number(data.maxPrice) : null;
+        const discountedPrice = data.discountedPrice ? Number(data.discountedPrice) : null;
+        const salePrice = data.salePrice ? Number(data.salePrice) : null;
 
-        if (minPrice !== null && maxPrice !== null) {
-          return maxPrice > minPrice;
+        if (discountedPrice !== null && salePrice !== null) {
+          return salePrice > discountedPrice;
         }
         return true;
       },
       {
-        message: 'Max price must be greater than min price',
-        path: ['maxPrice'],
+        message: 'Sale price must be greater than discounted price',
+        path: ['salePrice'],
       }
     ),
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   useCountImportHistories,
   useDeleteAllCallImportHistories,
@@ -24,8 +24,22 @@ export function useFailedCallsTable() {
   const [pendingRowIds, setPendingRowIds] = useState<Set<number>>(new Set());
   const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
   const [isBulkSaving, setIsBulkSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const originalRowsRef = useRef<ImportHistoryDTO[]>([]);
 
   const apiPage = Math.max(page - 1, 0);
+
+  const liveQueryOptions = useMemo(
+    () => ({
+      staleTime: 0,
+      cacheTime: 0,
+      refetchOnMount: 'always' as const,
+      refetchOnWindowFocus: 'always' as const,
+      refetchOnReconnect: 'always' as const,
+      keepPreviousData: false,
+    }),
+    []
+  );
 
   const {
     data: importHistoryData,
@@ -37,16 +51,56 @@ export function useFailedCallsTable() {
     page: apiPage,
     size: pageSize,
     sort: ['id,desc'],
-  });
+  }, { query: liveQueryOptions });
 
-  const { data: totalCount = 0 } = useCountImportHistories({});
+  const { data: totalCount = 0 } = useCountImportHistories({}, { query: liveQueryOptions });
   const totalItems = totalCount ?? 0;
 
   useEffect(() => {
     if (importHistoryData) {
-      setEditableData(importHistoryData.filter((item) => item.issue && item.issue.trim() !== ''));
+      const failedRows = importHistoryData.filter((item) => item.issue && item.issue.trim() !== '');
+
+      setEditableData(failedRows);
+      originalRowsRef.current = failedRows.map((row) => ({ ...row }));
+      setHasUnsavedChanges(false);
     }
   }, [importHistoryData]);
+
+  useEffect(() => {
+    if (editableData.length === 0) {
+      setHasUnsavedChanges(false);
+
+      return;
+    }
+
+    const originalMap = new Map(
+      originalRowsRef.current
+        .filter((row) => row.id !== undefined && row.id !== null)
+        .map((row) => [row.id as number, row])
+    );
+    const normalize = (value: unknown) => (value ?? '').toString();
+
+    const hasChanges = editableData.some((row) => {
+      if (row.id === undefined || row.id === null) {
+        return false;
+      }
+
+      const original = originalMap.get(row.id);
+
+      if (!original) {
+        return false;
+      }
+
+      return TEMPLATE_FIELD_ORDER.some((fieldKey) => {
+        const currentValue = normalize(row[fieldKey]);
+        const originalValue = normalize(original[fieldKey]);
+
+        return currentValue !== originalValue;
+      });
+    });
+
+    setHasUnsavedChanges(hasChanges);
+  }, [editableData]);
 
   const {
     calltypeOptions,
@@ -293,5 +347,6 @@ export function useFailedCallsTable() {
     validatedRowCount,
     handleSaveValidatedRows,
     isBulkSaving,
+    hasUnsavedChanges,
   };
 }

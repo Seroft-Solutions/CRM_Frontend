@@ -16,6 +16,11 @@ export interface OrganizationSetupResult {
   springOrgId: number;
 }
 
+interface GroupOption {
+  id?: string;
+  name?: string;
+}
+
 /**
  * Service for setting up organization multi-tenancy
  * Coordinates between Keycloak and Spring Backend APIs
@@ -67,6 +72,10 @@ export class OrganizationSetupService {
       await this.addUserToOrganization(keycloakOrgId, keycloakUserId);
       console.log('✓ Step 3 completed - User added to organization');
 
+      console.log('Step 3b: Seeding Super Admin user...');
+      await this.seedSuperAdminUser(keycloakOrgId);
+      console.log('✓ Step 3b completed - Super Admin user handled');
+
       console.log('Step 4: Creating Spring organization with schema setup...');
       try {
         const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
@@ -92,6 +101,59 @@ export class OrganizationSetupService {
     } catch (error) {
       console.error('❌ Organization setup failed at step:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to setup organization');
+    }
+  }
+
+  /**
+   * Create a default Super Admin user in the organization (best-effort, non-blocking).
+   */
+  private async seedSuperAdminUser(orgId: string): Promise<void> {
+    try {
+      const superAdminGroup = await this.findGroupByName('super admin');
+      const selectedGroups = superAdminGroup?.id ? [{ id: superAdminGroup.id }] : [];
+
+      const response = await fetch(`/api/keycloak/organizations/${orgId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'admin@gmail.com',
+          firstName: 'super',
+          lastName: 'admin',
+          selectedGroups,
+          sendWelcomeEmail: false,
+          sendPasswordReset: false,
+          password: 'admin',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        console.warn('Super Admin seed: failed to create/invite user', {
+          status: response.status,
+          error,
+        });
+      }
+    } catch (error) {
+      console.warn('Super Admin seed: unexpected error (non-blocking)', error);
+    }
+  }
+
+  private async findGroupByName(name: string): Promise<GroupOption | null> {
+    try {
+      const response = await fetch(`/api/keycloak/groups?search=${encodeURIComponent(name)}`);
+      if (!response.ok) {
+        return null;
+      }
+      const groups: GroupOption[] = await response.json();
+      const lower = name.trim().toLowerCase();
+
+      return (
+        groups.find((g) => (g.name || '').toLowerCase() === lower) ||
+        groups.find((g) => (g.name || '').toLowerCase().includes(lower)) ||
+        null
+      );
+    } catch {
+      return null;
     }
   }
 

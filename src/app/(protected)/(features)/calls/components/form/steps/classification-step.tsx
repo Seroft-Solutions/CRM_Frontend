@@ -214,7 +214,10 @@ export function CallClassificationStep({
                     primaryKey: 'id',
                     required: false,
                     multiple: false,
-                    customFilters: { 'channelTypeId.specified': false },
+                    customFilters: {
+                      'channelTypeId.specified': false,
+                      'email.notEquals': 'admin@gmail.com',
+                    },
                     api: {
                       useGetAllHook: 'useGetAllUserProfiles',
                       useSearchHook: 'useSearchUserProfiles',

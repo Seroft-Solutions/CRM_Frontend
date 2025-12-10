@@ -153,6 +153,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
+    id: 'articalNumber',
+    label: 'Artical Number',
+    accessor: 'articalNumber',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
     id: 'description',
     label: 'Description',
     accessor: 'description',
@@ -171,18 +180,18 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'minPrice',
-    label: 'Min Price',
-    accessor: 'minPrice',
+    id: 'discountedPrice',
+    label: 'Discounted Price',
+    accessor: 'discountedPrice',
     type: 'field',
     visible: true,
     sortable: true,
   },
 
   {
-    id: 'maxPrice',
-    label: 'Max Price',
-    accessor: 'maxPrice',
+    id: 'salePrice',
+    label: 'Sale Price',
+    accessor: 'salePrice',
     type: 'field',
     visible: true,
     sortable: true,
@@ -278,8 +287,8 @@ export function ProductTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
 
-  const [sort, setSort] = useState('id');
-  const [order, setOrder] = useState(ASC);
+  const [sort, setSort] = useState('lastModifiedDate');
+  const [order, setOrder] = useState(DESC);
   const [searchTerm, setSearchTerm] = useState('');
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -558,13 +567,13 @@ export function ProductTable() {
           if (typeof value === 'string' && value.trim() !== '') {
             params['basePrice.contains'] = value;
           }
-        } else if (key === 'minPrice') {
+        } else if (key === 'discountedPrice') {
           if (typeof value === 'string' && value.trim() !== '') {
-            params['minPrice.contains'] = value;
+            params['discountedPrice.contains'] = value;
           }
-        } else if (key === 'maxPrice') {
+        } else if (key === 'salePrice') {
           if (typeof value === 'string' && value.trim() !== '') {
-            params['maxPrice.contains'] = value;
+            params['salePrice.contains'] = value;
           }
         } else if (key === 'remark') {
           if (typeof value === 'string' && value.trim() !== '') {
@@ -581,6 +590,10 @@ export function ProductTable() {
         } else if (key === 'lastModifiedBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
+          }
+        } else if (key === 'articalNumber') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['articalNumber.contains'] = value;
           }
         } else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;

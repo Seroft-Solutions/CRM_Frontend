@@ -83,6 +83,8 @@ const TABLE_CONFIG = {
   centerAlignActions: true,
 };
 
+const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
+
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -583,7 +585,7 @@ export function CallTable() {
               }
 
               if (col.id === 'assignedTo' && relationship) {
-                value = relationship.displayName || '';
+                value = isExcludedAssignedUser(relationship) ? '' : relationship.displayName || '';
               }
 
               if (col.id === 'callStatus' && relationship) {
@@ -665,10 +667,22 @@ export function CallTable() {
     { query: { enabled: true } }
   );
 
+  const assignedToOptions = useMemo(
+    () =>
+      (userprofileOptions || []).filter(
+        (user: any) =>
+          user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
+      ),
+    [userprofileOptions]
+  );
+
   const { data: callstatusOptions = [] } = useGetAllCallStatuses(
     { page: 0, size: 1000 },
     { query: { enabled: true } }
   );
+
+  const isExcludedAssignedUser = (user: any) =>
+    user?.email?.toLowerCase?.() === EXCLUDED_ASSIGNED_EMAIL.toLowerCase();
 
   const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
     const entity = entities?.find((e) =>
@@ -792,7 +806,7 @@ export function CallTable() {
 
       'assignedTo.displayName': {
         apiParam: 'assignedToId.equals',
-        options: userprofileOptions,
+        options: assignedToOptions,
         displayField: 'displayName',
       },
 
@@ -1898,7 +1912,7 @@ export function CallTable() {
     {
       name: 'assignedTo',
       displayName: 'AssignedTo',
-      options: userprofileOptions || [],
+      options: assignedToOptions || [],
       displayField: 'displayName',
       isEditable: true,
     },
@@ -1946,61 +1960,60 @@ export function CallTable() {
       <div className="w-full space-y-4">
         {/* Status Filter Tabs */}
         <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 bg-gray-100 p-1">
+          <TabsList className="w-full overflow-x-auto bg-gray-100 p-1 rounded-lg flex gap-2">
             <TabsTrigger
               value="crm-leads"
-              className="flex items-center gap-2 data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-sky-500 data-[state=active]:bg-white rounded-full"></div>
               CRM Leads
             </TabsTrigger>
             <TabsTrigger
+              value="all"
+              className="whitespace-nowrap flex-shrink-0 data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              All
+            </TabsTrigger>
+            <TabsTrigger
               value="business-partners"
-              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-blue-500 data-[state=active]:bg-white rounded-full"></div>
               Business Partner
             </TabsTrigger>
             <TabsTrigger
               value="external"
-              className="flex items-center gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-indigo-500 data-[state=active]:bg-white rounded-full"></div>
               External Leads
             </TabsTrigger>
             <TabsTrigger
               value="active"
-              className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-green-500 data-[state=active]:bg-white rounded-full"></div>
               Active
             </TabsTrigger>
             <TabsTrigger
               value="draft"
-              className="flex items-center gap-2 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-yellow-500 data-[state=active]:bg-white rounded-full"></div>
               Draft
             </TabsTrigger>
             <TabsTrigger
               value="archived"
-              className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
               <div className="w-2 h-2 bg-red-500 data-[state=active]:bg-white rounded-full"></div>
               Archive
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="all"
-              className="data-[state=active]:bg-gray-700 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-            >
-              All
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* Table Controls */}
-        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-2 sm:mt-3 w-full">
           <div className="flex flex-wrap items-center gap-2">
             {/* Column Visibility Toggle */}
             <DropdownMenu>

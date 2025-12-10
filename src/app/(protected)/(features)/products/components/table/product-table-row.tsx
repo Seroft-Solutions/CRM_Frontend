@@ -120,7 +120,7 @@ export function ProductTableRow({
             return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis';
           }
 
-          if (['basePrice', 'minPrice', 'maxPrice'].includes(column.id)) {
+          if (['basePrice', 'discountedPrice', 'salePrice'].includes(column.id)) {
             return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
           }
 
@@ -161,15 +161,19 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'minPrice') {
+                  if (column.id === 'discountedPrice') {
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'maxPrice') {
+                  if (column.id === 'salePrice') {
                     return field?.toString() || '';
                   }
 
                   if (column.id === 'remark') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'articalNumber') {
                     return field?.toString() || '';
                   }
 
@@ -182,7 +186,7 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'createdDate') {
-                    return field ? format(new Date(field as string), 'PPP') : '';
+                    return field ? format(new Date(field as string), 'PPp') : '';
                   }
 
                   if (column.id === 'lastModifiedBy') {
@@ -190,7 +194,7 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'lastModifiedDate') {
-                    return field ? format(new Date(field as string), 'PPP') : '';
+                    return field ? format(new Date(field as string), 'PPp') : '';
                   }
 
                   if (column.id === 'id') {
