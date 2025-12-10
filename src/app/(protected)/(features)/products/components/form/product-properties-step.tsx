@@ -70,16 +70,7 @@ export function ProductPropertiesStep() {
             Add key/value sets that can carry multiple values per property.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={() =>
-            append({
-              name: '',
-              displayOrder: fields.length,
-              values: [],
-            })
-          }
-        >
+        <Button type="button" onClick={() => append({ name: '', values: [] })}>
           Add property
         </Button>
       </div>
@@ -90,8 +81,7 @@ export function ProductPropertiesStep() {
         {fields.map((field, index) => {
           const error = propertiesErrors?.[index];
           const values = currentValues(index);
-          const valueInput =
-            valueInputs[index] !== undefined ? valueInputs[index] : values.join(', ');
+          const valueInput = valueInputs[index] !== undefined ? valueInputs[index] : values.join(', ');
 
           return (
             <Card key={field.id} className="relative">
@@ -117,22 +107,6 @@ export function ProductPropertiesStep() {
                   />
                   {error?.name && (
                     <p className="text-xs text-destructive">{error.name.message as string}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Display Order</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    {...register(`properties.${index}.displayOrder` as const, {
-                      valueAsNumber: true,
-                    })}
-                  />
-                  {error?.displayOrder && (
-                    <p className="text-xs text-destructive">
-                      {error.displayOrder.message as string}
-                    </p>
                   )}
                 </div>
 

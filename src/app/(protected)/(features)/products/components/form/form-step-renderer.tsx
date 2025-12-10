@@ -307,7 +307,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         ? entity.properties.map((prop: any, index: number) => ({
             id: prop.id,
             name: prop.name,
-            displayOrder: prop.displayOrder ?? index,
             values: prop.values || [],
           }))
         : [];
@@ -526,13 +525,8 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {properties.map((prop: any, idx: number) => (
                             <div key={`${prop.name}-${idx}`} className="space-y-2 rounded-md border p-3">
-                              <div className="flex items-center justify-between">
-                                <div className="text-sm font-semibold text-foreground">
-                                  {prop.name || `Property ${idx + 1}`}
-                                </div>
-                                <span className="text-xs text-muted-foreground">
-                                  Order: {prop.displayOrder ?? idx}
-                                </span>
+                              <div className="text-sm font-semibold text-foreground">
+                                {prop.name || `Property ${idx + 1}`}
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {(prop.values || []).map((val: string, valueIdx: number) => (

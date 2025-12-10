@@ -9,6 +9,5 @@ export interface ProductPropertyDTO {
    * @maxLength 100
    */
   name: string;
-  displayOrder?: number;
   values?: string[];
 }

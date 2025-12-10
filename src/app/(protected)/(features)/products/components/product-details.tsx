@@ -313,13 +313,8 @@ function OrientationPreviewCard({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {properties.map((prop: any, idx: number) => (
                           <div key={`${prop.name}-${idx}`} className="space-y-2 rounded-md border p-3">
-                            <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold text-foreground">
-                                {prop.name || `Property ${idx + 1}`}
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                Order: {prop.displayOrder ?? idx}
-                              </span>
+                            <div className="text-sm font-semibold text-foreground">
+                              {prop.name || `Property ${idx + 1}`}
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {(prop.values || []).map((val: string, valueIdx: number) => (

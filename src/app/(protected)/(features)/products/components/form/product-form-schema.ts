@@ -16,11 +16,6 @@ const productPropertySchema = z
       .trim()
       .min(1, { message: 'Please enter property name' })
       .max(100, { message: 'Please enter no more than 100 characters' }),
-    displayOrder: z
-      .number({ invalid_type_error: 'Please enter a valid order' })
-      .int()
-      .nonnegative({ message: 'Display order must be zero or greater' })
-      .optional(),
     values: z
       .array(
         z

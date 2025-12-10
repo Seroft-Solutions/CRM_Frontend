@@ -440,7 +440,7 @@ export function ProductFormProvider({
 
     const properties = Array.isArray(data.properties) ? data.properties : [];
     const normalizedProperties = properties
-      .map((prop, index) => {
+      .map((prop) => {
         const name = typeof prop?.name === 'string' ? prop.name.trim() : '';
         const values = Array.isArray(prop?.values)
           ? prop.values
@@ -450,18 +450,10 @@ export function ProductFormProvider({
         if (!name && values.length === 0) {
           return null;
         }
-        const displayOrderRaw = (prop as any)?.displayOrder;
-        const displayOrder =
-          typeof displayOrderRaw === 'number'
-            ? displayOrderRaw
-            : Number.isFinite(Number(displayOrderRaw))
-              ? Number(displayOrderRaw)
-              : index;
 
         return {
           id: (prop as any)?.id,
           name,
-          displayOrder,
           values,
         };
       })
