@@ -7,7 +7,7 @@ export const SPRING_API_URL = process.env.NEXT_PUBLIC_SPRING_API_URL || 'https:/
 export const KEYCLOAK_URL = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:9090';
 export const KEYCLOAK_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'crm';
 
-export const REQUEST_TIMEOUT = 30000;
+export const REQUEST_TIMEOUT = 120000;
 export const KEYCLOAK_REQUEST_TIMEOUT = 15000;
 
 export const DEFAULT_HEADERS = {
