@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Form,
@@ -15,9 +15,10 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useDownloadCallImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
+import { useDownloadImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
 import { callImportConfig } from '../config';
 import { useQueryClient } from '@tanstack/react-query';
+import { ImportProgress } from './import-progress';
 
 interface CallDataImportProps {}
 
@@ -53,6 +54,8 @@ interface ImportResponse {
 }
 
 export function CallDataImport({}: CallDataImportProps) {
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+
   const form = useForm({
     defaultValues: {
       importFile: null,
@@ -67,22 +70,17 @@ export function CallDataImport({}: CallDataImportProps) {
     error,
   } = useImportCallsFromExcel({
     mutation: {
-      onSuccess: (data) => {
-        console.log('Import successful:', data);
+      onSuccess: (data: any) => {
+        console.log('Import started:', data);
 
-        sessionStorage.setItem('callImportResponse', JSON.stringify(data));
-
-        queryClient.invalidateQueries({
-          predicate: (query) =>
-            Array.isArray(query.queryKey) && query.queryKey[0] === '/api/import-histories',
-        });
-        queryClient.invalidateQueries({
-          predicate: (query) =>
-            Array.isArray(query.queryKey) && query.queryKey[0] === '/api/_search/import-histories',
-        });
-
-        router.push('/calls/import/results');
-        form.reset();
+        // The response now contains { jobId, message }
+        if (data?.jobId) {
+          setCurrentJobId(data.jobId);
+          // Don't navigate yet - progress component will handle it
+        } else {
+          console.error('No jobId in response:', data);
+          alert('Import started but no job ID received');
+        }
       },
       onError: (err) => {
         console.error('Import failed:', err);
@@ -94,9 +92,12 @@ export function CallDataImport({}: CallDataImportProps) {
   const {
     refetch: fetchTemplate,
     isFetching: isDownloadingTemplate,
-  } = useDownloadCallImportTemplate({
+  } = useDownloadImportTemplate({
     query: {
       enabled: false,
+    },
+    request: {
+      responseType: 'blob',
     },
   });
 
@@ -115,7 +116,18 @@ export function CallDataImport({}: CallDataImportProps) {
       if (!result.data) {
         throw result.error ?? new Error('Unable to download template');
       }
-      const blob = result.data;
+
+      // Ensure data is a Blob
+      let blob: Blob;
+      if (result.data instanceof Blob) {
+        blob = result.data;
+      } else {
+        // Convert to Blob if it's not already
+        blob = new Blob([result.data as any], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+      }
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -128,6 +140,19 @@ export function CallDataImport({}: CallDataImportProps) {
       console.error('Failed to download template', downloadError);
       alert('Unable to download template. Please try again.');
     }
+  };
+
+  const handleProgressComplete = () => {
+    // Invalidate import history queries when progress completes
+    queryClient.invalidateQueries({
+      predicate: (query) =>
+        Array.isArray(query.queryKey) && query.queryKey[0] === '/api/import-histories',
+    });
+    queryClient.invalidateQueries({
+      predicate: (query) =>
+        Array.isArray(query.queryKey) && query.queryKey[0] === '/api/_search/import-histories',
+    });
+    form.reset();
   };
 
   return (
@@ -229,10 +254,10 @@ export function CallDataImport({}: CallDataImportProps) {
             <Button
               type="submit"
               className="mt-4 w-full"
-              disabled={isUploading || !form.watch('importFile')}
-              variant={isUploading ? 'secondary' : 'default'}
+              disabled={isUploading || !form.watch('importFile') || currentJobId !== null}
+              variant={isUploading || currentJobId !== null ? 'secondary' : 'default'}
             >
-              {isUploading ? 'Uploading...' : 'Import Data'}
+              {currentJobId ? 'Import in Progress...' : isUploading ? 'Uploading...' : 'Import Data'}
             </Button>
             {error && (
               <p className="text-sm text-destructive mt-2">
@@ -241,6 +266,10 @@ export function CallDataImport({}: CallDataImportProps) {
             )}
           </CardContent>
         </Card>
+        {/* Show progress when we have a jobId */}
+        {currentJobId && (
+          <ImportProgress jobId={currentJobId} onComplete={handleProgressComplete} />
+        )}
       </form>
     </Form>
   );
