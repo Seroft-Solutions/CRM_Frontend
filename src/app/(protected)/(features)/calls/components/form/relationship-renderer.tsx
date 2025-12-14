@@ -27,12 +27,10 @@ import {
 import {
   useCountCustomers,
   useGetAllCustomers,
-  useSearchCustomers,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import {
   useCountProducts,
   useGetAllProducts,
-  useSearchProducts,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   useCountChannelTypes,
@@ -299,7 +297,6 @@ export function RelationshipRenderer({
             placeholder={relConfig.ui.placeholder}
             multiple={relConfig.multiple}
             useGetAllHook={useGetAllCustomers}
-            useSearchHook={useSearchCustomers}
             useCountHook={useCountCustomers}
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
@@ -343,7 +340,6 @@ export function RelationshipRenderer({
             placeholder={relConfig.ui.placeholder}
             multiple={relConfig.multiple}
             useGetAllHook={useGetAllProducts}
-            useSearchHook={useSearchProducts}
             useCountHook={useCountProducts}
             entityName={relConfig.api.entityName}
             searchField={relConfig.displayField}
