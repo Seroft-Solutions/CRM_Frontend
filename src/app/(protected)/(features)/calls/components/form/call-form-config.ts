@@ -186,7 +186,6 @@ export const callFormConfig: FormConfig = {
       category: 'business',
       api: {
         useGetAllHook: 'useGetAllCustomers',
-        useSearchHook: 'useSearchCustomers',
         useCountHook: 'useCountCustomers',
         entityName: 'Customers',
       },
@@ -212,7 +211,6 @@ export const callFormConfig: FormConfig = {
       category: 'business',
       api: {
         useGetAllHook: 'useGetAllProducts',
-        useSearchHook: 'useSearchProducts',
         useCountHook: 'useCountProducts',
         entityName: 'Products',
       },

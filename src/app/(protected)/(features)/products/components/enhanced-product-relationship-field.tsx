@@ -18,7 +18,6 @@ import { InlinePermissionGuard } from '@/core/auth';
 import { ProductCreateSheet } from './product-create-sheet';
 import {
   useGetAllProducts,
-  useSearchProducts,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 
@@ -72,11 +71,12 @@ export function EnhancedProductRelationshipField({
     ...customFilters,
   });
 
-  const { data: searchResponse, isLoading: isSearching } = useSearchProducts(
+  const { data: searchResponse, isLoading: isSearching } = useGetAllProducts(
     {
-      query: deferredSearchQuery,
+      'name.contains': deferredSearchQuery,
       page: 0,
       size: 50,
+      ...customFilters,
     },
     {
       query: {
