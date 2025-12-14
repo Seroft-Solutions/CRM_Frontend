@@ -91,7 +91,7 @@ export function CallsPageWithMeetingDialog() {
 
               <div className="text-white">
                 <h1 className="text-2xl font-bold">Leads</h1>
-                <p className="text-blue-100">Manage your calls/leeds</p>
+                <p className="text-blue-100">Manage your calls/leads</p>
               </div>
             </div>
 

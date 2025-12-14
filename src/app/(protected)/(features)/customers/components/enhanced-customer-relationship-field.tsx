@@ -18,7 +18,6 @@ import { InlinePermissionGuard } from '@/core/auth';
 import { CustomerCreateSheet } from './customer-create-sheet';
 import {
   useGetAllCustomers,
-  useSearchCustomers,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import type { CustomerDTO } from '@/core/api/generated/spring/schemas';
 
@@ -73,11 +72,12 @@ export function EnhancedCustomerRelationshipField({
     ...customFilters,
   });
 
-  const { data: searchResponse, isLoading: isSearching } = useSearchCustomers(
+  const { data: searchResponse, isLoading: isSearching } = useGetAllCustomers(
     {
-      query: deferredSearchQuery,
+      'customerBusinessName.contains': deferredSearchQuery,
       page: 0,
       size: 50,
+      ...customFilters,
     },
     {
       query: {
