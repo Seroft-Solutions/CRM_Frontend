@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   useCountImportHistories,
-  useDeleteAllCallImportHistories,
+  useDeleteAllImportHistoryEntries,
   useGetAllImportHistories,
   useProcessImportHistory,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
@@ -130,7 +130,7 @@ export function useFailedCallsTable() {
   });
 
   const { mutateAsync: deleteAllCallImportHistoriesAsync, isPending: isClearingAllFailedEntries } =
-    useDeleteAllCallImportHistories({
+    useDeleteAllImportHistoryEntries({
       mutation: {
         onError: (error) => {
           toast.error('Failed to clear all failed import entries: ' + error.message);
