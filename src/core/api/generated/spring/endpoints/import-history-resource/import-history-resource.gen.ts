@@ -27,6 +27,7 @@ import type {
 import type {
   CallDTO,
   CountImportHistoriesParams,
+  DeleteAllImportHistoryEntries200,
   GetAllImportHistoriesParams,
   ImportHistoryDTO,
   SearchImportHistoriesParams
@@ -234,59 +235,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
       return useMutation(mutationOptions , queryClient);
     }
-    export const deleteAllCallImportHistories = (
- options?: SecondParameter<typeof springServiceMutator>,) => {
-      
-      
-      return springServiceMutator<Record<string, unknown>>(
-      {url: `/api/import-history/delete-all`, method: 'DELETE'
-    },
-      options);
-    }
-  
-
-
-export const getDeleteAllCallImportHistoriesMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, TError,void, TContext> => {
-    
-const mutationKey = ['deleteAllCallImportHistories'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, void> = () => {
-
-          return  deleteAllCallImportHistories(requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAllCallImportHistoriesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAllCallImportHistories>>>
-    
-    export type DeleteAllCallImportHistoriesMutationError = ErrorType<unknown>
-
-    export const useDeleteAllCallImportHistories = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllCallImportHistories>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAllCallImportHistories>>,
-        TError,
-        void,
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteAllCallImportHistoriesMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
     export const partialUpdateImportHistory = (
     id: number,
     importHistoryDTO: ImportHistoryDTO,
@@ -342,64 +290,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
 
       const mutationOptions = getPartialUpdateImportHistoryMutationOptions(options);
-
-      return useMutation(mutationOptions , queryClient);
-    }
-    export const processImportHistory = (
-    id: number,
-    importHistoryDTO: ImportHistoryDTO,
- options?: SecondParameter<typeof springServiceMutator>,) => {
-      
-      
-      return springServiceMutator<CallDTO>(
-      {url: `/api/import-histories/${id}/process`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: importHistoryDTO
-    },
-      options);
-    }
-  
-
-
-export const getProcessImportHistoryMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processImportHistory>>, TError,{id: number;data: ImportHistoryDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof processImportHistory>>, TError,{id: number;data: ImportHistoryDTO}, TContext> => {
-    
-const mutationKey = ['processImportHistory'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof processImportHistory>>, {id: number;data: ImportHistoryDTO}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  processImportHistory(id,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ProcessImportHistoryMutationResult = NonNullable<Awaited<ReturnType<typeof processImportHistory>>>
-    export type ProcessImportHistoryMutationBody = ImportHistoryDTO
-    export type ProcessImportHistoryMutationError = ErrorType<unknown>
-
-    export const useProcessImportHistory = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processImportHistory>>, TError,{id: number;data: ImportHistoryDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof processImportHistory>>,
-        TError,
-        {id: number;data: ImportHistoryDTO},
-        TContext
-      > => {
-
-      const mutationOptions = getProcessImportHistoryMutationOptions(options);
 
       return useMutation(mutationOptions , queryClient);
     }
@@ -540,6 +430,65 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
 
       const mutationOptions = getCreateImportHistoryMutationOptions(options);
+
+      return useMutation(mutationOptions , queryClient);
+    }
+    export const processImportHistory = (
+    id: number,
+    importHistoryDTO: ImportHistoryDTO,
+ options?: SecondParameter<typeof springServiceMutator>,signal?: AbortSignal
+) => {
+      
+      
+      return springServiceMutator<CallDTO>(
+      {url: `/api/import-histories/${id}/process`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: importHistoryDTO, signal
+    },
+      options);
+    }
+  
+
+
+export const getProcessImportHistoryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processImportHistory>>, TError,{id: number;data: ImportHistoryDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof processImportHistory>>, TError,{id: number;data: ImportHistoryDTO}, TContext> => {
+    
+const mutationKey = ['processImportHistory'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof processImportHistory>>, {id: number;data: ImportHistoryDTO}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  processImportHistory(id,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProcessImportHistoryMutationResult = NonNullable<Awaited<ReturnType<typeof processImportHistory>>>
+    export type ProcessImportHistoryMutationBody = ImportHistoryDTO
+    export type ProcessImportHistoryMutationError = ErrorType<unknown>
+
+    export const useProcessImportHistory = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof processImportHistory>>, TError,{id: number;data: ImportHistoryDTO}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof processImportHistory>>,
+        TError,
+        {id: number;data: ImportHistoryDTO},
+        TContext
+      > => {
+
+      const mutationOptions = getProcessImportHistoryMutationOptions(options);
 
       return useMutation(mutationOptions , queryClient);
     }
@@ -707,3 +656,59 @@ export function useSearchImportHistories<TData = Awaited<ReturnType<typeof searc
 
 
 
+export const deleteAllImportHistoryEntries = (
+    
+ options?: SecondParameter<typeof springServiceMutator>,) => {
+      
+      
+      return springServiceMutator<DeleteAllImportHistoryEntries200>(
+      {url: `/api/import-history/delete-all`, method: 'DELETE'
+    },
+      options);
+    }
+  
+
+
+export const getDeleteAllImportHistoryEntriesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,void, TContext> => {
+    
+const mutationKey = ['deleteAllImportHistoryEntries'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, void> = () => {
+          
+
+          return  deleteAllImportHistoryEntries(requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAllImportHistoryEntriesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>>
+    
+    export type DeleteAllImportHistoryEntriesMutationError = ErrorType<unknown>
+
+    export const useDeleteAllImportHistoryEntries = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteAllImportHistoryEntriesMutationOptions(options);
+
+      return useMutation(mutationOptions , queryClient);
+    }
+    

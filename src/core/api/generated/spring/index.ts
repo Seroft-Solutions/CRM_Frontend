@@ -49,3 +49,12 @@ export * from './endpoints/product-category-resource/product-category-resource.g
 export * from './endpoints/import-history-resource/import-history-resource.gen';
 export * from './endpoints/product-images/product-images.gen';
 export * from './endpoints/master-data-import-controller/master-data-import-controller.gen';
+export * from './endpoints/system-config-resource/system-config-resource.gen';
+export * from './endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
+export * from './endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
+export * from './endpoints/product-variant-resource/product-variant-resource.gen';
+export * from './endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
+export * from './endpoints/order-resource/order-resource.gen';
+export * from './endpoints/order-history-resource/order-history-resource.gen';
+export * from './endpoints/order-detail-resource/order-detail-resource.gen';
+export * from './endpoints/order-address-detail-resource/order-address-detail-resource.gen';

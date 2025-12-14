@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { ProductDTOStatus } from './ProductDTOStatus';
+import type { SystemConfigDTO } from './SystemConfigDTO';
 import type { ProductCategoryDTO } from './ProductCategoryDTO';
 import type { ProductSubCategoryDTO } from './ProductSubCategoryDTO';
 import type { ProductImageDTO } from './ProductImageDTO';
@@ -67,6 +68,7 @@ export interface ProductDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
+  variantConfig: SystemConfigDTO;
   category?: ProductCategoryDTO;
   subCategory?: ProductSubCategoryDTO;
   images?: ProductImageDTO[];
