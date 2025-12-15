@@ -40,36 +40,42 @@ interface ProductDetailsProps {
 
 
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
-  // Call all hooks unconditionally to follow Rules of Hooks
-  const { data: categoryData } = useGetAllProductCategories(
-    { page: 0, size: 1000 },
-    {
-      query: {
-        enabled: !!value && relConfig.name === 'category',
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
-
-  const { data: subCategoryData } = useGetAllProductSubCategories(
-    { page: 0, size: 1000 },
-    {
-      query: {
-        enabled: !!value && relConfig.name === 'subCategory',
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
-
-  const { data: systemConfigData } = useGetAllSystemConfigs(
-    { page: 0, size: 1000 },
-    {
-      query: {
-        enabled: !!value && relConfig.name === 'variantConfig',
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
+  const { data: categoryData } =
+    relConfig.name === 'category'
+      ? useGetAllProductCategories(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'category',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: subCategoryData } =
+    relConfig.name === 'subCategory'
+      ? useGetAllProductSubCategories(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'subCategory',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
+  const { data: systemConfigData } =
+    relConfig.name === 'variantConfig'
+      ? useGetAllSystemConfigs(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'variantConfig',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
 
   if (!value) {
     return (
