@@ -47,7 +47,6 @@ const formSchema = z.object({
   attributeType: z.nativeEnum(SystemConfigAttributeDTOAttributeType),
   isRequired: z.boolean(),
   sortOrder: z.number().min(0, 'Sort order must be at least 0'),
-  status: z.nativeEnum(SystemConfigAttributeDTOStatus),
   systemConfigId: z.number().min(1, 'System config is required'),
 });
 
@@ -78,10 +77,9 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
     defaultValues: {
       name: '',
       label: '',
-      attributeType: SystemConfigAttributeDTOAttributeType.STRING,
+      attributeType: SystemConfigAttributeDTOAttributeType.ENUM,
       isRequired: false,
       sortOrder: 0,
-      status: SystemConfigAttributeDTOStatus.ACTIVE,
       systemConfigId: 0,
     },
   });
@@ -94,7 +92,6 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
         attributeType: existingData.attributeType,
         isRequired: existingData.isRequired,
         sortOrder: existingData.sortOrder,
-        status: existingData.status,
         systemConfigId: existingData.systemConfig?.id || 0,
       });
     }
@@ -108,14 +105,14 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
         attributeType: values.attributeType,
         isRequired: values.isRequired,
         sortOrder: values.sortOrder,
-        status: values.status,
+        status: SystemConfigAttributeDTOStatus.ACTIVE,
         systemConfig: { id: values.systemConfigId },
       };
 
       if (isEdit) {
         await updateMutation.mutateAsync({
           id: id!,
-          data: { ...payload, id: id! } as any,
+          data: payload as any,
         });
         toast.success('Attribute updated successfully');
       } else {
@@ -174,7 +171,7 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
             <FormItem>
               <FormLabel>Name *</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., size_value" {...field} />
+                <Input placeholder="e.g., size" {...field} />
               </FormControl>
               <FormDescription>
                 Attribute name (lowercase letters, numbers, and underscores only)
@@ -218,7 +215,15 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
                   <SelectItem value={SystemConfigAttributeDTOAttributeType.BOOLEAN}>Boolean</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>Data type of this attribute</FormDescription>
+              <FormDescription>
+                {field.value === SystemConfigAttributeDTOAttributeType.ENUM
+                  ? 'ENUM: Select from predefined options (configure options after creating attribute)'
+                  : field.value === SystemConfigAttributeDTOAttributeType.STRING
+                    ? 'STRING: Free text input'
+                    : field.value === SystemConfigAttributeDTOAttributeType.NUMBER
+                      ? 'NUMBER: Numeric values only'
+                      : 'BOOLEAN: True/False values'}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -234,7 +239,7 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>Required</FormLabel>
-                <FormDescription>Is this attribute required?</FormDescription>
+                <FormDescription>Is this attribute required when creating product variants?</FormDescription>
               </div>
             </FormItem>
           )}
@@ -254,31 +259,7 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
                   onChange={(e) => field.onChange(parseInt(e.target.value))}
                 />
               </FormControl>
-              <FormDescription>Display order of this attribute</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={SystemConfigAttributeDTOStatus.ACTIVE}>Active</SelectItem>
-                  <SelectItem value={SystemConfigAttributeDTOStatus.INACTIVE}>Inactive</SelectItem>
-                  <SelectItem value={SystemConfigAttributeDTOStatus.ARCHIVED}>Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>Current status of this attribute</FormDescription>
+              <FormDescription>Display order of this attribute (lower numbers appear first)</FormDescription>
               <FormMessage />
             </FormItem>
           )}

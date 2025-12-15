@@ -43,7 +43,6 @@ const formSchema = z.object({
     .min(1, 'Label is required')
     .max(100, 'Label must not exceed 100 characters'),
   sortOrder: z.number().min(0, 'Sort order must be at least 0'),
-  status: z.nativeEnum(SystemConfigAttributeOptionDTOStatus),
   attributeId: z.number().min(1, 'Attribute is required'),
 });
 
@@ -75,7 +74,6 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
       code: '',
       label: '',
       sortOrder: 0,
-      status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
       attributeId: 0,
     },
   });
@@ -86,7 +84,6 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
         code: existingData.code,
         label: existingData.label,
         sortOrder: existingData.sortOrder,
-        status: existingData.status,
         attributeId: existingData.attribute?.id || 0,
       });
     }
@@ -98,14 +95,14 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
         code: values.code,
         label: values.label,
         sortOrder: values.sortOrder,
-        status: values.status,
+        status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
         attribute: { id: values.attributeId },
       };
 
       if (isEdit) {
         await updateMutation.mutateAsync({
           id: id!,
-          data: { ...payload, id: id! } as any,
+          data: payload as any,
         });
         toast.success('Option updated successfully');
       } else {
@@ -125,6 +122,8 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
     return <div>Loading...</div>;
   }
 
+  const enumAttributes = attributes?.filter(attr => attr.attributeType === 'ENUM');
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -140,18 +139,20 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an attribute" />
+                    <SelectValue placeholder="Select an ENUM attribute" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {attributes?.map((attr) => (
+                  {enumAttributes?.map((attr) => (
                     <SelectItem key={attr.id} value={attr.id!.toString()}>
-                      {attr.name} ({attr.label})
+                      {attr.label} ({attr.name})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>The attribute this option belongs to</FormDescription>
+              <FormDescription>
+                The ENUM attribute this option belongs to (only ENUM attributes are shown)
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -164,7 +165,7 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
             <FormItem>
               <FormLabel>Code *</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., SMALL" {...field} />
+                <Input placeholder="e.g., S or SMALL" {...field} />
               </FormControl>
               <FormDescription>
                 Unique code for this option (letters, numbers, hyphens, and underscores only)
@@ -183,7 +184,7 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
               <FormControl>
                 <Input placeholder="e.g., Small" {...field} />
               </FormControl>
-              <FormDescription>Display label for this option</FormDescription>
+              <FormDescription>Display label shown to users</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -203,31 +204,7 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
                   onChange={(e) => field.onChange(parseInt(e.target.value))}
                 />
               </FormControl>
-              <FormDescription>Display order of this option</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={SystemConfigAttributeOptionDTOStatus.ACTIVE}>Active</SelectItem>
-                  <SelectItem value={SystemConfigAttributeOptionDTOStatus.INACTIVE}>Inactive</SelectItem>
-                  <SelectItem value={SystemConfigAttributeOptionDTOStatus.ARCHIVED}>Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>Current status of this option</FormDescription>
+              <FormDescription>Display order of this option (lower numbers appear first)</FormDescription>
               <FormMessage />
             </FormItem>
           )}
