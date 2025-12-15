@@ -259,7 +259,7 @@ export const productFormConfig: FormConfig = {
       targetEntity: 'systemConfig',
       displayField: 'configKey',
       primaryKey: 'id',
-      required: true,
+      required: false,
       multiple: false,
       category: 'configuration',
       api: {
@@ -274,10 +274,10 @@ export const productFormConfig: FormConfig = {
         createPermission: 'systemConfig:create:inline',
       },
       ui: {
-        label: 'Variant Configuration',
-        placeholder: 'Select variant configuration',
+        label: 'Variant Configuration (Optional)',
+        placeholder: 'Select if product has variants (e.g., sizes, colors)',
         icon: '⚙️',
-        helpText: 'Choose a system configuration that defines variant attributes (e.g., size, color)',
+        helpText: 'Only needed if this product will have variants. You can add this later when creating variants.',
       },
     },
   ],
