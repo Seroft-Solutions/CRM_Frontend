@@ -41,7 +41,6 @@ const formSchema = z.object({
     .regex(/^[A-Za-z0-9_.:-]+$/, 'Config key must contain only letters, numbers, and _.:-'),
   systemConfigType: z.nativeEnum(SystemConfigDTOSystemConfigType),
   description: z.string().max(255, 'Description must not exceed 255 characters').optional(),
-  status: z.nativeEnum(SystemConfigDTOStatus),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -65,9 +64,8 @@ export function SystemConfigForm({ id }: SystemConfigFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       configKey: '',
-      systemConfigType: SystemConfigDTOSystemConfigType.CUSTOM,
+      systemConfigType: SystemConfigDTOSystemConfigType.PRODUCT,
       description: '',
-      status: SystemConfigDTOStatus.ACTIVE,
     },
   });
 
@@ -77,22 +75,26 @@ export function SystemConfigForm({ id }: SystemConfigFormProps) {
         configKey: existingData.configKey,
         systemConfigType: existingData.systemConfigType,
         description: existingData.description || '',
-        status: existingData.status,
       });
     }
   }, [existingData, form]);
 
   const onSubmit = async (values: FormValues) => {
     try {
+      const payload = {
+        ...values,
+        status: SystemConfigDTOStatus.ACTIVE,
+      };
+
       if (isEdit) {
         await updateMutation.mutateAsync({
           id: id!,
-          data: { ...values, id: id! },
+          data: payload,
         });
         toast.success('System config updated successfully');
       } else {
         await createMutation.mutateAsync({
-          data: values,
+          data: payload,
         });
         toast.success('System config created successfully');
       }
@@ -117,7 +119,7 @@ export function SystemConfigForm({ id }: SystemConfigFormProps) {
             <FormItem>
               <FormLabel>Config Key *</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., product.variant.size" {...field} />
+                <Input placeholder="e.g., product.variant.clothing" {...field} />
               </FormControl>
               <FormDescription>
                 Unique identifier for this configuration (letters, numbers, and _.:-  only)
@@ -168,31 +170,6 @@ export function SystemConfigForm({ id }: SystemConfigFormProps) {
                 />
               </FormControl>
               <FormDescription>Optional description of this configuration</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value={SystemConfigDTOStatus.DRAFT}>Draft</SelectItem>
-                  <SelectItem value={SystemConfigDTOStatus.ACTIVE}>Active</SelectItem>
-                  <SelectItem value={SystemConfigDTOStatus.INACTIVE}>Inactive</SelectItem>
-                  <SelectItem value={SystemConfigDTOStatus.ARCHIVED}>Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>Current status of this configuration</FormDescription>
               <FormMessage />
             </FormItem>
           )}
