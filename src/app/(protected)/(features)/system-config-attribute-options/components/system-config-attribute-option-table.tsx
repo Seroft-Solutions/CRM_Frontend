@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SystemConfigAttributeOptionDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTOStatus';
+import type { SystemConfigAttributeOptionDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTO';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -27,7 +28,7 @@ import {
   useGetAllSystemConfigAttributeOptions,
   useUpdateSystemConfigAttributeOption,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
-import { Eye, Pencil, Archive, MoreHorizontal } from 'lucide-react';
+import { Archive, Eye, EyeOff, MoreHorizontal, Pencil, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 
 function transformEnumValue(enumValue: string): string {
@@ -46,11 +47,11 @@ export function SystemConfigAttributeOptionTable() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
-  const [archiveId, setArchiveId] = useState<number | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<SystemConfigAttributeOptionDTO | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const getStatusForQuery = (statusTab: string) => {
-    const statusMap: Record<string, string> = {
+    const statusMap: Record<string, SystemConfigAttributeOptionDTOStatus> = {
       active: SystemConfigAttributeOptionDTOStatus.ACTIVE,
       inactive: SystemConfigAttributeOptionDTOStatus.INACTIVE,
       archived: SystemConfigAttributeOptionDTOStatus.ARCHIVED,
@@ -69,28 +70,42 @@ export function SystemConfigAttributeOptionTable() {
 
   const updateMutation = useUpdateSystemConfigAttributeOption();
 
-  const handleArchive = async () => {
-    if (!archiveId) return;
+  const invalidateListQuery = async () => {
+    await queryClient.invalidateQueries({
+      predicate: (query) => query.queryKey[0] === '/api/system-config-attribute-options',
+    });
+  };
 
-    const itemToArchive = data?.find((item) => item.id === archiveId);
-    if (!itemToArchive) return;
+  const updateStatus = async (option: SystemConfigAttributeOptionDTO, status: SystemConfigAttributeOptionDTOStatus) => {
+    if (!option.id) return;
 
     try {
       await updateMutation.mutateAsync({
-        id: archiveId,
-        data: { ...itemToArchive, status: SystemConfigAttributeOptionDTOStatus.ARCHIVED },
+        id: option.id,
+        data: { ...option, id: option.id, status },
       });
 
-      toast.success('Option archived successfully');
-      setShowArchiveDialog(false);
-      setArchiveId(null);
-      await queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey[0] === '/api/system-config-attribute-options',
-      });
+      if (status === SystemConfigAttributeOptionDTOStatus.ACTIVE) {
+        toast.success('Option activated successfully');
+      } else if (status === SystemConfigAttributeOptionDTOStatus.INACTIVE) {
+        toast.success('Option deactivated successfully');
+      } else {
+        toast.success('Option archived successfully');
+      }
+
+      await invalidateListQuery();
     } catch (error) {
-      toast.error('Failed to archive option');
+      toast.error('Failed to update option status');
       console.error(error);
     }
+  };
+
+  const handleArchive = async () => {
+    if (!archiveTarget) return;
+
+    await updateStatus(archiveTarget, SystemConfigAttributeOptionDTOStatus.ARCHIVED);
+    setShowArchiveDialog(false);
+    setArchiveTarget(null);
   };
 
   const totalPages = data ? Math.ceil(data.length / pageSize) : 0;
@@ -188,10 +203,36 @@ export function SystemConfigAttributeOptionTable() {
                               Edit
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => item.id && setArchiveId(item.id) && setShowArchiveDialog(true)}>
-                            <Archive className="mr-2 h-4 w-4" />
-                            Archive
-                          </DropdownMenuItem>
+                          {item.status !== SystemConfigAttributeOptionDTOStatus.ACTIVE && (
+                            <DropdownMenuItem
+                              disabled={updateMutation.isPending}
+                              onClick={() => updateStatus(item, SystemConfigAttributeOptionDTOStatus.ACTIVE)}
+                            >
+                              <RotateCcw className="mr-2 h-4 w-4" />
+                              Mark Active
+                            </DropdownMenuItem>
+                          )}
+                          {item.status !== SystemConfigAttributeOptionDTOStatus.INACTIVE && (
+                            <DropdownMenuItem
+                              disabled={updateMutation.isPending}
+                              onClick={() => updateStatus(item, SystemConfigAttributeOptionDTOStatus.INACTIVE)}
+                            >
+                              <EyeOff className="mr-2 h-4 w-4" />
+                              Mark Inactive
+                            </DropdownMenuItem>
+                          )}
+                          {item.status !== SystemConfigAttributeOptionDTOStatus.ARCHIVED && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (!item.id) return;
+                                setArchiveTarget(item);
+                                setShowArchiveDialog(true);
+                              }}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              Archive
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
