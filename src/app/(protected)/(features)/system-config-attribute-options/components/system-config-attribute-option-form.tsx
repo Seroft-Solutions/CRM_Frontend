@@ -105,7 +105,7 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
       if (isEdit) {
         await updateMutation.mutateAsync({
           id: id!,
-          data: payload as any,
+          data: { ...payload, id: id! } as any,
         });
         toast.success('Option updated successfully');
       } else {
