@@ -8,26 +8,6 @@ const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const productImageFieldSchema = z.any().optional();
 
-const productPropertySchema = z
-  .object({
-    id: z.number().optional(),
-    name: z
-      .string({ message: 'Please enter property name' })
-      .trim()
-      .min(1, { message: 'Please enter property name' })
-      .max(100, { message: 'Please enter no more than 100 characters' }),
-    values: z
-      .array(
-        z
-          .string({ message: 'Please enter a value' })
-          .trim()
-          .min(1, { message: 'Please enter a value' })
-          .max(255, { message: 'Please enter no more than 255 characters' })
-      )
-      .min(1, { message: 'Add at least one value' }),
-  })
-  .strict();
-
 export const productFormSchemaFields = {
   name: z
     .string({ message: 'Please enter name' })
@@ -73,7 +53,6 @@ export const productFormSchemaFields = {
   frontImage: productImageFieldSchema,
   backImage: productImageFieldSchema,
   sideImage: productImageFieldSchema,
-  properties: z.array(productPropertySchema).optional(),
 };
 
 export const productFormSchemaBase = z.object(productFormSchemaFields);
@@ -141,7 +120,6 @@ export const productFieldSchemas = {
   frontImage: productImageFieldSchema,
   backImage: productImageFieldSchema,
   sideImage: productImageFieldSchema,
-  properties: z.array(productPropertySchema).optional(),
 };
 
 export const productStepSchemas = {
@@ -174,10 +152,6 @@ export const productStepSchemas = {
         path: ['salePrice'],
       }
     ),
-
-  properties: z.object({
-    properties: productFieldSchemas.properties,
-  }),
 
   review: productFormSchema,
 };
