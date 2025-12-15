@@ -37,7 +37,7 @@ const productCreationSchema = productFormSchemaBase
     status: true,
   })
   .extend({
-    articalNumber: productFormSchemaBase.shape.articalNumber,
+    articleNumber: productFormSchemaBase.shape.articleNumber,
     categoryHierarchy: productFormSchemaBase
       .pick({
         category: true,
@@ -65,7 +65,7 @@ const productCreationSchema = productFormSchemaBase
 type ProductCreationFormData = {
   name: string;
   code: string;
-  articalNumber?: string;
+  articleNumber?: string;
   description?: string;
   basePrice?: string;
   discountedPrice?: string;
@@ -100,7 +100,7 @@ export function ProductCreateSheet({
       basePrice: '',
       discountedPrice: '',
       salePrice: '',
-      articalNumber: '',
+      articleNumber: '',
       remark: '',
       categoryHierarchy: {
         category: undefined,
@@ -142,7 +142,7 @@ export function ProductCreateSheet({
     const productData: Partial<ProductDTO> = {
       name: data.name,
       code: data.code,
-      articalNumber: data.articalNumber || undefined,
+      articleNumber: data.articleNumber || undefined,
       description: data.description || undefined,
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
       discountedPrice: data.discountedPrice ? Number(data.discountedPrice) : undefined,
@@ -314,15 +314,15 @@ export function ProductCreateSheet({
 
                 <FormField
                   control={form.control}
-                  name="articalNumber"
+                  name="articleNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Artical Number
+                        Article Number
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter artical number"
+                          placeholder="Enter article number"
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                           {...field}
                         />

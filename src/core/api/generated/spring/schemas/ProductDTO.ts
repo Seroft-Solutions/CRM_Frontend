@@ -28,7 +28,7 @@ export interface ProductDTO {
    * @minLength 0
    * @maxLength 100
    */
-  articalNumber?: string;
+  articleNumber?: string;
   /**
    * @minLength 0
    * @maxLength 500

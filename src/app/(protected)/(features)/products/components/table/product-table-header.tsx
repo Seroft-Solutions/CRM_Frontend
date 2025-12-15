@@ -207,14 +207,14 @@ export function ProductTableHeader({
                       );
                     }
 
-                    if (column.accessor === 'articalNumber') {
+                    if (column.accessor === 'articleNumber') {
                       return (
                         <Input
                           placeholder="Filter..."
                           className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                          value={(filters['articalNumber'] as string) || ''}
+                          value={(filters['articleNumber'] as string) || ''}
                           onChange={(e) =>
-                            onFilterChange('articalNumber', e.target.value || undefined)
+                            onFilterChange('articleNumber', e.target.value || undefined)
                           }
                         />
                       );

@@ -15,7 +15,7 @@ export const productFormConfig: FormConfig = {
       fields: [
         'name',
         'code',
-        'articalNumber',
+        'articleNumber',
         'description',
         'remark',
         'status',
@@ -82,10 +82,10 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'articalNumber',
+      name: 'articleNumber',
       type: 'text',
-      label: 'Artical Number',
-      placeholder: 'Enter artical number',
+      label: 'Article Number',
+      placeholder: 'Enter article number',
       required: false,
       validation: {
         required: false,

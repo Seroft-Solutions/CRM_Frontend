@@ -20,7 +20,7 @@ export const productFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
     .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
-  articalNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
+  articleNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
   description: z
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
@@ -87,7 +87,7 @@ export const productFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
     .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
-  articalNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
+  articleNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
   description: z
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
@@ -127,7 +127,7 @@ export const productStepSchemas = {
     .object({
       name: productFieldSchemas.name,
       code: productFieldSchemas.code,
-      articalNumber: productFieldSchemas.articalNumber,
+      articleNumber: productFieldSchemas.articleNumber,
       description: productFieldSchemas.description,
       basePrice: productFieldSchemas.basePrice,
       discountedPrice: productFieldSchemas.discountedPrice,

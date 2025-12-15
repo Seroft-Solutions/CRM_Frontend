@@ -173,7 +173,7 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'articalNumber') {
+                  if (column.id === 'articleNumber') {
                     return field?.toString() || '';
                   }
 

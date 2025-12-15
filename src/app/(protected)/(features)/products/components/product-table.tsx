@@ -153,9 +153,9 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'articalNumber',
-    label: 'Artical Number',
-    accessor: 'articalNumber',
+    id: 'articleNumber',
+    label: 'Article Number',
+    accessor: 'articleNumber',
     type: 'field',
     visible: true,
     sortable: true,
@@ -591,9 +591,9 @@ export function ProductTable() {
           if (typeof value === 'string' && value.trim() !== '') {
             params['lastModifiedBy.contains'] = value;
           }
-        } else if (key === 'articalNumber') {
+        } else if (key === 'articleNumber') {
           if (typeof value === 'string' && value.trim() !== '') {
-            params['articalNumber.contains'] = value;
+            params['articleNumber.contains'] = value;
           }
         } else if (Array.isArray(value) && value.length > 0) {
           params[key] = value;
