@@ -27,7 +27,7 @@ export default function SystemConfigDetailsPage({ params }: PageProps) {
   const { id } = use(params);
   const { data, isLoading, error } = useGetSystemConfig(parseInt(id));
   const { data: attributes, isLoading: isLoadingAttributes } = useGetAllSystemConfigAttributes({
-    'systemConfig.id.equals': parseInt(id),
+    'systemConfigId.equals': parseInt(id),
     size: 1000,
     sort: ['sortOrder,asc'],
   });

@@ -5,13 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   useCreateSystemConfigAttributeOption,
   useGetSystemConfigAttributeOption,
   useUpdateSystemConfigAttributeOption,
+  getGetSystemConfigAttributeOptionQueryKey,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
-import { useGetAllSystemConfigAttributes } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
+import { useGetAllSystemConfigAttributes, getGetAllSystemConfigAttributesQueryKey } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 import { SystemConfigAttributeOptionDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTOStatus';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,6 +56,7 @@ interface SystemConfigAttributeOptionFormProps {
 
 export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOptionFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isEdit = !!id;
 
   const { data: existingData, isLoading: isLoadingData } = useGetSystemConfigAttributeOption(id!, {
@@ -111,6 +114,18 @@ export function SystemConfigAttributeOptionForm({ id }: SystemConfigAttributeOpt
         });
         toast.success('Option created successfully');
       }
+      // Invalidate and refetch relevant queries using generated keys
+      const detailsKey = getGetSystemConfigAttributeOptionQueryKey(id!);
+      const listKey = ['/api/system-config-attribute-options'] as const; // generated list key varies by params; keep broad
+      const attributesListKey = getGetAllSystemConfigAttributesQueryKey({ size: 1000, sort: ['name,asc'] });
+
+      await queryClient.invalidateQueries({ queryKey: detailsKey });
+      await queryClient.invalidateQueries({ queryKey: listKey });
+      await queryClient.invalidateQueries({ queryKey: attributesListKey });
+      await queryClient.refetchQueries({ queryKey: detailsKey });
+      await queryClient.refetchQueries({ queryKey: listKey });
+
+      router.refresh();
       router.push('/system-config-attribute-options');
     } catch (error) {
       toast.error(isEdit ? 'Failed to update option' : 'Failed to create option');

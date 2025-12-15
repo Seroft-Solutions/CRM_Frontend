@@ -92,7 +92,7 @@ export function ProductVariantFormDialog({
   );
 
   const { data: existingSelections } = useGetAllProductVariantSelections({
-    'variant.id.equals': variantId!,
+    'variantId.equals': variantId!,
     size: 1000,
   }, {
     query: { enabled: isEdit && !!variantId && open },

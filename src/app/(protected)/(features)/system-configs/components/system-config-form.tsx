@@ -5,12 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   useCreateSystemConfig,
   useGetSystemConfig,
   useUpdateSystemConfig,
+  getGetSystemConfigQueryKey,
 } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
+import { getGetAllSystemConfigAttributesQueryKey } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
 import { SystemConfigDTOSystemConfigType } from '@/core/api/generated/spring/schemas/SystemConfigDTOSystemConfigType';
 import { Button } from '@/components/ui/button';
@@ -51,6 +54,7 @@ interface SystemConfigFormProps {
 
 export function SystemConfigForm({ id }: SystemConfigFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isEdit = !!id;
 
   const { data: existingData, isLoading: isLoadingData } = useGetSystemConfig(id!, {
@@ -98,7 +102,21 @@ export function SystemConfigForm({ id }: SystemConfigFormProps) {
         });
         toast.success('System config created successfully');
       }
-      router.push('/system-configs');
+      // Refetch precise queries using generated query keys
+      const detailsKey = getGetSystemConfigQueryKey(id!);
+      const attrsKey = getGetAllSystemConfigAttributesQueryKey({
+        'systemConfigId.equals': id!,
+        size: 1000,
+        sort: ['sortOrder,asc'],
+      });
+
+      await queryClient.invalidateQueries({ queryKey: detailsKey });
+      await queryClient.invalidateQueries({ queryKey: attrsKey });
+      await queryClient.refetchQueries({ queryKey: detailsKey });
+      await queryClient.refetchQueries({ queryKey: attrsKey });
+
+      // Keep user on the same page; optionally refresh router cache
+      router.refresh();
     } catch (error) {
       toast.error(isEdit ? 'Failed to update system config' : 'Failed to create system config');
       console.error(error);

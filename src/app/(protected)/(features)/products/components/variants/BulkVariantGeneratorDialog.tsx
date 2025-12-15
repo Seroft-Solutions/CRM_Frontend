@@ -71,7 +71,7 @@ export function BulkVariantGeneratorDialog({
 
   // Fetch existing variants to avoid duplicates
   const { data: existingVariants } = useGetAllProductVariants({
-    'product.id.equals': productId,
+    'productId.equals': productId,
     size: 1000,
   });
 
@@ -88,7 +88,7 @@ export function BulkVariantGeneratorDialog({
     queries: enumAttributes.map((attr) =>
       getGetAllSystemConfigAttributeOptionsQueryOptions(
         {
-          'attribute.id.equals': attr.id!,
+          'attributeId.equals': attr.id!,
           'status.equals': 'ACTIVE',
           size: 1000,
           sort: ['sortOrder,asc'],

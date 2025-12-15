@@ -84,7 +84,7 @@ export function ProductVariantManager({
 
   // Fetch variants for this product
   const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants({
-    'product.id.equals': productId,
+    'productId.equals': productId,
     size: 1000,
     sort: ['sku,asc'],
   });
@@ -95,7 +95,7 @@ export function ProductVariantManager({
   });
 
   const { data: configAttributes, isLoading: isLoadingAttributes } = useGetAllSystemConfigAttributes({
-    'systemConfig.id.equals': variantConfigId!,
+    'systemConfigId.equals': variantConfigId!,
     size: 1000,
     sort: ['sortOrder,asc'],
   }, {
@@ -128,7 +128,7 @@ export function ProductVariantManager({
     queries: enumAttributes.map((attr) =>
       getGetAllSystemConfigAttributeOptionsQueryOptions(
         {
-          'attribute.id.equals': attr.id!,
+          'attributeId.equals': attr.id!,
           'status.equals': 'ACTIVE',
           size: 1000,
           sort: ['sortOrder,asc'],

@@ -5,13 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   useCreateSystemConfigAttribute,
   useGetSystemConfigAttribute,
   useUpdateSystemConfigAttribute,
+  getGetSystemConfigAttributeQueryKey,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
-import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
+import { useGetAllSystemConfigs, getGetAllSystemConfigsQueryKey } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
 import { Button } from '@/components/ui/button';
@@ -58,6 +60,7 @@ interface SystemConfigAttributeFormProps {
 
 export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const isEdit = !!id;
 
   const { data: existingData, isLoading: isLoadingData } = useGetSystemConfigAttribute(id!, {
@@ -121,6 +124,18 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
         });
         toast.success('Attribute created successfully');
       }
+      // Invalidate and refetch relevant queries using generated keys
+      const detailsKey = getGetSystemConfigAttributeQueryKey(id!);
+      const listKey = ['/api/system-config-attributes'] as const; // generated list key depends on params; keep broad
+      const allConfigsKey = getGetAllSystemConfigsQueryKey({ size: 1000, sort: ['configKey,asc'] });
+
+      await queryClient.invalidateQueries({ queryKey: detailsKey });
+      await queryClient.invalidateQueries({ queryKey: listKey });
+      await queryClient.invalidateQueries({ queryKey: allConfigsKey });
+      await queryClient.refetchQueries({ queryKey: detailsKey });
+      await queryClient.refetchQueries({ queryKey: listKey });
+
+      router.refresh();
       router.push('/system-config-attributes');
     } catch (error) {
       toast.error(isEdit ? 'Failed to update attribute' : 'Failed to create attribute');
