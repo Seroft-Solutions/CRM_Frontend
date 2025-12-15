@@ -1,8 +1,10 @@
 'use client';
 
 import { useGetSystemConfig } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
+import { useGetAllSystemConfigAttributes } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { PermissionGuard } from '@/core/auth';
 import { use } from 'react';
@@ -24,6 +26,11 @@ function transformEnumValue(enumValue: string): string {
 export default function SystemConfigDetailsPage({ params }: PageProps) {
   const { id } = use(params);
   const { data, isLoading, error } = useGetSystemConfig(parseInt(id));
+  const { data: attributes, isLoading: isLoadingAttributes } = useGetAllSystemConfigAttributes({
+    'systemConfig.id.equals': parseInt(id),
+    size: 1000,
+    sort: ['sortOrder,asc'],
+  });
 
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
@@ -40,7 +47,6 @@ export default function SystemConfigDetailsPage({ params }: PageProps) {
       unauthorizedDescription="You don't have permission to view system config details."
     >
       <div className="space-y-6">
-        {/* Professional Header */}
         <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-20"
@@ -96,7 +102,6 @@ export default function SystemConfigDetailsPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Details Card */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -165,6 +170,90 @@ export default function SystemConfigDetailsPage({ params }: PageProps) {
                   : '-'}
               </p>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Attributes</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Attributes defined for this system config
+                </p>
+              </div>
+              <Button asChild size="sm">
+                <Link href={`/system-config-attributes/new?systemConfigId=${id}`}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Attribute
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {isLoadingAttributes ? (
+              <div className="text-center py-8 text-muted-foreground">Loading attributes...</div>
+            ) : !attributes || attributes.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-muted-foreground mb-4">
+                  No attributes configured for this system config yet.
+                </div>
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/system-config-attributes/new?systemConfigId=${id}`}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create First Attribute
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {attributes.map((attr) => (
+                  <div
+                    key={attr.id}
+                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-medium">{attr.label}</h3>
+                        <Badge variant="outline">{transformEnumValue(attr.attributeType)}</Badge>
+                        {attr.isRequired && (
+                          <Badge variant="destructive" className="text-xs">
+                            Required
+                          </Badge>
+                        )}
+                        <Badge
+                          variant={attr.status === 'ACTIVE' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {transformEnumValue(attr.status)}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Name: <code className="px-1 py-0.5 bg-gray-100 rounded">{attr.name}</code>
+                        {attr.attributeType === 'ENUM' && (
+                          <span className="ml-2 text-blue-600">
+                            → Configure options in System Config Attribute Options
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/system-config-attributes/${attr.id}`}>
+                          View
+                        </Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/system-config-attributes/${attr.id}/edit`}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

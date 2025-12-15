@@ -1,8 +1,10 @@
 'use client';
 
 import { useGetSystemConfigAttribute } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
+import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { PermissionGuard } from '@/core/auth';
 import { use } from 'react';
@@ -24,6 +26,13 @@ function transformEnumValue(enumValue: string): string {
 export default function SystemConfigAttributeDetailsPage({ params }: PageProps) {
   const { id } = use(params);
   const { data, isLoading, error } = useGetSystemConfigAttribute(parseInt(id));
+  const { data: options, isLoading: isLoadingOptions } = useGetAllSystemConfigAttributeOptions({
+    'attributeId.equals': parseInt(id),
+    size: 1000,
+    sort: ['sortOrder,asc'],
+  }, {
+    query: { enabled: data?.attributeType === 'ENUM' },
+  });
 
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
@@ -32,6 +41,8 @@ export default function SystemConfigAttributeDetailsPage({ params }: PageProps) 
   if (error || !data) {
     return <div className="p-6 text-red-500">Error loading config attribute</div>;
   }
+
+  const isEnumType = data.attributeType === 'ENUM';
 
   return (
     <PermissionGuard
@@ -85,6 +96,13 @@ export default function SystemConfigAttributeDetailsPage({ params }: PageProps) 
                   Back to List
                 </Link>
               </Button>
+              {data.systemConfig?.id && (
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/system-configs/${data.systemConfig.id}`}>
+                    View Config
+                  </Link>
+                </Button>
+              )}
               <Button asChild size="sm" className="bg-yellow-400 text-black hover:bg-yellow-500">
                 <Link href={`/system-config-attributes/${id}/edit`}>
                   <Pencil className="h-4 w-4 mr-2" />
@@ -104,7 +122,9 @@ export default function SystemConfigAttributeDetailsPage({ params }: PageProps) 
 
             <div>
               <label className="text-sm font-medium text-gray-500">Name</label>
-              <p className="mt-1 text-base font-semibold">{data.name}</p>
+              <p className="mt-1 text-base font-semibold">
+                <code className="px-2 py-1 bg-gray-100 rounded">{data.name}</code>
+              </p>
             </div>
 
             <div>
@@ -114,12 +134,22 @@ export default function SystemConfigAttributeDetailsPage({ params }: PageProps) 
 
             <div>
               <label className="text-sm font-medium text-gray-500">Attribute Type</label>
-              <p className="mt-1 text-base">{transformEnumValue(data.attributeType)}</p>
+              <p className="mt-1">
+                <Badge variant="outline" className="text-base">
+                  {transformEnumValue(data.attributeType)}
+                </Badge>
+              </p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">Required</label>
-              <p className="mt-1 text-base">{data.isRequired ? 'Yes' : 'No'}</p>
+              <p className="mt-1">
+                {data.isRequired ? (
+                  <Badge variant="destructive">Required</Badge>
+                ) : (
+                  <Badge variant="secondary">Optional</Badge>
+                )}
+              </p>
             </div>
 
             <div>
@@ -129,23 +159,29 @@ export default function SystemConfigAttributeDetailsPage({ params }: PageProps) 
 
             <div>
               <label className="text-sm font-medium text-gray-500">System Config</label>
-              <p className="mt-1 text-base">{data.systemConfig?.configKey || '-'}</p>
+              <p className="mt-1 text-base">
+                {data.systemConfig?.id ? (
+                  <Link
+                    href={`/system-configs/${data.systemConfig.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {data.systemConfig.configKey}
+                  </Link>
+                ) : (
+                  '-'
+                )}
+              </p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">Status</label>
               <p className="mt-1 text-base">
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    data.status === 'ACTIVE'
-                      ? 'bg-green-100 text-green-800'
-                      : data.status === 'INACTIVE'
-                        ? 'bg-gray-100 text-gray-800'
-                        : 'bg-red-100 text-red-800'
-                  }`}
+                <Badge
+                  variant={data.status === 'ACTIVE' ? 'default' : 'secondary'}
+                  className="text-xs"
                 >
                   {transformEnumValue(data.status)}
-                </span>
+                </Badge>
               </p>
             </div>
 
@@ -176,6 +212,109 @@ export default function SystemConfigAttributeDetailsPage({ params }: PageProps) 
             </div>
           </div>
         </div>
+
+        {isEnumType && (
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Attribute Options</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Available options for this ENUM attribute
+                  </p>
+                </div>
+                <Button asChild size="sm">
+                  <Link href={`/system-config-attribute-options/new?attributeId=${id}`}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Option
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {isLoadingOptions ? (
+                <div className="text-center py-8 text-muted-foreground">Loading options...</div>
+              ) : !options || options.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-muted-foreground mb-4">
+                    No options configured for this attribute yet.
+                  </div>
+                  <div className="text-sm text-amber-600 mb-4">
+                    ⚠️ ENUM attributes require at least one option to be used in product variants
+                  </div>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/system-config-attribute-options/new?attributeId=${id}`}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create First Option
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {options.map((option, index) => (
+                    <div
+                      key={option.id}
+                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-medium text-muted-foreground">
+                          #{index + 1}
+                        </div>
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Code: <code className="px-1 py-0.5 bg-gray-100 rounded text-xs">{option.code}</code>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={option.status === 'ACTIVE' ? 'default' : 'secondary'}
+                          className="text-xs"
+                        >
+                          {transformEnumValue(option.status)}
+                        </Badge>
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={`/system-config-attribute-options/${option.id}/edit`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!isEnumType && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-blue-600 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <h3 className="font-medium text-blue-900">Non-ENUM Attribute</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  This attribute type ({transformEnumValue(data.attributeType)}) does not use predefined options.
+                  Values will be entered directly when creating product variants.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PermissionGuard>
   );

@@ -15,7 +15,6 @@ import {
   useCreateProductVariantSelection,
   useGetAllProductVariantSelections,
   useUpdateProductVariantSelection,
-  useDeleteProductVariantSelection,
 } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
@@ -88,7 +87,7 @@ export function ProductVariantFormDialog({
   const { data: existingVariant, isLoading: isLoadingVariant } = useGetProductVariant(
     variantId!,
     {
-      query: { enabled: isEdit },
+      query: { enabled: isEdit && !!variantId && open },
     }
   );
 
@@ -96,7 +95,7 @@ export function ProductVariantFormDialog({
     'variant.id.equals': variantId!,
     size: 1000,
   }, {
-    query: { enabled: isEdit },
+    query: { enabled: isEdit && !!variantId && open },
   });
 
   const createVariantMutation = useCreateProductVariant();
@@ -114,9 +113,19 @@ export function ProductVariantFormDialog({
     },
   });
 
-  // Load existing variant data
   useEffect(() => {
-    if (existingVariant) {
+    if (!open) {
+      form.reset({
+        sku: '',
+        price: undefined,
+        stockQuantity: 0,
+        status: ProductVariantDTOStatus.ACTIVE,
+      });
+      setAttributeValues({});
+      return;
+    }
+
+    if (isEdit && existingVariant) {
       form.reset({
         sku: existingVariant.sku,
         price: existingVariant.price,
@@ -130,12 +139,17 @@ export function ProductVariantFormDialog({
         stockQuantity: 0,
         status: ProductVariantDTOStatus.ACTIVE,
       });
+      setAttributeValues({});
     }
-  }, [existingVariant, isEdit, form]);
+  }, [open, isEdit, existingVariant, form]);
 
-  // Load existing selections
   useEffect(() => {
-    if (existingSelections) {
+    if (!open) {
+      setAttributeValues({});
+      return;
+    }
+
+    if (isEdit && existingSelections) {
       const values: Record<number, AttributeValue> = {};
       existingSelections.forEach((selection) => {
         if (selection.attribute?.id) {
@@ -147,42 +161,47 @@ export function ProductVariantFormDialog({
         }
       });
       setAttributeValues(values);
-    } else {
+    } else if (!isEdit) {
       setAttributeValues({});
     }
-  }, [existingSelections]);
+  }, [open, isEdit, existingSelections]);
 
   const onSubmit = async (values: FormValues) => {
     try {
       let variantIdToUse = variantId;
 
-      // Step 1: Create or update the variant
       if (isEdit) {
         await updateVariantMutation.mutateAsync({
           id: variantId!,
           data: {
-            ...values,
+            sku: values.sku,
+            price: values.price,
+            stockQuantity: values.stockQuantity,
+            status: values.status,
             product: { id: productId },
-          } as any,
+          },
         });
       } else {
         const newVariant = await createVariantMutation.mutateAsync({
           data: {
-            ...values,
+            sku: values.sku,
+            price: values.price,
+            stockQuantity: values.stockQuantity,
+            status: values.status,
             product: { id: productId },
-          } as any,
+          },
         });
         variantIdToUse = newVariant.id;
       }
 
-      // Step 2: Create/update selections for each attribute
       for (const attr of configAttributes) {
         const attrValue = attributeValues[attr.id!];
 
         if (!attrValue) {
-          // Skip attributes without values if not required
-          if (!attr.isRequired) continue;
-          throw new Error(`Please provide a value for ${attr.label}`);
+          if (attr.isRequired) {
+            throw new Error(`Please provide a value for ${attr.label}`);
+          }
+          continue;
         }
 
         const selectionData: any = {
@@ -206,7 +225,6 @@ export function ProductVariantFormDialog({
           selectionData.rawValue = attrValue.rawValue;
         }
 
-        // Find existing selection for this attribute
         const existingSelection = existingSelections?.find(
           (s) => s.attribute?.id === attr.id
         );
@@ -238,6 +256,12 @@ export function ProductVariantFormDialog({
     }
   };
 
+  const isSubmitting =
+    createVariantMutation.isPending ||
+    updateVariantMutation.isPending ||
+    createSelectionMutation.isPending ||
+    updateSelectionMutation.isPending;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -249,7 +273,6 @@ export function ProductVariantFormDialog({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Variant Details */}
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -316,7 +339,6 @@ export function ProductVariantFormDialog({
             </div>
           </div>
 
-          {/* Attribute Selections */}
           {configAttributes.length > 0 && (
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold mb-3">Variant Attributes</h3>
@@ -336,24 +358,11 @@ export function ProductVariantFormDialog({
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={
-                createVariantMutation.isPending ||
-                updateVariantMutation.isPending ||
-                createSelectionMutation.isPending ||
-                updateSelectionMutation.isPending
-              }
-            >
-              {(createVariantMutation.isPending ||
-                updateVariantMutation.isPending ||
-                createSelectionMutation.isPending ||
-                updateSelectionMutation.isPending) && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEdit ? 'Update' : 'Create'} Variant
             </Button>
           </DialogFooter>
@@ -363,7 +372,6 @@ export function ProductVariantFormDialog({
   );
 }
 
-// Attribute Input Component
 interface AttributeInputProps {
   attribute: SystemConfigAttributeDTO;
   value?: AttributeValue;
@@ -371,12 +379,13 @@ interface AttributeInputProps {
 }
 
 function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
-  const { data: options } = useGetAllSystemConfigAttributeOptions({
-    'attribute.id.equals': attribute.id!,
+  const { data: options, isLoading: isLoadingOptions } = useGetAllSystemConfigAttributeOptions({
+    'attributeId.equals': attribute.id!,
+    'status.equals': 'ACTIVE',
     size: 1000,
     sort: ['sortOrder,asc'],
   }, {
-    query: { enabled: attribute.attributeType === SystemConfigAttributeDTOAttributeType.ENUM },
+    query: { enabled: attribute.attributeType === SystemConfigAttributeDTOAttributeType.ENUM && !!attribute.id },
   });
 
   if (attribute.attributeType === SystemConfigAttributeDTOAttributeType.ENUM) {
@@ -394,9 +403,18 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
               optionId: parseInt(val),
             })
           }
+          disabled={isLoadingOptions || !options || options.length === 0}
         >
           <SelectTrigger>
-            <SelectValue placeholder={`Select ${attribute.label}`} />
+            <SelectValue
+              placeholder={
+                isLoadingOptions
+                  ? 'Loading options...'
+                  : !options || options.length === 0
+                    ? `No options available`
+                    : `Select ${attribute.label}`
+              }
+            />
           </SelectTrigger>
           <SelectContent>
             {options?.map((option) => (
@@ -406,6 +424,11 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
             ))}
           </SelectContent>
         </Select>
+        {!isLoadingOptions && (!options || options.length === 0) && (
+          <p className="text-sm text-amber-600">
+            No options configured for this attribute. Please add options in System Config Attribute Options.
+          </p>
+        )}
       </div>
     );
   }

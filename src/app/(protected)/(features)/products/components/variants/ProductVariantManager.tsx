@@ -71,7 +71,7 @@ export function ProductVariantManager({
     query: { enabled: !!variantConfigId },
   });
 
-  const { data: configAttributes } = useGetAllSystemConfigAttributes({
+  const { data: configAttributes, isLoading: isLoadingAttributes } = useGetAllSystemConfigAttributes({
     'systemConfig.id.equals': variantConfigId!,
     size: 1000,
     sort: ['sortOrder,asc'],
@@ -151,18 +151,26 @@ export function ProductVariantManager({
           <p className="text-sm text-muted-foreground">
             Configuration: {variantConfig?.configKey || 'Loading...'}
           </p>
+          {isLoadingAttributes && (
+            <p className="text-sm text-muted-foreground mt-1">Loading attributes...</p>
+          )}
+          {!isLoadingAttributes && configAttributes && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {configAttributes.length} attribute{configAttributes.length !== 1 ? 's' : ''} configured
+            </p>
+          )}
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowBulkGeneratorDialog(true)}
-            disabled={!configAttributes || configAttributes.length === 0}
+            disabled={isLoadingAttributes || !configAttributes || configAttributes.length === 0}
           >
             <Sparkles className="h-4 w-4 mr-2" />
             Bulk Generate
           </Button>
-          <Button size="sm" onClick={() => setShowAddDialog(true)}>
+          <Button size="sm" onClick={() => setShowAddDialog(true)} disabled={isLoadingAttributes}>
             <Plus className="h-4 w-4 mr-2" />
             Add Variant
           </Button>
