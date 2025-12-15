@@ -115,7 +115,7 @@ export function SystemConfigAttributeForm({ id }: SystemConfigAttributeFormProps
       if (isEdit) {
         await updateMutation.mutateAsync({
           id: id!,
-          data: payload as any,
+          data: { ...payload, id: id! } as any,
         });
         toast.success('Attribute updated successfully');
       } else {

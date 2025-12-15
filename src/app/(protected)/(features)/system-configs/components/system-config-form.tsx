@@ -87,7 +87,7 @@ export function SystemConfigForm({ id }: SystemConfigFormProps) {
       if (isEdit) {
         await updateMutation.mutateAsync({
           id: id!,
-          data: values,
+          data: { ...values, id: id! },
         });
         toast.success('System config updated successfully');
       } else {
