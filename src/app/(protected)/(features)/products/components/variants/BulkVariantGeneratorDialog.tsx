@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQueryClient } from '@tanstack/react-query';
 import {
   useCreateProductVariant,
   useGetAllProductVariants,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
-import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
+import { getGetAllSystemConfigAttributeOptionsQueryOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { ProductVariantSelectionDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
@@ -76,28 +76,37 @@ export function BulkVariantGeneratorDialog({
   });
 
   // Fetch options for all ENUM attributes
-  const enumAttributes = configAttributes.filter(
-    (attr) => attr.attributeType === SystemConfigAttributeDTOAttributeType.ENUM
+  const enumAttributes = useMemo(
+    () =>
+      configAttributes.filter(
+        (attr) => attr.attributeType === SystemConfigAttributeDTOAttributeType.ENUM
+      ),
+    [configAttributes]
   );
 
-  const attributeOptionsQueries = enumAttributes.map((attr) => {
-    const { data } = useGetAllSystemConfigAttributeOptions({
-      'attribute.id.equals': attr.id!,
-      'status.equals': 'ACTIVE',
-      size: 1000,
-      sort: ['sortOrder,asc'],
-    });
-    return { attributeId: attr.id!, options: data || [] };
+  const attributeOptionsResults = useQueries({
+    queries: enumAttributes.map((attr) =>
+      getGetAllSystemConfigAttributeOptionsQueryOptions(
+        {
+          'attribute.id.equals': attr.id!,
+          'status.equals': 'ACTIVE',
+          size: 1000,
+          sort: ['sortOrder,asc'],
+        },
+        { query: { enabled: open && !!attr.id } }
+      )
+    ),
   });
 
   // Generate all possible combinations
   const generatedVariants = useMemo(() => {
+    if (!open) return [];
     if (enumAttributes.length === 0) return [];
 
     // Get options for each attribute
-    const attributeOptions = attributeOptionsQueries.map((query, index) => ({
-      attribute: enumAttributes[index],
-      options: query.options,
+    const attributeOptions = enumAttributes.map((attribute, index) => ({
+      attribute,
+      options: attributeOptionsResults[index]?.data || [],
     }));
 
     // Generate cartesian product
@@ -147,8 +156,9 @@ export function BulkVariantGeneratorDialog({
     generateCombinations(0, []);
     return combinations;
   }, [
+    open,
     enumAttributes,
-    attributeOptionsQueries,
+    attributeOptionsResults,
     existingVariants,
     skuPrefix,
     productName,
@@ -156,10 +166,39 @@ export function BulkVariantGeneratorDialog({
     defaultStock,
   ]);
 
-  // Initialize all variants as selected
-  useMemo(() => {
-    setSelectedVariants(new Set(generatedVariants.map((_, index) => index)));
-  }, [generatedVariants]);
+  // Initialize all variants as selected when opening, and keep selection indices valid.
+  useEffect(() => {
+    if (!open) return;
+
+    setSelectedVariants((prev) => {
+      const all = new Set<number>();
+      for (let i = 0; i < generatedVariants.length; i++) {
+        all.add(i);
+      }
+
+      if (prev.size === all.size) {
+        let isSame = true;
+        for (const index of prev) {
+          if (!all.has(index)) {
+            isSame = false;
+            break;
+          }
+        }
+        if (isSame) return prev;
+      }
+
+      if (prev.size === 0) return all;
+
+      const normalized = new Set<number>();
+      for (const index of prev) {
+        if (all.has(index)) {
+          normalized.add(index);
+        }
+      }
+
+      return normalized.size === 0 ? all : normalized;
+    });
+  }, [open, generatedVariants.length]);
 
   const handleGenerate = async () => {
     if (selectedVariants.size === 0) {
