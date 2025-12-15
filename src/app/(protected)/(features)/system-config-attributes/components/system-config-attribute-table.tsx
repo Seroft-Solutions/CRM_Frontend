@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOStatus';
+import type { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -27,7 +28,7 @@ import {
   useGetAllSystemConfigAttributes,
   useUpdateSystemConfigAttribute,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
-import { Eye, Pencil, Archive, MoreHorizontal } from 'lucide-react';
+import { Archive, Eye, EyeOff, MoreHorizontal, Pencil, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 
 function transformEnumValue(enumValue: string): string {
@@ -46,11 +47,11 @@ export function SystemConfigAttributeTable() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
-  const [archiveId, setArchiveId] = useState<number | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<SystemConfigAttributeDTO | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const getStatusForQuery = (statusTab: string) => {
-    const statusMap: Record<string, string> = {
+    const statusMap: Record<string, SystemConfigAttributeDTOStatus> = {
       active: SystemConfigAttributeDTOStatus.ACTIVE,
       inactive: SystemConfigAttributeDTOStatus.INACTIVE,
       archived: SystemConfigAttributeDTOStatus.ARCHIVED,
@@ -69,28 +70,42 @@ export function SystemConfigAttributeTable() {
 
   const updateMutation = useUpdateSystemConfigAttribute();
 
-  const handleArchive = async () => {
-    if (!archiveId) return;
+  const invalidateListQuery = async () => {
+    await queryClient.invalidateQueries({
+      predicate: (query) => query.queryKey[0] === '/api/system-config-attributes',
+    });
+  };
 
-    const itemToArchive = data?.find((item) => item.id === archiveId);
-    if (!itemToArchive) return;
+  const updateStatus = async (attribute: SystemConfigAttributeDTO, status: SystemConfigAttributeDTOStatus) => {
+    if (!attribute.id) return;
 
     try {
       await updateMutation.mutateAsync({
-        id: archiveId,
-        data: { ...itemToArchive, status: SystemConfigAttributeDTOStatus.ARCHIVED },
+        id: attribute.id,
+        data: { ...attribute, id: attribute.id, status },
       });
 
-      toast.success('Attribute archived successfully');
-      setShowArchiveDialog(false);
-      setArchiveId(null);
-      await queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey[0] === '/api/system-config-attributes',
-      });
+      if (status === SystemConfigAttributeDTOStatus.ACTIVE) {
+        toast.success('Attribute activated successfully');
+      } else if (status === SystemConfigAttributeDTOStatus.INACTIVE) {
+        toast.success('Attribute deactivated successfully');
+      } else {
+        toast.success('Attribute archived successfully');
+      }
+
+      await invalidateListQuery();
     } catch (error) {
-      toast.error('Failed to archive attribute');
+      toast.error('Failed to update attribute status');
       console.error(error);
     }
+  };
+
+  const handleArchive = async () => {
+    if (!archiveTarget) return;
+
+    await updateStatus(archiveTarget, SystemConfigAttributeDTOStatus.ARCHIVED);
+    setShowArchiveDialog(false);
+    setArchiveTarget(null);
   };
 
   const totalPages = data ? Math.ceil(data.length / pageSize) : 0;
@@ -192,10 +207,36 @@ export function SystemConfigAttributeTable() {
                               Edit
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => item.id && setArchiveId(item.id) && setShowArchiveDialog(true)}>
-                            <Archive className="mr-2 h-4 w-4" />
-                            Archive
-                          </DropdownMenuItem>
+                          {item.status !== SystemConfigAttributeDTOStatus.ACTIVE && (
+                            <DropdownMenuItem
+                              disabled={updateMutation.isPending}
+                              onClick={() => updateStatus(item, SystemConfigAttributeDTOStatus.ACTIVE)}
+                            >
+                              <RotateCcw className="mr-2 h-4 w-4" />
+                              Mark Active
+                            </DropdownMenuItem>
+                          )}
+                          {item.status !== SystemConfigAttributeDTOStatus.INACTIVE && (
+                            <DropdownMenuItem
+                              disabled={updateMutation.isPending}
+                              onClick={() => updateStatus(item, SystemConfigAttributeDTOStatus.INACTIVE)}
+                            >
+                              <EyeOff className="mr-2 h-4 w-4" />
+                              Mark Inactive
+                            </DropdownMenuItem>
+                          )}
+                          {item.status !== SystemConfigAttributeDTOStatus.ARCHIVED && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                if (!item.id) return;
+                                setArchiveTarget(item);
+                                setShowArchiveDialog(true);
+                              }}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              Archive
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
