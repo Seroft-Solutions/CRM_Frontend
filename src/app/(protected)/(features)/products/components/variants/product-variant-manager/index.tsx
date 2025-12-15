@@ -358,6 +358,61 @@ export function ProductVariantManager({
   const draftVariants = useMemo(() => Object.values(draftVariantsByKey), [draftVariantsByKey]);
   // #endregion
 
+  const precomputeDisabledOptionIds = useMemo(() => {
+    const disabledOptions = new Set<number>();
+
+    // Collect all currently selected attribute options from state
+    const currentSelectedAttributeOptions: Array<{ attributeId: number; optionId: number }> = [];
+    Object.entries(selectedOptionIdsByAttributeId).forEach(([attrIdStr, optionIdSet]) => {
+      const attributeId = parseInt(attrIdStr, 10);
+      optionIdSet.forEach(optionId => {
+        currentSelectedAttributeOptions.push({ attributeId, optionId });
+      });
+    });
+
+    // For each attribute that has ENUM options
+    enumAttributeOptions.forEach(({ attribute, options }) => {
+      const currentAttributeId = attribute.id!;
+
+      // For each option in that attribute
+      options.forEach(option => {
+        const currentOptionId = option.id!;
+
+        // If this option is already selected for its attribute, it should NOT be disabled.
+        // This mechanism is for preventing *new* selections that lead to duplicates.
+        if (selectedOptionIdsByAttributeId[currentAttributeId]?.has(currentOptionId)) {
+          return;
+        }
+
+        // Create a hypothetical set of selections if this option were chosen
+        const hypotheticalSelections = [
+          // All currently selected options from *other* attributes
+          ...currentSelectedAttributeOptions.filter(s => s.attributeId !== currentAttributeId),
+          // Plus the current option being evaluated
+          { attributeId: currentAttributeId, optionId: currentOptionId }
+        ];
+
+        // Only check for duplication if there are selections to form a key
+        if (hypotheticalSelections.length > 0) {
+          const hypotheticalCombinationKey = buildCombinationKey(hypotheticalSelections);
+
+          // If this hypothetical combination key already exists
+          if (existingCombinationKeys.has(hypotheticalCombinationKey)) {
+            disabledOptions.add(currentOptionId);
+          }
+        }
+      });
+    });
+
+    return disabledOptions;
+  }, [
+    enumAttributeOptions,
+    selectedOptionIdsByAttributeId,
+    existingCombinationKeys,
+    buildCombinationKey,
+  ]);
+
+
   // #region Combined Logic & UI State
   const combinedRows = useMemo(() => {
     return [
@@ -592,6 +647,7 @@ export function ProductVariantManager({
         isSaving={isSavingDrafts}
         canSave={canSaveDrafts}
         onToggleOption={toggleOption}
+        disabledOptionIds={precomputeDisabledOptionIds}
       />
 
       <div className="space-y-2">

@@ -42,6 +42,7 @@ interface VariantGeneratorProps {
   isSaving: boolean;
   canSave: boolean;
   onToggleOption: (attributeId: number, optionId: number) => void;
+  disabledOptionIds: Set<number>;
 }
 
 /**
@@ -63,6 +64,7 @@ export function VariantGenerator({
   isSaving,
   canSave,
   onToggleOption,
+  disabledOptionIds,
 }: VariantGeneratorProps) {
   return (
     <div className="rounded-md border bg-muted/20 p-4 space-y-4">
@@ -109,6 +111,7 @@ export function VariantGenerator({
                 options={options}
                 selectedOptionIds={selectedSet}
                 onToggleOption={onToggleOption}
+                disabledOptionIds={disabledOptionIds}
               />
             );
           })}

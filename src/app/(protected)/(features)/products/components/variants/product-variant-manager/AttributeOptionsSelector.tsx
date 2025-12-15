@@ -16,6 +16,7 @@ interface AttributeOptionsSelectorProps {
   options: SystemConfigAttributeOptionDTO[];
   selectedOptionIds: Set<number>;
   onToggleOption: (attributeId: number, optionId: number) => void;
+  disabledOptionIds: Set<number>;
 }
 
 /**
@@ -30,6 +31,7 @@ export function AttributeOptionsSelector({
   options,
   selectedOptionIds,
   onToggleOption,
+  disabledOptionIds,
 }: AttributeOptionsSelectorProps) {
   const attributeId = attribute.id!;
 
@@ -62,6 +64,7 @@ export function AttributeOptionsSelector({
           const optId = opt.id;
           if (typeof optId !== 'number') return null;
           const isSelected = selectedOptionIds.has(optId);
+          const isDisabled = disabledOptionIds.has(optId) && !isSelected;
           const label = opt.label ?? opt.code ?? '';
           return (
             <Button
@@ -76,6 +79,7 @@ export function AttributeOptionsSelector({
               }
               aria-pressed={isSelected}
               onClick={() => onToggleOption(attributeId, optId)}
+              disabled={isDisabled}
             >
               {label}
             </Button>
