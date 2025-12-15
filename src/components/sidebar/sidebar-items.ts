@@ -6,6 +6,7 @@ import {
   PhoneCall,
   Box,
   ArrowDownToLine,
+  Cog,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -208,6 +209,32 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Add Products',
         path: '/products',
         requiredPermission: 'product:sidebar',
+      },
+    ],
+  },
+  {
+    key: 'systemConfiguration',
+    label: 'System Configuration',
+    icon: Cog,
+    expandable: false,
+    children: [
+      {
+        key: 'systemConfig',
+        label: 'System Configs',
+        path: '/system-configs',
+        requiredPermission: 'systemConfig:sidebar',
+      },
+      {
+        key: 'systemConfigAttribute',
+        label: 'Config Attributes',
+        path: '/system-config-attributes',
+        requiredPermission: 'systemConfigAttribute:sidebar',
+      },
+      {
+        key: 'systemConfigAttributeOption',
+        label: 'Attribute Options',
+        path: '/system-config-attribute-options',
+        requiredPermission: 'systemConfigAttributeOption:sidebar',
       },
     ],
   },

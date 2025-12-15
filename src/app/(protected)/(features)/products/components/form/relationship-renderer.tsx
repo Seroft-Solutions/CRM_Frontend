@@ -14,6 +14,11 @@ import {
   useGetAllProductSubCategories,
   useSearchProductSubCategories,
 } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import {
+  useCountSystemConfigs,
+  useGetAllSystemConfigs,
+  useSearchSystemConfigs,
+} from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 
 import type { RelationshipConfig } from './form-types';
 
@@ -153,6 +158,51 @@ export function RelationshipRenderer({
                 ? !form.watch(relConfig.cascadingFilter.parentField)
                 : relConfig.ui.disabled
             }
+            {...actions.getNavigationProps(relConfig.name)}
+          />
+        );
+
+      case 'variantConfig':
+        return (
+          <PaginatedRelationshipCombobox
+            value={field.value}
+            onValueChange={(value) => {
+              field.onChange(value);
+              if (relConfig.cascadingFilter) {
+                const dependentRelationships = config.relationships.filter(
+                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                );
+                dependentRelationships.forEach((depRel: any) => {
+                  form.setValue(depRel.name, undefined);
+                });
+              }
+            }}
+            displayField={relConfig.displayField}
+            placeholder={relConfig.ui.placeholder}
+            multiple={relConfig.multiple}
+            useGetAllHook={useGetAllSystemConfigs}
+            useSearchHook={useSearchSystemConfigs}
+            useCountHook={useCountSystemConfigs}
+            entityName={relConfig.api.entityName}
+            searchField={relConfig.displayField}
+            canCreate={relConfig.creation?.canCreate}
+            createEntityPath={relConfig.creation?.createPath || ''}
+            createPermission={relConfig.creation?.createPermission || ''}
+            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+            parentFilter={
+              relConfig.cascadingFilter
+                ? form.watch(relConfig.cascadingFilter.parentField)
+                : undefined
+            }
+            parentField={relConfig.cascadingFilter?.parentField}
+            customFilters={relConfig.customFilters}
+            onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
+            disabled={
+              relConfig.cascadingFilter
+                ? !form.watch(relConfig.cascadingFilter.parentField)
+                : relConfig.ui.disabled
+            }
+            helpText={relConfig.ui.helpText}
             {...actions.getNavigationProps(relConfig.name)}
           />
         );

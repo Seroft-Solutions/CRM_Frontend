@@ -32,6 +32,7 @@ import {
 
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 
 interface ProductDetailsProps {
   id: number;
@@ -63,6 +64,18 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
           }
         )
       : { data: null };
+  const { data: systemConfigData } =
+    relConfig.name === 'variantConfig'
+      ? useGetAllSystemConfigs(
+          { page: 0, size: 1000 },
+          {
+            query: {
+              enabled: !!value && relConfig.name === 'variantConfig',
+              staleTime: 5 * 60 * 1000,
+            },
+          }
+        )
+      : { data: null };
 
   if (!value) {
     return (
@@ -78,6 +91,9 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
   }
   if (relConfig.name === 'subCategory') {
     allData = subCategoryData;
+  }
+  if (relConfig.name === 'variantConfig') {
+    allData = systemConfigData;
   }
 
   if (!allData) {
@@ -271,7 +287,6 @@ function OrientationPreviewCard({
         {displaySteps.map((step, index) => {
           const stepFields = [...step.fields, ...step.relationships];
           const isImagesStep = step.id === 'images';
-          const isPropertiesStep = step.id === 'properties';
 
           return (
             <div key={step.id} className="border rounded-lg p-4">
@@ -298,39 +313,6 @@ function OrientationPreviewCard({
                       image={orientationImageMap[field.name]}
                     />
                   ))}
-                </div>
-              ) : isPropertiesStep ? (
-                <div className="space-y-3">
-                  {(() => {
-                    const properties = entity.properties || [];
-                    if (!properties.length) {
-                      return (
-                        <p className="text-sm text-muted-foreground italic">No properties added</p>
-                      );
-                    }
-
-                    return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {properties.map((prop: any, idx: number) => (
-                          <div key={`${prop.name}-${idx}`} className="space-y-2 rounded-md border p-3">
-                            <div className="text-sm font-semibold text-foreground">
-                              {prop.name || `Property ${idx + 1}`}
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {(prop.values || []).map((val: string, valueIdx: number) => (
-                                <span
-                                  key={`${val}-${valueIdx}`}
-                                  className="rounded-full bg-muted px-2 py-0.5 text-xs text-foreground"
-                                >
-                                  {val}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

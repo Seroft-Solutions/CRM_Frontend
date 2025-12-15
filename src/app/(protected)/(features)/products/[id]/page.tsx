@@ -1,6 +1,7 @@
 import { ProductDetails } from '../components/product-details';
 import { PermissionGuard } from '@/core/auth';
 import { ProductImagesManager } from '@/features/product-images/components/ProductImagesManager';
+import { ProductVariantManagerWrapper } from '../components/variants/ProductVariantManagerWrapper';
 
 interface ProductPageProps {
   params: Promise<{
@@ -70,6 +71,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <ProductDetails id={id} />
         </div>
 
+        {/* Product Variants Section */}
+        <ProductVariantManagerWrapper productId={id} />
       </div>
     </PermissionGuard>
   );

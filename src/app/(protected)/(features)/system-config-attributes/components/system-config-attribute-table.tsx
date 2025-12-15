@@ -1,0 +1,234 @@
+'use client';
+
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOStatus';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  useGetAllSystemConfigAttributes,
+  useUpdateSystemConfigAttribute,
+} from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
+import { Eye, Pencil, Archive, MoreHorizontal } from 'lucide-react';
+import Link from 'next/link';
+
+function transformEnumValue(enumValue: string): string {
+  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+
+  return enumValue
+    .toLowerCase()
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export function SystemConfigAttributeTable() {
+  const queryClient = useQueryClient();
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
+  const [archiveId, setArchiveId] = useState<number | null>(null);
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+
+  const getStatusForQuery = (statusTab: string) => {
+    const statusMap: Record<string, string> = {
+      active: SystemConfigAttributeDTOStatus.ACTIVE,
+      inactive: SystemConfigAttributeDTOStatus.INACTIVE,
+      archived: SystemConfigAttributeDTOStatus.ARCHIVED,
+    };
+    return statusMap[statusTab] || SystemConfigAttributeDTOStatus.ACTIVE;
+  };
+
+  const currentStatus = getStatusForQuery(activeStatusTab);
+
+  const { data, isLoading, error } = useGetAllSystemConfigAttributes({
+    page: page - 1,
+    size: pageSize,
+    sort: ['id,asc'],
+    'status.equals': currentStatus,
+  });
+
+  const updateMutation = useUpdateSystemConfigAttribute();
+
+  const handleArchive = async () => {
+    if (!archiveId) return;
+
+    const itemToArchive = data?.find((item) => item.id === archiveId);
+    if (!itemToArchive) return;
+
+    try {
+      await updateMutation.mutateAsync({
+        id: archiveId,
+        data: { ...itemToArchive, status: SystemConfigAttributeDTOStatus.ARCHIVED },
+      });
+
+      toast.success('Attribute archived successfully');
+      setShowArchiveDialog(false);
+      setArchiveId(null);
+      await queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[0] === '/api/system-config-attributes',
+      });
+    } catch (error) {
+      toast.error('Failed to archive attribute');
+      console.error(error);
+    }
+  };
+
+  const totalPages = data ? Math.ceil(data.length / pageSize) : 0;
+
+  if (error) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        Error loading attributes. Please try again.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {/* Status Tabs */}
+        <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            <TabsTrigger value="archived">Archived</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-sm text-muted-foreground">
+            Page {page} of {totalPages || 1}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page - 1)}
+            disabled={page <= 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage(page + 1)}
+            disabled={page >= totalPages}
+          >
+            Next
+          </Button>
+        </div>
+
+        {/* Table */}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Label</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Required</TableHead>
+                <TableHead>Sort Order</TableHead>
+                <TableHead>System Config</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : data && data.length > 0 ? (
+                data.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.name}</TableCell>
+                    <TableCell>{item.label}</TableCell>
+                    <TableCell>{transformEnumValue(item.attributeType)}</TableCell>
+                    <TableCell>{item.isRequired ? 'Yes' : 'No'}</TableCell>
+                    <TableCell>{item.sortOrder}</TableCell>
+                    <TableCell>{item.systemConfig?.configKey || '-'}</TableCell>
+                    <TableCell>{transformEnumValue(item.status)}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/system-config-attributes/${item.id}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              View
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/system-config-attributes/${item.id}/edit`}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => item.id && setArchiveId(item.id) && setShowArchiveDialog(true)}>
+                            <Archive className="mr-2 h-4 w-4" />
+                            Archive
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Archive Dialog */}
+      <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Attribute</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive this attribute? This action can be reversed by
+              changing the status back to active.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

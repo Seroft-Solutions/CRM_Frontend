@@ -26,12 +26,12 @@ import { RelationshipRenderer } from './relationship-renderer';
 import { ProductImagesStep } from './product-images-step';
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas/ProductImageDTO';
 import {
   ORIENTATION_FIELDS,
   mapImagesByOrientation,
 } from '@/features/product-images/utils/orientation';
-import { ProductPropertiesStep } from './product-properties-step';
 
 function OrientationPreviewCard({
   field,
@@ -141,6 +141,16 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
     }
   );
 
+  const { data: systemConfigsData } = useGetAllSystemConfigs(
+    { page: 0, size: 1000 },
+    {
+      query: {
+        enabled: relConfig.name === 'variantConfig' && !!value,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
       case 'category':
@@ -164,6 +174,18 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             primaryKey="id"
             multiple={false}
             label="ProductSubCategories"
+          />
+        );
+
+      case 'variantConfig':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            allData={systemConfigsData}
+            displayField="configKey"
+            primaryKey="id"
+            multiple={false}
+            label="SystemConfigs"
           />
         );
 
@@ -302,14 +324,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
         }
       });
-
-      formValues.properties = entity.properties
-        ? entity.properties.map((prop: any, index: number) => ({
-            id: prop.id,
-            name: prop.name,
-            values: prop.values || [],
-          }))
-        : [];
 
       form.reset(formValues);
     }
@@ -470,18 +484,13 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
       return <ProductImagesStep form={form} existingImages={entity?.images} />;
     }
 
-    if (currentStepConfig.id === 'properties') {
-      return <ProductPropertiesStep />;
-    }
-
     if (currentStepConfig.id === 'review') {
       return (
         <div className="space-y-6">
           {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
-            if (stepFields.length === 0 && step.id !== 'properties') return null;
+            if (stepFields.length === 0) return null;
             const isImagesStep = step.id === 'images';
-            const isPropertiesStep = step.id === 'properties';
 
             return (
               <div key={step.id} className="border rounded-lg p-4">
@@ -508,41 +517,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                         image={orientationImageMap[field.name]}
                       />
                     ))}
-                  </div>
-                ) : isPropertiesStep ? (
-                  <div className="space-y-3">
-                    {(() => {
-                      const properties = form.getValues('properties') || [];
-                      if (!properties.length) {
-                        return (
-                          <p className="text-sm text-muted-foreground italic">
-                            No properties added
-                          </p>
-                        );
-                      }
-
-                      return (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {properties.map((prop: any, idx: number) => (
-                            <div key={`${prop.name}-${idx}`} className="space-y-2 rounded-md border p-3">
-                              <div className="text-sm font-semibold text-foreground">
-                                {prop.name || `Property ${idx + 1}`}
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {(prop.values || []).map((val: string, valueIdx: number) => (
-                                  <span
-                                    key={`${val}-${valueIdx}`}
-                                    className="rounded-full bg-muted px-2 py-0.5 text-xs text-foreground"
-                                  >
-                                    {val}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
