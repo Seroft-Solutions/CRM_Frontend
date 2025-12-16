@@ -60,7 +60,11 @@ export function SystemConfigTableRow({
             ? transformEnumValue(value as string)
             : (value as string | number) || '-';
 
-        return <TableCell key={column.id}>{displayValue}</TableCell>;
+        return (
+          <TableCell key={column.id} className="px-2 sm:px-3 py-2">
+            {displayValue}
+          </TableCell>
+        );
       })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">

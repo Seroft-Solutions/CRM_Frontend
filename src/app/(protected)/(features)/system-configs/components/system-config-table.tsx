@@ -4,16 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  Archive,
-  Download,
-  Eye,
-  EyeOff,
-  RotateCcw,
-  Settings2,
-  X,
-} from 'lucide-react';
+import { Eye, EyeOff, Search, Settings2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
@@ -100,6 +93,10 @@ interface ColumnConfig {
   sortable: boolean;
 }
 
+interface FilterState {
+  [key: string]: string | string[] | Date | undefined;
+}
+
 const ALL_COLUMNS: ColumnConfig[] = [
   {
     id: 'id',
@@ -180,13 +177,16 @@ const COLUMN_VISIBILITY_KEY = 'system-config-table-columns';
 export function SystemConfigTable() {
   const queryClient = useQueryClient();
 
-  const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
+  const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
+    usePaginationState(1, 10);
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<FilterState>({});
 
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
@@ -226,6 +226,37 @@ export function SystemConfigTable() {
     return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
 
+  const toggleColumnVisibility = (columnId: string) => {
+    setColumnVisibility((prev) => ({
+      ...prev,
+      [columnId]: prev[columnId] === false,
+    }));
+  };
+
+  const handleFilterChange = (column: string, value: any) => {
+    setFilters((prev) => {
+      const next = { ...prev };
+      if (value === undefined || value === '' || value === null) {
+        delete next[column];
+      } else {
+        next[column] = value;
+      }
+      return next;
+    });
+    resetPagination();
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    resetPagination();
+  };
+
+  const clearAllFilters = () => {
+    setFilters({});
+    setSearchTerm('');
+    resetPagination();
+  };
+
   const getStatusForQuery = (statusTab: string) => {
     const statusMap: Record<string, string> = {
       draft: SystemConfigDTOStatus.DRAFT,
@@ -238,12 +269,48 @@ export function SystemConfigTable() {
 
   const currentStatus = getStatusForQuery(activeStatusTab);
 
-  const filterParams =
-    activeStatusTab === 'all'
-      ? {}
-      : {
-          'status.equals': currentStatus,
-        };
+  const buildFilterParams = () => {
+    const params: Record<string, any> =
+      activeStatusTab === 'all'
+        ? {}
+        : {
+            'status.equals': currentStatus,
+          };
+
+    if (searchTerm.trim()) {
+      params['configKey.contains'] = searchTerm.trim();
+    }
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value === undefined || value === '' || value === null) return;
+
+      if (key === 'id') {
+        const parsed = Number(value);
+        if (!Number.isNaN(parsed)) {
+          params['id.equals'] = parsed;
+        }
+        return;
+      }
+
+      if (key === 'createdDate') {
+        params['createdDate.equals'] = value;
+        return;
+      }
+
+      if (key === 'lastModifiedDate') {
+        params['lastModifiedDate.equals'] = value;
+        return;
+      }
+
+      if (typeof value === 'string' && value.trim() !== '') {
+        params[`${key}.contains`] = value;
+      }
+    });
+
+    return params;
+  };
+
+  const filterParams = buildFilterParams();
 
   const apiPage = page - 1;
 
@@ -329,6 +396,22 @@ export function SystemConfigTable() {
   };
 
   const totalItems = countData || 0;
+  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm);
+
+  if (!isColumnVisibilityLoaded) {
+    return (
+      <>
+        <style>{tableScrollStyles}</style>
+        <div className="w-full space-y-4">
+          <div className="flex items-center justify-center h-32">
+            <div className="text-center">
+              <div className="text-muted-foreground">Loading table configuration...</div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (error) {
     return (
@@ -370,32 +453,63 @@ export function SystemConfigTable() {
         </Tabs>
 
         {/* Table Controls */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2 w-full">
+            {/* Search */}
+            <div className="relative w-full sm:max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search system configs..."
+                value={searchTerm}
+                onChange={handleSearch}
+                className="pl-10 h-9"
+              />
+            </div>
+
+            {/* Column Visibility Toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Settings2 className="h-4 w-4" />
-                  Columns
+                <Button variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+                  <Settings2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Columns</span>
+                  <span className="sm:hidden">Cols</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-48">
-                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {ALL_COLUMNS.map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={columnVisibility[column.id] !== false}
-                    onCheckedChange={(value) =>
-                      setColumnVisibility((prev) => ({ ...prev, [column.id]: value }))
-                    }
+                    onCheckedChange={() => toggleColumnVisibility(column.id)}
+                    onSelect={(e) => e.preventDefault()}
+                    className="flex items-center gap-2"
                   >
+                    {columnVisibility[column.id] !== false ? (
+                      <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
+                    )}
                     {column.label}
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAllFilters}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Clear All Filters
+            </Button>
+          )}
         </div>
 
         {/* Table */}
@@ -407,6 +521,8 @@ export function SystemConfigTable() {
                 sort={sort}
                 order={order}
                 onSort={handleSort}
+                filters={filters}
+                onFilterChange={handleFilterChange}
               />
               <TableBody>
                 {isLoading ? (

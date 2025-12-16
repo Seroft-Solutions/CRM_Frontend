@@ -1,37 +1,21 @@
-'use client';
-
-import { useGetSystemConfigAttributeOption } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pencil } from 'lucide-react';
-import Link from 'next/link';
 import { PermissionGuard } from '@/core/auth';
-import { use } from 'react';
+import { SystemConfigAttributeOptionDetails } from '../components/system-config-attribute-option-details';
 
-interface PageProps {
-  params: Promise<{ id: string }>;
+interface SystemConfigAttributeOptionPageProps {
+  params: Promise<{
+    id: string;
+  }>;
 }
 
-function transformEnumValue(enumValue: string): string {
-  if (!enumValue || typeof enumValue !== 'string') return enumValue;
+export const metadata = {
+  title: 'Attribute Option Details',
+};
 
-  return enumValue
-    .toLowerCase()
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
-export default function SystemConfigAttributeOptionDetailsPage({ params }: PageProps) {
-  const { id } = use(params);
-  const { data, isLoading, error } = useGetSystemConfigAttributeOption(parseInt(id));
-
-  if (isLoading) {
-    return <div className="p-6">Loading...</div>;
-  }
-
-  if (error || !data) {
-    return <div className="p-6 text-red-500">Error loading attribute option</div>;
-  }
+export default async function SystemConfigAttributeOptionPage({
+  params,
+}: SystemConfigAttributeOptionPageProps) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam, 10);
 
   return (
     <PermissionGuard
@@ -40,7 +24,9 @@ export default function SystemConfigAttributeOptionDetailsPage({ params }: PageP
       unauthorizedDescription="You don't have permission to view attribute option details."
     >
       <div className="space-y-6">
+        {/* Professional Header with Dotted Background */}
         <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
+          {/* Dotted background pattern */}
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -49,8 +35,9 @@ export default function SystemConfigAttributeOptionDetailsPage({ params }: PageP
             }}
           ></div>
 
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
+          <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center gap-4">
+              {/* Icon */}
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
                 <svg
                   className="w-5 h-5 text-white"
@@ -74,99 +61,17 @@ export default function SystemConfigAttributeOptionDetailsPage({ params }: PageP
 
               <div className="text-white">
                 <h1 className="text-2xl font-bold">Attribute Option Details</h1>
-                <p className="text-blue-100">View option details</p>
+                <p className="text-blue-100">View detailed information for this attribute option</p>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/system-config-attribute-options">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to List
-                </Link>
-              </Button>
-              <Button asChild size="sm" className="bg-yellow-400 text-black hover:bg-yellow-500">
-                <Link href={`/system-config-attribute-options/${id}/edit`}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </Link>
-              </Button>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-sm font-medium text-gray-500">ID</label>
-              <p className="mt-1 text-base">{data.id}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Code</label>
-              <p className="mt-1 text-base font-semibold">{data.code}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Label</label>
-              <p className="mt-1 text-base">{data.label}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Sort Order</label>
-              <p className="mt-1 text-base">{data.sortOrder}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Attribute</label>
-              <p className="mt-1 text-base">{data.attribute?.name || '-'} ({data.attribute?.label || '-'})</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Status</label>
-              <p className="mt-1 text-base">
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    data.status === 'ACTIVE'
-                      ? 'bg-green-100 text-green-800'
-                      : data.status === 'INACTIVE'
-                        ? 'bg-gray-100 text-gray-800'
-                        : 'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {transformEnumValue(data.status)}
-                </span>
-              </p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Created By</label>
-              <p className="mt-1 text-base">{data.createdBy || '-'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Created Date</label>
-              <p className="mt-1 text-base">
-                {data.createdDate ? new Date(data.createdDate).toLocaleString() : '-'}
-              </p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Last Modified By</label>
-              <p className="mt-1 text-base">{data.lastModifiedBy || '-'}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-500">Last Modified Date</label>
-              <p className="mt-1 text-base">
-                {data.lastModifiedDate
-                  ? new Date(data.lastModifiedDate).toLocaleString()
-                  : '-'}
-              </p>
-            </div>
-          </div>
+          <SystemConfigAttributeOptionDetails id={id} />
         </div>
       </div>
     </PermissionGuard>
   );
 }
+
