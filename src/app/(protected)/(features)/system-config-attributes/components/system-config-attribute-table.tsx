@@ -62,9 +62,12 @@ export function SystemConfigAttributeTable() {
 
   const currentStatus = getStatusForQuery(activeStatusTab);
 
-  const filterParams = {
-    'status.equals': currentStatus,
-  };
+  const filterParams =
+    activeStatusTab === 'all'
+      ? {}
+      : {
+          'status.equals': currentStatus,
+        };
 
   const apiPage = page - 1;
 
@@ -140,10 +143,20 @@ export function SystemConfigAttributeTable() {
       <div className="space-y-4">
         {/* Status Tabs */}
         <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive</TabsTrigger>
-            <TabsTrigger value="archived">Archived</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="inactive" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+              Inactive
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              Archived
+            </TabsTrigger>
+            <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
         </Tabs>
 
