@@ -1,6 +1,21 @@
 module.exports = {
   extends: ['next/core-web-vitals', 'next/typescript', 'prettier'],
   plugins: ['prettier'],
+  overrides: [
+    {
+      files: ['src/entity-library/components/**/*.{ts,tsx}', 'src/entity-library/hooks/**/*.{ts,tsx}'],
+      rules: {
+        'max-lines': [
+          'error',
+          {
+            max: 50,
+            skipBlankLines: true,
+            skipComments: true,
+          },
+        ],
+      },
+    },
+  ],
   rules: {
     'prettier/prettier': 'error',
     // Spacing and readability rules

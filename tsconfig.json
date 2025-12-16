@@ -19,6 +19,8 @@
       }
     ],
     "paths": {
+      "@/entity-library": ["./src/entity-library/index.ts"],
+      "@/entity-library/*": ["./src/entity-library/*"],
       "@/*": ["./src/*"]
     }
   },
