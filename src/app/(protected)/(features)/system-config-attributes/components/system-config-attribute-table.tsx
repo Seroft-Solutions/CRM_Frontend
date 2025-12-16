@@ -37,13 +37,13 @@ import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/sy
 import {
   AlertTriangle,
   Archive,
+  Download,
   Eye,
   EyeOff,
   Filter,
   MoreVertical,
   Pencil,
   RotateCcw,
-  Search,
   Settings2,
   X,
 } from 'lucide-react';
@@ -153,7 +153,6 @@ export function SystemConfigAttributeTable() {
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
-  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({});
   const [archiveTarget, setArchiveTarget] = useState<SystemConfigAttributeDTO | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -217,14 +216,8 @@ export function SystemConfigAttributeTable() {
     resetPagination();
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    resetPagination();
-  };
-
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm('');
     resetPagination();
   };
 
@@ -260,10 +253,6 @@ export function SystemConfigAttributeTable() {
         : {
             'status.equals': currentStatus,
           };
-
-    if (searchTerm.trim()) {
-      params['name.contains'] = searchTerm.trim();
-    }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value === undefined || value === '' || value === null) return;
@@ -368,8 +357,56 @@ export function SystemConfigAttributeTable() {
     setArchiveTarget(null);
   };
 
+  const exportToCSV = () => {
+    if (!data || data.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = visibleColumns.map((col) => col.label);
+    const csvContent = [
+      headers.join(','),
+      ...data.map((item) =>
+        visibleColumns
+          .map((col) => {
+            let value = '';
+            if (col.type === 'field') {
+              const fieldValue = (item as any)?.[col.accessor];
+              value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
+            } else if (col.type === 'relationship') {
+              const relationship = (item as any)?.[col.accessor] as any;
+              if (col.id === 'systemConfig' && relationship) {
+                value = relationship.configKey || relationship.id || '';
+              }
+            }
+
+            if (
+              typeof value === 'string' &&
+              (value.includes(',') || value.includes('"') || value.includes('\n'))
+            ) {
+              value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          })
+          .join(',')
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `system-config-attributes-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast.success('Data exported successfully');
+  };
+
   const totalItems = countData || 0;
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm);
+  const hasActiveFilters = Object.keys(filters).length > 0;
 
   if (!isColumnVisibilityLoaded) {
     return (
@@ -422,18 +459,7 @@ export function SystemConfigAttributeTable() {
 
         {/* Table Controls */}
         <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2 w-full">
-            {/* Search */}
-            <div className="relative w-full sm:max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search attributes..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="pl-10 h-9"
-              />
-            </div>
-
+          <div className="flex flex-wrap items-center gap-2">
             {/* Column Visibility Toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -464,6 +490,19 @@ export function SystemConfigAttributeTable() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Export Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              className="gap-2 text-xs sm:text-sm"
+              disabled={!data || data.length === 0}
+            >
+              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
           </div>
 
           {/* Clear Filters Button */}

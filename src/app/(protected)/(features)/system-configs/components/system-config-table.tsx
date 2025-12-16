@@ -4,9 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
 import { useQueryClient } from '@tanstack/react-query';
-import { Eye, EyeOff, Search, Settings2, X } from 'lucide-react';
+import { Download, Eye, EyeOff, Settings2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
@@ -185,7 +184,6 @@ export function SystemConfigTable() {
   const [archiveId, setArchiveId] = useState<number | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterState>({});
 
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
@@ -246,14 +244,8 @@ export function SystemConfigTable() {
     resetPagination();
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    resetPagination();
-  };
-
   const clearAllFilters = () => {
     setFilters({});
-    setSearchTerm('');
     resetPagination();
   };
 
@@ -276,10 +268,6 @@ export function SystemConfigTable() {
         : {
             'status.equals': currentStatus,
           };
-
-    if (searchTerm.trim()) {
-      params['configKey.contains'] = searchTerm.trim();
-    }
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value === undefined || value === '' || value === null) return;
@@ -395,8 +383,49 @@ export function SystemConfigTable() {
     }
   };
 
+  const exportToCSV = () => {
+    if (!data || data.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = visibleColumns.map((col) => col.label);
+    const csvContent = [
+      headers.join(','),
+      ...data.map((item) =>
+        visibleColumns
+          .map((col) => {
+            let value = '';
+            const fieldValue = (item as any)?.[col.accessor];
+            value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
+
+            if (
+              typeof value === 'string' &&
+              (value.includes(',') || value.includes('"') || value.includes('\n'))
+            ) {
+              value = `"${value.replace(/"/g, '""')}"`;
+            }
+            return value;
+          })
+          .join(',')
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `system-config-export-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast.success('Data exported successfully');
+  };
+
   const totalItems = countData || 0;
-  const hasActiveFilters = Object.keys(filters).length > 0 || Boolean(searchTerm);
+  const hasActiveFilters = Object.keys(filters).length > 0;
 
   if (!isColumnVisibilityLoaded) {
     return (
@@ -454,18 +483,7 @@ export function SystemConfigTable() {
 
         {/* Table Controls */}
         <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2 w-full">
-            {/* Search */}
-            <div className="relative w-full sm:max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search system configs..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="pl-10 h-9"
-              />
-            </div>
-
+          <div className="flex flex-wrap items-center gap-2">
             {/* Column Visibility Toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -496,6 +514,19 @@ export function SystemConfigTable() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Export Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              className="gap-2 text-xs sm:text-sm"
+              disabled={!data || data.length === 0}
+            >
+              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
           </div>
 
           {/* Clear Filters Button */}
