@@ -264,6 +264,35 @@ export function SystemConfigTable() {
 
   const updateMutation = useUpdateSystemConfig();
 
+  const handleStatusChange = async (id: number, status: SystemConfigDTOStatus) => {
+    const currentEntity = data?.find((item) => item.id === id);
+    if (!currentEntity) return;
+
+    try {
+      await updateMutation.mutateAsync({
+        id,
+        data: { ...currentEntity, id, status },
+      });
+
+      if (status === SystemConfigDTOStatus.ACTIVE) {
+        toast.success('System config activated successfully');
+      } else if (status === SystemConfigDTOStatus.INACTIVE) {
+        toast.success('System config deactivated successfully');
+      } else {
+        toast.success('System config updated successfully');
+      }
+
+      await queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === '/api/system-configs' ||
+          query.queryKey[0] === '/api/system-configs/count',
+      });
+    } catch (error) {
+      toast.error('Failed to update system config status');
+      console.error(error);
+    }
+  };
+
   const handleArchive = async () => {
     if (!archiveId) return;
 
@@ -396,6 +425,8 @@ export function SystemConfigTable() {
                         setArchiveId(id);
                         setShowArchiveDialog(true);
                       }}
+                      onStatusChange={handleStatusChange}
+                      isUpdatingStatus={updateMutation.isPending}
                     />
                   ))
                 ) : (
