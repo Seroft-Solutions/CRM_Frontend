@@ -35,11 +35,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  useCountSystemConfigs,
   useGetAllSystemConfigs,
   useUpdateSystemConfig,
 } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 import { SystemConfigTableHeader } from './table/system-config-table-header';
 import { SystemConfigTableRow } from './table/system-config-table-row';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -178,8 +180,7 @@ const COLUMN_VISIBILITY_KEY = 'system-config-table-columns';
 export function SystemConfigTable() {
   const queryClient = useQueryClient();
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
   const [sort, setSort] = useState('id');
   const [order, setOrder] = useState(ASC);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
@@ -237,11 +238,25 @@ export function SystemConfigTable() {
 
   const currentStatus = getStatusForQuery(activeStatusTab);
 
+  const filterParams = {
+    'status.equals': currentStatus,
+  };
+
+  const apiPage = page - 1;
+
   const { data, isLoading, error, refetch } = useGetAllSystemConfigs({
-    page: page - 1,
+    page: apiPage,
     size: pageSize,
     sort: [`${sort},${order}`],
-    'status.equals': currentStatus,
+    ...filterParams,
+  });
+
+  const { data: countData } = useCountSystemConfigs(filterParams, {
+    query: {
+      enabled: true,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+    },
   });
 
   const updateMutation = useUpdateSystemConfig();
@@ -281,16 +296,7 @@ export function SystemConfigTable() {
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handlePageSizeChange = (newSize: number) => {
-    setPageSize(newSize);
-    setPage(1);
-  };
-
-  const totalPages = data ? Math.ceil(data.length / pageSize) : 0;
+  const totalItems = countData || 0;
 
   if (error) {
     return (
@@ -341,28 +347,6 @@ export function SystemConfigTable() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages || 1}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page <= 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page >= totalPages}
-            >
-              Next
-            </Button>
-          </div>
         </div>
 
         {/* Table */}
@@ -404,6 +388,24 @@ export function SystemConfigTable() {
               </TableBody>
             </Table>
           </div>
+        </div>
+
+        {/* Advanced Pagination */}
+        <div className="table-container">
+          <AdvancedPagination
+            currentPage={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            isLoading={isLoading}
+            pageSizeOptions={[10, 25, 50, 100]}
+            showPageSizeSelector={true}
+            showPageInput={true}
+            showItemsInfo={true}
+            showFirstLastButtons={true}
+            maxPageButtons={7}
+          />
         </div>
       </div>
 

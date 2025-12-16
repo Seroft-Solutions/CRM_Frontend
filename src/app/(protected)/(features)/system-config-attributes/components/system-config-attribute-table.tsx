@@ -25,11 +25,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  useCountSystemConfigAttributes,
   useGetAllSystemConfigAttributes,
   useUpdateSystemConfigAttribute,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 import { Archive, Eye, EyeOff, MoreHorizontal, Pencil, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -44,8 +46,7 @@ function transformEnumValue(enumValue: string): string {
 export function SystemConfigAttributeTable() {
   const queryClient = useQueryClient();
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { page, pageSize, handlePageChange, handlePageSizeChange } = usePaginationState(1, 10);
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [archiveTarget, setArchiveTarget] = useState<SystemConfigAttributeDTO | null>(null);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -61,18 +62,34 @@ export function SystemConfigAttributeTable() {
 
   const currentStatus = getStatusForQuery(activeStatusTab);
 
+  const filterParams = {
+    'status.equals': currentStatus,
+  };
+
+  const apiPage = page - 1;
+
   const { data, isLoading, error } = useGetAllSystemConfigAttributes({
-    page: page - 1,
+    page: apiPage,
     size: pageSize,
     sort: ['id,asc'],
-    'status.equals': currentStatus,
+    ...filterParams,
+  });
+
+  const { data: countData } = useCountSystemConfigAttributes(filterParams, {
+    query: {
+      enabled: true,
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+    },
   });
 
   const updateMutation = useUpdateSystemConfigAttribute();
 
   const invalidateListQuery = async () => {
     await queryClient.invalidateQueries({
-      predicate: (query) => query.queryKey[0] === '/api/system-config-attributes',
+      predicate: (query) =>
+        query.queryKey[0] === '/api/system-config-attributes' ||
+        query.queryKey[0] === '/api/system-config-attributes/count',
     });
   };
 
@@ -108,7 +125,7 @@ export function SystemConfigAttributeTable() {
     setArchiveTarget(null);
   };
 
-  const totalPages = data ? Math.ceil(data.length / pageSize) : 0;
+  const totalItems = countData || 0;
 
   if (error) {
     return (
@@ -129,29 +146,6 @@ export function SystemConfigAttributeTable() {
             <TabsTrigger value="archived">Archived</TabsTrigger>
           </TabsList>
         </Tabs>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-end gap-2">
-          <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages || 1}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page - 1)}
-            disabled={page <= 1}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page + 1)}
-            disabled={page >= totalPages}
-          >
-            Next
-          </Button>
-        </div>
 
         {/* Table */}
         <div className="rounded-md border">
@@ -251,6 +245,24 @@ export function SystemConfigAttributeTable() {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Advanced Pagination */}
+        <div className="table-container">
+          <AdvancedPagination
+            currentPage={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            isLoading={isLoading}
+            pageSizeOptions={[10, 25, 50, 100]}
+            showPageSizeSelector={true}
+            showPageInput={true}
+            showItemsInfo={true}
+            showFirstLastButtons={true}
+            maxPageButtons={7}
+          />
         </div>
       </div>
 
