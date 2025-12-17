@@ -1913,7 +1913,7 @@ export function CallTable() {
       name: 'assignedTo',
       displayName: 'AssignedTo',
       options: assignedToOptions || [],
-      displayField: 'displayName',
+      displayField: 'email',
       isEditable: true,
     },
 
