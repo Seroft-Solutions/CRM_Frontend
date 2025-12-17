@@ -8,6 +8,12 @@ export interface FormConfig<TEntity extends object> {
   fields: Array<FieldConfig<TEntity>>;
   validationSchema: z.ZodType<Partial<TEntity>>;
   layout?: FormLayout;
+  /** When true, all fields are rendered as read-only and submit is disabled. */
+  readOnly?: boolean;
+  /** Toggle for showing the submit/next button. Defaults to true. */
+  showSubmitButton?: boolean;
+  /** Toggle for showing the back button (wizard/back). Defaults to true. */
+  showBackButton?: boolean;
   submitButtonText?: string;
   cancelButtonText?: string;
   showCancelButton?: boolean;

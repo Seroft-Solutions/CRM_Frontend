@@ -1,6 +1,6 @@
 import type { FormConfig } from '../form/form-config';
 
-export type EntityFormSubmitMode = 'create' | 'update';
+export type EntityFormSubmitMode = 'create' | 'update' | 'view';
 
 export interface EntityFormPageConfig<TEntity extends object> {
   /** Human-friendly label (e.g., "System Config"). Used for default titles/toasts. */
@@ -66,7 +66,17 @@ export interface EntityFormPageConfig<TEntity extends object> {
   afterSubmit?: 'list' | 'back' | 'stay' | ((entity: TEntity) => void | Promise<void>);
 
   /** Optional value transformer before submitting to the mutation. */
-  transformSubmit?: (values: Partial<TEntity>) => Partial<TEntity> | Promise<Partial<TEntity>>;
+  transformSubmit?: (
+    values: Partial<TEntity>,
+    ctx?: { entity?: TEntity }
+  ) => Partial<TEntity> | Promise<Partial<TEntity>>;
+
+  /**
+   * Update payload mode for `submitMode: 'update'`.
+   * - `merge` (default): merge fetched entity with form values before submitting
+   * - `partial`: submit only the form values
+   */
+  updatePayloadMode?: 'merge' | 'partial';
 
   /** Optional callback after successful mutation (runs before `afterSubmit`). */
   onSuccess?: (entity: TEntity) => void | Promise<void>;

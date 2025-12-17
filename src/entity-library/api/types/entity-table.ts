@@ -12,4 +12,5 @@ export interface EntityTableProps<TEntity extends object> {
   onStateChange?: (state: TableState<TEntity>) => void;
   actions?: ReactNode;
   toolbar?: ReactNode;
+  toolbarTheme?: 'default' | 'sidebar';
 }

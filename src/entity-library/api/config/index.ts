@@ -1,5 +1,6 @@
 export type {
   EntityTablePageConfig,
+  EntityTablePageToolbarConfig,
   StatusEnum,
   StatusTab,
 } from './entity/entity-table-page-config';

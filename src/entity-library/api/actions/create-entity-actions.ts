@@ -13,6 +13,8 @@ export interface CreateEntityActionsOptions<TEntity extends object, TStatus exte
   router?: CreateEntityActionsRouter;
   basePath?: string;
   getEntityId: (entity: TEntity) => number | undefined;
+  includeViewAction?: boolean;
+  includeEditAction?: boolean;
 }
 
 export function createEntityActions<TEntity extends object, TStatus extends StatusEnum>(

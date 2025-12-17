@@ -11,12 +11,12 @@ import type {
 } from '@/entity-library/config';
 
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEntityMutations } from '../hooks/useEntityMutations';
 import { createEntityActions } from '../actions/createEntityActions';
 import { EntityTable } from './tables/EntityTable';
+import { EntityStatusTabs } from './tables/EntityStatusTabs';
 
 interface EntityTablePageProps<TEntity extends object, TStatus extends StatusEnum> {
   config: EntityTablePageConfig<TEntity, TStatus>;
@@ -28,6 +28,9 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
   const router = useRouter();
   const { invalidateQueries } = useEntityMutations(config.queryKeyPrefix);
   const [activeStatusTab, setActiveStatusTab] = useState<StatusTab>('active');
+  const showStatusTabs = config.toolbar?.showStatusTabs !== false;
+  const statusTabs = config.toolbar?.statusTabs ?? ['active', 'inactive', 'archived', 'all'];
+  const toolbarTheme = config.toolbar?.theme ?? 'default';
 
   const [state, setState] = useState<TableState<TEntity>>({
     page: 1,
@@ -104,6 +107,8 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
         router,
         basePath: config.basePath,
         getEntityId: config.getEntityId,
+        includeViewAction: config.includeViewAction,
+        includeEditAction: config.includeEditAction,
       }),
     [updateAsync, invalidateQueries, config, router]
   );
@@ -121,6 +126,27 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
     toast.success(`Refreshed ${config.entityName}`);
   }, [refetch, config.entityName]);
 
+  const statusTabsNode = showStatusTabs ? (
+    <EntityStatusTabs
+      value={activeStatusTab}
+      onValueChange={setActiveStatusTab}
+      tabs={statusTabs}
+      theme={toolbarTheme}
+    />
+  ) : null;
+
+  const toolbarLeft =
+    config.toolbar?.left || statusTabsNode ? (
+      <div className="flex flex-wrap items-center gap-2">
+        {config.toolbar?.left}
+        {statusTabsNode}
+      </div>
+    ) : undefined;
+
+  const toolbarRight = config.toolbar?.right ? (
+    <div className="flex flex-wrap items-center gap-2">{config.toolbar.right}</div>
+  ) : undefined;
+
   return (
     <>
       <EntityTable<TEntity>
@@ -129,20 +155,24 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
         total={total}
         getRowId={(row: TEntity) => String(config.getEntityId(row) || '')}
         onStateChange={setState}
-        toolbar={
-          <Tabs value={activeStatusTab} onValueChange={(v) => setActiveStatusTab(v as StatusTab)}>
-            <TabsList>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="inactive">Inactive</TabsTrigger>
-              <TabsTrigger value="archived">Archived</TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        }
+        toolbar={toolbarLeft}
+        toolbarTheme={toolbarTheme}
         actions={
-          <Button onClick={handleRefresh} variant="outline" size="sm">
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+          <>
+            {toolbarRight}
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="sm"
+              className={
+                toolbarTheme === 'sidebar'
+                  ? 'border-[color:var(--sidebar-accent)] bg-transparent text-[color:var(--sidebar-accent)] hover:bg-[color:var(--sidebar-accent)] hover:text-[color:var(--sidebar-accent-foreground)]'
+                  : undefined
+              }
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          </>
         }
       />
     </>

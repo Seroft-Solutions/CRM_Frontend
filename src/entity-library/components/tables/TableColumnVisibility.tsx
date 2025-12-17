@@ -10,20 +10,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Columns } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function TableColumnVisibility<TEntity extends object>({
   columns,
   hidden,
   onToggle,
+  buttonClassName,
 }: {
   columns: Array<ColumnConfig<TEntity>>;
   hidden: Record<string, boolean>;
   onToggle: (field: keyof TEntity) => void;
+  buttonClassName?: string;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" size="sm" variant="outline" className="gap-2">
+        <Button type="button" size="sm" variant="outline" className={cn('gap-2', buttonClassName)}>
           <Columns className="h-4 w-4" />
           <span className="hidden sm:inline">Columns</span>
         </Button>

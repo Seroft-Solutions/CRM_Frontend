@@ -11,6 +11,8 @@ export function FormActions({
   submitText = 'Submit',
   cancelText = 'Cancel',
   showCancel = true,
+  showBack = true,
+  showSubmit = true,
   submitting = false,
 }: {
   isFirst: boolean;
@@ -21,6 +23,8 @@ export function FormActions({
   submitText?: string;
   cancelText?: string;
   showCancel?: boolean;
+  showBack?: boolean;
+  showSubmit?: boolean;
   submitting?: boolean;
 }) {
   return (
@@ -30,23 +34,27 @@ export function FormActions({
           {cancelText}
         </Button>
       ) : null}
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        disabled={submitting || isFirst}
-        onClick={onPrev}
-      >
-        Back
-      </Button>
-      <Button
-        type={isLast ? 'submit' : 'button'}
-        size="sm"
-        disabled={submitting}
-        onClick={isLast ? undefined : onNext}
-      >
-        {isLast ? submitText : 'Next'}
-      </Button>
+      {showBack ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={submitting || isFirst}
+          onClick={onPrev}
+        >
+          Back
+        </Button>
+      ) : null}
+      {showSubmit ? (
+        <Button
+          type={isLast ? 'submit' : 'button'}
+          size="sm"
+          disabled={submitting}
+          onClick={isLast ? undefined : onNext}
+        >
+          {isLast ? submitText : 'Next'}
+        </Button>
+      ) : null}
     </div>
   );
 }

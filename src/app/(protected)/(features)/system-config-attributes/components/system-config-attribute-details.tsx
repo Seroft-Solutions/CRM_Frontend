@@ -13,7 +13,7 @@ interface SystemConfigAttributeDetailsProps {
 }
 
 function transformEnumValue(enumValue?: string | null): string {
-  if (!enumValue || typeof enumValue !== 'string') return enumValue as any;
+  if (!enumValue || typeof enumValue !== 'string') return enumValue ?? '';
 
   return enumValue
     .toLowerCase()
@@ -94,7 +94,10 @@ export function SystemConfigAttributeDetails({ id }: SystemConfigAttributeDetail
         {
           label: 'Status',
           value: entity.status ? (
-            <Badge variant={entity.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-xs">
+            <Badge
+              variant={entity.status === 'ACTIVE' ? 'default' : 'secondary'}
+              className="text-xs"
+            >
               {transformEnumValue(entity.status)}
             </Badge>
           ) : (
@@ -112,7 +115,10 @@ export function SystemConfigAttributeDetails({ id }: SystemConfigAttributeDetail
         {
           label: 'System Config',
           value: entity.systemConfig?.id ? (
-            <Link href={`/system-configs/${entity.systemConfig.id}`} className="text-blue-600 hover:underline">
+            <Link
+              href={`/system-configs/${entity.systemConfig.id}/edit`}
+              className="text-blue-600 hover:underline"
+            >
               {entity.systemConfig.configKey}
             </Link>
           ) : (
@@ -181,4 +187,3 @@ export function SystemConfigAttributeDetails({ id }: SystemConfigAttributeDetail
     </>
   );
 }
-

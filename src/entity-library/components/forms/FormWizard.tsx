@@ -35,23 +35,26 @@ export function FormWizard<TEntity extends object>({
 
   const { stepIndex, currentStep, isFirst, isLast, next, prev, goTo } = useFormWizard(visibleSteps);
 
-  const stepFields = config.fields.filter(
-    (f) => currentStep.fields.includes(f.field) && (!f.condition || f.condition(formData))
-  );
+  const stepFields = config.fields
+    .filter((f) => currentStep.fields.includes(f.field) && (!f.condition || f.condition(formData)))
+    .map((f) => (config.readOnly ? { ...f, readonly: true } : f));
   const canGoBack = wizard.allowBackwardNavigation !== false;
   const isSubmitting = form.formState.isSubmitting;
 
-  const onSubmit = form.handleSubmit(async (data) => {
-    try {
-      await config.onSuccess?.(data as unknown as TEntity);
-      if (config.successMessage) toast.success(config.successMessage);
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error('Failed to submit');
+  const onSubmit =
+    config.readOnly || config.showSubmitButton === false
+      ? (e: React.FormEvent) => e.preventDefault()
+      : form.handleSubmit(async (data) => {
+          try {
+            await config.onSuccess?.(data as unknown as TEntity);
+            if (config.successMessage) toast.success(config.successMessage);
+          } catch (e) {
+            const err = e instanceof Error ? e : new Error('Failed to submit');
 
-      config.onError?.(err);
-      if (!config.onError) toast.error(err.message);
-    }
-  });
+            config.onError?.(err);
+            if (!config.onError) toast.error(err.message);
+          }
+        });
 
   return (
     <FormProvider {...form}>
@@ -77,6 +80,8 @@ export function FormWizard<TEntity extends object>({
           submitText={config.submitButtonText ?? 'Submit'}
           cancelText={config.cancelButtonText ?? 'Cancel'}
           showCancel={config.showCancelButton !== false}
+          showBack={config.showBackButton !== false}
+          showSubmit={config.showSubmitButton !== false && !config.readOnly}
           submitting={isSubmitting}
         />
       </form>

@@ -20,6 +20,7 @@ export function EntityTable<TEntity extends object>({
   onStateChange,
   actions: externalActions,
   toolbar,
+  toolbarTheme = 'default',
 }: EntityTableProps<TEntity>) {
   const m = useEntityTableModel({ config, rows, getRowId, onStateChange });
   const cv = useColumnVisibility(config);
@@ -37,6 +38,7 @@ export function EntityTable<TEntity extends object>({
           cv.setHidden((prev) => ({ ...prev, [String(field)]: !prev[String(field)] }))
         }
         showColumnMenu={showColumnMenu}
+        theme={toolbarTheme}
       />
     ) : undefined;
 

@@ -25,8 +25,11 @@ export function EntityForm<TEntity extends object>({
   const isSubmitting = form.formState.isSubmitting;
 
   const visibleFields = useMemo(
-    () => config.fields.filter((f) => !f.condition || f.condition(formData)),
-    [config.fields, formData]
+    () =>
+      config.fields
+        .filter((f) => !f.condition || f.condition(formData))
+        .map((f) => (config.readOnly ? { ...f, readonly: true } : f)),
+    [config.fields, config.readOnly, formData]
   );
 
   const sections = useMemo(() => {
@@ -46,17 +49,20 @@ export function EntityForm<TEntity extends object>({
   const hasSections = Array.from(sections.keys()).some((k) => k !== '');
   const gridClass = config.layout === 'two-column' ? 'grid gap-3 md:grid-cols-2' : 'grid gap-3';
 
-  const onSubmit = form.handleSubmit(async (data) => {
-    try {
-      await config.onSuccess?.(data as unknown as TEntity);
-      if (config.successMessage) toast.success(config.successMessage);
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error('Failed to submit');
+  const onSubmit =
+    config.readOnly || config.showSubmitButton === false
+      ? (e: React.FormEvent) => e.preventDefault()
+      : form.handleSubmit(async (data) => {
+          try {
+            await config.onSuccess?.(data as unknown as TEntity);
+            if (config.successMessage) toast.success(config.successMessage);
+          } catch (e) {
+            const err = e instanceof Error ? e : new Error('Failed to submit');
 
-      config.onError?.(err);
-      if (!config.onError) toast.error(err.message);
-    }
-  });
+            config.onError?.(err);
+            if (!config.onError) toast.error(err.message);
+          }
+        });
 
   return (
     <FormProvider {...form}>
@@ -105,6 +111,8 @@ export function EntityForm<TEntity extends object>({
           submitText={config.submitButtonText ?? 'Submit'}
           cancelText={config.cancelButtonText ?? 'Cancel'}
           showCancel={config.showCancelButton !== false}
+          showBack={config.showBackButton !== false}
+          showSubmit={config.showSubmitButton !== false && !config.readOnly}
           submitting={isSubmitting}
         />
       </form>

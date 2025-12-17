@@ -8,6 +8,8 @@ export function createEntityActions<TEntity extends object, TStatus extends Stat
   router,
   basePath,
   getEntityId,
+  includeViewAction = true,
+  includeEditAction = true,
 }: {
   updateMutation: (id: number, data: TEntity) => Promise<void>;
   invalidateQueries: () => Promise<void>;
@@ -15,6 +17,8 @@ export function createEntityActions<TEntity extends object, TStatus extends Stat
   router?: { push: (url: string) => void };
   basePath?: string;
   getEntityId: (entity: TEntity) => number | undefined;
+  includeViewAction?: boolean;
+  includeEditAction?: boolean;
 }) {
   const setStatusForRow = async (row: TEntity, status: string) => {
     const id = getEntityId(row);
@@ -97,29 +101,33 @@ export function createEntityActions<TEntity extends object, TStatus extends Stat
     const actions: RowActionConfig<TEntity>[] = [];
 
     if (router && basePath) {
-      actions.push({
-        id: 'view',
-        label: 'View',
-        onClick: (row: TEntity) => {
-          const id = getEntityId(row);
+      if (includeViewAction) {
+        actions.push({
+          id: 'view',
+          label: 'View',
+          onClick: (row: TEntity) => {
+            const id = getEntityId(row);
 
-          if (typeof id === 'number') {
-            router.push(`${basePath}/${id}`);
-          }
-        },
-      });
+            if (typeof id === 'number') {
+              router.push(`${basePath}/${id}`);
+            }
+          },
+        });
+      }
 
-      actions.push({
-        id: 'edit',
-        label: 'Edit',
-        onClick: (row: TEntity) => {
-          const id = getEntityId(row);
+      if (includeEditAction) {
+        actions.push({
+          id: 'edit',
+          label: 'Edit',
+          onClick: (row: TEntity) => {
+            const id = getEntityId(row);
 
-          if (typeof id === 'number') {
-            router.push(`${basePath}/${id}/edit`);
-          }
-        },
-      });
+            if (typeof id === 'number') {
+              router.push(`${basePath}/${id}/edit`);
+            }
+          },
+        });
+      }
     }
 
     if (statusEnum.ARCHIVED) {

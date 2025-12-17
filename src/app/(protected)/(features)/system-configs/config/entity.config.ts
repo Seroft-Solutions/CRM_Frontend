@@ -22,9 +22,11 @@ export const systemConfigEntityConfig: EntityTablePageConfig<
   tableConfig: systemConfigTableConfig,
   statusEnum: SystemConfigDTOStatus,
   getEntityId: (entity) => entity.id,
+  includeViewAction: true,
   useGetAll: useGetAllSystemConfigs,
   useUpdate: () => {
     const mutation = useUpdateSystemConfig();
+
     return {
       mutateAsync: async (params: { id: number; data: Partial<SystemConfigDTO> }) => {
         return mutation.mutateAsync({
