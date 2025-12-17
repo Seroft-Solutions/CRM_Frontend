@@ -1,16 +1,13 @@
 'use client';
 
-import type { TableConfig } from '@/entity-library/config';
 import type { ColumnConfig } from '@/entity-library/config';
 import { TableFiltersPanel } from './TableFiltersPanel';
 
 export function TableFilters<TEntity extends object>({
-  config,
   columns,
   filters,
   onChange,
 }: {
-  config: TableConfig<TEntity>;
   columns: Array<ColumnConfig<TEntity>>;
   filters: Record<string, string>;
   onChange: (next: Record<string, string>) => void;

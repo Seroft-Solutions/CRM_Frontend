@@ -6,6 +6,12 @@ Clean, organized, and purpose-driven architecture.
 
 ```
 src/entity-library/
+├── api/                  # External API (public types/configs)
+│   ├── config/           # Entity + table + form config interfaces
+│   ├── types/            # Public/shared types
+│   ├── README.md         # External API overview
+│   └── index.ts          # External API barrel
+│
 ├── actions/              # Entity action creators
 │   ├── createEntityActions.ts
 │   └── index.ts
@@ -15,21 +21,10 @@ src/entity-library/
 │   ├── forms/           # Form components
 │   ├── tables/          # Table components
 │   ├── EntityTablePage.tsx  # Complete table page component
-│   └── index.ts
-│
-├── config/              # Configuration system
-│   ├── entity-library-config.ts  # EntityConfig + shared config types
-│   ├── types.ts         # Table/column config types
-│   └── index.ts
+│   └── EntityFormPage.tsx   # Create/edit form page component
 │
 ├── hooks/               # React hooks
 │   └── useColumnVisibility.ts
-│
-├── types/               # Core TypeScript types
-│   ├── common.ts        # Shared types
-│   ├── entity-table.ts  # Table-specific types
-│   ├── table.ts         # Table state types
-│   └── index.ts
 │
 ├── utils/               # General utilities
 │   ├── rhf/            # React Hook Form utilities
@@ -38,7 +33,8 @@ src/entity-library/
 │   ├── zod-to-rhf.ts
 │   └── index.ts
 │
-└── index.ts            # Main entry point
+├── package.json
+└── README.md
 ```
 
 ## 🎯 Directory Responsibilities
@@ -64,19 +60,23 @@ src/entity-library/
 
 **When to use**: Building or modifying UI elements
 
-### `/config`
-**Purpose**: Configuration system - types
+### `/api`
+**Purpose**: External interfaces (public API surface)
 
 **Contains**:
-- `entity-library-config.ts` - `EntityConfig` and shared config types
-- `types.ts` - Table, column, pagination config types
+- `api/config/*` - all configuration interfaces (entity/table/form)
+- `api/types/*` - shared public types used by table/forms
 
-**Key Types**:
-- `EntityConfig` - Simple config (8 core fields)
-- `TableConfig` - Column definitions
-- `StatusEnum` - Entity status type
+**When to use**: Reviewing what the entity-library exposes to features
 
-**When to use**: Creating or modifying entity configurations
+## Notes on imports
+
+Feature code should import only:
+- `@/entity-library` (public components + actions)
+- `@/entity-library/config` (config interfaces)
+- `@/entity-library/types` (shared types)
+
+These are mapped directly to `src/entity-library/api/*` via `CRM_Frontend/tsconfig.json`.
 
 ### `/hooks`
 **Purpose**: Reusable React hooks
@@ -113,7 +113,7 @@ src/entity-library/
 ### For Configuration
 ```typescript
 import { 
-  EntityConfig,
+  EntityTablePageConfig,
   TableConfig,
   StatusEnum,
 } from '@/entity-library/config';
@@ -129,12 +129,10 @@ import { createEntityActions } from '@/entity-library/actions';
 import { 
   EntityTablePage,
   EntityTable,
-} from '@/entity-library/components';
-```
-
-### For Hooks
-```typescript
-import { useColumnVisibility } from '@/entity-library/hooks';
+  EntityFormPage,
+  EntityForm,
+  FormWizard,
+} from '@/entity-library';
 ```
 
 ### For Types
@@ -145,10 +143,8 @@ import type {
 } from '@/entity-library/types';
 ```
 
-### For Utilities
-```typescript
-import { useEntityTableModel } from '@/entity-library/utils';
-```
+### Internal-only (do not import from features)
+- `@/entity-library/hooks/*` and `@/entity-library/utils/*` are intentionally blocked and should only be used via internal (relative) imports within `src/entity-library`.
 
 ## 🔄 Migration from Old Structure
 
@@ -158,20 +154,22 @@ utils/
   ├── createEntityActions.ts         ❌ Mixed with other utils
   ├── createDefaultConfig.ts         ❌ Mixed with other utils
 types/
-  ├── entity-config.ts               ❌ Mixed with core types
+  ├── entity-table-page-config.ts    ❌ Config mixed with core types
   ├── entity-library-config.ts       ❌ Config in types dir
 ```
 
 ### New (Organized)
 ```
-actions/
-  └── createEntityActions.ts         ✅ Clear purpose
-config/
-  ├── entity-library-config.ts       ✅ All config together
-  └── helpers/
-      └── createDefaultConfig.ts     ✅ Config helpers grouped
-types/
-  └── [core types only]              ✅ No config here
+api/
+  ├── config/                        ✅ Public config contracts
+  │   └── entity/
+  │       ├── entity-table-page-config.ts
+  │       └── entity-form-page-config.ts
+  └── types/                         ✅ Public/shared types
+
+components/                          ✅ Internal UI implementation
+hooks/                               ✅ Internal hooks
+utils/                               ✅ Internal utilities
 ```
 
 ## 📊 File Counts by Directory
@@ -237,10 +235,10 @@ hooks/
 
 1. **Creating a new entity config**:
    - Import from `@/entity-library/config`
-   - Create an `EntityConfig` with a `TableConfig`
+   - Create an `EntityTablePageConfig` with a `TableConfig`
 
 2. **Using entity table**:
-   - Import `EntityTablePage` from `@/entity-library/components`
+   - Import `EntityTablePage` from `@/entity-library`
    - Pass your config
 
 3. **Adding custom actions**:

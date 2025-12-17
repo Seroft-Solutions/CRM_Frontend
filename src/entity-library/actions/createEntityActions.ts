@@ -1,29 +1,27 @@
 import { toast } from 'sonner';
-import type { BulkActionConfig, RowActionConfig } from '@/entity-library/config';
+import type { BulkActionConfig, RowActionConfig, StatusEnum } from '@/entity-library/config';
 
-interface CreateEntityActionsOptions<TEntity, TStatus extends Record<string, string>> {
-  updateMutation: (id: number, data: TEntity) => Promise<void>;
-  invalidateQueries: () => Promise<void>;
-  statusEnum: TStatus;
-  router?: {
-    push: (url: string) => void;
-  };
-  basePath?: string;
-  getEntityId: (entity: TEntity) => number | undefined;
-}
-
-export function createEntityActions<TEntity extends object, TStatus extends Record<string, string>>({
+export function createEntityActions<TEntity extends object, TStatus extends StatusEnum>({
   updateMutation,
   invalidateQueries,
   statusEnum,
   router,
   basePath,
   getEntityId,
-}: CreateEntityActionsOptions<TEntity, TStatus>) {
+}: {
+  updateMutation: (id: number, data: TEntity) => Promise<void>;
+  invalidateQueries: () => Promise<void>;
+  statusEnum: TStatus;
+  router?: { push: (url: string) => void };
+  basePath?: string;
+  getEntityId: (entity: TEntity) => number | undefined;
+}) {
   const setStatusForRow = async (row: TEntity, status: string) => {
     const id = getEntityId(row);
+
     if (typeof id !== 'number') {
       toast.info('No valid row selected');
+
       return;
     }
 
@@ -39,14 +37,17 @@ export function createEntityActions<TEntity extends object, TStatus extends Reco
 
   const setStatusForRows = async (selectedRows: TEntity[], status: string) => {
     const targets = selectedRows.filter((r) => typeof getEntityId(r) === 'number');
+
     if (targets.length === 0) {
       toast.info('No selectable rows');
+
       return;
     }
 
     try {
       for (const row of targets) {
         const id = getEntityId(row);
+
         if (typeof id === 'number') {
           await updateMutation(id, { ...row, status } as TEntity);
         }
@@ -101,6 +102,7 @@ export function createEntityActions<TEntity extends object, TStatus extends Reco
         label: 'View',
         onClick: (row: TEntity) => {
           const id = getEntityId(row);
+
           if (typeof id === 'number') {
             router.push(`${basePath}/${id}`);
           }
@@ -112,6 +114,7 @@ export function createEntityActions<TEntity extends object, TStatus extends Reco
         label: 'Edit',
         onClick: (row: TEntity) => {
           const id = getEntityId(row);
+
           if (typeof id === 'number') {
             router.push(`${basePath}/${id}/edit`);
           }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
   Select,
@@ -23,10 +24,21 @@ export function SelectFieldControl({
   const { setValue, watch } = useFormContext<Record<string, unknown>>();
   const value = watch(name);
 
+  const valueKey = useMemo(() => {
+    if (value == null) return '';
+    const match = options.find((o) => String(o.value) === String(value));
+
+    return match ? String(match.value) : String(value);
+  }, [options, value]);
+
   return (
     <Select
-      value={typeof value === 'string' ? value : value == null ? '' : String(value)}
-      onValueChange={(v) => setValue(name, v, { shouldDirty: true })}
+      value={valueKey}
+      onValueChange={(v) => {
+        const match = options.find((o) => String(o.value) === v);
+
+        setValue(name, match ? match.value : v, { shouldDirty: true, shouldValidate: true });
+      }}
       disabled={disabled}
     >
       <SelectTrigger>

@@ -1,29 +1,32 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { TableState } from '@/entity-library/types';
-import type { EntityConfig, StatusTab, TableConfig } from '@/entity-library/config';
+import type {
+  EntityTablePageConfig,
+  StatusEnum,
+  StatusTab,
+  TableConfig,
+} from '@/entity-library/config';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-
+import { useEntityMutations } from '../hooks/useEntityMutations';
+import { createEntityActions } from '../actions/createEntityActions';
 import { EntityTable } from './tables/EntityTable';
-import { createEntityActions } from '@/entity-library/actions';
-import type { StatusEnum } from '@/entity-library/config';
 
 interface EntityTablePageProps<TEntity extends object, TStatus extends StatusEnum> {
-  config: EntityConfig<TEntity, TStatus>;
+  config: EntityTablePageConfig<TEntity, TStatus>;
 }
 
 export function EntityTablePage<TEntity extends object, TStatus extends StatusEnum>({
   config,
 }: EntityTablePageProps<TEntity, TStatus>) {
-  const queryClient = useQueryClient();
   const router = useRouter();
+  const { invalidateQueries } = useEntityMutations(config.queryKeyPrefix);
   const [activeStatusTab, setActiveStatusTab] = useState<StatusTab>('active');
 
   const [state, setState] = useState<TableState<TEntity>>({
@@ -40,7 +43,8 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
     const sortField = state.sort?.field || config.tableConfig.defaultSort?.field;
     const sortDirection = state.sort?.direction || 'asc';
 
-    const filterParams: Record<string, any> = {};
+    const filterParams: Record<string, string> = {};
+
     Object.entries(state.filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         filterParams[`${key}.contains`] = value;
@@ -57,9 +61,9 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
       sort: [`${String(sortField)},${sortDirection}`],
       ...filterParams,
     };
-  }, [state, activeStatusTab]);
+  }, [activeStatusTab, config.tableConfig.defaultSort, state]);
 
-  const { data, isLoading, refetch } = config.useGetAll(queryParams);
+  const { data, refetch } = config.useGetAll(queryParams);
 
   const { rows, total } = useMemo(() => {
     if (!data) {
@@ -69,9 +73,10 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
     // Support APIs that return a Spring Page-like object
     if (!Array.isArray(data) && typeof data === 'object') {
       const maybePage = data as { content?: TEntity[]; totalElements?: number };
+
       return {
         rows: maybePage.content ?? [],
-        total: maybePage.totalElements ?? (maybePage.content?.length ?? 0),
+        total: maybePage.totalElements ?? maybePage.content?.length ?? 0,
       };
     }
 
@@ -79,6 +84,7 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
     const allRows = (data as TEntity[]) ?? [];
     const start = (state.page - 1) * state.pageSize;
     const end = start + state.pageSize;
+
     return {
       rows: allRows.slice(start, end),
       total: allRows.length,
@@ -87,20 +93,10 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
 
   const { mutateAsync: updateAsync } = config.useUpdate();
 
-  const invalidateQueries = useCallback(
-    async () =>
-      queryClient.invalidateQueries({
-        predicate: (q) =>
-          typeof q.queryKey?.[0] === 'string' &&
-          (q.queryKey[0] as string).startsWith(config.queryKeyPrefix),
-      }),
-    [queryClient, config.queryKeyPrefix]
-  );
-
   const { createBulkActions, createRowActions } = useMemo(
     () =>
       createEntityActions<TEntity, TStatus>({
-        updateMutation: async (id, data) => {
+        updateMutation: async (id: number, data: TEntity) => {
           await updateAsync({ id, data });
         },
         invalidateQueries,
@@ -131,7 +127,7 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
         config={tableConfig}
         rows={rows}
         total={total}
-        getRowId={(row) => String(config.getEntityId(row) || '')}
+        getRowId={(row: TEntity) => String(config.getEntityId(row) || '')}
         onStateChange={setState}
         toolbar={
           <Tabs value={activeStatusTab} onValueChange={(v) => setActiveStatusTab(v as StatusTab)}>
@@ -152,4 +148,3 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
     </>
   );
 }
-

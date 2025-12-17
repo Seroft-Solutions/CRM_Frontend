@@ -28,7 +28,9 @@ export function TableRowActionsMenu<TEntity extends object>({
         {actions.map((a) => (
           <DropdownMenuItem
             key={a.id}
-            className={a.variant === 'destructive' ? 'text-destructive focus:text-destructive' : undefined}
+            className={
+              a.variant === 'destructive' ? 'text-destructive focus:text-destructive' : undefined
+            }
             onSelect={() => onAction(a)}
           >
             {a.label}

@@ -1,1 +1,0 @@
-export { EntityTablePage } from './EntityTablePage';

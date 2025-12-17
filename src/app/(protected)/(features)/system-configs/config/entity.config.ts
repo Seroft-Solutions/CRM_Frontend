@@ -1,7 +1,7 @@
 'use client';
 
 import type { SystemConfigDTO } from '@/core/api/generated/spring/schemas';
-import type { EntityConfig } from '@/entity-library/config';
+import type { EntityTablePageConfig } from '@/entity-library/config';
 import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
 import {
   useGetAllSystemConfigs,
@@ -13,7 +13,7 @@ import { systemConfigTableConfig } from './table.config';
  * Complete entity configuration for System Configs
  * All UI logic is handled by EntityTablePage - this just provides DTO-based config
  */
-export const systemConfigEntityConfig: EntityConfig<
+export const systemConfigEntityConfig: EntityTablePageConfig<
   SystemConfigDTO,
   typeof SystemConfigDTOStatus
 > = {

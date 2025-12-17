@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import type { TableConfig } from '@/entity-library/config';
 import type { EntityId, TableState } from '@/entity-library/types';
-import { useTableState } from '@/entity-library/hooks/useTableState';
+import { useTableState } from '../hooks/useTableState';
 
 export function useEntityTableModel<TEntity extends object>({
   config,

@@ -1,7 +1,7 @@
 'use client';
 
-import type { EntityTableTableProps } from '@/entity-library/types';
 import type { ColumnConfig } from '@/entity-library/config';
+import type { EntityTableTableProps } from './types';
 import { EntityTableBody } from './EntityTableBody';
 import { TableEmpty } from './TableEmpty';
 import { TableHeader } from './TableHeader';
@@ -46,8 +46,6 @@ export function EntityTableTable<TEntity extends object>({
   );
 }
 
-export function EntityTableContent<TEntity extends object>(
-  props: EntityTableTableProps<TEntity>,
-) {
+export function EntityTableContent<TEntity extends object>(props: EntityTableTableProps<TEntity>) {
   return <EntityTableTable {...props} columns={props.config.columns} />;
 }

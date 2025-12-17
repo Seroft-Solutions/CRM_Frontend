@@ -2,7 +2,7 @@
 
 import type { BulkActionConfig } from '@/entity-library/config';
 import { Button } from '@/components/ui/button';
-import { useConfirmAction } from '@/entity-library/hooks';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { TableActionsConfirm } from './TableActionsConfirm';
 
 export function TableActions<TEntity extends object>({
@@ -12,21 +12,26 @@ export function TableActions<TEntity extends object>({
   actions?: Array<BulkActionConfig<TEntity>>;
   selectedRows: TEntity[];
 }) {
-  if (!actions?.length || selectedRows.length === 0) return null;
+  const safeActions = actions ?? [];
+  const { pending, pendingId, setPendingId } = useConfirmAction(safeActions);
 
-  const { pending, pendingId, setPendingId } = useConfirmAction(actions);
+  if (!safeActions.length || selectedRows.length === 0) return null;
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 p-3">
-        {actions.map((a) => (
+        {safeActions.map((a) => (
           <Button
             key={a.id}
             type="button"
             size="sm"
             variant={a.variant === 'destructive' ? 'destructive' : 'default'}
             onClick={async () => {
-              const msg = typeof a.confirmationMessage === 'function' ? a.confirmationMessage(selectedRows.length) : a.confirmationMessage;
+              const msg =
+                typeof a.confirmationMessage === 'function'
+                  ? a.confirmationMessage(selectedRows.length)
+                  : a.confirmationMessage;
+
               if (a.requiresConfirmation && msg) return setPendingId(a.id);
               await a.onClick?.(selectedRows);
             }}

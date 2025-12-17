@@ -10,9 +10,12 @@ export function useColumnVisibility<TEntity extends object>(config: TableConfig<
 
   useEffect(() => {
     const base = Object.fromEntries((cfg?.defaultHidden ?? []).map((f) => [String(f), true]));
+
     if (!key || typeof window === 'undefined') return void setHidden(base);
+
     try {
       const saved = window.localStorage.getItem(key);
+
       setHidden(saved ? { ...base, ...JSON.parse(saved) } : base);
     } catch {
       setHidden(base);

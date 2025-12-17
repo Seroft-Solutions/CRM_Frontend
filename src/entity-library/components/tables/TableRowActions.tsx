@@ -1,7 +1,7 @@
 'use client';
 
 import type { RowActionConfig } from '@/entity-library/config';
-import { useConfirmAction } from '@/entity-library/hooks';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { TableRowActionsMenu } from './TableRowActionsMenu';
 import { TableRowActionsConfirm } from './TableRowActionsConfirm';
 
@@ -12,13 +12,18 @@ export function TableRowActions<TEntity extends object>({
   actions: Array<RowActionConfig<TEntity>>;
   row: TEntity;
 }) {
-  if (!actions.length) return null;
-
   const { pending, pendingId, setPendingId } = useConfirmAction(actions);
 
+  if (!actions.length) return null;
+
   const run = async (a: RowActionConfig<TEntity>) => {
-    const msg = typeof a.confirmationMessage === 'function' ? a.confirmationMessage(row) : a.confirmationMessage;
+    const msg =
+      typeof a.confirmationMessage === 'function'
+        ? a.confirmationMessage(row)
+        : a.confirmationMessage;
+
     if (a.requiresConfirmation && msg) return setPendingId(a.id);
+
     await a.onClick?.(row);
   };
 

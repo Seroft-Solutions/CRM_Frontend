@@ -9,6 +9,9 @@ export function FormActions({
   onNext,
   onCancel,
   submitText = 'Submit',
+  cancelText = 'Cancel',
+  showCancel = true,
+  submitting = false,
 }: {
   isFirst: boolean;
   isLast: boolean;
@@ -16,18 +19,32 @@ export function FormActions({
   onNext: () => void;
   onCancel?: () => void;
   submitText?: string;
+  cancelText?: string;
+  showCancel?: boolean;
+  submitting?: boolean;
 }) {
   return (
     <div className="flex items-center justify-end gap-2 pt-2">
-      {onCancel ? (
-        <Button type="button" size="sm" variant="outline" onClick={onCancel}>
-          Cancel
+      {onCancel && showCancel ? (
+        <Button type="button" size="sm" variant="outline" onClick={onCancel} disabled={submitting}>
+          {cancelText}
         </Button>
       ) : null}
-      <Button type="button" size="sm" variant="outline" disabled={isFirst} onClick={onPrev}>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={submitting || isFirst}
+        onClick={onPrev}
+      >
         Back
       </Button>
-      <Button type={isLast ? 'submit' : 'button'} size="sm" onClick={isLast ? undefined : onNext}>
+      <Button
+        type={isLast ? 'submit' : 'button'}
+        size="sm"
+        disabled={submitting}
+        onClick={isLast ? undefined : onNext}
+      >
         {isLast ? submitText : 'Next'}
       </Button>
     </div>

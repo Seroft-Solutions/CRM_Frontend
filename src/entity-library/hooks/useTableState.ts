@@ -4,9 +4,7 @@ import { useMemo, useState } from 'react';
 import type { SortConfig, TableConfig } from '@/entity-library/config';
 import type { EntityId, TableState } from '@/entity-library/types';
 
-export function useTableState<TEntity extends object>(
-  config: TableConfig<TEntity>
-) {
+export function useTableState<TEntity extends object>(config: TableConfig<TEntity>) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(config.pagination.defaultPageSize);
   const [sort, setSort] = useState<SortConfig<TEntity> | undefined>(config.defaultSort);

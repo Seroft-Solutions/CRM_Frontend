@@ -1,4 +1,4 @@
-import type { TableConfig } from './types';
+import type { TableConfig } from '../table/table-config';
 
 /**
  * Status enum type - must have ACTIVE, INACTIVE, ARCHIVED values
@@ -16,38 +16,37 @@ export type StatusEnum = {
 export type StatusTab = 'all' | 'active' | 'inactive' | 'archived';
 
 /**
- * Simple Entity Configuration
- * Used by EntityTablePage for basic table functionality
- * Contains only the essential fields needed for table rendering
+ * Entity Table Page Configuration
+ * Used by `EntityTablePage` for full table-page functionality.
  */
-export interface EntityConfig<TEntity extends object, TStatus extends StatusEnum> {
+export interface EntityTablePageConfig<TEntity extends object, TStatus extends StatusEnum> {
   /** Display name plural (e.g., 'System Configs') */
   entityName: string;
-  
+
   /** Base URL path (e.g., '/system-configs') */
   basePath: string;
-  
+
   /** Complete table configuration with columns, sorting, pagination */
   tableConfig: TableConfig<TEntity>;
-  
+
   /** Status enum with ACTIVE, INACTIVE, ARCHIVED */
   statusEnum: TStatus;
-  
+
   /** Function to extract entity ID */
   getEntityId: (entity: TEntity) => number | undefined;
-  
+
   /** Orval-generated hook for fetching all entities */
-  useGetAll: (params: any) => {
+  useGetAll: (params: Record<string, unknown>) => {
     data?: { content?: TEntity[]; totalElements?: number } | TEntity[];
     isLoading: boolean;
     refetch: () => void;
   };
-  
+
   /** Orval-generated mutation hook for updating entities */
   useUpdate: () => {
-    mutateAsync: (params: { id: number; data: Partial<TEntity> }) => Promise<any>;
+    mutateAsync: (params: { id: number; data: Partial<TEntity> }) => Promise<unknown>;
   };
-  
+
   /** API endpoint prefix for query invalidation (e.g., '/api/system-configs') */
   queryKeyPrefix: string;
 }

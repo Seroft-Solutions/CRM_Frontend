@@ -1,6 +1,6 @@
 /**
  * Entity Library Actions
- * 
+ *
  * Action creators and utilities for entity operations
  */
 

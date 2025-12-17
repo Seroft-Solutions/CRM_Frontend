@@ -109,7 +109,7 @@ Provide a **reusable, type-safe foundation** for building entity management inte
 │                     Feature Layer                            │
 │  (system-configs, customers, products, etc.)                 │
 │                                                              │
-│  • entity.config.ts    ← Simple EntityConfig                │
+│  • entity.config.ts    ← EntityTablePageConfig              │
 │  • page.tsx            ← Uses EntityTablePage                │
 └────────────────────┬────────────────────────────────────────┘
                      │
@@ -184,39 +184,22 @@ EntityTablePage (high-level)
 
 ## 🚪 Entry Point
 
-### Main Export: `index.ts`
+### Public Entry Point: `api/index.ts`
 
-The library's entry point organizes all exports by concern:
+The library’s public entrypoint is `src/entity-library/api/index.ts` (mapped to `@/entity-library` via `tsconfig.json`).
 
 ```typescript
 /**
- * Entity Library Entry Point
+ * Entity Library External API
  * 
- * Import Order:
- * 1. Configuration (types, validation, helpers)
- * 2. Actions (CRUD operation creators)
- * 3. Hooks (React hooks)
- * 4. Types (core TypeScript definitions)
- * 5. Utilities (helper functions)
- * 6. Components (React UI)
+ * Everything exported from this module is considered "public" for feature code.
+ * Implementations live elsewhere and should not be imported directly by features.
  */
 
-// Configuration system (types, validation, helpers)
 export * from './config';
-
-// Action creators
-export * from './actions';
-
-// React hooks
-export * from './hooks';
-
-// Core types
 export * from './types';
 
-// Utilities
-export * from './utils';
-
-// React components
+export * from './actions';
 export * from './components';
 ```
 
@@ -226,7 +209,7 @@ export * from './components';
 ```typescript
 // Configuration
 import { 
-  EntityConfig,
+  EntityTablePageConfig,
 } from '@/entity-library/config';
 
 // Components
@@ -238,11 +221,21 @@ import { createEntityActions } from '@/entity-library/actions';
 
 #### Within Entity Library
 ```typescript
-// Absolute imports for clarity
-import { TableConfig } from '@/entity-library/config';
-import { createEntityActions } from '@/entity-library/actions';
+// Public contracts are OK to import via the API
+import type { TableConfig } from '@/entity-library/config';
 import type { TableState } from '@/entity-library/types';
+
+// Internal implementation should use relative imports (not public paths)
+import { useEntityTableModel } from '../utils/useEntityTableModel';
 ```
+
+### Internal-only modules (blocked for features)
+
+Feature code must not import:
+- `@/entity-library/hooks/*`
+- `@/entity-library/utils/*`
+
+These are intentionally blocked via `CRM_Frontend/tsconfig.json` path mappings so only the API surface is available.
 
 ---
 
@@ -252,14 +245,14 @@ import type { TableState } from '@/entity-library/types';
 
 ```typescript
 // src/features/system-configs/config/entity.config.ts
-import { EntityConfig } from '@/entity-library/config';
+import { EntityTablePageConfig } from '@/entity-library/config';
 import { SystemConfigDTO, SystemConfigStatus } from '@/generated/api';
 import { 
   useGetAllSystemConfigs,
   useUpdateSystemConfig 
 } from '@/generated/hooks';
 
-export const systemConfigEntity: EntityConfig<
+export const systemConfigEntity: EntityTablePageConfig<
   SystemConfigDTO,
   typeof SystemConfigStatus
 > = {
@@ -275,28 +268,30 @@ export const systemConfigEntity: EntityConfig<
     columns: [
       { 
         field: 'configKey', 
-        label: 'Config Key', 
+        header: 'Config Key', 
         sortable: true, 
         filterable: true 
       },
       { 
         field: 'configValue', 
-        label: 'Value', 
+        header: 'Value', 
         sortable: false, 
         filterable: true 
       },
       { 
         field: 'description', 
-        label: 'Description', 
+        header: 'Description', 
         sortable: false, 
         filterable: false 
       },
     ],
     defaultSort: { field: 'configKey', direction: 'asc' },
     pagination: {
-      enabled: true,
       defaultPageSize: 10,
       pageSizeOptions: [10, 25, 50],
+      showTotalCount: true,
+      showPageSizeSelector: true,
+      strategy: 'offset',
     },
   },
 };
@@ -330,8 +325,8 @@ You now have a complete entity management interface with:
 
 ## ⚙️ Configuration System
 
-### EntityConfig (Simple)
-Build entity table pages by providing a single `EntityConfig` object.
+### EntityTablePageConfig
+Build entity table pages by providing a single `EntityTablePageConfig` object.
 
 **Contains**: 8 essential fields
 - Entity identity (name, path)
@@ -339,7 +334,7 @@ Build entity table pages by providing a single `EntityConfig` object.
 - Table configuration (columns, sorting, pagination)
 
 ```typescript
-interface EntityConfig<TEntity, TStatus> {
+interface EntityTablePageConfig<TEntity, TStatus> {
   entityName: string;
   basePath: string;
   tableConfig: TableConfig<TEntity>;
@@ -362,7 +357,7 @@ interface EntityConfig<TEntity, TStatus> {
 **Props**:
 ```typescript
 interface EntityTablePageProps<TEntity, TStatus> {
-  config: EntityConfig<TEntity, TStatus>;
+  config: EntityTablePageConfig<TEntity, TStatus>;
 }
 ```
 
@@ -381,6 +376,18 @@ interface EntityTablePageProps<TEntity, TStatus> {
 **Example**:
 ```typescript
 <EntityTablePage config={systemConfigEntity} />
+```
+
+### EntityFormPage
+
+**Purpose**: Page-level form wrapper that wires create/update mutations, query invalidation, and default redirects.
+
+**Props**:
+```typescript
+interface EntityFormPageProps<TEntity> {
+  config: EntityFormPageConfig<TEntity>;
+  id?: number; // required for update mode
+}
 ```
 
 ### EntityTable
@@ -414,7 +421,7 @@ npm run orval
 2. **Create entity config**:
 ```typescript
 // features/my-entity/config/entity.config.ts
-export const myEntity: EntityConfig<MyDTO, typeof MyStatus> = {
+export const myEntity: EntityTablePageConfig<MyDTO, typeof MyStatus> = {
   // ... configuration
 };
 ```
@@ -469,7 +476,7 @@ export const myEntityTableConfig: TableConfig<MyDTO> = {
 
 ### Configuration
 
-#### `EntityConfig<TEntity, TStatus>`
+#### `EntityTablePageConfig<TEntity, TStatus>`
 Simple entity configuration with 8 core fields.
 
 **Type Parameters**:
@@ -484,8 +491,13 @@ Table-specific configuration (columns, sorting, pagination).
 ```typescript
 interface TableConfig<TEntity> {
   columns: ColumnConfig<TEntity>[];
-  defaultSort?: { field: keyof TEntity; direction: 'asc' | 'desc' };
   pagination: PaginationConfig;
+  defaultSort?: { field: keyof TEntity; direction: 'asc' | 'desc' };
+  rowActions?: Array<RowActionConfig<TEntity>>;
+  bulkActions?: Array<BulkActionConfig<TEntity>>;
+  columnVisibility?: ColumnVisibilityConfig<TEntity>;
+  rowSelection?: RowSelectionConfig;
+  emptyState?: EmptyStateConfig;
 }
 ```
 
@@ -495,72 +507,25 @@ Column definition for table display.
 ```typescript
 interface ColumnConfig<TEntity> {
   field: keyof TEntity;
-  label: string;
-  sortable: boolean;
-  filterable: boolean;
+  header: string;
+  type?: 'text' | 'number' | 'date' | 'datetime' | 'boolean' | 'relationship' | 'badge' | 'image' | 'custom';
+  sortable?: boolean;
+  filterable?: boolean;
   width?: string;
-  render?: (value: any, entity: TEntity) => React.ReactNode;
+  render?: (value: TEntity[keyof TEntity], row: TEntity) => React.ReactNode;
 }
 ```
 
 ### Actions
 
-#### `createEntityActions(config)`
-Factory for generating entity actions.
-
-**Parameters**:
-- `config: EntityConfig` - Entity configuration
-
-**Returns**: Object with action functions
-- `activateRow(entity)` - Activate single entity
-- `deactivateRow(entity)` - Deactivate single entity
-- `archiveRow(entity)` - Archive single entity
-- `activateBulk(entities)` - Activate multiple
-- `deactivateBulk(entities)` - Deactivate multiple
-- `archiveBulk(entities)` - Archive multiple
-
-**Example**:
-```typescript
-const actions = createEntityActions(systemConfigEntity);
-await actions.activateRow(entity);
-```
-
-### Hooks
-
-#### `useColumnVisibility(columns)`
-Manage column show/hide state.
-
-**Parameters**:
-- `columns: ColumnConfig[]` - Table columns
+#### `createEntityActions(options)`
+Helper for building default row/bulk actions (used by `EntityTablePage`).
 
 **Returns**:
-```typescript
-{
-  visibleColumns: ColumnConfig[];
-  toggleColumn: (field: string) => void;
-  isVisible: (field: string) => boolean;
-}
-```
-
-### Utilities
-
-#### `useEntityTableModel(config, activeTab)`
-Table state management with query integration.
-
-**Parameters**:
-- `config: EntityConfig` - Entity configuration
-- `activeTab: StatusTab` - Current active tab
-
-**Returns**:
-```typescript
-{
-  state: TableState;
-  setState: (state: TableState) => void;
-  queryParams: QueryParams;
-  queryResult: QueryResult;
-  queryClient: QueryClient;
-}
-```
+- `createBulkActions()` → `BulkActionConfig[]`
+- `createRowActions()` → `RowActionConfig[]`
+- `setStatusForRow(row, status)`
+- `setStatusForRows(rows, status)`
 
 ---
 
@@ -568,6 +533,12 @@ Table state management with query integration.
 
 ```
 src/entity-library/
+│
+├── api/                        # External API (public configs + types)
+│   ├── config/                 # Entity + table + form interfaces
+│   ├── types/                  # Public types
+│   ├── README.md               # External API overview
+│   └── index.ts                # External API barrel
 │
 ├── actions/                    # Entity action creators
 │   ├── createEntityActions.ts  # Factory for CRUD actions
@@ -584,19 +555,8 @@ src/entity-library/
 │   ├── EntityTablePage.tsx     # Complete table page
 │   └── index.ts                # Exports
 │
-├── config/                     # Configuration system
-│   ├── entity-library-config.ts    # Config interfaces
-│   ├── types.ts                # Table/column types
-│   └── index.ts                # Exports
-│
 ├── hooks/                      # React hooks
 │   ├── useColumnVisibility.ts  # Column toggle hook
-│   └── index.ts                # Exports
-│
-├── types/                      # Core TypeScript types
-│   ├── common.ts               # Shared types (EntityId, etc.)
-│   ├── entity-table.ts         # Table prop types
-│   ├── table.ts                # Table state types
 │   └── index.ts                # Exports
 │
 ├── utils/                      # Utility functions
@@ -606,7 +566,6 @@ src/entity-library/
 │   ├── zod-to-rhf.ts           # Schema conversion
 │   └── index.ts                # Exports
 │
-├── index.ts                    # Main entry point
 ├── package.json                # Library metadata
 └── README.md                   # This file
 ```
@@ -617,7 +576,7 @@ src/entity-library/
 |-----------|---------|------------------|
 | `/actions` | Action creators and operation factories | Creating new entity operations |
 | `/components` | React UI components | Adding new UI elements |
-| `/config` | Configuration types and validation | Extending config capabilities |
+| `/config` | External configuration interfaces | Extending table/form capabilities |
 | `/hooks` | React hooks | Extracting stateful logic |
 | `/types` | Core type definitions | Adding new type categories |
 | `/utils` | Pure utility functions | Adding helpers and transforms |
@@ -686,7 +645,7 @@ This ensures **zero breaking changes** for existing implementations.
 ### Configuration
 
 ✅ **Do**:
-- Use `EntityConfig` for simple tables
+- Use `EntityTablePageConfig` for table pages
 - Keep configs in `features/[entity]/config/` directory
 - Set unused fields to `false` or `'NA'` (never leave undefined)
 

@@ -19,8 +19,19 @@
       }
     ],
     "paths": {
-      "@/entity-library": ["./src/entity-library/index.ts"],
-      "@/entity-library/*": ["./src/entity-library/*"],
+      "@/entity-library": ["./src/entity-library/api/index.ts"],
+      "@/entity-library/actions": ["./src/entity-library/api/actions/index.ts"],
+      "@/entity-library/actions/*": ["./src/entity-library/api/actions/*"],
+      "@/entity-library/components": ["./src/entity-library/api/components/index.ts"],
+      "@/entity-library/components/*": ["./src/entity-library/api/components/*"],
+      "@/entity-library/config": ["./src/entity-library/api/config/index.ts"],
+      "@/entity-library/config/*": ["./src/entity-library/api/config/*"],
+      "@/entity-library/hooks": ["./src/entity-library/__internal__/hooks"],
+      "@/entity-library/hooks/*": ["./src/entity-library/__internal__/hooks/*"],
+      "@/entity-library/types": ["./src/entity-library/api/types/index.ts"],
+      "@/entity-library/types/*": ["./src/entity-library/api/types/*"],
+      "@/entity-library/utils": ["./src/entity-library/__internal__/utils"],
+      "@/entity-library/utils/*": ["./src/entity-library/__internal__/utils/*"],
       "@/*": ["./src/*"]
     }
   },

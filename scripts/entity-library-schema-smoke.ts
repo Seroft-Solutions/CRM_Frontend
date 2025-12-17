@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import type { EntityConfig, StatusEnum, TableConfig } from '@/entity-library/config';
+import type { EntityTablePageConfig, StatusEnum, TableConfig } from '@/entity-library/config';
 
 function main(): void {
   const statusEnum = {
@@ -20,7 +20,7 @@ function main(): void {
     },
   };
 
-  const example: EntityConfig<ExampleEntity, typeof statusEnum> = {
+  const example: EntityTablePageConfig<ExampleEntity, typeof statusEnum> = {
     entityName: 'Examples',
     basePath: '/examples',
     queryKeyPrefix: '/api/examples',

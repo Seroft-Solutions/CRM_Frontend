@@ -17,7 +17,9 @@ export function TableContainer({ title, actions, children }: TableContainerProps
           {actions}
         </div>
       ) : null}
-      <div className="w-full rounded-lg border bg-background shadow-lg shadow-muted/50">{children}</div>
+      <div className="w-full rounded-lg border bg-background shadow-lg shadow-muted/50">
+        {children}
+      </div>
     </section>
   );
 }

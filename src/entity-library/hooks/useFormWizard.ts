@@ -3,9 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { WizardStepConfig } from '@/entity-library/config';
 
-export function useFormWizard<TEntity extends object>(
-  steps: Array<WizardStepConfig<TEntity>>
-) {
+export function useFormWizard<TEntity extends object>(steps: Array<WizardStepConfig<TEntity>>) {
   const [stepIndex, setStepIndex] = useState(0);
 
   const max = steps.length ? steps.length - 1 : 0;

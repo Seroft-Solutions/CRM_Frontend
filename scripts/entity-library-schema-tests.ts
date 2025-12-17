@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 
-import type { EntityConfig, StatusEnum, TableConfig } from '@/entity-library/config';
+import type { EntityTablePageConfig, StatusEnum, TableConfig } from '@/entity-library/config';
 
-function testEntityConfigShape(): void {
+function testEntityTablePageConfigShape(): void {
   const statusEnum = {
     ACTIVE: 'ACTIVE',
     INACTIVE: 'INACTIVE',
@@ -16,7 +16,7 @@ function testEntityConfigShape(): void {
     pagination: { defaultPageSize: 10, pageSizeOptions: [10, 25], strategy: 'offset' },
   };
 
-  const config: EntityConfig<ExampleEntity, typeof statusEnum> = {
+  const config: EntityTablePageConfig<ExampleEntity, typeof statusEnum> = {
     entityName: 'Examples',
     basePath: '/examples',
     queryKeyPrefix: '/api/examples',
@@ -35,7 +35,7 @@ function testEntityConfigShape(): void {
 }
 
 function main(): void {
-  testEntityConfigShape();
+  testEntityTablePageConfigShape();
 }
 
 main();

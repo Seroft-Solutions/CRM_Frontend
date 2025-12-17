@@ -25,11 +25,7 @@ export function EntityTableToolbar<TEntity extends object>({
       <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
         {externalActions}
         {showColumnMenu ? (
-          <TableColumnVisibility
-            columns={columns}
-            hidden={hidden}
-            onToggle={onToggle}
-          />
+          <TableColumnVisibility columns={columns} hidden={hidden} onToggle={onToggle} />
         ) : null}
       </div>
     </div>

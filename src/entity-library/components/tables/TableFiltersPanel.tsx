@@ -16,18 +16,38 @@ export function TableFiltersPanel<TEntity extends object>({
   onChange: (next: Record<string, string>) => void;
 }) {
   const activeCount = Object.values(filters).filter((v) => v?.trim()).length;
+
   return (
     <div className="border-b bg-gradient-to-r from-[oklch(0.45_0.06_243)]/10 to-[oklch(0.45_0.06_243)]/5 px-3 py-2.5">
       <Collapsible>
         <div className="flex items-center justify-between gap-2">
           <CollapsibleTrigger asChild>
-            <Button type="button" variant="ghost" size="sm" className="gap-2 hover:bg-[oklch(0.45_0.06_243)]/10">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="gap-2 hover:bg-[oklch(0.45_0.06_243)]/10"
+            >
               <Filter className="h-4 w-4 text-[oklch(0.45_0.06_243)]" />
               <span className="font-semibold text-[oklch(0.45_0.06_243)]">Filters</span>
-              {activeCount ? <Badge variant="secondary" className="bg-[#f5b81d] text-[#0f172a] font-semibold">{activeCount}</Badge> : null}
+              {activeCount ? (
+                <Badge variant="secondary" className="bg-[#f5b81d] text-[#0f172a] font-semibold">
+                  {activeCount}
+                </Badge>
+              ) : null}
             </Button>
           </CollapsibleTrigger>
-          {activeCount ? <Button type="button" variant="ghost" size="sm" className="hover:bg-[oklch(0.45_0.06_243)]/10 font-medium" onClick={() => onChange({})}>Clear</Button> : null}
+          {activeCount ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="hover:bg-[oklch(0.45_0.06_243)]/10 font-medium"
+              onClick={() => onChange({})}
+            >
+              Clear
+            </Button>
+          ) : null}
         </div>
         <TableFiltersChips<TEntity> columns={columns} filters={filters} onChange={onChange} />
         <CollapsibleContent className="pt-2">

@@ -2,7 +2,11 @@
 
 import type { TableConfig, SortConfig, ColumnConfig } from '@/entity-library/config';
 import { Checkbox } from '@/components/ui/checkbox';
-import { TableHead as UiTableHead, TableHeader as UiTableHeader, TableRow } from '@/components/ui/table';
+import {
+  TableHead as UiTableHead,
+  TableHeader as UiTableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { SortableColumnHeader } from './SortableColumnHeader';
 
 type Props<TEntity extends object> = {
@@ -15,7 +19,15 @@ type Props<TEntity extends object> = {
   onToggleAll?: () => void;
 };
 
-export function TableHeader<TEntity extends object>({ config, columns, sort, onSortChange, selectable, allSelected, onToggleAll }: Props<TEntity>) {
+export function TableHeader<TEntity extends object>({
+  config,
+  columns,
+  sort,
+  onSortChange,
+  selectable,
+  allSelected,
+  onToggleAll,
+}: Props<TEntity>) {
   const cols = columns ?? config.columns;
   const hasRowActions = !!config.rowActions?.length;
 
@@ -28,9 +40,17 @@ export function TableHeader<TEntity extends object>({ config, columns, sort, onS
           </UiTableHead>
         ) : null}
         {cols.map((col) => (
-          <UiTableHead key={String(col.field)} className="text-xs font-bold text-[oklch(0.45_0.06_243)]">
+          <UiTableHead
+            key={String(col.field)}
+            className="text-xs font-bold text-[oklch(0.45_0.06_243)]"
+          >
             {col.sortable ? (
-              <SortableColumnHeader<TEntity> header={col.header} field={col.field} sort={sort} onSortChange={onSortChange} />
+              <SortableColumnHeader<TEntity>
+                header={col.header}
+                field={col.field}
+                sort={sort}
+                onSortChange={onSortChange}
+              />
             ) : (
               <span>{col.header}</span>
             )}

@@ -15,7 +15,14 @@ export function TablePaginationNav({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Button type="button" size="sm" variant="outline" disabled={page <= 1} onClick={onPrev} className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white disabled:opacity-50">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={page <= 1}
+        onClick={onPrev}
+        className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white disabled:opacity-50"
+      >
         Prev
       </Button>
       <span className="font-medium">

@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 import type { EntityTableProps } from '@/entity-library/types';
-import { useEntityTableModel } from '@/entity-library/utils/useEntityTableModel';
-import { useColumnVisibility } from '@/entity-library/hooks/useColumnVisibility';
+import { useEntityTableModel } from '../../utils/useEntityTableModel';
+import { useColumnVisibility } from '../../hooks/useColumnVisibility';
 import { TableActions } from './TableActions';
 import { TableContainer } from './TableContainer';
 import { TableFilters } from './TableFilters';
@@ -44,7 +44,6 @@ export function EntityTable<TEntity extends object>({
     <TableContainer title={title} actions={actions}>
       <TableActions actions={config.bulkActions} selectedRows={m.selectedRows} />
       <TableFilters
-        config={config}
         columns={columns}
         filters={m.state.filters}
         onChange={(f) => (m.setPage(1), m.setFilters(f))}

@@ -28,16 +28,18 @@ export function TablePagination({
       <div className="flex items-center gap-3 text-muted-foreground">
         {total !== undefined && (
           <span>
-            Showing <span className="font-semibold text-[oklch(0.45_0.06_243)]">{startItem}</span> to{' '}
-            <span className="font-semibold text-[oklch(0.45_0.06_243)]">{endItem}</span> of{' '}
-            <span className="font-semibold text-[oklch(0.45_0.06_243)]">{total.toLocaleString()}</span>
+            Showing <span className="font-semibold text-[oklch(0.45_0.06_243)]">{startItem}</span>{' '}
+            to <span className="font-semibold text-[oklch(0.45_0.06_243)]">{endItem}</span> of{' '}
+            <span className="font-semibold text-[oklch(0.45_0.06_243)]">
+              {total.toLocaleString()}
+            </span>
           </span>
         )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <TablePaginationButtons page={page} maxPage={maxPage} onPageChange={onPageChange} />
-        
+
         <div className="flex items-center gap-3">
           {pagination.showPageSizeSelector ? (
             <TablePageSizeSelect

@@ -8,16 +8,47 @@ module.exports = {
         'max-lines': [
           'error',
           {
-            max: 50,
+            max: 200,
             skipBlankLines: true,
             skipComments: true,
           },
         ],
       },
     },
+    {
+      files: ['src/entity-library/**/*.{ts,tsx}'],
+      rules: {
+        'no-restricted-imports': 'off',
+      },
+    },
   ],
   rules: {
     'prettier/prettier': 'error',
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@/entity-library/hooks', '@/entity-library/hooks/*', '@/entity-library/utils', '@/entity-library/utils/*'],
+            message: 'Do not import internal entity-library hooks/utils; use the public API facades from @/entity-library instead.',
+          },
+          {
+            group: ['@/entity-library/components/*/*', '@/entity-library/components/*/*/*'],
+            message: 'Do not deep-import internal entity-library components; use @/entity-library or @/entity-library/components.',
+          },
+          {
+            group: [
+              '**/entity-library/components/**',
+              '**/entity-library/hooks/**',
+              '**/entity-library/utils/**',
+              '**/entity-library/actions/**',
+            ],
+            message:
+              'Do not import internal entity-library modules via relative paths; use @/entity-library public API entrypoints instead.',
+          },
+        ],
+      },
+    ],
     // Spacing and readability rules
     'padding-line-between-statements': [
       'error',
