@@ -1,25 +1,41 @@
 import assert from 'node:assert/strict';
 
-import { validateEntityLibraryConfig } from '@/entity-library/config';
-import { systemConfigLibraryConfig } from '@/app/(protected)/(features)/system-configs/config/entity-library.config';
+import type { EntityConfig, StatusEnum, TableConfig } from '@/entity-library/config';
 
-function testSystemConfigsComprehensiveConfigValid(): void {
-  assert.ok(systemConfigLibraryConfig);
+function testEntityConfigShape(): void {
+  const statusEnum = {
+    ACTIVE: 'ACTIVE',
+    INACTIVE: 'INACTIVE',
+    ARCHIVED: 'ARCHIVED',
+  } as const satisfies StatusEnum;
 
-  const result = validateEntityLibraryConfig(systemConfigLibraryConfig);
-  assert.equal(result.isValid, true, JSON.stringify(result));
-}
+  type ExampleEntity = { id: number; name: string; status: string };
 
-function testMissingCoreFieldsFail(): void {
-  const result = validateEntityLibraryConfig({} as any);
-  assert.equal(result.isValid, false);
-  assert.ok(result.missingRequired.includes('entityId'));
-  assert.ok(result.missingRequired.includes('useGetAll'));
+  const tableConfig: TableConfig<ExampleEntity> = {
+    columns: [{ field: 'name', header: 'Name', sortable: true, filterable: true }],
+    pagination: { defaultPageSize: 10, pageSizeOptions: [10, 25], strategy: 'offset' },
+  };
+
+  const config: EntityConfig<ExampleEntity, typeof statusEnum> = {
+    entityName: 'Examples',
+    basePath: '/examples',
+    queryKeyPrefix: '/api/examples',
+    tableConfig,
+    statusEnum,
+    getEntityId: (e: ExampleEntity) => e.id,
+    useGetAll: () => ({ data: [], isLoading: false, refetch: () => undefined }),
+    useUpdate: () => ({ mutateAsync: async () => ({}) }),
+  };
+
+  assert.equal(typeof config.entityName, 'string');
+  assert.ok(config.entityName.length > 0);
+  assert.equal(config.basePath.startsWith('/'), true);
+  assert.equal(config.queryKeyPrefix.startsWith('/'), true);
+  assert.ok(config.tableConfig.columns.length > 0);
 }
 
 function main(): void {
-  testSystemConfigsComprehensiveConfigValid();
-  testMissingCoreFieldsFail();
+  testEntityConfigShape();
 }
 
 main();

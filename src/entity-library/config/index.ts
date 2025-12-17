@@ -11,14 +11,6 @@ export * from './types';
 export {
   // Simple config for basic table functionality
   type EntityConfig,
-  // Comprehensive config with all features
-  type EntityLibraryConfig,
-  type ConfigValidationResult,
   type StatusEnum,
   type StatusTab,
-  validateEntityLibraryConfig,
-  createEntityLibraryConfig,
 } from './entity-library-config';
-
-// Configuration helpers
-export { createDefaultEntityLibraryConfig } from './helpers';

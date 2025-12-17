@@ -13,8 +13,7 @@ Use these entrypoints from feature code:
   - Re-exports from `@/entity-library/types`
 
 - `@/entity-library/config`
-  - `EntityConfig`, `EntityLibraryConfig`
-  - `validateEntityLibraryConfig`, `createEntityLibraryConfig`, `createDefaultEntityLibraryConfig`
+  - `EntityConfig`, `StatusEnum`, `StatusTab`
   - Table config types (columns, actions, pagination, sorting, etc.)
 
 ## Internal modules (do not import from features)

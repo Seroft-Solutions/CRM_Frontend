@@ -227,8 +227,6 @@ export * from './components';
 // Configuration
 import { 
   EntityConfig,
-  EntityLibraryConfig,
-  createEntityLibraryConfig,
 } from '@/entity-library/config';
 
 // Components
@@ -332,10 +330,8 @@ You now have a complete entity management interface with:
 
 ## ⚙️ Configuration System
 
-### Two Configuration Types
-
-#### 1. **EntityConfig** (Simple)
-**Use when**: Building basic table pages with standard functionality
+### EntityConfig (Simple)
+Build entity table pages by providing a single `EntityConfig` object.
 
 **Contains**: 8 essential fields
 - Entity identity (name, path)
@@ -353,94 +349,6 @@ interface EntityConfig<TEntity, TStatus> {
   useUpdate: () => MutationHook;
   queryKeyPrefix: string;
 }
-```
-
-#### 2. **EntityLibraryConfig** (Comprehensive)
-**Use when**: Need full control over all library features
-
-**Contains**: 130+ fields across 19 categories
-- Everything in EntityConfig
-- Feature flags (search, filters, export, import, etc.)
-- UI customization (theme, layout, responsive)
-- Advanced features (analytics, permissions, accessibility)
-- Error handling and loading states
-
-```typescript
-interface EntityLibraryConfig<TEntity, TStatus> {
-  // Core identity (5 fields)
-  entityId: string;
-  displayName: string;
-  displayNamePlural: string;
-  basePath: string;
-  apiKeyPrefix: string;
-  
-  // Data integration (4 fields)
-  getEntityId: (entity: TEntity) => number | undefined;
-  statusEnum: TStatus;
-  useGetAll: (params: any) => QueryResult;
-  useUpdate: () => MutationHook;
-  
-  // Table configuration (1 field)
-  tableConfig: TableConfig<TEntity>;
-  
-  // Features: Tabs (3 fields)
-  enableStatusTabs: boolean;
-  defaultActiveTab: StatusTab;
-  customTabs: Array<CustomTab> | 'NA';
-  
-  // Features: Search (4 fields)
-  enableSearch: boolean;
-  searchPlaceholder: string;
-  searchDebounceMs: number;
-  searchFields: Array<keyof TEntity> | 'NA';
-  
-  // ... 100+ more fields covering all capabilities
-}
-```
-
-### Configuration Validation
-
-All configurations are validated at creation:
-
-```typescript
-import { 
-  createEntityLibraryConfig,
-  validateEntityLibraryConfig 
-} from '@/entity-library/config';
-
-// Automatic validation on creation
-const config = createEntityLibraryConfig({
-  // ... configuration
-});
-
-// Manual validation
-const result = validateEntityLibraryConfig(config);
-if (!result.isValid) {
-  console.error('Errors:', result.errors);
-  console.warn('Warnings:', result.warnings);
-}
-```
-
-**Validation Checks**:
-- All required fields present
-- Field types correct
-- Logical consistency (e.g., can't enable search without search fields)
-- Relationship integrity (e.g., tabs reference valid statuses)
-
-### Configuration Helpers
-
-#### Default Config Generator
-```typescript
-import { createDefaultEntityLibraryConfig } from '@/entity-library/config';
-
-const config = createDefaultEntityLibraryConfig({
-  // Only provide overrides for non-default values
-  entityId: 'system-config',
-  displayName: 'System Config',
-  // ... other required fields
-  
-  // Everything else gets sensible defaults
-});
 ```
 
 ---
@@ -541,27 +449,18 @@ const customActions = {
 ### Advanced Configuration
 
 ```typescript
-// Use comprehensive config for advanced features
-import { createDefaultEntityLibraryConfig } from '@/entity-library/config';
-
-export const myEntity = createDefaultEntityLibraryConfig({
-  entityId: 'my-entity',
-  displayName: 'My Entity',
-  displayNamePlural: 'My Entities',
-  basePath: '/my-entity',
-  apiKeyPrefix: '/api/my-entity',
-  
-  // Override defaults
-  enableSearch: true,
-  searchFields: ['name', 'description'],
-  enableExport: true,
-  exportFormats: ['csv', 'excel'],
-  
-  // Rest gets defaults
-  enableImport: false,
-  enableColumnVisibility: true,
-  // ...
-});
+// Advanced behavior is configured via `TableConfig`
+export const myEntityTableConfig: TableConfig<MyDTO> = {
+  columns: [
+    { field: 'name', header: 'Name', sortable: true, filterable: true },
+    { field: 'status', header: 'Status', sortable: true, filterable: true },
+  ],
+  defaultSort: { field: 'name', direction: 'asc' },
+  pagination: { defaultPageSize: 25, pageSizeOptions: [10, 25, 50], showPageSizeSelector: true },
+  columnVisibility: { storageKey: 'my-entity-columns', userConfigurable: true },
+  rowSelection: { enabled: true },
+  emptyState: { title: 'No records', description: 'Try adjusting filters.' },
+};
 ```
 
 ---
@@ -578,13 +477,6 @@ Simple entity configuration with 8 core fields.
 - `TStatus` - Status enum with ACTIVE, INACTIVE, ARCHIVED
 
 **Fields**: See [Configuration System](#-configuration-system)
-
-#### `EntityLibraryConfig<TEntity, TStatus>`
-Comprehensive configuration with 130+ fields across 19 categories.
-
-**Type Parameters**: Same as EntityConfig
-
-**Fields**: See [entity-library-config.ts](./config/entity-library-config.ts)
 
 #### `TableConfig<TEntity>`
 Table-specific configuration (columns, sorting, pagination).
@@ -670,34 +562,6 @@ Table state management with query integration.
 }
 ```
 
-### Validation
-
-#### `validateEntityLibraryConfig(config)`
-Validate comprehensive configuration.
-
-**Parameters**:
-- `config: EntityLibraryConfig` - Configuration to validate
-
-**Returns**:
-```typescript
-{
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  missingFields: string[];
-}
-```
-
-#### `createEntityLibraryConfig(config)`
-Create and validate configuration in one step.
-
-**Parameters**:
-- `config: EntityLibraryConfig` - Configuration object
-
-**Returns**: Validated configuration
-
-**Throws**: Error if validation fails
-
 ---
 
 ## 📂 Directory Structure
@@ -721,11 +585,7 @@ src/entity-library/
 │   └── index.ts                # Exports
 │
 ├── config/                     # Configuration system
-│   ├── helpers/                # Config creation utilities
-│   │   ├── createDefaultConfig.ts  # Default generator
-│   │   └── index.ts
 │   ├── entity-library-config.ts    # Config interfaces
-│   ├── entity-library-config.ts # Comprehensive config + validation
 │   ├── types.ts                # Table/column types
 │   └── index.ts                # Exports
 │
@@ -813,12 +673,9 @@ The library is designed to scale:
 
 When adding new capabilities:
 
-1. Add new fields to `EntityLibraryConfig` interface
-2. Update validation in `validateEntityLibraryConfig()`
-3. Add defaults in `createDefaultEntityLibraryConfig()`
-4. Implement feature in appropriate directory
-5. Update existing configs to use new fields (set to `false` or `'NA'` if unused)
-6. Update documentation
+1. Add new fields to `TableConfig` / related types
+2. Implement feature in the appropriate component/hook
+3. Update docs and example configs
 
 This ensures **zero breaking changes** for existing implementations.
 
@@ -830,8 +687,6 @@ This ensures **zero breaking changes** for existing implementations.
 
 ✅ **Do**:
 - Use `EntityConfig` for simple tables
-- Use `EntityLibraryConfig` when you need full control
-- Validate configs with `createEntityLibraryConfig()`
 - Keep configs in `features/[entity]/config/` directory
 - Set unused fields to `false` or `'NA'` (never leave undefined)
 

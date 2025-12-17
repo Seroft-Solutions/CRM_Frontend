@@ -3,31 +3,44 @@
 /**
  * Entity Library Config Checker
  * 
- * Validates all entity library configurations in the project
- * Ensures no capabilities are overlooked
+ * Basic runtime checks for EntityConfig objects used by EntityTablePage.
  * 
  * Usage: tsx scripts/check-entity-configs.ts
  */
 
-import { validateEntityLibraryConfig } from '../src/entity-library/config/entity-library-config';
+import type { EntityConfig, StatusEnum } from '../src/entity-library/config/entity-library-config';
 
 // Import all entity configs here
-import { systemConfigAttributeOptionFullConfig } from '../src/app/(protected)/(features)/system-config-attribute-options/config/entity-library.config';
-import { systemConfigLibraryConfig } from '../src/app/(protected)/(features)/system-configs/config/entity-library.config';
+import { systemConfigAttributeOptionEntityConfig } from '../src/app/(protected)/(features)/system-config-attribute-options/config/entity.config';
+import { systemConfigEntityConfig } from '../src/app/(protected)/(features)/system-configs/config/entity.config';
 
 const configs = [
   {
     name: 'System Config Attribute Options',
-    config: systemConfigAttributeOptionFullConfig,
+    config: systemConfigAttributeOptionEntityConfig,
   },
   {
     name: 'System Configs',
-    config: systemConfigLibraryConfig,
+    config: systemConfigEntityConfig,
   },
   // Add more configs as they are created
 ];
 
-console.log('🔍 Validating Entity Library Configurations...\n');
+function validateEntityConfig(config: EntityConfig<any, StatusEnum>) {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!config.entityName?.trim()) errors.push('entityName is required');
+  if (!config.basePath?.startsWith('/')) errors.push('basePath must start with "/"');
+  if (!config.queryKeyPrefix?.startsWith('/')) warnings.push('queryKeyPrefix should start with "/"');
+  if (!config.tableConfig?.columns?.length) errors.push('tableConfig.columns must not be empty');
+  if (!config.tableConfig?.pagination?.defaultPageSize) errors.push('pagination.defaultPageSize is required');
+  if (!config.tableConfig?.pagination?.pageSizeOptions?.length) warnings.push('pagination.pageSizeOptions is empty');
+
+  return { isValid: errors.length === 0, errors, warnings };
+}
+
+console.log('🔍 Checking EntityConfig objects...\n');
 
 let totalErrors = 0;
 let totalWarnings = 0;
@@ -38,21 +51,13 @@ configs.forEach(({ name, config }) => {
   console.log(`\n📋 Validating: ${name}`);
   console.log('─'.repeat(50));
   
-  const validation = validateEntityLibraryConfig(config);
+  const validation = validateEntityConfig(config as EntityConfig<any, StatusEnum>);
   
   if (validation.isValid) {
     console.log('✅ Valid configuration');
     validConfigs++;
   } else {
     console.log('❌ Invalid configuration');
-  }
-  
-  if (validation.missingRequired.length > 0) {
-    console.log('\n🔴 Missing Required Fields:');
-    validation.missingRequired.forEach(field => {
-      console.log(`   - ${field}`);
-    });
-    totalErrors += validation.missingRequired.length;
   }
   
   if (validation.errors.length > 0) {

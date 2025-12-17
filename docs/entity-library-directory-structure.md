@@ -18,11 +18,7 @@ src/entity-library/
 │   └── index.ts
 │
 ├── config/              # Configuration system
-│   ├── helpers/         # Config creation helpers
-│   │   ├── createDefaultConfig.ts
-│   │   └── index.ts
-│   ├── entity-library-config.ts  # Comprehensive config interface
-│   ├── entity-library-config.ts  # Comprehensive config + validation
+│   ├── entity-library-config.ts  # EntityConfig + shared config types
 │   ├── types.ts         # Table/column config types
 │   └── index.ts
 │
@@ -69,17 +65,14 @@ src/entity-library/
 **When to use**: Building or modifying UI elements
 
 ### `/config`
-**Purpose**: Configuration system - types, validation, helpers
+**Purpose**: Configuration system - types
 
 **Contains**:
-- `entity-library-config.ts` - Comprehensive config interface (130+ fields)
+- `entity-library-config.ts` - `EntityConfig` and shared config types
 - `types.ts` - Table, column, pagination config types
-- `entity-library-config.ts` - Comprehensive config types and runtime validation helpers
-- `/helpers` - Config creation utilities
 
 **Key Types**:
 - `EntityConfig` - Simple config (8 core fields)
-- `EntityLibraryConfig` - Comprehensive config (all features)
 - `TableConfig` - Column definitions
 - `StatusEnum` - Entity status type
 
@@ -121,11 +114,8 @@ src/entity-library/
 ```typescript
 import { 
   EntityConfig,
-  EntityLibraryConfig,
   TableConfig,
   StatusEnum,
-  createDefaultEntityLibraryConfig,
-  createEntityLibraryConfig,
 } from '@/entity-library/config';
 ```
 
@@ -247,7 +237,7 @@ hooks/
 
 1. **Creating a new entity config**:
    - Import from `@/entity-library/config`
-   - Use `createDefaultEntityLibraryConfig()` helper
+   - Create an `EntityConfig` with a `TableConfig`
 
 2. **Using entity table**:
    - Import `EntityTablePage` from `@/entity-library/components`
@@ -263,5 +253,4 @@ hooks/
 
 ## 📚 See Also
 
-- [Entity Library Comprehensive Config Guide](./entity-library-comprehensive-config.md)
-- [Entity Library Config Quick Reference](./entity-library-config-quick-reference.md)
+- `src/entity-library/README.md`
