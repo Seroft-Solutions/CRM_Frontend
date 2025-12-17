@@ -399,7 +399,7 @@ export function CallTableRow({
                   relationshipConfigs.find((config) => config.name === 'assignedTo')?.options ||
                   []
                 }
-                displayField="displayName"
+                displayField="email"
                 onUpdate={(entityId, relationshipName, newValue) =>
                   onRelationshipUpdate
                     ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
