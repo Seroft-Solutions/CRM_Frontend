@@ -13,11 +13,16 @@ import { validateEntityLibraryConfig } from '../src/entity-library/config/entity
 
 // Import all entity configs here
 import { systemConfigAttributeOptionFullConfig } from '../src/app/(protected)/(features)/system-config-attribute-options/config/entity-library.config';
+import { systemConfigLibraryConfig } from '../src/app/(protected)/(features)/system-configs/config/entity-library.config';
 
 const configs = [
   {
     name: 'System Config Attribute Options',
     config: systemConfigAttributeOptionFullConfig,
+  },
+  {
+    name: 'System Configs',
+    config: systemConfigLibraryConfig,
   },
   // Add more configs as they are created
 ];

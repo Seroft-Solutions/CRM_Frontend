@@ -38,7 +38,7 @@ export interface EntityConfig<TEntity extends object, TStatus extends StatusEnum
   
   /** Orval-generated hook for fetching all entities */
   useGetAll: (params: any) => {
-    data?: { content?: TEntity[]; totalElements?: number };
+    data?: { content?: TEntity[]; totalElements?: number } | TEntity[];
     isLoading: boolean;
     refetch: () => void;
   };
@@ -82,7 +82,7 @@ export interface EntityLibraryConfig<TEntity extends object, TStatus extends Sta
   
   /** Orval-generated hook for fetching all entities */
   useGetAll: (params: any) => {
-    data?: { content?: TEntity[]; totalElements?: number };
+    data?: { content?: TEntity[]; totalElements?: number } | TEntity[];
     isLoading: boolean;
     refetch: () => void;
   };

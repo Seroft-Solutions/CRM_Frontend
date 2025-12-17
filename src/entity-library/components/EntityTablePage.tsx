@@ -61,8 +61,29 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
 
   const { data, isLoading, refetch } = config.useGetAll(queryParams);
 
-  const rows = data?.content || [];
-  const total = data?.totalElements || 0;
+  const { rows, total } = useMemo(() => {
+    if (!data) {
+      return { rows: [] as TEntity[], total: 0 };
+    }
+
+    // Support APIs that return a Spring Page-like object
+    if (!Array.isArray(data) && typeof data === 'object') {
+      const maybePage = data as { content?: TEntity[]; totalElements?: number };
+      return {
+        rows: maybePage.content ?? [],
+        total: maybePage.totalElements ?? (maybePage.content?.length ?? 0),
+      };
+    }
+
+    // Support APIs that return a plain array (client-side pagination)
+    const allRows = (data as TEntity[]) ?? [];
+    const start = (state.page - 1) * state.pageSize;
+    const end = start + state.pageSize;
+    return {
+      rows: allRows.slice(start, end),
+      total: allRows.length,
+    };
+  }, [data, state.page, state.pageSize]);
 
   const { mutateAsync: updateAsync } = config.useUpdate();
 
@@ -106,25 +127,27 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <Tabs value={activeStatusTab} onValueChange={(v) => setActiveStatusTab(v as StatusTab)}>
-          <TabsList>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive</TabsTrigger>
-            <TabsTrigger value="archived">Archived</TabsTrigger>
-            <TabsTrigger value="all">All</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <Button onClick={handleRefresh} variant="outline" size="sm">
-          <RotateCcw className="h-4 w-4" />
-        </Button>
-      </div>
       <EntityTable<TEntity>
         config={tableConfig}
         rows={rows}
         total={total}
         getRowId={(row) => String(config.getEntityId(row) || '')}
         onStateChange={setState}
+        toolbar={
+          <Tabs value={activeStatusTab} onValueChange={(v) => setActiveStatusTab(v as StatusTab)}>
+            <TabsList>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive</TabsTrigger>
+              <TabsTrigger value="archived">Archived</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        }
+        actions={
+          <Button onClick={handleRefresh} variant="outline" size="sm">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        }
       />
     </>
   );

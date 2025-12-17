@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 
-import { EntityForm, EntityTable, FormWizard } from '@/entity-library';
+import { EntityTable } from '@/entity-library/components/tables/EntityTable';
+import { EntityForm } from '@/entity-library/components/forms/EntityForm';
+import { FormWizard } from '@/entity-library/components/forms/FormWizard';
 
 function main(): void {
   assert.equal(typeof EntityTable, 'function');

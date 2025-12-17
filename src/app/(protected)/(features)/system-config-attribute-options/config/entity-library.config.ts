@@ -1,3 +1,5 @@
+'use client';
+
 import type { SystemConfigAttributeOptionDTO } from '@/core/api/generated/spring/schemas';
 import type { EntityLibraryConfig } from '@/entity-library/config';
 import { SystemConfigAttributeOptionDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTOStatus';
@@ -6,7 +8,7 @@ import {
   useUpdateSystemConfigAttributeOption,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { systemConfigAttributeOptionTableConfig } from './table.config';
-import { createEntityLibraryConfig, createDefaultEntityLibraryConfig } from '@/entity-library/config';
+import { createDefaultEntityLibraryConfig } from '@/entity-library/config';
 
 /**
  * COMPREHENSIVE Entity Library Configuration for System Config Attribute Options

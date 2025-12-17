@@ -232,7 +232,7 @@ import {
 } from '@/entity-library/config';
 
 // Components
-import { EntityTablePage } from '@/entity-library/components';
+import { EntityTablePage } from '@/entity-library';
 
 // Actions (if custom actions needed)
 import { createEntityActions } from '@/entity-library/actions';
@@ -431,7 +431,7 @@ if (!result.isValid) {
 
 #### Default Config Generator
 ```typescript
-import { createDefaultEntityLibraryConfig } from '@/entity-library/config/helpers';
+import { createDefaultEntityLibraryConfig } from '@/entity-library/config';
 
 const config = createDefaultEntityLibraryConfig({
   // Only provide overrides for non-default values
@@ -542,7 +542,7 @@ const customActions = {
 
 ```typescript
 // Use comprehensive config for advanced features
-import { createDefaultEntityLibraryConfig } from '@/entity-library/config/helpers';
+import { createDefaultEntityLibraryConfig } from '@/entity-library/config';
 
 export const myEntity = createDefaultEntityLibraryConfig({
   entityId: 'my-entity',
@@ -725,7 +725,7 @@ src/entity-library/
 │   │   ├── createDefaultConfig.ts  # Default generator
 │   │   └── index.ts
 │   ├── entity-library-config.ts    # Config interfaces
-│   ├── schemas.ts              # Zod validation schemas
+│   ├── entity-library-config.ts # Comprehensive config + validation
 │   ├── types.ts                # Table/column types
 │   └── index.ts                # Exports
 │

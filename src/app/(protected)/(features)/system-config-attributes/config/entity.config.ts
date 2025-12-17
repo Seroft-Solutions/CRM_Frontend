@@ -1,3 +1,5 @@
+'use client';
+
 import type { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas';
 import type { EntityConfig } from '@/entity-library/config';
 import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOStatus';

@@ -1,28 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { z } from 'zod';
 
-export interface LegacyEntityConfig<TEntity extends object> {
-  entityName: string;
-  displayName: string;
-  displayNamePlural: string;
-  generatedDtoType: TEntity;
-  apiBasePath: string;
-  table: TableConfig<TEntity>;
-  form?: FormConfig<TEntity>;
-  relationships?: Array<RelationshipConfig<TEntity>>;
-  search?: SearchConfig<TEntity>;
-  features?: EntityFeatureFlags;
-}
-
-export interface EntityFeatureFlags {
-  enableExport?: boolean;
-  enableImport?: boolean;
-  enableBulkActions?: boolean;
-  enableAdvancedFilters?: boolean;
-  enableColumnVisibility?: boolean;
-  enableUserPreferences?: boolean;
-}
-
 export interface TableConfig<TEntity extends object> {
   columns: Array<ColumnConfig<TEntity>>;
   defaultSort?: SortConfig<TEntity>;
@@ -192,22 +170,4 @@ export type FieldType =
   | 'file'
   | 'custom';
 
-export interface RelationshipConfig<TEntity extends object> {
-  id: string;
-  label: string;
-  sourceField?: keyof TEntity;
-  targetEntity?: string;
-}
 
-export interface SearchConfig<TEntity extends object> {
-  globalSearchFields: Array<keyof TEntity>;
-  debounceMs?: number;
-  minCharacters?: number;
-  highlightMatches?: boolean;
-  persistInUrl?: boolean;
-  searchPlaceholder?: string;
-  showSearchStats?: boolean;
-  showClearFilters?: boolean;
-}
-
-export type ExtractEntity<T> = T extends LegacyEntityConfig<infer E> ? E : never;

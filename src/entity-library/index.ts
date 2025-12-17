@@ -1,31 +1,19 @@
 /**
- * Entity Library
- * 
- * A comprehensive, DTO-driven table and form system for CRM entities
- * 
- * Directory Structure:
- * - /actions     - Action creators for entity operations
- * - /components  - React components (tables, forms, pages)
- * - /config      - Configuration types, validation, and helpers
- * - /hooks       - React hooks
- * - /types       - Core TypeScript type definitions
- * - /utils       - General utility functions
+ * Entity Library (Public API)
+ *
+ * Keep this barrel intentionally small and stable.
+ * Internal hooks, utilities, and micro-components should be imported
+ * via their module paths from within the entity-library itself.
  */
 
 // Configuration system (types, validation, helpers)
 export * from './config';
 
 // Action creators
-export * from './actions';
+export { createEntityActions } from './actions';
 
-// React hooks
-export * from './hooks';
+// Primary page-level component
+export { EntityTablePage } from './components/EntityTablePage';
 
-// Core types
+// Core shared types
 export * from './types';
-
-// Utilities
-export * from './utils';
-
-// React components
-export * from './components';

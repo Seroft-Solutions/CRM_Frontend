@@ -1,7 +1,7 @@
 'use client';
 
 import type { RowActionConfig } from '@/entity-library/config';
-import { useConfirmAction } from '@/entity-library/hooks/useConfirmAction';
+import { useConfirmAction } from '@/entity-library/hooks';
 import { TableRowActionsMenu } from './TableRowActionsMenu';
 import { TableRowActionsConfirm } from './TableRowActionsConfirm';
 

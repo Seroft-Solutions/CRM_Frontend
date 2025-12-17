@@ -1,3 +1,5 @@
+'use client';
+
 import type { SystemConfigDTO } from '@/core/api/generated/spring/schemas';
 import type { EntityConfig } from '@/entity-library/config';
 import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
@@ -21,6 +23,16 @@ export const systemConfigEntityConfig: EntityConfig<
   statusEnum: SystemConfigDTOStatus,
   getEntityId: (entity) => entity.id,
   useGetAll: useGetAllSystemConfigs,
-  useUpdate: useUpdateSystemConfig,
+  useUpdate: () => {
+    const mutation = useUpdateSystemConfig();
+    return {
+      mutateAsync: async (params: { id: number; data: Partial<SystemConfigDTO> }) => {
+        return mutation.mutateAsync({
+          id: params.id,
+          data: params.data as SystemConfigDTO,
+        });
+      },
+    };
+  },
   queryKeyPrefix: '/api/system-configs',
 };

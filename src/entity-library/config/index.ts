@@ -7,9 +7,6 @@
 // Table config types (columns, pagination, sorting, etc.)
 export * from './types';
 
-// Zod schemas for validation
-export * from './schemas';
-
 // Entity configuration types and utilities
 export {
   // Simple config for basic table functionality

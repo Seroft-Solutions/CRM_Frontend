@@ -22,7 +22,7 @@ src/entity-library/
 │   │   ├── createDefaultConfig.ts
 │   │   └── index.ts
 │   ├── entity-library-config.ts  # Comprehensive config interface
-│   ├── schemas.ts       # Zod validation schemas
+│   ├── entity-library-config.ts  # Comprehensive config + validation
 │   ├── types.ts         # Table/column config types
 │   └── index.ts
 │
@@ -74,7 +74,7 @@ src/entity-library/
 **Contains**:
 - `entity-library-config.ts` - Comprehensive config interface (130+ fields)
 - `types.ts` - Table, column, pagination config types
-- `schemas.ts` - Zod schemas for runtime validation
+- `entity-library-config.ts` - Comprehensive config types and runtime validation helpers
 - `/helpers` - Config creation utilities
 
 **Key Types**:

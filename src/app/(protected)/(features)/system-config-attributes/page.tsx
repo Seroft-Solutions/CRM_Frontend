@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import { EntityTablePage } from '@/entity-library/components';
-import { systemConfigAttributeEntityConfig } from './config/entity.config';
+import { SystemConfigAttributesTableClient } from './components/system-config-attributes-table-client';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 
 export const metadata = {
@@ -73,7 +72,7 @@ export default function SystemConfigAttributePage() {
         </div>
 
         <Suspense fallback={<div>Loading...</div>}>
-          <EntityTablePage config={systemConfigAttributeEntityConfig} />
+          <SystemConfigAttributesTableClient />
         </Suspense>
       </div>
     </PermissionGuard>

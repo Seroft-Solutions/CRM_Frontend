@@ -61,7 +61,6 @@ export const systemConfigTableConfig: TableConfig<SystemConfigDTO> = {
       type: 'text',
       sortable: true,
       filterable: false,
-      hidden: true,
     },
     {
       field: 'createdDate',
@@ -69,7 +68,6 @@ export const systemConfigTableConfig: TableConfig<SystemConfigDTO> = {
       type: 'text',
       sortable: true,
       filterable: false,
-      hidden: true,
     },
     {
       field: 'lastModifiedBy',
@@ -77,7 +75,6 @@ export const systemConfigTableConfig: TableConfig<SystemConfigDTO> = {
       type: 'text',
       sortable: true,
       filterable: false,
-      hidden: true,
     },
     {
       field: 'lastModifiedDate',
@@ -85,7 +82,6 @@ export const systemConfigTableConfig: TableConfig<SystemConfigDTO> = {
       type: 'text',
       sortable: true,
       filterable: false,
-      hidden: true,
     },
   ],
   defaultSort: {

@@ -6,7 +6,7 @@ import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox
 
 import {
   useGetAllPublicUsers,
-  useSearchPublicUsers,
+  useSearch as useSearchPublicUsers,
 } from '@/core/api/generated/spring/endpoints/public-user-resource/public-user-resource.gen';
 import {
   useCountOrganizations,

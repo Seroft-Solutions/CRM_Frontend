@@ -1,74 +1,25 @@
 import assert from 'node:assert/strict';
 
-import { entityConfigSchema } from '@/entity-library/config';
-import { customerEntityConfig } from '@/app/(protected)/(features)/customers/config';
+import { validateEntityLibraryConfig } from '@/entity-library/config';
+import { systemConfigLibraryConfig } from '@/app/(protected)/(features)/system-configs/config/entity-library.config';
 
-function testValidConfigParses(): void {
-  const example = {
-    entityName: 'example',
-    displayName: 'Example',
-    displayNamePlural: 'Examples',
-    generatedDtoType: {},
-    apiBasePath: '/api/examples',
-    table: {
-      columns: [{ field: 'name', header: 'Name', type: 'text', sortable: true }],
-      pagination: {
-        defaultPageSize: 25,
-        pageSizeOptions: [10, 25, 50],
-        strategy: 'offset',
-      },
-    },
-    search: {
-      globalSearchFields: ['name'],
-      debounceMs: 300,
-    },
-  };
+function testSystemConfigsComprehensiveConfigValid(): void {
+  assert.ok(systemConfigLibraryConfig);
 
-  const parsed = entityConfigSchema.parse(example);
-  assert.equal(parsed.entityName, 'example');
+  const result = validateEntityLibraryConfig(systemConfigLibraryConfig);
+  assert.equal(result.isValid, true, JSON.stringify(result));
 }
 
-function testCustomersConfigParses(): void {
-  const parsed = entityConfigSchema.parse(customerEntityConfig);
-  assert.equal(parsed.entityName, 'customer');
-}
-
-function testMissingEntityNameFails(): void {
-  assert.throws(() => {
-    entityConfigSchema.parse({
-      displayName: 'Example',
-      displayNamePlural: 'Examples',
-      generatedDtoType: {},
-      apiBasePath: '/api/examples',
-      table: {
-        columns: [{ field: 'name', header: 'Name' }],
-        pagination: { defaultPageSize: 25, pageSizeOptions: [25] },
-      },
-    });
-  });
-}
-
-function testEmptyColumnsFails(): void {
-  assert.throws(() => {
-    entityConfigSchema.parse({
-      entityName: 'example',
-      displayName: 'Example',
-      displayNamePlural: 'Examples',
-      generatedDtoType: {},
-      apiBasePath: '/api/examples',
-      table: {
-        columns: [],
-        pagination: { defaultPageSize: 25, pageSizeOptions: [25] },
-      },
-    });
-  });
+function testMissingCoreFieldsFail(): void {
+  const result = validateEntityLibraryConfig({} as any);
+  assert.equal(result.isValid, false);
+  assert.ok(result.missingRequired.includes('entityId'));
+  assert.ok(result.missingRequired.includes('useGetAll'));
 }
 
 function main(): void {
-  testValidConfigParses();
-  testCustomersConfigParses();
-  testMissingEntityNameFails();
-  testEmptyColumnsFails();
+  testSystemConfigsComprehensiveConfigValid();
+  testMissingCoreFieldsFail();
 }
 
 main();

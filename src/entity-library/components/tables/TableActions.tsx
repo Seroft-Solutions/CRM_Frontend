@@ -2,7 +2,7 @@
 
 import type { BulkActionConfig } from '@/entity-library/config';
 import { Button } from '@/components/ui/button';
-import { useConfirmAction } from '@/entity-library/hooks/useConfirmAction';
+import { useConfirmAction } from '@/entity-library/hooks';
 import { TableActionsConfirm } from './TableActionsConfirm';
 
 export function TableActions<TEntity extends object>({
