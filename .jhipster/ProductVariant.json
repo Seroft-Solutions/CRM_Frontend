@@ -1,0 +1,79 @@
+{
+  "annotations": {
+    "changelogDate": "20251212141618"
+  },
+  "applications": ["crmBackend"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "sku",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern", "unique"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "2",
+      "fieldValidateRulesPattern": "^[A-Za-z0-9_-]+$"
+    },
+    {
+      "fieldName": "price",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["min", "max"],
+      "fieldValidateRulesMax": "999999",
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "stockQuantity",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "ProductVariant",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "productVariantSelection",
+      "otherEntityRelationshipName": "variant",
+      "relationshipName": "selections",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "product",
+      "otherEntityRelationshipName": "variants",
+      "relationshipName": "product",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "elasticsearch",
+  "service": "serviceImpl"
+}
