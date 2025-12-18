@@ -4,8 +4,14 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import {
+  useGetAllCalls,
+  useCountCalls,
+} from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import {
+  useGetAllProducts,
+  useCountProducts,
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   Bar,
   BarChart,
@@ -21,7 +27,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Activity, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
-import { useGetAllCustomers } from '@/core/api/generated/spring';
+import { useGetAllCustomers, useCountCustomers } from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
 
 export function DashboardOverview() {
@@ -29,12 +35,19 @@ export function DashboardOverview() {
   const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
   const { data: products = [] } = useGetAllProducts({ size: 1000 });
 
+  // Get actual counts (not limited to 1000)
+  const { data: totalCallsCount = 0 } = useCountCalls();
+  const { data: totalCustomersCount = 0 } = useCountCustomers();
+  const { data: totalProductsCount = 0 } = useCountProducts();
+
   const [tabValue, setTabValue] = useState('overview');
 
   const callStatuses = calls.reduce(
     (acc, call) => {
       const status = call.callStatus?.name || 'Unknown';
+
       acc[status] = (acc[status] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -49,7 +62,9 @@ export function DashboardOverview() {
   const callCategories = calls.reduce(
     (acc, call) => {
       const category = call.callCategory?.name || 'Uncategorized';
+
       acc[category] = (acc[category] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -63,7 +78,9 @@ export function DashboardOverview() {
   const callTypes = calls.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
+
       acc[type] = (acc[type] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -77,7 +94,9 @@ export function DashboardOverview() {
   const priorityData = calls.reduce(
     (acc, call) => {
       const priority = call.priority?.name || 'Normal';
+
       acc[priority] = (acc[priority] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -91,7 +110,9 @@ export function DashboardOverview() {
   const channelData = calls.reduce(
     (acc, call) => {
       const channel = call.channelType?.name || 'Unknown';
+
       acc[channel] = (acc[channel] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -105,7 +126,9 @@ export function DashboardOverview() {
   const geoData = calls.reduce(
     (acc, call) => {
       const state = call.state?.name || 'Unknown';
+
       acc[state] = (acc[state] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -122,7 +145,9 @@ export function DashboardOverview() {
         call.assignedTo?.firstName && call.assignedTo?.lastName
           ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
           : call.assignedTo?.firstName || 'Unassigned';
+
       acc[agent] = (acc[agent] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -155,7 +180,9 @@ export function DashboardOverview() {
     if (!call.callDateTime) return false;
     const callDate = new Date(call.callDateTime);
     const thirtyDaysAgo = new Date();
+
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     return callDate >= thirtyDaysAgo;
   });
 
@@ -218,7 +245,9 @@ export function DashboardOverview() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-900">{calls.length}</div>
+                <div className="text-2xl font-bold text-blue-900">
+                  {totalCallsCount.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">{last30Days.length} in last 30 days</p>
               </CardContent>
             </Card>
@@ -231,7 +260,9 @@ export function DashboardOverview() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-900">{parties.length}</div>
+                <div className="text-2xl font-bold text-emerald-900">
+                  {totalCustomersCount.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">Customer database size</p>
               </CardContent>
             </Card>
@@ -257,7 +288,9 @@ export function DashboardOverview() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-900">{products.length}</div>
+                <div className="text-2xl font-bold text-orange-900">
+                  {totalProductsCount.toLocaleString()}
+                </div>
                 <p className="text-xs text-muted-foreground">Available products</p>
               </CardContent>
             </Card>

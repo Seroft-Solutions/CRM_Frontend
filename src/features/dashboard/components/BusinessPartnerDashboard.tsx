@@ -44,7 +44,9 @@ export function BusinessPartnerDashboard() {
   const myCallStatuses = myCalls.reduce(
     (acc, call) => {
       const status = call.callStatus?.name || 'Unknown';
+
       acc[status] = (acc[status] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -59,7 +61,9 @@ export function BusinessPartnerDashboard() {
   const myCallTypes = myCalls.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
+
       acc[type] = (acc[type] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -73,7 +77,9 @@ export function BusinessPartnerDashboard() {
   const myPriorityData = myCalls.reduce(
     (acc, call) => {
       const priority = call.priority?.name || 'Normal';
+
       acc[priority] = (acc[priority] || 0) + 1;
+
       return acc;
     },
     {} as Record<string, number>
@@ -102,7 +108,9 @@ export function BusinessPartnerDashboard() {
     if (!call.callDateTime) return false;
     const callDate = new Date(call.callDateTime);
     const thirtyDaysAgo = new Date();
+
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     return callDate >= thirtyDaysAgo;
   });
 
