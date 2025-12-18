@@ -28,7 +28,7 @@ export type {
 
 export type { TableConfig } from './table/table-config';
 
-export type { FieldConfig, FieldType } from './form/field-config';
+export type { FieldConfig, FieldType, RelationshipFieldConfig } from './form/field-config';
 
 export type { WizardConfig, WizardStepConfig } from './form/wizard-config';
 

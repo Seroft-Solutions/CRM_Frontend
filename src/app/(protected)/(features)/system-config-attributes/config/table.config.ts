@@ -43,6 +43,7 @@ export const systemConfigAttributeTableConfig: TableConfig<SystemConfigAttribute
       filterable: false,
       render: (value: SystemConfigAttributeDTO[keyof SystemConfigAttributeDTO]) => {
         const config = value as SystemConfigDTO;
+
         // Backend returns minimal representation - use configKey or id
         return config?.configKey || (config?.id ? `ID: ${config.id}` : '-');
       },
@@ -55,7 +56,12 @@ export const systemConfigAttributeTableConfig: TableConfig<SystemConfigAttribute
       filterable: false,
       render: (value: SystemConfigAttributeDTO[keyof SystemConfigAttributeDTO]) => {
         const isRequired = Boolean(value);
-        return React.createElement(Badge, { variant: isRequired ? 'default' : 'outline' }, isRequired ? 'Yes' : 'No');
+
+        return React.createElement(
+          Badge,
+          { variant: isRequired ? 'default' : 'outline' },
+          isRequired ? 'Yes' : 'No'
+        );
       },
     },
     {

@@ -1,0 +1,126 @@
+'use client';
+
+import { z } from 'zod';
+import type { FieldConfig, FormConfig } from '@/entity-library/config';
+import type {
+  SystemConfigAttributeDTO,
+  SystemConfigAttributeOptionDTO,
+} from '@/core/api/generated/spring/schemas';
+import { SystemConfigAttributeOptionDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTOStatus';
+import { useGetAllSystemConfigAttributes } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
+
+const schema = z.object({
+  attribute: z.object({ id: z.number() }).passthrough(),
+  code: z
+    .string()
+    .min(1, 'Code is required')
+    .max(50, 'Code must not exceed 50 characters')
+    .regex(/^[A-Za-z0-9_-]+$/, 'Code can only contain letters, numbers, - and _'),
+  label: z.string().min(1, 'Label is required').max(100, 'Label must not exceed 100 characters'),
+  sortOrder: z.number().min(0, 'Sort order must be 0 or greater'),
+  status: z.nativeEnum(SystemConfigAttributeOptionDTOStatus),
+});
+
+const attributeRelationship: FieldConfig<SystemConfigAttributeOptionDTO>['relationshipConfig'] = {
+  useGetAll: (params) => useGetAllSystemConfigAttributes(params as Record<string, unknown>),
+  params: { page: 0, size: 1000 },
+  getOptionId: (o) => (o as SystemConfigAttributeDTO).id ?? '',
+  getOptionLabel: (o) => {
+    const a = o as SystemConfigAttributeDTO;
+
+    return a.label ? `${a.label} (${a.name})` : (a.name ?? `ID: ${a.id ?? '-'}`);
+  },
+  toValue: (o) => ({ id: (o as SystemConfigAttributeDTO).id }) as SystemConfigAttributeDTO,
+  getValueId: (v) => {
+    if (typeof v !== 'object' || !v) return undefined;
+    const id = (v as Record<string, unknown>).id;
+
+    return typeof id === 'string' || typeof id === 'number' ? id : undefined;
+  },
+  placeholder: 'Select an attribute',
+};
+
+export const systemConfigAttributeOptionBaseFields: Array<
+  FieldConfig<SystemConfigAttributeOptionDTO>
+> = [
+  {
+    field: 'attribute',
+    label: 'Attribute',
+    type: 'relationship',
+    required: true,
+    helpText: 'Parent attribute. Cannot be changed after creation.',
+    relationshipConfig: attributeRelationship,
+    colSpan: 2,
+  },
+  {
+    field: 'code',
+    label: 'Code',
+    type: 'text',
+    required: true,
+    placeholder: 'e.g., OPTION_A',
+    helpText: 'Unique code (letters, numbers, -, _). Cannot be changed after creation.',
+    colSpan: 2,
+  },
+  {
+    field: 'label',
+    label: 'Label',
+    type: 'text',
+    required: true,
+    placeholder: 'e.g., Option A',
+    helpText: 'Display label for this option.',
+    colSpan: 2,
+  },
+  {
+    field: 'sortOrder',
+    label: 'Sort Order',
+    type: 'number',
+    required: true,
+    helpText: 'Lower numbers appear first.',
+  },
+  {
+    field: 'status',
+    label: 'Status',
+    type: 'select',
+    required: true,
+    options: [
+      { label: 'Draft', value: SystemConfigAttributeOptionDTOStatus.DRAFT },
+      { label: 'Active', value: SystemConfigAttributeOptionDTOStatus.ACTIVE },
+      { label: 'Inactive', value: SystemConfigAttributeOptionDTOStatus.INACTIVE },
+      { label: 'Archived', value: SystemConfigAttributeOptionDTOStatus.ARCHIVED },
+    ],
+  },
+];
+
+export const systemConfigAttributeOptionCreateFormConfig: Omit<
+  FormConfig<SystemConfigAttributeOptionDTO>,
+  'onSuccess' | 'onError'
+> = {
+  mode: 'create',
+  layout: 'two-column',
+  fields: systemConfigAttributeOptionBaseFields,
+  validationSchema: schema,
+  defaultValues: {
+    sortOrder: 0,
+    status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
+  } as Partial<SystemConfigAttributeOptionDTO>,
+  submitButtonText: 'Create Attribute Option',
+  cancelButtonText: 'Cancel',
+  showCancelButton: true,
+  successMessage: 'Attribute option created successfully',
+};
+
+export const systemConfigAttributeOptionEditFormConfig: Omit<
+  FormConfig<SystemConfigAttributeOptionDTO>,
+  'onSuccess' | 'onError'
+> = {
+  mode: 'edit',
+  layout: 'two-column',
+  fields: systemConfigAttributeOptionBaseFields.map((f) =>
+    f.field === 'attribute' || f.field === 'code' ? { ...f, disabled: true } : f
+  ),
+  validationSchema: schema,
+  submitButtonText: 'Update Attribute Option',
+  cancelButtonText: 'Cancel',
+  showCancelButton: true,
+  successMessage: 'Attribute option updated successfully',
+};

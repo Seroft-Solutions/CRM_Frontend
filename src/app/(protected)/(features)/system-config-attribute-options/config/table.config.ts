@@ -36,6 +36,7 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
       filterable: false,
       render: (value: SystemConfigAttributeOptionDTO[keyof SystemConfigAttributeOptionDTO]) => {
         const attr = value as SystemConfigAttributeDTO;
+
         return attr?.name ? String(attr.name) : '-';
       },
     },
@@ -53,7 +54,8 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
       sortable: true,
       filterable: true,
       render: (value: SystemConfigAttributeOptionDTO[keyof SystemConfigAttributeOptionDTO]) => {
-        const v = typeof value === 'string' ? (value as SystemConfigAttributeOptionDTOStatus) : undefined;
+        const v =
+          typeof value === 'string' ? (value as SystemConfigAttributeOptionDTOStatus) : undefined;
 
         const variant: 'default' | 'secondary' | 'destructive' | 'outline' =
           v === SystemConfigAttributeOptionDTOStatus.ARCHIVED

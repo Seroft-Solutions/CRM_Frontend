@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckboxFieldControl } from './CheckboxFieldControl';
 import { SelectFieldControl } from './SelectFieldControl';
+import { RelationshipFieldControl } from './RelationshipFieldControl';
 
 export function FormField<TEntity extends object>({ field }: { field: FieldConfig<TEntity> }) {
   const { register, formState, control } = useFormContext<Record<string, unknown>>();
@@ -29,6 +30,12 @@ export function FormField<TEntity extends object>({ field }: { field: FieldConfi
           readOnly={field.readonly}
           placeholder={field.placeholder}
           {...register(name)}
+        />
+      ) : field.type === 'relationship' && field.relationshipConfig ? (
+        <RelationshipFieldControl
+          name={name}
+          disabled={field.disabled || field.readonly}
+          config={field.relationshipConfig}
         />
       ) : field.type === 'select' ? (
         <SelectFieldControl
