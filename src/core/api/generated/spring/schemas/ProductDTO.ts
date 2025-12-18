@@ -67,7 +67,7 @@ export interface ProductDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  variantConfig: SystemConfigDTO;
+  variantConfig?: SystemConfigDTO;
   category?: ProductCategoryDTO;
   subCategory?: ProductSubCategoryDTO;
   images?: ProductImageDTO[];

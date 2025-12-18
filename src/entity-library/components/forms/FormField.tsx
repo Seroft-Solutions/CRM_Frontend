@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckboxFieldControl } from './CheckboxFieldControl';
 import { SelectFieldControl } from './SelectFieldControl';
 import { RelationshipFieldControl } from './RelationshipFieldControl';
+import { ColorFieldControl } from './ColorFieldControl';
 
 export function FormField<TEntity extends object>({ field }: { field: FieldConfig<TEntity> }) {
   const { register, formState, control } = useFormContext<Record<string, unknown>>();
@@ -43,6 +44,12 @@ export function FormField<TEntity extends object>({ field }: { field: FieldConfi
           disabled={field.disabled || field.readonly}
           placeholder={field.placeholder}
           options={field.options ?? []}
+        />
+      ) : field.type === 'color' ? (
+        <ColorFieldControl
+          name={name}
+          disabled={field.disabled || field.readonly}
+          placeholder={field.placeholder}
         />
       ) : field.type === 'checkbox' ? (
         <div className="flex items-center gap-2">

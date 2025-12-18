@@ -1,0 +1,242 @@
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Download } from 'lucide-react';
+import Link from 'next/link';
+import * as XLSX from 'xlsx';
+import { customerImportConfig } from '../config';
+
+type RowStatus =
+  | 'SUCCESS'
+  | 'DUPLICATE'
+  | 'VALIDATION_FAILED'
+  | 'MASTER_DATA_MISSING'
+  | 'SYSTEM_ERROR';
+
+interface ImportSummary {
+  totalRows: number;
+  successCount: number;
+  duplicateCount: number;
+  failedCount: number;
+  validationErrorCount: number;
+  masterMissingCount: number;
+  systemErrorCount: number;
+}
+
+interface RowResult {
+  rowNumber: number;
+  data: string[];
+  status: RowStatus;
+  message: string;
+}
+
+interface ImportResponse {
+  totalRows: number;
+  successCount: number;
+  duplicateCount: number;
+  validationErrorCount: number;
+  masterMissingCount: number;
+  systemErrorCount: number;
+  rows: RowResult[];
+}
+
+export default function ImportResultsPage() {
+  const router = useRouter();
+  const [responseData, setResponseData] = useState<ImportResponse | null>(null);
+
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('customerImportResponse');
+
+    if (storedData) {
+      try {
+        const data = JSON.parse(storedData);
+        setResponseData(data);
+        sessionStorage.removeItem('customerImportResponse');
+      } catch (error) {
+        console.error('Failed to parse import response data:', error);
+      }
+    }
+  }, [router]);
+
+  const tableRows = useMemo(() => {
+    if (!responseData) return [];
+
+    return responseData.rows.map((row) => ({
+      rowNumber: row.rowNumber,
+      values: row.data ?? [],
+      status: row.status,
+      reason: row.message,
+    }));
+  }, [responseData]);
+
+  const handleDownloadReport = () => {
+    if (!responseData) return;
+
+    const headers = ['Row #', ...customerImportConfig.columns.map((c) => c.header), 'Status', 'Reason'];
+    const sheetRows = tableRows.map((row) => [
+      row.rowNumber,
+      ...customerImportConfig.columns.map((_, idx) => row.values[idx] ?? ''),
+      row.status,
+      row.reason,
+    ]);
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sheetRows]);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Customer Import Results');
+    XLSX.writeFile(workbook, 'customer-import-results.xlsx');
+  };
+
+  const failedCount = responseData?.validationErrorCount ?? 0 + responseData?.masterMissingCount ?? 0 + responseData?.systemErrorCount ?? 0;
+
+  if (!responseData) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <div>
+                <CardTitle>Import History</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  No recent import session found.
+                </p>
+              </div>
+            </div>
+            <Button asChild>
+              <Link href="/customers/import">Start New Import</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Upload a file to see detailed results for this session.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Professional Header */}
+      <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        ></div>
+
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
+              <CheckCircle className="h-5 w-5 text-white" />
+            </div>
+
+            <div className="text-white">
+              <h1 className="text-2xl font-bold">Import Results</h1>
+              <p className="text-blue-100">Review your bulk upload summary</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            <div>
+              <CardTitle>Import Summary</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Review your bulk upload summary and download report.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleDownloadReport}>
+              <Download className="h-4 w-4 mr-2" />
+              Download Report
+            </Button>
+            <Button asChild>
+              <Link href="/customers/import">Import Another File</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <SummaryCard label="Total Rows" value={responseData.totalRows} />
+            <SummaryCard
+              label="Successful"
+              value={responseData.successCount}
+              tone="success"
+            />
+            <SummaryCard
+              label="Duplicates"
+              value={responseData.duplicateCount}
+              tone="warning"
+            />
+            <SummaryCard label="Failed" value={failedCount} tone="error" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
+            <div className="p-3 border rounded-lg">
+              <p className="font-semibold text-foreground">
+                {responseData.validationErrorCount}
+              </p>
+              <p>Validation issues</p>
+            </div>
+            <div className="p-3 border rounded-lg">
+              <p className="font-semibold text-foreground">
+                {responseData.masterMissingCount}
+              </p>
+              <p>Missing master data</p>
+            </div>
+            <div className="p-3 border rounded-lg">
+              <p className="font-semibold text-foreground">
+                {responseData.systemErrorCount}
+              </p>
+              <p>System errors</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: 'success' | 'warning' | 'error';
+}) {
+  const variant =
+    tone === 'success'
+      ? 'default'
+      : tone === 'warning'
+        ? 'secondary'
+        : tone === 'error'
+          ? 'destructive'
+          : undefined;
+
+  return (
+    <div className="flex flex-col p-4 border rounded-lg">
+      <span className="text-muted-foreground">{label}</span>
+      {variant ? (
+        <Badge variant={variant} className="mt-1 w-fit">
+          {value}
+        </Badge>
+      ) : (
+        <span className="font-semibold text-2xl">{value}</span>
+      )}
+    </div>
+  );
+}

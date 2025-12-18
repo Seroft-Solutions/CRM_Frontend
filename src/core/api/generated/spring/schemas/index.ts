@@ -214,6 +214,8 @@ export * from './CountUserProfilesStatusNotEquals';
 export * from './CountUserProfilesStatusNotInItem';
 export * from './CustomerDTO';
 export * from './CustomerDTOStatus';
+export * from './CustomerImportJobDTO';
+export * from './CustomerImportJobDTOStatus';
 export * from './DeleteAllImportHistoryEntries200';
 export * from './DistrictDTO';
 export * from './DistrictDTOStatus';

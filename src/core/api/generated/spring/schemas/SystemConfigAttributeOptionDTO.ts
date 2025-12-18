@@ -13,7 +13,7 @@ export interface SystemConfigAttributeOptionDTO {
   /**
    * @minLength 1
    * @maxLength 50
-   * @pattern ^[A-Za-z0-9_-]+$
+   * @pattern ^(#[0-9A-Fa-f]{6}|[A-Za-z0-9_-]+)$
    */
   code: string;
   /**

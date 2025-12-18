@@ -1,3 +1,4 @@
+/* eslint-disable padding-line-between-statements */
 'use client';
 
 import { z } from 'zod';
@@ -15,7 +16,16 @@ const schema = z.object({
     .string()
     .min(1, 'Code is required')
     .max(50, 'Code must not exceed 50 characters')
-    .regex(/^[A-Za-z0-9_-]+$/, 'Code can only contain letters, numbers, - and _'),
+    .refine(
+      (val) => {
+        // Allow hex colors (#XXXXXX) or regular codes (letters, numbers, -, _)
+        return /^#[0-9A-Fa-f]{6}$/.test(val) || /^[A-Za-z0-9_-]+$/.test(val);
+      },
+      {
+        message:
+          'Code must be a valid hex color (#XXXXXX) or contain only letters, numbers, - and _',
+      }
+    ),
   label: z.string().min(1, 'Label is required').max(100, 'Label must not exceed 100 characters'),
   sortOrder: z.number().min(0, 'Sort order must be 0 or greater'),
   status: z.nativeEnum(SystemConfigAttributeOptionDTOStatus),
@@ -30,10 +40,12 @@ const attributeRelationship: FieldConfig<SystemConfigAttributeOptionDTO>['relati
   getOptionId: (o) => (o as SystemConfigAttributeDTO).id ?? '',
   getOptionLabel: (o) => {
     const a = o as SystemConfigAttributeDTO;
+    const key = a.systemConfig?.configKey ?? 'Unknown';
+    const label = a.label || a.name || `ID: ${a.id ?? '-'}`;
 
-    return a.label ? `${a.label} (${a.name})` : (a.name ?? `ID: ${a.id ?? '-'}`);
+    return `${key} → ${label}`;
   },
-  toValue: (o) => ({ id: (o as SystemConfigAttributeDTO).id }) as SystemConfigAttributeDTO,
+  toValue: (o) => o as SystemConfigAttributeDTO,
   getValueId: (v) => {
     if (typeof v !== 'object' || !v) return undefined;
     const id = (v as Record<string, unknown>).id;
@@ -43,6 +55,7 @@ const attributeRelationship: FieldConfig<SystemConfigAttributeOptionDTO>['relati
   placeholder: 'Select an attribute',
 };
 
+// Base fields for the system config attribute option form
 export const systemConfigAttributeOptionBaseFields: Array<
   FieldConfig<SystemConfigAttributeOptionDTO>
 > = [
@@ -55,15 +68,39 @@ export const systemConfigAttributeOptionBaseFields: Array<
     relationshipConfig: attributeRelationship,
     colSpan: 2,
   },
+
+  {
+    field: 'code',
+    label: 'Code',
+    type: 'color',
+    required: true,
+    placeholder: 'e.g., #FF5733',
+
+    helpText: 'Hex color code for this option.',
+    colSpan: 2,
+
+    condition: (formData) => {
+      const attr = formData.attribute as SystemConfigAttributeDTO | undefined;
+      return attr?.name?.toLowerCase().includes('color') ?? false;
+    },
+  },
+
   {
     field: 'code',
     label: 'Code',
     type: 'text',
     required: true,
     placeholder: 'e.g., OPTION_A',
+
     helpText: 'Unique code (letters, numbers, -, _).',
     colSpan: 2,
+
+    condition: (formData) => {
+      const attr = formData.attribute as SystemConfigAttributeDTO | undefined;
+      return !(attr?.name?.toLowerCase().includes('color') ?? false);
+    },
   },
+
   {
     field: 'label',
     label: 'Label',

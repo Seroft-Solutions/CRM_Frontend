@@ -15,20 +15,6 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
       filterable: false,
     },
     {
-      field: 'code',
-      header: 'Option Value',
-      type: 'text',
-      sortable: true,
-      filterable: true,
-    },
-    {
-      field: 'label',
-      header: 'Option Label',
-      type: 'text',
-      sortable: true,
-      filterable: true,
-    },
-    {
       field: 'attribute',
       header: 'Attribute',
       type: 'text',
@@ -36,9 +22,48 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
       filterable: false,
       render: (value: SystemConfigAttributeOptionDTO[keyof SystemConfigAttributeOptionDTO]) => {
         const attr = value as SystemConfigAttributeDTO;
+        const configKey = attr?.systemConfig?.configKey;
+        const label = attr?.label || attr?.name || '-';
 
-        return attr?.name ? String(attr.name) : '-';
+        // If we have the config key, show full hierarchy, otherwise just show the attribute
+        return configKey ? `${configKey} → ${label}` : label;
       },
+    },
+    {
+      field: 'code',
+      header: 'Option Value',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+      render: (
+        value: SystemConfigAttributeOptionDTO[keyof SystemConfigAttributeOptionDTO],
+        row: SystemConfigAttributeOptionDTO
+      ) => {
+        const attr = row.attribute as SystemConfigAttributeDTO;
+        const isColorField = attr?.name?.toLowerCase().includes('color');
+        const code = String(value ?? '');
+
+        if (isColorField && /^#[0-9A-Fa-f]{6}$/.test(code)) {
+          return React.createElement(
+            'div',
+            { className: 'flex items-center gap-2' },
+            React.createElement('div', {
+              className: 'h-6 w-6 rounded border border-gray-300',
+              style: { backgroundColor: code },
+            }),
+            React.createElement('span', null, code)
+          );
+        }
+
+        return code;
+      },
+    },
+    {
+      field: 'label',
+      header: 'Option Label',
+      type: 'text',
+      sortable: true,
+      filterable: true,
     },
     {
       field: 'sortOrder',

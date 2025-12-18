@@ -50,4 +50,5 @@ export type FieldType =
   | 'radio'
   | 'relationship'
   | 'file'
+  | 'color'
   | 'custom';

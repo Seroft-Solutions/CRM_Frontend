@@ -24,13 +24,19 @@ export const systemConfigAttributeOptionCreateFormPageConfig: EntityFormPageConf
       const mutation = useCreateSystemConfigAttributeOption();
 
       return {
-        mutateAsync: async (params: { data: Partial<SystemConfigAttributeOptionDTO> }) =>
-          mutation.mutateAsync({
-            data: {
-              ...params.data,
-              status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
-            } as SystemConfigAttributeOptionDTO,
-          }),
+        mutateAsync: async (params: { data: Partial<SystemConfigAttributeOptionDTO> }) => {
+          // Transform the data: extract only the id from the attribute object
+          const attr = params.data.attribute;
+          const transformedData = {
+            ...params.data,
+            attribute: attr && typeof attr === 'object' && 'id' in attr ? { id: attr.id } : undefined,
+            status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
+          };
+
+          return mutation.mutateAsync({
+            data: transformedData as SystemConfigAttributeOptionDTO,
+          });
+        },
       };
     },
     form: systemConfigAttributeOptionCreateFormConfig,
@@ -54,11 +60,19 @@ export const systemConfigAttributeOptionEditFormPageConfig: EntityFormPageConfig
         mutateAsync: async (params: {
           id: number;
           data: Partial<SystemConfigAttributeOptionDTO>;
-        }) =>
-          mutation.mutateAsync({
+        }) => {
+          // Transform the data: extract only the id from the attribute object
+          const attr = params.data.attribute;
+          const transformedData = {
+            ...params.data,
+            attribute: attr && typeof attr === 'object' && 'id' in attr ? { id: attr.id } : undefined,
+          };
+
+          return mutation.mutateAsync({
             id: params.id,
-            data: params.data as SystemConfigAttributeOptionDTO,
-          }),
+            data: transformedData as SystemConfigAttributeOptionDTO,
+          });
+        },
       };
     },
     form: systemConfigAttributeOptionEditFormConfig,

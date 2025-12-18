@@ -182,9 +182,29 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'CustomerManagement',
     label: 'Customers Management',
-    path: '/customers',
     icon: Users,
+    expandable: true,
     requiredPermission: 'customer:sidebar',
+    children: [
+      {
+        key: 'viewCustomers',
+        label: 'View Customers',
+        path: '/customers',
+        requiredPermission: 'customer:sidebar',
+      },
+      {
+        key: 'importCustomers',
+        label: 'Import Customers',
+        path: '/customers/import',
+        requiredPermission: 'customer:sidebar',
+      },
+      {
+        key: 'importHistory',
+        label: 'Import History',
+        path: '/customers/import/results',
+        requiredPermission: 'customer:sidebar',
+      },
+    ],
   },
   {
     key: 'productManagement',
