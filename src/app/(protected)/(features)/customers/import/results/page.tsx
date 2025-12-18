@@ -9,6 +9,7 @@ import { CheckCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import { customerImportConfig } from '../config';
+import { FailedCustomersTable } from '../components/failed-customers-table';
 
 type RowStatus =
   | 'SUCCESS'
@@ -91,7 +92,10 @@ export default function ImportResultsPage() {
     XLSX.writeFile(workbook, 'customer-import-results.xlsx');
   };
 
-  const failedCount = responseData?.validationErrorCount ?? 0 + responseData?.masterMissingCount ?? 0 + responseData?.systemErrorCount ?? 0;
+  const failedCount =
+    (responseData?.validationErrorCount ?? 0) +
+    (responseData?.masterMissingCount ?? 0) +
+    (responseData?.systemErrorCount ?? 0);
 
   if (!responseData) {
     return (
@@ -117,6 +121,8 @@ export default function ImportResultsPage() {
             </p>
           </CardContent>
         </Card>
+
+        <FailedCustomersTable />
       </div>
     );
   }
@@ -205,6 +211,8 @@ export default function ImportResultsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <FailedCustomersTable />
     </div>
   );
 }

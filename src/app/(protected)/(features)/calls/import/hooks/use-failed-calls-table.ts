@@ -58,7 +58,23 @@ export function useFailedCallsTable() {
 
   useEffect(() => {
     if (importHistoryData) {
-      const failedRows = importHistoryData.filter((item) => item.issue && item.issue.trim() !== '');
+      const failedRows = importHistoryData.filter((item) => {
+        const hasIssue = Boolean(item.issue && item.issue.trim() !== '');
+        if (!hasIssue) return false;
+
+        // Guard: ImportHistory is shared, so exclude failed customer-import rows.
+        const hasCallOrProductSignals = Boolean(
+          (item.callType && item.callType.trim() !== '') ||
+            (item.subCallType && item.subCallType.trim() !== '') ||
+            (item.priority && item.priority.trim() !== '') ||
+            (item.callStatus && item.callStatus.trim() !== '') ||
+            (item.externalId && item.externalId.trim() !== '') ||
+            (item.productName && item.productName.trim() !== '') ||
+            (item.productCode && item.productCode.trim() !== '')
+        );
+
+        return hasCallOrProductSignals;
+      });
 
       setEditableData(failedRows);
       originalRowsRef.current = failedRows.map((row) => ({ ...row }));

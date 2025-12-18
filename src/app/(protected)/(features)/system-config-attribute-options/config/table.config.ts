@@ -16,17 +16,26 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
     },
     {
       field: 'attribute',
+      header: 'System Config',
+      type: 'text',
+      sortable: false,
+      filterable: false,
+      render: (value: SystemConfigAttributeOptionDTO[keyof SystemConfigAttributeOptionDTO]) => {
+        const attr = value as SystemConfigAttributeDTO;
+
+        return attr?.systemConfig?.configKey ? String(attr.systemConfig.configKey) : '-';
+      },
+    },
+    {
+      field: 'attribute',
       header: 'Attribute',
       type: 'text',
       sortable: false,
       filterable: false,
       render: (value: SystemConfigAttributeOptionDTO[keyof SystemConfigAttributeOptionDTO]) => {
         const attr = value as SystemConfigAttributeDTO;
-        const configKey = attr?.systemConfig?.configKey;
-        const label = attr?.label || attr?.name || '-';
 
-        // If we have the config key, show full hierarchy, otherwise just show the attribute
-        return configKey ? `${configKey} → ${label}` : label;
+        return attr?.label || attr?.name || '-';
       },
     },
     {

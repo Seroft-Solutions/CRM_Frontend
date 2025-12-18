@@ -73,7 +73,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'orders',
     label: 'Order Management',
     icon: ArrowDownToLine,
-    expandable: true,
+    expandable: false,
     children: [
       {
         key: 'ordersList',
@@ -183,7 +183,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'CustomerManagement',
     label: 'Customers Management',
     icon: Users,
-    expandable: true,
+    expandable: false,
     requiredPermission: 'customer:sidebar',
     children: [
       {
