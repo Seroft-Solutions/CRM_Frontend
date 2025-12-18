@@ -210,7 +210,7 @@ export function CallClassificationStep({
                     name: 'assignedTo',
                     type: 'many-to-one',
                     targetEntity: 'userProfile',
-                    displayField: 'displayName',
+                    displayField: 'email',
                     primaryKey: 'id',
                     required: false,
                     multiple: false,

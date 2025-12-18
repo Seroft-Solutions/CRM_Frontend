@@ -42,6 +42,97 @@ interface ImportResponse {
   message: string;
 }
 
+const DEFAULT_SUMMARY: ImportSummary = {
+  totalRows: 0,
+  successCount: 0,
+  duplicateCount: 0,
+  failedCount: 0,
+  validationErrorCount: 0,
+  masterMissingCount: 0,
+  systemErrorCount: 0,
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function toNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+}
+
+function normalizeRowStatus(value: unknown): RowStatus {
+  switch (value) {
+    case 'SUCCESS':
+    case 'DUPLICATE':
+    case 'VALIDATION_FAILED':
+    case 'MASTER_DATA_MISSING':
+    case 'SYSTEM_ERROR':
+      return value;
+    default:
+      return 'SYSTEM_ERROR';
+  }
+}
+
+function normalizeStoredImportResponse(value: unknown): ImportResponse | null {
+  if (!isRecord(value)) return null;
+
+  // Newer/expected shape: { success, summary: {...}, rows: [...], message }
+  if (isRecord(value.summary)) {
+    const summaryRecord = value.summary;
+    const rowsValue = Array.isArray(value.rows) ? value.rows : [];
+
+    return {
+      success: typeof value.success === 'boolean' ? value.success : true,
+      message: typeof value.message === 'string' ? value.message : 'Import completed.',
+      summary: {
+        totalRows: toNumber(summaryRecord.totalRows),
+        successCount: toNumber(summaryRecord.successCount),
+        duplicateCount: toNumber(summaryRecord.duplicateCount),
+        failedCount: toNumber(summaryRecord.failedCount),
+        validationErrorCount: toNumber(summaryRecord.validationErrorCount),
+        masterMissingCount: toNumber(summaryRecord.masterMissingCount),
+        systemErrorCount: toNumber(summaryRecord.systemErrorCount),
+      },
+      rows: rowsValue.map((row, index) => {
+        const rowRecord = isRecord(row) ? row : {};
+        return {
+          rowNumber: toNumber(rowRecord.rowNumber) || index + 1,
+          data: Array.isArray(rowRecord.data) ? (rowRecord.data as string[]) : [],
+          status: normalizeRowStatus(rowRecord.status),
+          message: typeof rowRecord.message === 'string' ? rowRecord.message : '',
+        };
+      }),
+    };
+  }
+
+  // Current backend schema stored from progress polling: ImportResult (flat counts + rows)
+  const rowsValue = Array.isArray(value.rows) ? value.rows : [];
+  const summary: ImportSummary = {
+    totalRows: toNumber(value.totalRows),
+    successCount: toNumber(value.successCount),
+    duplicateCount: toNumber(value.duplicateCount),
+    failedCount: toNumber(value.failedCount),
+    validationErrorCount: toNumber(value.validationErrorCount),
+    masterMissingCount: toNumber(value.masterMissingCount),
+    systemErrorCount: toNumber(value.systemErrorCount),
+  };
+
+  return {
+    success: true,
+    message: 'Import completed.',
+    summary,
+    rows: rowsValue.map((row, index) => {
+      const rowRecord = isRecord(row) ? row : {};
+      return {
+        rowNumber: toNumber(rowRecord.rowNumber) || index + 1,
+        data: Array.isArray(rowRecord.data) ? (rowRecord.data as string[]) : [],
+        status: normalizeRowStatus(rowRecord.status),
+        message: typeof rowRecord.message === 'string' ? rowRecord.message : '',
+      };
+    }),
+  };
+}
+
 export default function ImportResultsPage() {
   const router = useRouter();
   const [responseData, setResponseData] = useState<ImportResponse | null>(null);
@@ -51,9 +142,14 @@ export default function ImportResultsPage() {
 
     if (storedData) {
       try {
-        const data = JSON.parse(storedData);
+        const data = JSON.parse(storedData) as unknown;
+        const normalized = normalizeStoredImportResponse(data);
 
-        setResponseData(data);
+        if (!normalized) {
+          throw new Error('Unexpected import result payload shape');
+        }
+
+        setResponseData(normalized);
         // Clear the data from session storage after reading it
         sessionStorage.removeItem('callImportResponse');
       } catch (error) {
@@ -76,6 +172,8 @@ export default function ImportResultsPage() {
       reason: row.message,
     }));
   }, [responseData]);
+
+  const summary = responseData?.summary ?? DEFAULT_SUMMARY;
 
   const handleDownloadReport = () => {
     if (!responseData) return;
@@ -152,36 +250,22 @@ export default function ImportResultsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <SummaryCard label="Total Rows" value={responseData.summary.totalRows} />
-            <SummaryCard
-              label="Successful"
-              value={responseData.summary.successCount}
-              tone="success"
-            />
-            <SummaryCard
-              label="Duplicates"
-              value={responseData.summary.duplicateCount}
-              tone="warning"
-            />
-            <SummaryCard label="Failed" value={responseData.summary.failedCount} tone="error" />
+            <SummaryCard label="Total Rows" value={summary.totalRows} />
+            <SummaryCard label="Successful" value={summary.successCount} tone="success" />
+            <SummaryCard label="Duplicates" value={summary.duplicateCount} tone="warning" />
+            <SummaryCard label="Failed" value={summary.failedCount} tone="error" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">
-                {responseData.summary.validationErrorCount}
-              </p>
+              <p className="font-semibold text-foreground">{summary.validationErrorCount}</p>
               <p>Validation issues</p>
             </div>
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">
-                {responseData.summary.masterMissingCount}
-              </p>
+              <p className="font-semibold text-foreground">{summary.masterMissingCount}</p>
               <p>Missing master data</p>
             </div>
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">
-                {responseData.summary.systemErrorCount}
-              </p>
+              <p className="font-semibold text-foreground">{summary.systemErrorCount}</p>
               <p>System errors</p>
             </div>
           </div>

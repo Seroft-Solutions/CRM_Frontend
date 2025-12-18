@@ -149,7 +149,7 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
           <RelationshipDisplayValue
             value={value}
             useGetAllHook={useGetAllUserProfiles}
-            displayField="displayName"
+            displayField="email"
             primaryKey="id"
             multiple={false}
             label="UserProfiles"
