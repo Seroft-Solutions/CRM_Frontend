@@ -9,6 +9,7 @@ import {
 import type { EntityFormPageConfig } from '@/entity-library/config';
 
 import { systemConfigCreateFormConfig, systemConfigEditFormConfig } from './form.config';
+import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
 
 export const systemConfigCreateFormPageConfig: EntityFormPageConfig<SystemConfigDTO> = {
   entityName: 'System Config',
@@ -21,7 +22,10 @@ export const systemConfigCreateFormPageConfig: EntityFormPageConfig<SystemConfig
     return {
       mutateAsync: async (params: { data: Partial<SystemConfigDTO> }) =>
         mutation.mutateAsync({
-          data: params.data as SystemConfigDTO,
+          data: {
+            ...params.data,
+            status: SystemConfigDTOStatus.ACTIVE,
+          } as SystemConfigDTO,
         }),
     };
   },

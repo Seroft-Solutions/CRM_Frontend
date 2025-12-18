@@ -21,6 +21,9 @@ const schema = z.object({
   status: z.nativeEnum(SystemConfigAttributeOptionDTOStatus),
 });
 
+// Make schema type-compatible with FormConfig expectations
+const validationSchema = schema as unknown as z.ZodType<Partial<SystemConfigAttributeOptionDTO>>;
+
 const attributeRelationship: FieldConfig<SystemConfigAttributeOptionDTO>['relationshipConfig'] = {
   useGetAll: (params) => useGetAllSystemConfigAttributes(params as Record<string, unknown>),
   params: { page: 0, size: 1000 },
@@ -48,7 +51,7 @@ export const systemConfigAttributeOptionBaseFields: Array<
     label: 'Attribute',
     type: 'relationship',
     required: true,
-    helpText: 'Parent attribute. Cannot be changed after creation.',
+    helpText: 'Parent attribute.',
     relationshipConfig: attributeRelationship,
     colSpan: 2,
   },
@@ -58,7 +61,7 @@ export const systemConfigAttributeOptionBaseFields: Array<
     type: 'text',
     required: true,
     placeholder: 'e.g., OPTION_A',
-    helpText: 'Unique code (letters, numbers, -, _). Cannot be changed after creation.',
+    helpText: 'Unique code (letters, numbers, -, _).',
     colSpan: 2,
   },
   {
@@ -91,14 +94,18 @@ export const systemConfigAttributeOptionBaseFields: Array<
   },
 ];
 
+// For create form, hide the Status field but keep default/validation
+const systemConfigAttributeOptionCreateFields: Array<FieldConfig<SystemConfigAttributeOptionDTO>> =
+  systemConfigAttributeOptionBaseFields.filter((f) => f.field !== 'status');
+
 export const systemConfigAttributeOptionCreateFormConfig: Omit<
   FormConfig<SystemConfigAttributeOptionDTO>,
   'onSuccess' | 'onError'
 > = {
   mode: 'create',
   layout: 'two-column',
-  fields: systemConfigAttributeOptionBaseFields,
-  validationSchema: schema,
+  fields: systemConfigAttributeOptionCreateFields,
+  validationSchema,
   defaultValues: {
     sortOrder: 0,
     status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
@@ -116,9 +123,13 @@ export const systemConfigAttributeOptionEditFormConfig: Omit<
   mode: 'edit',
   layout: 'two-column',
   fields: systemConfigAttributeOptionBaseFields.map((f) =>
-    f.field === 'attribute' || f.field === 'code' ? { ...f, disabled: true } : f
+    f.field === 'attribute'
+      ? { ...f, helpText: 'Parent attribute.' }
+      : f.field === 'code'
+        ? { ...f, helpText: 'Unique code (letters, numbers, -, _).' }
+        : f
   ),
-  validationSchema: schema,
+  validationSchema,
   submitButtonText: 'Update Attribute Option',
   cancelButtonText: 'Cancel',
   showCancelButton: true,

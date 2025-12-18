@@ -12,6 +12,7 @@ import {
   systemConfigAttributeCreateFormConfig,
   systemConfigAttributeEditFormConfig,
 } from './form.config';
+import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOStatus';
 
 export const systemConfigAttributeCreateFormPageConfig: EntityFormPageConfig<SystemConfigAttributeDTO> =
   {
@@ -24,7 +25,9 @@ export const systemConfigAttributeCreateFormPageConfig: EntityFormPageConfig<Sys
 
       return {
         mutateAsync: async (params: { data: Partial<SystemConfigAttributeDTO> }) =>
-          mutation.mutateAsync({ data: params.data as SystemConfigAttributeDTO }),
+          mutation.mutateAsync({
+            data: { ...params.data, status: SystemConfigAttributeDTOStatus.ACTIVE } as SystemConfigAttributeDTO,
+          }),
       };
     },
     form: systemConfigAttributeCreateFormConfig,

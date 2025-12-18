@@ -27,6 +27,9 @@ const schema = z.object({
   status: z.nativeEnum(SystemConfigAttributeDTOStatus),
 });
 
+// Make schema type-compatible with FormConfig expectations
+const validationSchema = schema as unknown as z.ZodType<Partial<SystemConfigAttributeDTO>>;
+
 const systemConfigRelationship: FieldConfig<SystemConfigAttributeDTO>['relationshipConfig'] = {
   useGetAll: (params) => useGetAllSystemConfigs(params as Record<string, unknown>),
   params: { page: 0, size: 1000 },
@@ -110,16 +113,20 @@ export const systemConfigAttributeBaseFields: Array<FieldConfig<SystemConfigAttr
   },
 ];
 
+// For create form, hide the Status field but keep default/validation
+const systemConfigAttributeCreateFields: Array<FieldConfig<SystemConfigAttributeDTO>> =
+  systemConfigAttributeBaseFields.filter((f) => f.field !== 'status');
+
 export const systemConfigAttributeCreateFormConfig: Omit<
   FormConfig<SystemConfigAttributeDTO>,
   'onSuccess' | 'onError'
 > = {
   mode: 'create',
   layout: 'two-column',
-  fields: systemConfigAttributeBaseFields,
-  validationSchema: schema,
+  fields: systemConfigAttributeCreateFields,
+  validationSchema,
   defaultValues: {
-    attributeType: SystemConfigAttributeDTOAttributeType.STRING,
+    attributeType: SystemConfigAttributeDTOAttributeType.ENUM,
     isRequired: false,
     sortOrder: 0,
     status: SystemConfigAttributeDTOStatus.ACTIVE,
@@ -137,9 +144,13 @@ export const systemConfigAttributeEditFormConfig: Omit<
   mode: 'edit',
   layout: 'two-column',
   fields: systemConfigAttributeBaseFields.map((f) =>
-    f.field === 'systemConfig' || f.field === 'name' ? { ...f, disabled: true } : f
+    f.field === 'systemConfig'
+      ? { ...f, helpText: 'Parent system configuration.' }
+      : f.field === 'name'
+        ? { ...f, helpText: 'Internal name (lowercase, underscores allowed).' }
+        : f
   ),
-  validationSchema: schema,
+  validationSchema,
   submitButtonText: 'Update Config Attribute',
   cancelButtonText: 'Cancel',
   showCancelButton: true,

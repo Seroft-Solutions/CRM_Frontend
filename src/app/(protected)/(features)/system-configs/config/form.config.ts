@@ -59,16 +59,21 @@ export const systemConfigBaseFields: Array<FieldConfig<SystemConfigDTO>> = [
   },
 ];
 
+// For create form, hide the Status field but keep it in defaults/validation
+const systemConfigCreateFields: Array<FieldConfig<SystemConfigDTO>> = systemConfigBaseFields.filter(
+  (f) => f.field !== 'status'
+);
+
 export const systemConfigCreateFormConfig: Omit<
   FormConfig<SystemConfigDTO>,
   'onSuccess' | 'onError'
 > = {
   mode: 'create',
   layout: 'two-column',
-  fields: systemConfigBaseFields,
+  fields: systemConfigCreateFields,
   validationSchema: schema,
   defaultValues: {
-    systemConfigType: SystemConfigDTOSystemConfigType.CUSTOM,
+    systemConfigType: SystemConfigDTOSystemConfigType.PRODUCT,
     status: SystemConfigDTOStatus.ACTIVE,
     description: '',
   },
