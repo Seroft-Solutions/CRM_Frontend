@@ -28,6 +28,7 @@ import type {
   CallDTO,
   CountImportHistoriesParams,
   DeleteAllImportHistoryEntries200,
+  DeleteAllImportHistoryEntriesParams,
   GetAllImportHistoriesParams,
   ImportHistoryDTO,
   SearchImportHistoriesParams
@@ -657,12 +658,13 @@ export function useSearchImportHistories<TData = Awaited<ReturnType<typeof searc
 
 
 export const deleteAllImportHistoryEntries = (
-    
+    params?: DeleteAllImportHistoryEntriesParams,
  options?: SecondParameter<typeof springServiceMutator>,) => {
       
       
       return springServiceMutator<DeleteAllImportHistoryEntries200>(
-      {url: `/api/import-history/delete-all`, method: 'DELETE'
+      {url: `/api/import-history/delete-all`, method: 'DELETE',
+        params
     },
       options);
     }
@@ -670,8 +672,8 @@ export const deleteAllImportHistoryEntries = (
 
 
 export const getDeleteAllImportHistoryEntriesMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,void, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,{params?: DeleteAllImportHistoryEntriesParams}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,{params?: DeleteAllImportHistoryEntriesParams}, TContext> => {
     
 const mutationKey = ['deleteAllImportHistoryEntries'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -683,10 +685,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, void> = () => {
-          
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, {params?: DeleteAllImportHistoryEntriesParams}> = (props) => {
+          const {params} = props ?? {};
 
-          return  deleteAllImportHistoryEntries(requestOptions)
+          return  deleteAllImportHistoryEntries(params,requestOptions)
         }
 
         
@@ -699,11 +701,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type DeleteAllImportHistoryEntriesMutationError = ErrorType<unknown>
 
     export const useDeleteAllImportHistoryEntries = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,void, TContext>, request?: SecondParameter<typeof springServiceMutator>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>, TError,{params?: DeleteAllImportHistoryEntriesParams}, TContext>, request?: SecondParameter<typeof springServiceMutator>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteAllImportHistoryEntries>>,
         TError,
-        void,
+        {params?: DeleteAllImportHistoryEntriesParams},
         TContext
       > => {
 

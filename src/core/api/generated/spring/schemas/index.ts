@@ -217,6 +217,7 @@ export * from './CustomerDTOStatus';
 export * from './CustomerImportJobDTO';
 export * from './CustomerImportJobDTOStatus';
 export * from './DeleteAllImportHistoryEntries200';
+export * from './DeleteAllImportHistoryEntriesParams';
 export * from './DistrictDTO';
 export * from './DistrictDTOStatus';
 export * from './EmailRequest';

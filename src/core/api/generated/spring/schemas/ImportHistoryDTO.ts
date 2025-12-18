@@ -20,4 +20,5 @@ export interface ImportHistoryDTO {
   callStatus?: string;
   issue?: string;
   remark?: string;
+  entityName?: string;
 }

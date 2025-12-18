@@ -62,8 +62,13 @@ export function useFailedCallsTable() {
         const hasIssue = Boolean(item.issue && item.issue.trim() !== '');
         if (!hasIssue) return false;
 
-        // Guard: ImportHistory is shared, so exclude failed customer-import rows.
-        const hasCallOrProductSignals = Boolean(
+        const entityName = item.entityName;
+        if (entityName) {
+          return entityName.toUpperCase() === 'CALL';
+        }
+
+        // Backward compatibility: older rows have no entityName.
+        return Boolean(
           (item.callType && item.callType.trim() !== '') ||
             (item.subCallType && item.subCallType.trim() !== '') ||
             (item.priority && item.priority.trim() !== '') ||
@@ -72,8 +77,6 @@ export function useFailedCallsTable() {
             (item.productName && item.productName.trim() !== '') ||
             (item.productCode && item.productCode.trim() !== '')
         );
-
-        return hasCallOrProductSignals;
       });
 
       setEditableData(failedRows);
@@ -159,7 +162,7 @@ export function useFailedCallsTable() {
 
   const handleClearAllFailedEntries = useCallback(async () => {
     try {
-      const response = await deleteAllCallImportHistoriesAsync();
+      const response = await deleteAllCallImportHistoriesAsync({ params: { entityName: 'CALL' } });
       const deletedCount = Number((response['deletedCount'] as number | undefined) ?? 0);
       const rawMessage = response['message'];
       const message = typeof rawMessage === 'string' ? rawMessage : undefined;
