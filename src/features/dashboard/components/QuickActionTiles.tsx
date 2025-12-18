@@ -6,11 +6,11 @@ import Link from 'next/link';
 
 export function QuickActionTiles() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 grid-rows-1 md:grid-cols-2 lg:grid-cols-4">
       {/* Add Lead Tile */}
       <Link href="/calls/new" className="block">
         <Card
-          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer"
+          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer h-full min-h-[120px]"
           style={{ backgroundColor: 'var(--sidebar)' }}
         >
           {/* Background Pattern */}
@@ -25,7 +25,7 @@ export function QuickActionTiles() {
             />
           </div>
 
-          <CardContent className="relative p-4">
+          <CardContent className="relative p-4 h-full flex items-center">
             <div className="flex items-center space-x-4">
               {/* Icon Container */}
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-colors duration-300 flex-shrink-0">
@@ -53,7 +53,7 @@ export function QuickActionTiles() {
       {/* Manage Leads Tile */}
       <Link href="/calls" className="block">
         <Card
-          className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer"
+          className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer h-full min-h-[120px]"
           style={{ backgroundColor: 'var(--feature-header-accent)' }}
         >
           {/* Background Pattern */}
@@ -68,7 +68,7 @@ export function QuickActionTiles() {
             />
           </div>
 
-          <CardContent className="relative p-4">
+          <CardContent className="relative p-4 h-full flex items-center">
             <div className="flex items-center space-x-4">
               {/* Icon Container */}
               <div className="w-12 h-12 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-black/10 group-hover:bg-black/20 transition-colors duration-300 flex-shrink-0">
@@ -96,7 +96,7 @@ export function QuickActionTiles() {
       {/* Manage Customers Tile */}
       <Link href="/customers" className="block">
         <Card
-          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer"
+          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer h-full min-h-[120px]"
           style={{ backgroundColor: 'var(--sidebar)' }}
         >
           {/* Background Pattern */}
@@ -111,7 +111,7 @@ export function QuickActionTiles() {
             />
           </div>
 
-          <CardContent className="relative p-4">
+          <CardContent className="relative p-4 h-full flex items-center">
             <div className="flex items-center space-x-4">
               {/* Icon Container */}
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-colors duration-300 flex-shrink-0">
@@ -128,7 +128,7 @@ export function QuickActionTiles() {
               <div className="flex-shrink-0">
                 <div className="bg-white text-blue-600 border-0 font-medium px-4 py-2 h-8 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
                   <UserCircle className="mr-1 h-3 w-3" />
-                  View
+                  Add/View
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@ export function QuickActionTiles() {
       {/* Manage Products Tile */}
       <Link href="/products" className="block">
         <Card
-          className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer"
+          className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer h-full min-h-[120px]"
           style={{ backgroundColor: 'var(--feature-header-accent)' }}
         >
           {/* Background Pattern */}
@@ -154,7 +154,7 @@ export function QuickActionTiles() {
             />
           </div>
 
-          <CardContent className="relative p-4">
+          <CardContent className="relative p-4 h-full flex items-center">
             <div className="flex items-center space-x-4">
               {/* Icon Container */}
               <div className="w-12 h-12 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-black/10 group-hover:bg-black/20 transition-colors duration-300 flex-shrink-0">
@@ -171,7 +171,7 @@ export function QuickActionTiles() {
               <div className="flex-shrink-0">
                 <div className="bg-white text-slate-900 border-0 font-medium px-4 py-2 h-8 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
                   <ShoppingCart className="mr-1 h-3 w-3" />
-                  View
+                  Add/View
                 </div>
               </div>
             </div>

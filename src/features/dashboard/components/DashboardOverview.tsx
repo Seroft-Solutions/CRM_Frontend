@@ -212,14 +212,6 @@ export function DashboardOverview() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
-          <p className="text-muted-foreground">
-            Complete overview of your customer relationship management
-          </p>
-        </div>
-      </div>
 
       {/* Quick Action Tiles */}
       <div className="mb-6">
