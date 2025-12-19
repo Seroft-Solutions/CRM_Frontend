@@ -65,7 +65,10 @@ export function VariantsTable({
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
-  const hasDrafts = draftVariants.length > 0;
+  const newDraftVariants = draftVariants.filter(v => !v.isDuplicate);
+  const duplicateDraftVariants = draftVariants.filter(v => v.isDuplicate);
+  const hasDrafts = newDraftVariants.length > 0;
+  const hasDuplicates = duplicateDraftVariants.length > 0;
 
   const showTable = hasDrafts || totalExistingRows > 0;
   if (!showTable && !isLoading) {
@@ -114,17 +117,25 @@ export function VariantsTable({
           {hasDrafts && (
             <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">
               <div className="w-2 h-2 bg-white/30 rounded-full mr-2"></div>
-              {draftVariants.length} draft
+              {newDraftVariants.length} new
+            </Badge>
+          )}
+          {hasDuplicates && (
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">
+              <div className="w-2 h-2 bg-white/30 rounded-full mr-2"></div>
+              {duplicateDraftVariants.length} duplicate{duplicateDraftVariants.length !== 1 ? 's' : ''}
             </Badge>
           )}
         </div>
         <div className="text-right">
           <p className="text-sm font-semibold text-foreground">
-            {totalExistingRows + draftVariants.length} total variants
+            {totalRowsToDisplay} total variants
           </p>
-          <p className="text-xs text-muted-foreground">
-            {totalExistingRows} active • {draftVariants.length} pending
-          </p>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>{totalExistingRows} saved</p>
+            {newDraftVariants.length > 0 && <p className="text-blue-600">{newDraftVariants.length} new pending</p>}
+            {duplicateDraftVariants.length > 0 && <p className="text-amber-600">{duplicateDraftVariants.length} duplicate{duplicateDraftVariants.length !== 1 ? 's' : ''}</p>}
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto">

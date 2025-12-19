@@ -18,7 +18,8 @@ interface EnumAttributeWithOptions {
 /**
  * @interface VariantGeneratorProps
  * @description Props for the VariantGenerator component.
- * @property {number} draftVariantsCount - The number of generated draft variants.
+ * @property {number} newVariantsCount - The number of new variants that will be created.
+ * @property {number} duplicateVariantsCount - The number of duplicate variants that already exist.
  * @property {SystemConfigAttributeDTO[]} missingRequiredEnumAttributes - A list of required attributes that have no selected options.
  * @property {boolean} isLoadingSelections - Flag indicating if existing variant selections are being loaded.
  * @property {boolean} isLoadingOptions - Flag indicating if attribute options are being loaded.
@@ -31,7 +32,8 @@ interface EnumAttributeWithOptions {
  * @property {(attributeId: number, optionId: number) => void} onToggleOption - The callback function to toggle the selection state of an option.
  */
 interface VariantGeneratorProps {
-  draftVariantsCount: number;
+  newVariantsCount: number;
+  duplicateVariantsCount: number;
   missingRequiredEnumAttributes: SystemConfigAttributeDTO[];
   isLoadingSelections: boolean;
   isLoadingOptions: boolean;
@@ -53,7 +55,8 @@ interface VariantGeneratorProps {
  * @returns {JSX.Element} The rendered variant generator section.
  */
 export function VariantGenerator({
-  draftVariantsCount,
+  newVariantsCount,
+  duplicateVariantsCount,
   missingRequiredEnumAttributes,
   isLoadingSelections,
   isLoadingOptions,
@@ -69,7 +72,8 @@ export function VariantGenerator({
   return (
     <div className="rounded-xl border-2 border-primary/10 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm p-6 space-y-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <VariantGeneratorHeader
-        draftVariantsCount={draftVariantsCount}
+        newVariantsCount={newVariantsCount}
+        duplicateVariantsCount={duplicateVariantsCount}
         missingRequiredCount={missingRequiredEnumAttributes.length}
         onSave={onSave}
         isSaving={isSaving}

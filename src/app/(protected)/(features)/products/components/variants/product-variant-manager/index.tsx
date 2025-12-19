@@ -283,7 +283,8 @@ export function ProductVariantManager({
 
     if (selectionsForCrossProduct.length === 0) return [];
 
-    const rows: DraftVariantRow[] = [];
+    const newVariants: DraftVariantRow[] = [];
+    const duplicateVariants: DraftVariantRow[] = [];
     const sortedAttributes = [...selectionsForCrossProduct].sort((a, b) =>
       (attributeOrderMap.get(a.attribute.id!) ?? 999) - (attributeOrderMap.get(b.attribute.id!) ?? 999)
     );
@@ -299,15 +300,19 @@ export function ProductVariantManager({
         const sku = skuParts.join('-');
         const key = buildCombinationKey(current.map(s => ({ attributeId: s.attributeId, optionId: s.optionId })));
 
+        const variant = {
+          key,
+          sku,
+          price: undefined,
+          stockQuantity: 0,
+          status: defaultGeneratedStatus,
+          selections: current,
+        };
+
         if (!existingSkus.has(sku) && !existingCombinationKeys.has(key)) {
-          rows.push({
-            key,
-            sku,
-            price: undefined,
-            stockQuantity: 0,
-            status: defaultGeneratedStatus,
-            selections: current,
-          });
+          newVariants.push(variant);
+        } else {
+          duplicateVariants.push(variant);
         }
         return;
       }
@@ -329,7 +334,7 @@ export function ProductVariantManager({
     }
 
     generate(0, []);
-    return rows;
+    return { newVariants, duplicateVariants };
   }, [
     variantConfigId,
     enumAttributeOptions,
@@ -347,10 +352,19 @@ export function ProductVariantManager({
   useEffect(() => {
     setDraftVariantsByKey((prev) => {
       const next: Record<string, DraftVariantRow> = {};
-      draftCombinations.forEach((row) => {
+
+      // Add new variants
+      draftCombinations.newVariants?.forEach((row) => {
         const existing = prev[row.key];
-        next[row.key] = existing ? { ...row, ...existing } : row;
+        next[row.key] = existing ? { ...row, ...existing, isDuplicate: false } : { ...row, isDuplicate: false };
       });
+
+      // Add duplicate variants
+      draftCombinations.duplicateVariants?.forEach((row) => {
+        const existing = prev[row.key];
+        next[row.key] = existing ? { ...row, ...existing, isDuplicate: true } : { ...row, isDuplicate: true };
+      });
+
       // Basic check to prevent re-render if only references changed
       if (JSON.stringify(Object.keys(prev)) === JSON.stringify(Object.keys(next))) {
         return prev;
@@ -360,6 +374,8 @@ export function ProductVariantManager({
   }, [draftCombinations]);
 
   const draftVariants = useMemo(() => Object.values(draftVariantsByKey), [draftVariantsByKey]);
+  const newDraftVariants = useMemo(() => draftVariants.filter(v => !v.isDuplicate), [draftVariants]);
+  const duplicateDraftVariants = useMemo(() => draftVariants.filter(v => v.isDuplicate), [draftVariants]);
   // #endregion
 
   const precomputeDisabledOptionIds = useMemo(() => {
@@ -420,10 +436,11 @@ export function ProductVariantManager({
   // #region Combined Logic & UI State
   const combinedRows = useMemo(() => {
     return [
-      ...draftVariants.map((d) => ({ kind: 'draft' as const, rowKey: `draft-${d.key}`, row: d })),
+      ...newDraftVariants.map((d) => ({ kind: 'draft' as const, rowKey: `draft-${d.key}`, row: d })),
+      ...duplicateDraftVariants.map((d) => ({ kind: 'duplicate' as const, rowKey: `duplicate-${d.key}`, row: d })),
       ...existingVariantRows.map((e) => ({ kind: 'existing' as const, rowKey: `existing-${e.id}`, row: e })),
     ];
-  }, [draftVariants, existingVariantRows]);
+  }, [newDraftVariants, duplicateDraftVariants, existingVariantRows]);
 
   const totalPages = Math.ceil(combinedRows.length / PAGE_SIZE);
 
@@ -552,22 +569,17 @@ export function ProductVariantManager({
     }
 
     const skuPattern = /^[A-Za-z0-9_-]+$/;
-    const invalidSku = draftVariants.find((v) => !v.sku || v.sku.length < 2 || v.sku.length > 50 || !skuPattern.test(v.sku));
+    const invalidSku = newDraftVariants.find((v) => !v.sku || v.sku.length < 2 || v.sku.length > 50 || !skuPattern.test(v.sku));
     if (invalidSku) {
       toast.error(`Invalid SKU: ${invalidSku.sku || '(empty)'}`);
       return;
     }
 
     setIsSavingDrafts(true);
-    let successCount = 0, failureCount = 0, skippedCount = 0;
+    let successCount = 0, failureCount = 0;
 
-    for (const variant of draftVariants) {
+    for (const variant of newDraftVariants) {
       try {
-        if (existingSkus.has(variant.sku) || existingCombinationKeys.has(variant.key)) {
-          skippedCount++;
-          continue;
-        }
-
         const createdVariant = await createVariantMutation.mutateAsync({
           data: {
             sku: variant.sku,
@@ -595,9 +607,13 @@ export function ProductVariantManager({
       }
     }
 
-    if (successCount > 0) toast.success(`Created ${successCount} variant(s)`);
+    if (successCount > 0) toast.success(`Created ${successCount} new variant(s)`);
     if (failureCount > 0) toast.error(`Failed to create ${failureCount} variant(s)`);
-    if (skippedCount > 0) toast.info(`Skipped ${skippedCount} duplicate variant(s)`);
+    if (duplicateDraftVariants.length > 0) {
+      toast.info(`${duplicateDraftVariants.length} duplicate variant(s) were skipped`, {
+        description: 'These combinations already exist in your product variants.'
+      });
+    }
 
     await invalidateVariantQueries();
 
@@ -647,7 +663,8 @@ export function ProductVariantManager({
       </div>
 
       <VariantGenerator
-        draftVariantsCount={draftVariants.length}
+        newVariantsCount={newDraftVariants.length}
+        duplicateVariantsCount={duplicateDraftVariants.length}
         missingRequiredEnumAttributes={missingRequiredEnumAttributes}
         isLoadingSelections={isLoadingSelections}
         isLoadingOptions={isLoadingOptions}

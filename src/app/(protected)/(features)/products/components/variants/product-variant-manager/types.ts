@@ -26,6 +26,7 @@ export interface VariantSelection {
  * @property {number} stockQuantity - The available stock for the variant.
  * @property {ProductVariantDTOStatus} status - The status of the variant (e.g., ACTIVE, INACTIVE).
  * @property {VariantSelection[]} selections - The array of attribute/option selections that define this variant.
+ * @property {boolean} isDuplicate - Whether this variant combination already exists.
  */
 export interface DraftVariantRow {
   key: string;
@@ -34,6 +35,7 @@ export interface DraftVariantRow {
   stockQuantity: number;
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
+  isDuplicate?: boolean;
 }
 
 /**
@@ -57,8 +59,9 @@ export interface ExistingVariantRow {
 
 /**
  * @type CombinedVariantRow
- * @description A union type that represents a row in the variants table. It can either be a draft or an existing variant.
+ * @description A union type that represents a row in the variants table. It can be a new draft, duplicate draft, or existing variant.
  */
 export type CombinedVariantRow =
   | { kind: 'draft'; rowKey: string; row: DraftVariantRow }
+  | { kind: 'duplicate'; rowKey: string; row: DraftVariantRow }
   | { kind: 'existing'; rowKey: string; row: ExistingVariantRow };

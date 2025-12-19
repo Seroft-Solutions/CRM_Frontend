@@ -53,8 +53,9 @@ export function VariantTableRow({
   onDeleteRow,
 }: VariantTableRowProps) {
   const isDraft = item.kind === 'draft';
+  const isDuplicate = item.kind === 'duplicate';
   const { row } = item;
-  const isEditing = !isDraft && editingRowData?.id === row.id;
+  const isEditing = !isDraft && !isDuplicate && editingRowData?.id === row.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleDeleteClick = () => {
@@ -100,16 +101,18 @@ export function VariantTableRow({
 
   return (
     <>
-      <TableRow
-        key={item.rowKey}
-        className={`group transition-all duration-200 ${
-          isEditing
-            ? 'bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-yellow-50/60 border-l-4 border-l-amber-400 shadow-sm'
-            : isDraft
-            ? 'bg-gradient-to-r from-blue-50/40 to-indigo-50/30 hover:from-blue-100/50 hover:to-indigo-100/40 border-l-4 border-l-blue-400 hover:shadow-md'
-            : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm'
-        }`}
-      >
+    <TableRow
+      key={item.rowKey}
+      className={`group transition-all duration-200 ${
+        isEditing
+          ? 'bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-yellow-50/60 border-l-4 border-l-amber-400 shadow-sm'
+          : isDuplicate
+          ? 'bg-gradient-to-r from-amber-50/40 to-orange-50/30 border-l-4 border-l-amber-400 opacity-75'
+          : isDraft
+          ? 'bg-gradient-to-r from-blue-50/40 to-indigo-50/30 hover:from-blue-100/50 hover:to-indigo-100/40 border-l-4 border-l-blue-400 hover:shadow-md'
+          : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm'
+      }`}
+    >
         {/* Attribute Columns */}
         {visibleEnumAttributes.map((attr) => (
           <TableCell key={`${item.rowKey}-${attr.id}`} className="py-2">
@@ -148,11 +151,16 @@ export function VariantTableRow({
               onChange={(e) => onUpdateEditingRow({ sku: e.target.value })}
             />
           ) : (
-            <div className="flex items-center gap-2">
-              <code className="font-bold bg-gradient-to-r from-primary/10 to-primary/20 text-primary px-2 py-1 rounded text-sm border border-primary/20 shadow-sm inline-block">
-                {row.sku}
-              </code>
-            </div>
+          <div className="flex items-center gap-2">
+            <code className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block ${
+              isDuplicate
+                ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
+                : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
+            }`}>
+              {row.sku}
+              {isDuplicate && <span className="ml-1 text-xs">⚠️</span>}
+            </code>
+          </div>
           )}
         </TableCell>
 
@@ -242,29 +250,35 @@ export function VariantTableRow({
 
         {/* Actions Column */}
         <TableCell className="py-2 text-right">
-          <div className="flex items-center justify-end gap-1">
-            {!isDraft && !isEditing && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEditRow(row as ExistingVariantRow)}
-                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
-                  title="Edit variant"
-                >
-                  <Pencil className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleDeleteClick}
-                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
-                  title="Delete variant"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </>
-            )}
+        <div className="flex items-center justify-end gap-1">
+          {!isDraft && !isDuplicate && !isEditing && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEditRow(row as ExistingVariantRow)}
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                title="Edit variant"
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteClick}
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                title="Delete variant"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </>
+          )}
+          {isDuplicate && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700 font-medium">
+              <span>⚠️</span>
+              <span>Duplicate</span>
+            </div>
+          )}
             {isEditing && (
               <>
                 <Button
