@@ -9,6 +9,59 @@ import { CheckboxFieldControl } from './CheckboxFieldControl';
 import { SelectFieldControl } from './SelectFieldControl';
 import { RelationshipFieldControl } from './RelationshipFieldControl';
 import { ColorFieldControl } from './ColorFieldControl';
+import { useCallback, useState, useEffect, useRef } from 'react';
+
+function TransformingInput({
+  name,
+  type,
+  placeholder,
+  disabled,
+  readOnly,
+  required,
+  transform,
+}: {
+  name: string;
+  type: string;
+  placeholder?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  transform: (value: string) => string;
+}) {
+  const { setValue, watch } = useFormContext();
+  const [inputValue, setInputValue] = useState('');
+  const fieldValue = watch(name);
+
+  // Sync with form value when it changes externally
+  useEffect(() => {
+    if (fieldValue !== inputValue) {
+      setInputValue(fieldValue || '');
+    }
+  }, [fieldValue]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    setInputValue(rawValue);
+
+    // Transform and store the transformed value
+    const transformedValue = transform(rawValue);
+    setValue(name, transformedValue, { shouldValidate: false });
+  }, [transform, setValue, name]);
+
+  return (
+    <Input
+      type={type}
+      value={inputValue}
+      onChange={handleChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      readOnly={readOnly}
+      required={required}
+    />
+  );
+}
+
+// Field linking is handled at the form level
 
 export function FormField<TEntity extends object>({ field }: { field: FieldConfig<TEntity> }) {
   const { register, formState, control } = useFormContext<Record<string, unknown>>();
@@ -58,6 +111,28 @@ export function FormField<TEntity extends object>({ field }: { field: FieldConfi
             <span className="text-xs text-muted-foreground">{field.helpText}</span>
           ) : null}
         </div>
+      ) : field.transform ? (
+        <TransformingInput
+          name={name}
+          type={
+            field.type === 'email'
+              ? 'email'
+              : field.type === 'number'
+                ? 'number'
+                : field.type === 'password'
+                  ? 'password'
+                  : field.type === 'date'
+                    ? 'date'
+                    : field.type === 'datetime'
+                      ? 'datetime-local'
+                      : 'text'
+          }
+          placeholder={field.placeholder}
+          disabled={field.disabled}
+          readOnly={field.readonly}
+          required={field.required}
+          transform={field.transform}
+        />
       ) : (
         <Input
           type={

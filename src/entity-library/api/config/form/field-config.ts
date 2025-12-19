@@ -14,6 +14,8 @@ export interface FieldConfig<TEntity extends object> {
   condition?: (formData: Partial<TEntity>) => boolean;
   options?: Array<{ label: string; value: string | number | boolean }>;
   relationshipConfig?: RelationshipFieldConfig;
+  /** Transform function for text input fields */
+  transform?: (value: string) => string;
 }
 
 export interface RelationshipFieldConfig {

@@ -27,7 +27,7 @@ const schema = z.object({
       }
     ),
   label: z.string().min(1, 'Label is required').max(100, 'Label must not exceed 100 characters'),
-  sortOrder: z.number().min(0, 'Sort order must be 0 or greater'),
+  sortOrder: z.number().min(0, 'Sort order must be 0 or greater').optional(),
   status: z.nativeEnum(SystemConfigAttributeOptionDTOStatus),
 });
 
@@ -71,7 +71,7 @@ export const systemConfigAttributeOptionBaseFields: Array<
 
   {
     field: 'code',
-    label: 'Code',
+    label: 'Attribute option',
     type: 'color',
     required: true,
     placeholder: 'e.g., #FF5733',
@@ -87,7 +87,7 @@ export const systemConfigAttributeOptionBaseFields: Array<
 
   {
     field: 'code',
-    label: 'Code',
+    label: 'Attribute option',
     type: 'text',
     required: true,
     placeholder: 'e.g., OPTION_A',
@@ -103,19 +103,12 @@ export const systemConfigAttributeOptionBaseFields: Array<
 
   {
     field: 'label',
-    label: 'Label',
+    label: 'Display Label',
     type: 'text',
     required: true,
     placeholder: 'e.g., Option A',
     helpText: 'Display label for this option.',
     colSpan: 2,
-  },
-  {
-    field: 'sortOrder',
-    label: 'Sort Order',
-    type: 'number',
-    required: true,
-    helpText: 'Lower numbers appear first.',
   },
   {
     field: 'status',
@@ -144,7 +137,6 @@ export const systemConfigAttributeOptionCreateFormConfig: Omit<
   fields: systemConfigAttributeOptionCreateFields,
   validationSchema,
   defaultValues: {
-    sortOrder: 0,
     status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
   } as Partial<SystemConfigAttributeOptionDTO>,
   submitButtonText: 'Create Attribute Option',

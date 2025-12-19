@@ -13,6 +13,7 @@ import {
   systemConfigAttributeEditFormConfig,
 } from './form.config';
 import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOStatus';
+import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
 
 export const systemConfigAttributeCreateFormPageConfig: EntityFormPageConfig<SystemConfigAttributeDTO> =
   {
@@ -26,7 +27,12 @@ export const systemConfigAttributeCreateFormPageConfig: EntityFormPageConfig<Sys
       return {
         mutateAsync: async (params: { data: Partial<SystemConfigAttributeDTO> }) =>
           mutation.mutateAsync({
-            data: { ...params.data, status: SystemConfigAttributeDTOStatus.ACTIVE } as SystemConfigAttributeDTO,
+            data: {
+              ...params.data,
+              status: SystemConfigAttributeDTOStatus.ACTIVE,
+              attributeType: SystemConfigAttributeDTOAttributeType.ENUM,
+              sortOrder: 0,
+            } as SystemConfigAttributeDTO,
           }),
       };
     },
@@ -49,7 +55,14 @@ export const systemConfigAttributeEditFormPageConfig: EntityFormPageConfig<Syste
 
       return {
         mutateAsync: async (params: { id: number; data: Partial<SystemConfigAttributeDTO> }) =>
-          mutation.mutateAsync({ id: params.id, data: params.data as SystemConfigAttributeDTO }),
+          mutation.mutateAsync({
+            id: params.id,
+            data: {
+              ...params.data,
+              attributeType: SystemConfigAttributeDTOAttributeType.ENUM,
+              sortOrder: 0,
+            } as SystemConfigAttributeDTO,
+          }),
       };
     },
     form: systemConfigAttributeEditFormConfig,

@@ -14,9 +14,11 @@ import { FormWizardStep } from './FormWizardStep';
 export function FormWizard<TEntity extends object>({
   config,
   onCancel,
+  children,
 }: {
   config: FormConfig<TEntity>;
   onCancel?: () => void;
+  children?: React.ReactNode;
 }) {
   const wizard = config.wizard;
 
@@ -58,6 +60,7 @@ export function FormWizard<TEntity extends object>({
 
   return (
     <FormProvider {...form}>
+      {children}
       <form onSubmit={onSubmit} className="space-y-4">
         <FormNavigation
           steps={visibleSteps}

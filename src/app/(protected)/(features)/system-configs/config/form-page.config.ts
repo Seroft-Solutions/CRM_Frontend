@@ -54,7 +54,10 @@ export const systemConfigEditFormPageConfig: EntityFormPageConfig<SystemConfigDT
       mutateAsync: async (params: { id: number; data: Partial<SystemConfigDTO> }) =>
         mutation.mutateAsync({
           id: params.id,
-          data: params.data as SystemConfigDTO,
+          data: {
+            ...params.data,
+            systemConfigType: SystemConfigDTOSystemConfigType.PRODUCT,
+          } as SystemConfigDTO,
         }),
     };
   },

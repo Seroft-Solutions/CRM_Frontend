@@ -13,6 +13,7 @@ import { useEntityMutations } from '../../hooks/useEntityMutations';
 export function EntityFormPageUpdate<TEntity extends object>({
   config,
   id,
+  children,
 }: {
   config: EntityFormPageConfig<TEntity> & {
     submitMode: 'update';
@@ -20,6 +21,7 @@ export function EntityFormPageUpdate<TEntity extends object>({
     useUpdate: NonNullable<EntityFormPageConfig<TEntity>['useUpdate']>;
   };
   id: number;
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   const { invalidateQueries } = useEntityMutations(config.queryKeyPrefix);
@@ -116,9 +118,13 @@ export function EntityFormPageUpdate<TEntity extends object>({
       </CardHeader>
       <CardContent>
         {formConfig.mode === 'wizard' ? (
-          <FormWizard<TEntity> config={formConfig} onCancel={onCancel} />
+          <FormWizard<TEntity> config={formConfig} onCancel={onCancel}>
+            {children}
+          </FormWizard>
         ) : (
-          <EntityForm<TEntity> config={formConfig} onCancel={onCancel} />
+          <EntityForm<TEntity> config={formConfig} onCancel={onCancel}>
+            {children}
+          </EntityForm>
         )}
       </CardContent>
     </Card>

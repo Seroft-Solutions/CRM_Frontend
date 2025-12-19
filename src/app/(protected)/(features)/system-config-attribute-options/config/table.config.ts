@@ -28,7 +28,7 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
     },
     {
       field: 'attribute',
-      header: 'Attribute',
+      header: 'Attribute Config',
       type: 'text',
       sortable: false,
       filterable: false,
@@ -69,17 +69,10 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
     },
     {
       field: 'label',
-      header: 'Option Label',
+      header: 'Display Label',
       type: 'text',
       sortable: true,
       filterable: true,
-    },
-    {
-      field: 'sortOrder',
-      header: 'Sort Order',
-      type: 'text',
-      sortable: true,
-      filterable: false,
     },
     {
       field: 'status',
@@ -105,7 +98,7 @@ export const systemConfigAttributeOptionTableConfig: TableConfig<SystemConfigAtt
     },
   ],
   defaultSort: {
-    field: 'sortOrder',
+    field: 'label',
     direction: 'asc',
   },
   pagination: {

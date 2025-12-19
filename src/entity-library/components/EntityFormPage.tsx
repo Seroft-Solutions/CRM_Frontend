@@ -10,9 +10,11 @@ import { EntityFormPageView } from './entity-form-page/EntityFormPageView';
 export function EntityFormPage<TEntity extends object>({
   config,
   id,
+  children,
 }: {
   config: EntityFormPageConfig<TEntity>;
   id?: number;
+  children?: React.ReactNode;
 }) {
   const title =
     config.title ??
@@ -42,7 +44,9 @@ export function EntityFormPage<TEntity extends object>({
           }
         }
         id={id}
-      />
+      >
+        {children}
+      </EntityFormPageView>
     );
   }
 
@@ -73,7 +77,9 @@ export function EntityFormPage<TEntity extends object>({
           }
         }
         id={id}
-      />
+      >
+        {children}
+      </EntityFormPageUpdate>
     );
   }
 
@@ -91,6 +97,8 @@ export function EntityFormPage<TEntity extends object>({
           useCreate: NonNullable<EntityFormPageConfig<TEntity>['useCreate']>;
         }
       }
-    />
+    >
+      {children}
+    </EntityFormPageCreate>
   );
 }

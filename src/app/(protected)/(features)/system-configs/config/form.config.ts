@@ -59,9 +59,14 @@ export const systemConfigBaseFields: Array<FieldConfig<SystemConfigDTO>> = [
   },
 ];
 
-// For create form, hide the Status field but keep it in defaults/validation
+// For create form, hide the Status and Config Type fields but keep them in defaults/validation
 const systemConfigCreateFields: Array<FieldConfig<SystemConfigDTO>> = systemConfigBaseFields.filter(
-  (f) => f.field !== 'status'
+  (f) => f.field !== 'status' && f.field !== 'systemConfigType'
+);
+
+// For edit form, hide the Config Type field but keep it in defaults/validation
+const systemConfigEditFields: Array<FieldConfig<SystemConfigDTO>> = systemConfigBaseFields.filter(
+  (f) => f.field !== 'systemConfigType'
 );
 
 export const systemConfigCreateFormConfig: Omit<
@@ -89,7 +94,7 @@ export const systemConfigEditFormConfig: Omit<
 > = {
   mode: 'edit',
   layout: 'two-column',
-  fields: systemConfigBaseFields,
+  fields: systemConfigEditFields,
   validationSchema: schema,
   submitButtonText: 'Update System Config',
   cancelButtonText: 'Cancel',

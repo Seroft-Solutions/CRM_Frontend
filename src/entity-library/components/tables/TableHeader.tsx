@@ -39,9 +39,9 @@ export function TableHeader<TEntity extends object>({
             <Checkbox checked={!!allSelected} onCheckedChange={() => onToggleAll?.()} />
           </UiTableHead>
         ) : null}
-        {cols.map((col) => (
+        {cols.map((col, index) => (
           <UiTableHead
-            key={String(col.field)}
+            key={`${String(col.field)}-${index}`}
             className="text-xs font-bold text-[oklch(0.45_0.06_243)]"
           >
             {col.sortable ? (

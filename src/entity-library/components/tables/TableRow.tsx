@@ -31,8 +31,8 @@ export function TableRow<TEntity extends object>({
           <Checkbox checked={!!selected} onCheckedChange={() => onToggle?.()} />
         </UiTableCell>
       ) : null}
-      {cols.map((col) => (
-        <UiTableCell key={String(col.field)} className="text-sm">
+      {cols.map((col, index) => (
+        <UiTableCell key={`${String(col.field)}-${index}`} className="text-sm">
           <TableCell column={col} row={row} />
         </UiTableCell>
       ))}

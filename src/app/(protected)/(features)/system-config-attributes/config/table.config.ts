@@ -15,27 +15,6 @@ export const systemConfigAttributeTableConfig: TableConfig<SystemConfigAttribute
       filterable: false,
     },
     {
-      field: 'label',
-      header: 'Attribute Name',
-      type: 'text',
-      sortable: true,
-      filterable: true,
-    },
-    {
-      field: 'name',
-      header: 'Attribute Key',
-      type: 'text',
-      sortable: true,
-      filterable: true,
-    },
-    {
-      field: 'attributeType',
-      header: 'Data Type',
-      type: 'text',
-      sortable: true,
-      filterable: true,
-    },
-    {
       field: 'systemConfig',
       header: 'System Config',
       type: 'text',
@@ -47,6 +26,20 @@ export const systemConfigAttributeTableConfig: TableConfig<SystemConfigAttribute
         // Backend returns minimal representation - use configKey or id
         return config?.configKey || (config?.id ? `ID: ${config.id}` : '-');
       },
+    },
+    {
+      field: 'name',
+      header: 'Attribute Key',
+      type: 'text',
+      sortable: true,
+      filterable: true,
+    },
+    {
+      field: 'label',
+      header: 'Display Label',
+      type: 'text',
+      sortable: true,
+      filterable: true,
     },
     {
       field: 'isRequired',

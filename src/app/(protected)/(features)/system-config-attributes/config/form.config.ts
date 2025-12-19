@@ -58,20 +58,24 @@ export const systemConfigAttributeBaseFields: Array<FieldConfig<SystemConfigAttr
   },
   {
     field: 'name',
-    label: 'Name',
+    label: 'Attribute Key',
     type: 'text',
     required: true,
     placeholder: 'e.g., max_items',
-    helpText: 'Internal name (lowercase, underscores allowed). Cannot be changed after creation.',
+    helpText: 'Internal name (lowercase, underscores allowed). Automatically converted to lowercase with underscores.',
     colSpan: 2,
+    transform: (value: string) => value
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, ''),
   },
   {
     field: 'label',
-    label: 'Label',
+    label: 'Display Label',
     type: 'text',
     required: true,
     placeholder: 'e.g., Maximum Items',
-    helpText: 'Display label for this attribute.',
+    helpText: 'Display label for this attribute. Auto-populated from Attribute Key.',
     colSpan: 2,
   },
   {
@@ -113,9 +117,14 @@ export const systemConfigAttributeBaseFields: Array<FieldConfig<SystemConfigAttr
   },
 ];
 
-// For create form, hide the Status field but keep default/validation
+// For create form, hide the Status, Attribute Type, and Sort Order fields but keep them in defaults/validation
 const systemConfigAttributeCreateFields: Array<FieldConfig<SystemConfigAttributeDTO>> =
-  systemConfigAttributeBaseFields.filter((f) => f.field !== 'status');
+  systemConfigAttributeBaseFields.filter((f) => f.field !== 'status' && f.field !== 'attributeType' && f.field !== 'sortOrder');
+
+// For edit form, hide the Attribute Type and Sort Order fields but keep them in defaults/validation
+const systemConfigAttributeEditFields: Array<FieldConfig<SystemConfigAttributeDTO>> = systemConfigAttributeBaseFields.filter(
+  (f) => f.field !== 'attributeType' && f.field !== 'sortOrder'
+);
 
 export const systemConfigAttributeCreateFormConfig: Omit<
   FormConfig<SystemConfigAttributeDTO>,
@@ -131,6 +140,20 @@ export const systemConfigAttributeCreateFormConfig: Omit<
     sortOrder: 0,
     status: SystemConfigAttributeDTOStatus.ACTIVE,
   } as Partial<SystemConfigAttributeDTO>,
+  fieldLinks: [
+    {
+      sourceField: 'name',
+      targetField: 'label',
+      transform: (nameValue: string) => {
+        if (!nameValue) return '';
+        return nameValue
+          .replace(/_+/g, ' ')
+          .replace(/\b\w/g, (l) => l.toUpperCase())
+          .trim();
+      },
+      onlyIfEmpty: true,
+    },
+  ],
   submitButtonText: 'Create Config Attribute',
   cancelButtonText: 'Cancel',
   showCancelButton: true,
@@ -143,7 +166,7 @@ export const systemConfigAttributeEditFormConfig: Omit<
 > = {
   mode: 'edit',
   layout: 'two-column',
-  fields: systemConfigAttributeBaseFields.map((f) =>
+  fields: systemConfigAttributeEditFields.map((f) =>
     f.field === 'systemConfig'
       ? { ...f, helpText: 'Parent system configuration.' }
       : f.field === 'name'
@@ -151,6 +174,20 @@ export const systemConfigAttributeEditFormConfig: Omit<
         : f
   ),
   validationSchema,
+  fieldLinks: [
+    {
+      sourceField: 'name',
+      targetField: 'label',
+      transform: (nameValue: string) => {
+        if (!nameValue) return '';
+        return nameValue
+          .replace(/_+/g, ' ')
+          .replace(/\b\w/g, (l) => l.toUpperCase())
+          .trim();
+      },
+      onlyIfEmpty: true,
+    },
+  ],
   submitButtonText: 'Update Config Attribute',
   cancelButtonText: 'Cancel',
   showCancelButton: true,
