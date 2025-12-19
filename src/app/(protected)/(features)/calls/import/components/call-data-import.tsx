@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useDownloadImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
+import { useDownloadImportTemplate1 as useDownloadImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
 import { callImportConfig } from '../config';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImportProgress } from './import-progress';
