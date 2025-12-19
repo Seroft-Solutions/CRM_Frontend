@@ -888,38 +888,21 @@ export function CallTable() {
 
   const filterParams = buildFilterParams();
 
-  const { data, isLoading, refetch } = searchTerm
-    ? useSearchCalls(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
-    : useGetAllCalls(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllCalls(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+        staleTime: 0,
+        refetchOnWindowFocus: true,
+      },
+    }
+  );
 
   const handleRefresh = useCallback(async () => {
     try {
