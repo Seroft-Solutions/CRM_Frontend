@@ -129,27 +129,26 @@ export default function ImportResultsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Professional Header */}
-      <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-          }}
-        ></div>
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
-              <CheckCircle className="h-5 w-5 text-white" />
+      {/* Modern Centered Header */}
+      <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
+        <div className="flex items-center justify-center">
+          {/* Left Section: Icon and Title */}
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
+              <CheckCircle className="w-4 h-4 text-sidebar-accent-foreground" />
             </div>
 
-            <div className="text-white">
-              <h1 className="text-2xl font-bold">Import Results</h1>
-              <p className="text-blue-100">Review your bulk upload summary</p>
+            <div>
+              <h1 className="text-xl font-semibold text-sidebar-foreground">Import Results</h1>
+              <p className="text-sm text-sidebar-foreground/80">Review your bulk upload summary</p>
             </div>
           </div>
+
+          {/* Center Section: Empty for balance */}
+          <div className="flex-1"></div>
+
+          {/* Right Section: Spacer for balance */}
+          <div className="flex-1"></div>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowDownToLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InlinePermissionGuard } from '@/core/auth';
 import { OrderTable } from './order-table';
@@ -10,55 +10,38 @@ import { mockOrders } from '../data/mock-orders';
 export function OrdersPage() {
   return (
     <div className="space-y-4">
-      <div className="feature-header bg-[oklch(0.45_0.06_243)] relative overflow-hidden rounded-lg p-6 shadow-lg">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-          }}
-        ></div>
-
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="feature-header-icon w-10 h-10 rounded-lg flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 7l9 4 9-4m-9 13V11"
-                />
-              </svg>
+      {/* Modern Centered Header with Sidebar Theme */}
+      <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
+        <div className="flex items-center justify-center">
+          {/* Left Section: Icon and Title */}
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
+              <ArrowDownToLine className="w-4 h-4 text-sidebar-accent-foreground" />
             </div>
-
-            <div className="text-white">
-              <h1 className="text-2xl font-bold">Order Management</h1>
-              <p className="text-blue-100">
-                Track orders, line items, fulfillment, and address details.
-              </p>
+            <div>
+              <h1 className="text-xl font-semibold text-sidebar-foreground">Orders</h1>
+              <p className="text-sm text-sidebar-foreground/80">Track orders and fulfillment</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Center Section: Prominent New Order Button */}
+          <div className="flex-1 flex justify-center">
             <InlinePermissionGuard requiredPermission="order:create">
               <Button
                 asChild
                 size="sm"
-                className="h-10 gap-2 bg-yellow-400 px-6 text-sm font-semibold text-black shadow-md hover:bg-yellow-500"
+                className="h-10 gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90 hover:scale-105 text-sm font-semibold px-6 shadow-md transition-all duration-200 border-2 border-sidebar-accent/20"
               >
                 <Link href="/orders/new">
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Create</span>
+                  <span className="hidden sm:inline">New Order</span>
                 </Link>
               </Button>
             </InlinePermissionGuard>
           </div>
+
+          {/* Right Section: Spacer for balance */}
+          <div className="flex-1"></div>
         </div>
       </div>
 
