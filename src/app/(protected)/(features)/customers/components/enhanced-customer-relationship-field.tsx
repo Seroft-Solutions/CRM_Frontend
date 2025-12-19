@@ -72,7 +72,8 @@ export function EnhancedCustomerRelationshipField({
     ...customFilters,
   });
 
-  const { data: searchResponse, isLoading: isSearching } = useGetAllCustomers(
+  // Search by customer business name
+  const { data: searchResponseByName, isLoading: isSearchingByName } = useGetAllCustomers(
     {
       'customerBusinessName.contains': deferredSearchQuery,
       page: 0,
@@ -82,10 +83,58 @@ export function EnhancedCustomerRelationshipField({
     {
       query: {
         enabled: deferredSearchQuery.length > 1,
-        queryKey: ['search-customers-enhanced', deferredSearchQuery, customFilters],
+        queryKey: ['search-customers-by-name', deferredSearchQuery, customFilters],
       },
     }
   );
+
+  // Search by mobile number
+  const { data: searchResponseByMobile, isLoading: isSearchingByMobile } = useGetAllCustomers(
+    {
+      'mobile.contains': deferredSearchQuery,
+      page: 0,
+      size: 50,
+      ...customFilters,
+    },
+    {
+      query: {
+        enabled: deferredSearchQuery.length > 1,
+        queryKey: ['search-customers-by-mobile', deferredSearchQuery, customFilters],
+      },
+    }
+  );
+
+  // Combine search results and remove duplicates
+  const searchResponse = React.useMemo(() => {
+    if (!searchResponseByName && !searchResponseByMobile) return undefined;
+
+    const combinedResults: CustomerDTO[] = [];
+    const seenIds = new Set<number>();
+
+    // Add results from name search
+    if (searchResponseByName) {
+      searchResponseByName.forEach(customer => {
+        if (customer.id && !seenIds.has(customer.id)) {
+          combinedResults.push(customer);
+          seenIds.add(customer.id);
+        }
+      });
+    }
+
+    // Add results from mobile search (will skip duplicates)
+    if (searchResponseByMobile) {
+      searchResponseByMobile.forEach(customer => {
+        if (customer.id && !seenIds.has(customer.id)) {
+          combinedResults.push(customer);
+          seenIds.add(customer.id);
+        }
+      });
+    }
+
+    return combinedResults;
+  }, [searchResponseByName, searchResponseByMobile]);
+
+  const isSearching = isSearchingByName || isSearchingByMobile;
 
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
     const baseOptions =
@@ -209,13 +258,17 @@ export function EnhancedCustomerRelationshipField({
       if (selected.length === 0) return placeholder;
       if (selected.length === 1) {
         const customer = selected[0];
-        return customer.customerBusinessName || `Customer #${customer.id}`;
+        const businessName = customer.customerBusinessName || `Customer #${customer.id}`;
+        const phone = customer.mobile ? ` (${customer.mobile})` : '';
+        return `${businessName}${phone}`;
       }
       return `${selected.length} customers selected`;
     } else {
       const selected = getSelectedOption();
       if (selected) {
-        return selected.customerBusinessName || `Customer #${selected.id}`;
+        const businessName = selected.customerBusinessName || `Customer #${selected.id}`;
+        const phone = selected.mobile ? ` (${selected.mobile})` : '';
+        return `${businessName}${phone}`;
       }
       return placeholder;
     }
@@ -270,7 +323,7 @@ export function EnhancedCustomerRelationshipField({
           <PopoverContent className="w-[400px] p-0" align="start">
             <Command shouldFilter={false}>
               <CommandInput
-                placeholder="Search customers..."
+                placeholder="Search by customer name or mobile number..."
                 value={searchQuery}
                 onValueChange={setSearchQuery}
                 className="h-9"
@@ -308,6 +361,7 @@ export function EnhancedCustomerRelationshipField({
                       >
                         <div className="flex-1">
                           <div className="font-medium">{option.customerBusinessName}</div>
+                          <div className="text-sm text-muted-foreground">{option.mobile}</div>
                         </div>
                         {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </CommandItem>
