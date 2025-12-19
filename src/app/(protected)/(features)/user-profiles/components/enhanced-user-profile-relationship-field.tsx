@@ -63,33 +63,83 @@ export function EnhancedUserProfileRelationshipField({
     ...customFilters,
   });
 
-  // For search, we use client-side filtering on the full dataset for better UX
-  // This avoids the restrictive AND logic of server-side search
-  const searchFilteredOptions = useMemo(() => {
-    if (!userProfilesResponse || deferredSearchQuery.length === 0) return userProfilesResponse || [];
+  // Server-side search using individual field queries (OR logic through multiple calls)
+  const { data: firstNameResponse, isLoading: isSearchingFirstName } = useGetAllUserProfiles(
+    {
+      'firstName.contains': deferredSearchQuery,
+      page: 0,
+      size: 50,
+      ...customFilters,
+    },
+    {
+      query: {
+        enabled: deferredSearchQuery.length > 0,
+        queryKey: ['search-user-profiles-firstname', deferredSearchQuery, customFilters],
+      },
+    }
+  );
 
-    const query = deferredSearchQuery.toLowerCase();
-    return (userProfilesResponse || []).filter(user =>
-      user.firstName?.toLowerCase().includes(query) ||
-      user.lastName?.toLowerCase().includes(query) ||
-      user.email?.toLowerCase().includes(query) ||
-      user.displayName?.toLowerCase().includes(query)
+  const { data: lastNameResponse, isLoading: isSearchingLastName } = useGetAllUserProfiles(
+    {
+      'lastName.contains': deferredSearchQuery,
+      page: 0,
+      size: 50,
+      ...customFilters,
+    },
+    {
+      query: {
+        enabled: deferredSearchQuery.length > 0,
+        queryKey: ['search-user-profiles-lastname', deferredSearchQuery, customFilters],
+      },
+    }
+  );
+
+  const { data: emailResponse, isLoading: isSearchingEmail } = useGetAllUserProfiles(
+    {
+      'email.contains': deferredSearchQuery,
+      page: 0,
+      size: 50,
+      ...customFilters,
+    },
+    {
+      query: {
+        enabled: deferredSearchQuery.length > 0,
+        queryKey: ['search-user-profiles-email', deferredSearchQuery, customFilters],
+      },
+    }
+  );
+
+  // Combine and deduplicate search results from all fields
+  const searchResults = useMemo(() => {
+    if (deferredSearchQuery.length === 0) return [];
+
+    const allResults = [
+      ...(firstNameResponse || []),
+      ...(lastNameResponse || []),
+      ...(emailResponse || [])
+    ];
+
+    // Remove duplicates by ID
+    const uniqueResults = allResults.filter((user, index, self) =>
+      index === self.findIndex(u => u.id === user.id)
     );
-  }, [userProfilesResponse, deferredSearchQuery]);
 
-  // Available options - use client-side filtering for search
+    return uniqueResults;
+  }, [firstNameResponse, lastNameResponse, emailResponse, deferredSearchQuery]);
+
+  // Available options - use search results when searching, otherwise use all users
   const availableOptions = useMemo(() => {
     const isSearching = deferredSearchQuery.length > 0;
     if (isSearching) {
-      // When searching, use client-side filtered results
-      return searchFilteredOptions;
+      // When searching, use combined server-side search results
+      return searchResults;
     }
     // When not searching, use all server results
     return userProfilesResponse || [];
-  }, [userProfilesResponse, searchFilteredOptions, deferredSearchQuery]);
+  }, [userProfilesResponse, searchResults, deferredSearchQuery]);
 
-  // Loading and error states
-  const isLoading = isLoadingUserProfiles;
+  // Loading and error states (include main query and all search queries)
+  const isLoading = isLoadingUserProfiles || isSearchingFirstName || isSearchingLastName || isSearchingEmail;
   const error = userProfilesError;
 
   const getSelectedOptions = (): UserProfileDTO[] => {
