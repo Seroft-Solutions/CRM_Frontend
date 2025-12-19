@@ -7,6 +7,7 @@ import {
   useGetAllProductVariants,
   useCreateProductVariant,
   useUpdateProductVariant,
+  useDeleteProductVariant,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import {
   useCreateProductVariantSelection,
@@ -19,7 +20,7 @@ import { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { ProductVariantSelectionDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 import { DraftVariantRow, ExistingVariantRow, VariantSelection } from './types';
 import { NoVariantConfigPlaceholder } from './NoVariantConfigPlaceholder';
@@ -60,13 +61,11 @@ export function ProductVariantManager({
   const [isSavingDrafts, setIsSavingDrafts] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
-  const [statusFilter, setStatusFilter] = useState<ProductVariantDTOStatus>(ProductVariantDTOStatus.ACTIVE);
   const PAGE_SIZE = 10;
 
   // #region Data Fetching
   const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants({
     'productId.equals': productId,
-    'status.equals': statusFilter,
     size: 1000,
     sort: ['sku,asc'],
   });
@@ -74,7 +73,7 @@ export function ProductVariantManager({
   useEffect(() => {
     setCurrentPage(1);
     setEditingRowData(null);
-  }, [statusFilter]);
+  }, []);
 
   const { data: variantConfig } = useGetSystemConfig(variantConfigId!, {
     query: { enabled: !!variantConfigId },
@@ -467,6 +466,7 @@ export function ProductVariantManager({
   const createVariantMutation = useCreateProductVariant();
   const createSelectionMutation = useCreateProductVariantSelection();
   const updateVariantMutation = useUpdateProductVariant();
+  const deleteVariantMutation = useDeleteProductVariant();
 
   const invalidateVariantQueries = () => {
     return queryClient.invalidateQueries({
@@ -510,27 +510,18 @@ export function ProductVariantManager({
     );
   };
 
-  const handleArchiveRow = (row: ExistingVariantRow) => {
-    const payload = {
-      id: row.id,
-      sku: row.sku,
-      price: row.price,
-      stockQuantity: row.stockQuantity,
-      status: ProductVariantDTOStatus.ARCHIVED,
-      product: { id: productId },
-    };
+  const handleDeleteRow = (row: ExistingVariantRow) => {
     toast.promise(
-      updateVariantMutation.mutateAsync({
+      deleteVariantMutation.mutateAsync({
         id: row.id,
-        data: payload as any,
       }),
       {
-        loading: 'Archiving variant...',
+        loading: 'Deleting variant...',
         success: async () => {
           await invalidateVariantQueries();
-          return 'Variant archived.';
+          return 'Variant deleted successfully.';
         },
-        error: (err) => `Failed to archive: ${err.message}`,
+        error: (err) => `Failed to delete: ${err.message}`,
       }
     );
   };
@@ -621,22 +612,37 @@ export function ProductVariantManager({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">Product Variants</h2>
-          <p className="text-sm text-muted-foreground">
-            Configuration: {variantConfig?.configKey || 'Loading...'}
-          </p>
-          {isLoadingAttributes && (
-            <p className="text-sm text-muted-foreground mt-1">Loading attributes...</p>
-          )}
-          {!isLoadingAttributes && configAttributes && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {configAttributes.length} attribute{configAttributes.length !== 1 ? 's' : ''} configured
+      <div className="flex items-center justify-between p-6 rounded-xl border-2 border-primary/10 bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm shadow-lg">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center shadow-sm">
+              <span className="text-lg">🏷️</span>
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Product Variants</h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted-foreground font-medium">
+              Configuration: {variantConfig?.configKey || (
+                <span className="inline-flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  Loading...
+                </span>
+              )}
             </p>
-          )}
+            {isLoadingAttributes && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                Loading attributes...
+              </div>
+            )}
+            {!isLoadingAttributes && configAttributes && (
+              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
+                {configAttributes.length} attribute{configAttributes.length !== 1 ? 's' : ''} configured
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
@@ -655,15 +661,7 @@ export function ProductVariantManager({
         disabledOptionIds={precomputeDisabledOptionIds}
       />
 
-      <div className="space-y-2">
-        <Tabs value={statusFilter} onValueChange={(value) => setStatusFilter(value as ProductVariantDTOStatus)}>
-          <TabsList>
-            <TabsTrigger value={ProductVariantDTOStatus.ACTIVE}>Active</TabsTrigger>
-            <TabsTrigger value={ProductVariantDTOStatus.INACTIVE}>Inactive</TabsTrigger>
-            <TabsTrigger value={ProductVariantDTOStatus.ARCHIVED}>Archived</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <VariantsTable
+      <VariantsTable
           rows={paginatedRows}
           existingVariantRows={existingVariantRows}
           draftVariants={draftVariants}
@@ -678,10 +676,9 @@ export function ProductVariantManager({
           onUpdateEditingRow={handleUpdateEditingRow}
           onSaveExisting={handleSaveExisting}
           onCancelEdit={() => setEditingRowData(null)}
-          onArchiveRow={handleArchiveRow}
+          onDeleteRow={handleDeleteRow}
           isLoading={isLoadingVariants || isLoadingSelections}
         />
-      </div>
     </div>
   );
 }

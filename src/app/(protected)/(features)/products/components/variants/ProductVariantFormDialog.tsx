@@ -264,75 +264,114 @@ export function ProductVariantFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit' : 'Add'} Variant</DialogTitle>
-          <DialogDescription>
-            {isEdit ? 'Update the variant details' : `Create a new variant for ${productName}`}
-          </DialogDescription>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-background to-background/95 border-2 border-primary/10 shadow-2xl">
+        <DialogHeader className="space-y-3 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center shadow-sm">
+              {isEdit ? (
+                <span className="text-lg">✏️</span>
+              ) : (
+                <span className="text-lg">➕</span>
+              )}
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold">{isEdit ? 'Edit' : 'Add'} Variant</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1">
+                {isEdit ? 'Update the variant details below' : `Create a new variant for ${productName}`}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU *</Label>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="sku" className="text-sm font-semibold text-foreground">
+                  SKU <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="sku"
                   placeholder="e.g., PROD-001-S-RED"
+                  className="h-11 border-2 border-border/50 focus:border-primary/50 transition-colors"
                   {...form.register('sku')}
                 />
                 {form.formState.errors.sku && (
-                  <p className="text-sm text-red-600">{form.formState.errors.sku.message}</p>
+                  <p className="text-sm text-red-600 font-medium bg-red-50 px-3 py-2 rounded-md border border-red-200">
+                    {form.formState.errors.sku.message}
+                  </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="price">Price</Label>
+              <div className="space-y-3">
+                <Label htmlFor="price" className="text-sm font-semibold text-foreground">Price</Label>
                 <Input
                   id="price"
                   type="number"
                   step="0.01"
                   placeholder="0.00"
+                  className="h-11 border-2 border-border/50 focus:border-primary/50 transition-colors"
                   {...form.register('price', { valueAsNumber: true })}
                 />
                 {form.formState.errors.price && (
-                  <p className="text-sm text-red-600">{form.formState.errors.price.message}</p>
+                  <p className="text-sm text-red-600 font-medium bg-red-50 px-3 py-2 rounded-md border border-red-200">
+                    {form.formState.errors.price.message}
+                  </p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="stockQuantity">Stock Quantity *</Label>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="stockQuantity" className="text-sm font-semibold text-foreground">
+                  Stock Quantity <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="stockQuantity"
                   type="number"
                   min="0"
+                  className="h-11 border-2 border-border/50 focus:border-primary/50 transition-colors"
                   {...form.register('stockQuantity', { valueAsNumber: true })}
                 />
                 {form.formState.errors.stockQuantity && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-red-600 font-medium bg-red-50 px-3 py-2 rounded-md border border-red-200">
                     {form.formState.errors.stockQuantity.message}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="status">Status *</Label>
+              <div className="space-y-3">
+                <Label htmlFor="status" className="text-sm font-semibold text-foreground">
+                  Status <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={form.watch('status')}
                   onValueChange={(value) =>
                     form.setValue('status', value as ProductVariantDTOStatus)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11 border-2 border-border/50 focus:border-primary/50 transition-colors">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={ProductVariantDTOStatus.ACTIVE}>Active</SelectItem>
-                    <SelectItem value={ProductVariantDTOStatus.INACTIVE}>Inactive</SelectItem>
-                    <SelectItem value={ProductVariantDTOStatus.ARCHIVED}>Archived</SelectItem>
+                    <SelectItem value={ProductVariantDTOStatus.ACTIVE}>
+                      <span className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Active
+                      </span>
+                    </SelectItem>
+                    <SelectItem value={ProductVariantDTOStatus.INACTIVE}>
+                      <span className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                        Inactive
+                      </span>
+                    </SelectItem>
+                    <SelectItem value={ProductVariantDTOStatus.ARCHIVED}>
+                      <span className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        Archived
+                      </span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -340,9 +379,14 @@ export function ProductVariantFormDialog({
           </div>
 
           {configAttributes.length > 0 && (
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-semibold mb-3">Variant Attributes</h3>
-              <div className="space-y-3">
+            <div className="border-t-2 border-border/50 pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+                  <span className="text-xs font-bold text-primary">🏷️</span>
+                </div>
+                <h3 className="text-base font-bold text-foreground">Variant Attributes</h3>
+              </div>
+              <div className="space-y-4">
                 {configAttributes.map((attr) => (
                   <AttributeInput
                     key={attr.id}
@@ -357,12 +401,22 @@ export function ProductVariantFormDialog({
             </div>
           )}
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+          <DialogFooter className="border-t-2 border-border/50 pt-6 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-6 h-11 font-semibold hover:bg-muted/80 transition-colors"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-6 h-11 font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               {isEdit ? 'Update' : 'Create'} Variant
             </Button>
           </DialogFooter>
@@ -390,10 +444,10 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
 
   if (attribute.attributeType === SystemConfigAttributeDTOAttributeType.ENUM) {
     return (
-      <div className="space-y-2">
-        <Label>
+      <div className="space-y-3 p-4 rounded-lg border-2 border-border/30 bg-card/50">
+        <Label className="text-sm font-semibold text-foreground">
           {attribute.label}
-          {attribute.isRequired && <span className="text-red-600 ml-1">*</span>}
+          {attribute.isRequired && <span className="text-red-500 ml-1">*</span>}
         </Label>
         <Select
           value={value?.optionId?.toString() || ''}
@@ -405,7 +459,7 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
           }
           disabled={isLoadingOptions || !options || options.length === 0}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-11 border-2 border-border/50 focus:border-primary/50 transition-colors">
             <SelectValue
               placeholder={
                 isLoadingOptions
@@ -419,14 +473,17 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
           <SelectContent>
             {options?.map((option) => (
               <SelectItem key={option.id} value={option.id!.toString()}>
-                {option.label}
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-primary/60"></div>
+                  {option.label}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         {!isLoadingOptions && (!options || options.length === 0) && (
-          <p className="text-sm text-amber-600">
-            No options configured for this attribute. Please add options in System Config Attribute Options.
+          <p className="text-sm text-amber-700 font-medium bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+            ⚠️ No options configured for this attribute. Please add options in System Config Attribute Options.
           </p>
         )}
       </div>
@@ -437,10 +494,10 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
     attribute.attributeType === SystemConfigAttributeDTOAttributeType.NUMBER ? 'number' : 'text';
 
   return (
-    <div className="space-y-2">
-      <Label>
+    <div className="space-y-3 p-4 rounded-lg border-2 border-border/30 bg-card/50">
+      <Label className="text-sm font-semibold text-foreground">
         {attribute.label}
-        {attribute.isRequired && <span className="text-red-600 ml-1">*</span>}
+        {attribute.isRequired && <span className="text-red-500 ml-1">*</span>}
       </Label>
       <Input
         type={inputType}
@@ -452,6 +509,7 @@ function AttributeInput({ attribute, value, onChange }: AttributeInputProps) {
           })
         }
         placeholder={`Enter ${attribute.label}`}
+        className="h-11 border-2 border-border/50 focus:border-primary/50 transition-colors"
       />
     </div>
   );

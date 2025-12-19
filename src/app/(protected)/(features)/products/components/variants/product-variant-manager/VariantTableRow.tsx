@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TableCell, TableRow } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { Pencil, Save, Trash2, X } from 'lucide-react';
@@ -22,7 +31,7 @@ interface VariantTableRowProps {
   onUpdateEditingRow: (updatedValues: Partial<ExistingVariantRow>) => void;
   onSaveExisting: () => void;
   onCancelEdit: () => void;
-  onArchiveRow: (row: ExistingVariantRow) => void;
+  onDeleteRow: (row: ExistingVariantRow) => void;
 }
 
 /**
@@ -41,11 +50,21 @@ export function VariantTableRow({
   onUpdateEditingRow,
   onSaveExisting,
   onCancelEdit,
-  onArchiveRow,
+  onDeleteRow,
 }: VariantTableRowProps) {
   const isDraft = item.kind === 'draft';
   const { row } = item;
   const isEditing = !isDraft && editingRowData?.id === row.id;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDeleteRow(row as ExistingVariantRow);
+    setShowDeleteDialog(false);
+  };
 
   const getRowData = () => {
     if (isEditing) return editingRowData!;
@@ -80,103 +99,231 @@ export function VariantTableRow({
   };
 
   return (
-    <TableRow
-      key={item.rowKey}
-      className={
-        isEditing
-          ? 'bg-yellow-50/50'
-          : isDraft
-          ? 'bg-blue-50/50 hover:bg-blue-50/70'
-          : 'hover:bg-muted/30'
-      }
-    >
-      {/* Attribute Columns */}
-      {visibleEnumAttributes.map((attr) => (
-        <TableCell key={`${item.rowKey}-${attr.id}`} className="py-3">
-          {row.selections.find((s) => s.attributeId === attr.id) ? (
-            <Badge variant="secondary" className="bg-sidebar-accent text-sidebar-accent-foreground border-transparent font-normal">
-              {row.selections.find((s) => s.attributeId === attr.id)?.optionLabel}
-            </Badge>
+    <>
+      <TableRow
+        key={item.rowKey}
+        className={`group transition-all duration-200 ${
+          isEditing
+            ? 'bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-yellow-50/60 border-l-4 border-l-amber-400 shadow-sm'
+            : isDraft
+            ? 'bg-gradient-to-r from-blue-50/40 to-indigo-50/30 hover:from-blue-100/50 hover:to-indigo-100/40 border-l-4 border-l-blue-400 hover:shadow-md'
+            : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm'
+        }`}
+      >
+        {/* Attribute Columns */}
+        {visibleEnumAttributes.map((attr) => (
+          <TableCell key={`${item.rowKey}-${attr.id}`} className="py-2">
+            {row.selections.find((s) => s.attributeId === attr.id) ? (
+              <Badge
+                variant="secondary"
+                className="bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
+              >
+                {row.selections.find((s) => s.attributeId === attr.id)?.optionLabel}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground text-sm font-medium">—</span>
+            )}
+          </TableCell>
+        ))}
+
+        {/* SKU Column */}
+        <TableCell className="py-2">
+          {isDraft ? (
+            <div className="space-y-1">
+              <Input
+                className="h-8 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
+                value={row.sku}
+                onChange={(e) => onUpdateDraft(row.key, { sku: e.target.value })}
+              />
+              {existingSkus.has(row.sku) && (
+                <p className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded border border-red-200">
+                  ⚠️ Duplicate SKU
+                </p>
+              )}
+            </div>
+          ) : isEditing ? (
+            <Input
+              className="h-8 border-2 border-amber-200 focus:border-amber-400 bg-amber-50/50 transition-colors text-sm"
+              value={data.sku}
+              onChange={(e) => onUpdateEditingRow({ sku: e.target.value })}
+            />
           ) : (
-            <span className="text-muted-foreground text-sm">—</span>
+            <div className="flex items-center gap-2">
+              <code className="font-bold bg-gradient-to-r from-primary/10 to-primary/20 text-primary px-2 py-1 rounded text-sm border border-primary/20 shadow-sm inline-block">
+                {row.sku}
+              </code>
+            </div>
           )}
         </TableCell>
-      ))}
 
-      {/* SKU Column */}
-      <TableCell className="py-3">
-        {isDraft ? (
-          <div className="space-y-1">
-            <Input className="h-9" value={row.sku} onChange={(e) => onUpdateDraft(row.key, { sku: e.target.value })} />
-            {existingSkus.has(row.sku) && <p className="text-xs text-red-600">Duplicate SKU</p>}
-          </div>
-        ) : isEditing ? (
-          <Input className="h-9" value={data.sku} onChange={(e) => onUpdateEditingRow({ sku: e.target.value })} />
-        ) : (
-          <div className="flex items-center gap-2">
-            <code className="text-sm font-medium bg-muted px-2 py-1 rounded">{row.sku}</code>
-          </div>
-        )}
-      </TableCell>
-
-      {/* Price & Stock Columns */}
-      <TableCell className="py-3">
-        <Input
-          className="h-9" type="number" step="0.01"
-          placeholder={isDraft || isEditing ? 'Price' : ''}
-          value={data.price ?? ''}
-          disabled={!isDraft && !isEditing}
-          onChange={handlePriceChange}
-        />
-      </TableCell>
-      <TableCell className="py-3">
-        <Input
-          className="h-9" type="number" min="0"
-          placeholder={isDraft || isEditing ? 'Quantity' : ''}
-          value={data.stockQuantity}
-          disabled={!isDraft && !isEditing}
-          onChange={handleStockChange}
-        />
-      </TableCell>
-
-      {/* Status Column */}
-      <TableCell className="py-3">
-        <Select value={data.status} disabled={!isDraft && !isEditing} onValueChange={handleStatusChange}>
-          <SelectTrigger className="h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ProductVariantDTOStatus.ACTIVE}>Active</SelectItem>
-            <SelectItem value={ProductVariantDTOStatus.INACTIVE}>Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      </TableCell>
-      
-      {/* Actions Column */}
-      <TableCell className="py-3 text-right">
-        <div className="flex items-center justify-end gap-1">
-          {!isDraft && !isEditing && (
-            <>
-              <Button variant="ghost" size="icon" onClick={() => onEditRow(row as ExistingVariantRow)}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => onArchiveRow(row as ExistingVariantRow)}>
-                <Trash2 className="h-4 w-4 text-red-500" />
-              </Button>
-            </>
+        {/* Price & Stock Columns */}
+        <TableCell className="py-2">
+          {isDraft || isEditing ? (
+            <Input
+              className={`h-8 border-2 transition-colors text-sm ${
+                isDraft
+                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+              }`}
+              type="number"
+              step="0.01"
+              placeholder="Price"
+              value={data.price ?? ''}
+              onChange={handlePriceChange}
+            />
+          ) : (
+            <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 text-sm">
+              {data.price?.toFixed(2) ?? '—'}
+            </span>
           )}
-          {isEditing && (
-            <>
-              <Button variant="ghost" size="icon" onClick={onSaveExisting}>
-                <Save className="h-4 w-4 text-green-600" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={onCancelEdit}>
-                <X className="h-4 w-4" />
-              </Button>
-            </>
+        </TableCell>
+        <TableCell className="py-2">
+          {isDraft || isEditing ? (
+            <Input
+              className={`h-8 border-2 transition-colors text-sm ${
+                isDraft
+                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+              }`}
+              type="number"
+              min="0"
+              placeholder="Quantity"
+              value={data.stockQuantity}
+              onChange={handleStockChange}
+            />
+          ) : (
+            <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200 text-sm">
+              {data.stockQuantity}
+            </span>
           )}
-        </div>
-      </TableCell>
-    </TableRow>
+        </TableCell>
+
+        {/* Status Column */}
+        <TableCell className="py-2">
+          {isDraft || isEditing ? (
+            <Select value={data.status} onValueChange={handleStatusChange}>
+              <SelectTrigger className={`h-8 border-2 transition-colors text-sm ${
+                isDraft
+                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+              }`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ProductVariantDTOStatus.ACTIVE}>
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Active
+                  </span>
+                </SelectItem>
+                <SelectItem value={ProductVariantDTOStatus.INACTIVE}>
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    Inactive
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <Badge
+              className={`font-medium px-2 py-0.5 text-xs ${
+                data.status === ProductVariantDTOStatus.ACTIVE
+                  ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+              }`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full mr-1 inline-block ${
+                data.status === ProductVariantDTOStatus.ACTIVE ? 'bg-green-500' : 'bg-gray-500'
+              }`}></div>
+              {data.status === ProductVariantDTOStatus.ACTIVE ? 'Active' : 'Inactive'}
+            </Badge>
+          )}
+        </TableCell>
+
+        {/* Actions Column */}
+        <TableCell className="py-2 text-right">
+          <div className="flex items-center justify-end gap-1">
+            {!isDraft && !isEditing && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditRow(row as ExistingVariantRow)}
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                  title="Edit variant"
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDeleteClick}
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                  title="Delete variant"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+            {isEditing && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSaveExisting}
+                  className="text-muted-foreground hover:text-green-700 hover:bg-green-100 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                  title="Save changes"
+                >
+                  <Save className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCancelEdit}
+                  className="text-muted-foreground hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                  title="Cancel editing"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-red-500">⚠️</span>
+              Delete Variant
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              Are you sure you want to delete the variant <strong>"{row.sku}"</strong>?
+              <br />
+              <span className="text-red-600 font-medium mt-2 block">
+                This action cannot be undone and will permanently remove the variant.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              className="px-4"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              className="px-4 bg-red-600 hover:bg-red-700"
+            >
+              Delete Variant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

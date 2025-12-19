@@ -67,7 +67,7 @@ export function VariantGenerator({
   disabledOptionIds,
 }: VariantGeneratorProps) {
   return (
-    <div className="rounded-md border bg-muted/20 p-4 space-y-4">
+    <div className="rounded-xl border-2 border-primary/10 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm p-6 space-y-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <VariantGeneratorHeader
         draftVariantsCount={draftVariantsCount}
         missingRequiredCount={missingRequiredEnumAttributes.length}
@@ -77,9 +77,10 @@ export function VariantGenerator({
       />
 
       {missingRequiredEnumAttributes.length > 0 && (
-        <Alert>
-          <AlertDescription>
-            Missing required selections: {missingRequiredEnumAttributes
+        <Alert className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-l-amber-400">
+          <AlertDescription className="text-amber-800 font-medium">
+            <span className="font-semibold">Required selections missing:</span>{' '}
+            {missingRequiredEnumAttributes
               .map((a) => a.label ?? a.name)
               .join(', ')}
           </AlertDescription>
@@ -87,19 +88,30 @@ export function VariantGenerator({
       )}
 
       {isLoadingSelections && (
-        <Alert>
-          <AlertDescription>
-            Loading existing variant selections… duplicate prevention by attribute options will run once loading finishes.
+        <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-l-blue-400">
+          <AlertDescription className="text-blue-800 font-medium">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+              Loading existing variant selections… duplicate prevention will activate once complete.
+            </div>
           </AlertDescription>
         </Alert>
       )}
 
       {visibleEnumAttributes.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No ENUM attributes found for this configuration.
-        </p>
+        <div className="text-center py-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-2xl">📋</span>
+          </div>
+          <p className="text-sm text-muted-foreground font-medium">
+            No ENUM attributes found for this configuration.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Add ENUM-type attributes to enable variant generation.
+          </p>
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {visibleEnumAttributes.map((attr) => {
             const attributeId = attr.id!;
             const options = enumAttributeOptions.find((x) => x.attribute.id === attributeId)?.options ?? [];
@@ -119,9 +131,19 @@ export function VariantGenerator({
       )}
 
       {visibleEnumAttributes.length > 0 && !isLoadingOptions && missingRequiredEnumAttributes.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          Tip: You can select options for only one attribute to generate partial variants.
-        </p>
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg p-4 border border-primary/20">
+          <div className="flex items-start gap-3">
+            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-xs text-primary font-bold">💡</span>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-primary mb-1">Pro Tip</p>
+              <p className="text-sm text-muted-foreground">
+                Select options for just one attribute to create partial variants, or combine multiple attributes for full combinations.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

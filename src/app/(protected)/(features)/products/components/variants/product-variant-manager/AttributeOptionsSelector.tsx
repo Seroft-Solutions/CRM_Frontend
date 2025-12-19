@@ -36,23 +36,30 @@ export function AttributeOptionsSelector({
   const attributeId = attribute.id!;
 
   return (
-    <div className="rounded-md border bg-background p-3 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-foreground">{attribute.label ?? attribute.name}</p>
-          <div className="flex items-center gap-2">
+    <div className="rounded-lg border bg-card/50 backdrop-blur-sm p-4 space-y-4 shadow-sm hover:shadow-md transition-all duration-200">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-2 flex-1">
+          <p className="text-sm font-semibold text-foreground leading-tight">{attribute.label ?? attribute.name}</p>
+          <div className="flex items-center gap-2 flex-wrap">
             {attribute.isRequired && (
               <Badge
                 className={
                   selectedOptionIds.size > 0
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground border-transparent'
-                    : 'bg-sidebar text-sidebar-foreground border-sidebar-border/60'
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground border-transparent shadow-sm animate-in fade-in-0 zoom-in-95'
+                    : 'bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20'
                 }
               >
                 Required
               </Badge>
             )}
-            <Badge variant="secondary" className="text-foreground">
+            <Badge
+              variant="secondary"
+              className={`text-xs font-medium transition-colors ${
+                selectedOptionIds.size > 0
+                  ? 'bg-primary/10 text-primary border-primary/20'
+                  : 'bg-muted text-muted-foreground'
+              }`}
+            >
               {selectedOptionIds.size} selected
             </Badge>
           </div>
@@ -72,16 +79,21 @@ export function AttributeOptionsSelector({
               type="button"
               size="sm"
               variant={isSelected ? 'default' : 'outline'}
-              className={
+              className={`relative overflow-hidden transition-all duration-200 transform hover:scale-105 ${
                 isSelected
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90'
-                  : 'text-foreground hover:bg-sidebar-accent/10'
-              }
+                  ? 'bg-gradient-to-r from-sidebar-accent to-sidebar-accent/90 text-sidebar-accent-foreground border-transparent shadow-md hover:shadow-lg hover:from-sidebar-accent/90 hover:to-sidebar-accent'
+                  : isDisabled
+                    ? 'opacity-50 cursor-not-allowed border-muted text-muted-foreground'
+                    : 'text-foreground border-border hover:border-primary/30 hover:bg-primary/5 hover:text-primary hover:shadow-sm'
+              } ${isSelected ? 'ring-2 ring-sidebar-accent/20' : ''}`}
               aria-pressed={isSelected}
-              onClick={() => onToggleOption(attributeId, optId)}
+              onClick={() => !isDisabled && onToggleOption(attributeId, optId)}
               disabled={isDisabled}
             >
-              {label}
+              <span className="relative z-10 font-medium">{label}</span>
+              {isSelected && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
+              )}
             </Button>
           );
         })}
