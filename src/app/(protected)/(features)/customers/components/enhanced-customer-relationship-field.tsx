@@ -72,7 +72,7 @@ export function EnhancedCustomerRelationshipField({
     ...customFilters,
   });
 
-  // Search by customer business name
+  // Server-side search by customer business name
   const { data: searchResponseByName, isLoading: isSearchingByName } = useGetAllCustomers(
     {
       'customerBusinessName.contains': deferredSearchQuery,
@@ -82,13 +82,13 @@ export function EnhancedCustomerRelationshipField({
     },
     {
       query: {
-        enabled: deferredSearchQuery.length > 1,
+        enabled: deferredSearchQuery.length > 0,
         queryKey: ['search-customers-by-name', deferredSearchQuery, customFilters],
       },
     }
   );
 
-  // Search by mobile number
+  // Server-side search by mobile number
   const { data: searchResponseByMobile, isLoading: isSearchingByMobile } = useGetAllCustomers(
     {
       'mobile.contains': deferredSearchQuery,
@@ -98,15 +98,47 @@ export function EnhancedCustomerRelationshipField({
     },
     {
       query: {
-        enabled: deferredSearchQuery.length > 1,
+        enabled: deferredSearchQuery.length > 0,
         queryKey: ['search-customers-by-mobile', deferredSearchQuery, customFilters],
       },
     }
   );
 
-  // Combine search results and remove duplicates
+  // Server-side search by email
+  const { data: searchResponseByEmail, isLoading: isSearchingByEmail } = useGetAllCustomers(
+    {
+      'email.contains': deferredSearchQuery,
+      page: 0,
+      size: 50,
+      ...customFilters,
+    },
+    {
+      query: {
+        enabled: deferredSearchQuery.length > 0,
+        queryKey: ['search-customers-by-email', deferredSearchQuery, customFilters],
+      },
+    }
+  );
+
+  // Server-side search by contact person
+  const { data: searchResponseByContact, isLoading: isSearchingByContact } = useGetAllCustomers(
+    {
+      'contactPerson.contains': deferredSearchQuery,
+      page: 0,
+      size: 50,
+      ...customFilters,
+    },
+    {
+      query: {
+        enabled: deferredSearchQuery.length > 0,
+        queryKey: ['search-customers-by-contact', deferredSearchQuery, customFilters],
+      },
+    }
+  );
+
+  // Combine search results from all fields and remove duplicates
   const searchResponse = React.useMemo(() => {
-    if (!searchResponseByName && !searchResponseByMobile) return undefined;
+    if (!searchResponseByName && !searchResponseByMobile && !searchResponseByEmail && !searchResponseByContact) return undefined;
 
     const combinedResults: CustomerDTO[] = [];
     const seenIds = new Set<number>();
@@ -121,7 +153,7 @@ export function EnhancedCustomerRelationshipField({
       });
     }
 
-    // Add results from mobile search (will skip duplicates)
+    // Add results from mobile search
     if (searchResponseByMobile) {
       searchResponseByMobile.forEach(customer => {
         if (customer.id && !seenIds.has(customer.id)) {
@@ -131,14 +163,34 @@ export function EnhancedCustomerRelationshipField({
       });
     }
 
-    return combinedResults;
-  }, [searchResponseByName, searchResponseByMobile]);
+    // Add results from email search
+    if (searchResponseByEmail) {
+      searchResponseByEmail.forEach(customer => {
+        if (customer.id && !seenIds.has(customer.id)) {
+          combinedResults.push(customer);
+          seenIds.add(customer.id);
+        }
+      });
+    }
 
-  const isSearching = isSearchingByName || isSearchingByMobile;
+    // Add results from contact person search
+    if (searchResponseByContact) {
+      searchResponseByContact.forEach(customer => {
+        if (customer.id && !seenIds.has(customer.id)) {
+          combinedResults.push(customer);
+          seenIds.add(customer.id);
+        }
+      });
+    }
+
+    return combinedResults;
+  }, [searchResponseByName, searchResponseByMobile, searchResponseByEmail, searchResponseByContact]);
+
+  const isSearching = isSearchingByName || isSearchingByMobile || isSearchingByEmail || isSearchingByContact;
 
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
     const baseOptions =
-      deferredSearchQuery.length > 1 && searchResponse ? searchResponse : customersResponse || [];
+      deferredSearchQuery.length > 0 && searchResponse ? searchResponse : customersResponse || [];
 
     const merged = [...createdCustomers];
 
@@ -338,7 +390,7 @@ export function EnhancedCustomerRelationshipField({
                   ) : (
                     <div className="text-center p-4">
                       <p className="text-sm text-muted-foreground">No customers found</p>
-                      {deferredSearchQuery.length > 1 && (
+                      {deferredSearchQuery.length > 0 && (
                         <p className="text-xs text-muted-foreground mt-1">
                           Try a different search term
                         </p>
