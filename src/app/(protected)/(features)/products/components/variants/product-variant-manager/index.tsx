@@ -291,7 +291,12 @@ export function ProductVariantManager({
 
     function generate(index: number, current: VariantSelection[]) {
       if (index === sortedAttributes.length) {
-        const skuParts = [basePrefix, ...current.map(sel => sel.optionCode).filter(Boolean)];
+        // Clean option codes for SKU generation - remove # prefix from hex colors
+        const cleanOptionCode = (code: string | undefined) => {
+          if (!code) return code;
+          return code.startsWith('#') ? code.substring(1) : code;
+        };
+        const skuParts = [basePrefix, ...current.map(sel => cleanOptionCode(sel.optionCode)).filter(Boolean)];
         const sku = skuParts.join('-');
         const key = buildCombinationKey(current.map(s => ({ attributeId: s.attributeId, optionId: s.optionId })));
 

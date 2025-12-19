@@ -118,10 +118,15 @@ export function BulkVariantGeneratorDialog({
     ) {
       if (index === attributeOptions.length) {
         // Build SKU from selections
+        const cleanOptionCode = (code: string | undefined) => {
+          if (!code) return code;
+          return code.startsWith('#') ? code.substring(1) : code;
+        };
         const skuParts = [skuPrefix || productName.substring(0, 4).toUpperCase()];
         current.forEach((sel) => {
-          if (sel.optionCode) {
-            skuParts.push(sel.optionCode);
+          const cleanedCode = cleanOptionCode(sel.optionCode);
+          if (cleanedCode) {
+            skuParts.push(cleanedCode);
           }
         });
         const sku = skuParts.join('-');
