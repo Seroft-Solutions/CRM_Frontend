@@ -6,6 +6,7 @@ import { SystemConfigAttributeDTOStatus } from '@/core/api/generated/spring/sche
 import {
   useGetAllSystemConfigAttributes,
   useUpdateSystemConfigAttribute,
+  useCountSystemConfigAttributes,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 import { systemConfigAttributeTableConfig } from './table.config';
 
@@ -23,6 +24,7 @@ export const systemConfigAttributeEntityConfig: EntityTablePageConfig<
   statusEnum: SystemConfigAttributeDTOStatus,
   getEntityId: (entity) => entity.id,
   useGetAll: useGetAllSystemConfigAttributes,
+  useCount: useCountSystemConfigAttributes,
   useUpdate: useUpdateSystemConfigAttribute,
   queryKeyPrefix: '/api/system-config-attributes',
 };

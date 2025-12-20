@@ -75,6 +75,12 @@ export interface EntityTablePageConfig<TEntity extends object, TStatus extends S
     refetch: () => void;
   };
 
+  /** Optional: Orval-generated hook for counting entities (when backend doesn't provide total in getAll) */
+  useCount?: (params: Record<string, unknown>) => {
+    data?: number;
+    isLoading: boolean;
+  };
+
   /** Orval-generated mutation hook for updating entities */
   useUpdate: () => {
     mutateAsync: (params: { id: number; data: Partial<TEntity> }) => Promise<unknown>;

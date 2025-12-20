@@ -6,6 +6,7 @@ import { SystemConfigAttributeOptionDTOStatus } from '@/core/api/generated/sprin
 import {
   useGetAllSystemConfigAttributeOptions,
   useUpdateSystemConfigAttributeOption,
+  useCountSystemConfigAttributeOptions,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { systemConfigAttributeOptionTableConfig } from './table.config';
 
@@ -23,6 +24,7 @@ export const systemConfigAttributeOptionEntityConfig: EntityTablePageConfig<
   statusEnum: SystemConfigAttributeOptionDTOStatus,
   getEntityId: (entity) => entity.id,
   useGetAll: useGetAllSystemConfigAttributeOptions,
+  useCount: useCountSystemConfigAttributeOptions,
   useUpdate: useUpdateSystemConfigAttributeOption,
   queryKeyPrefix: '/api/system-config-attribute-options',
 };

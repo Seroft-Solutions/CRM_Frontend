@@ -67,6 +67,7 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
   }, [activeStatusTab, config.tableConfig.defaultSort, state]);
 
   const { data, refetch } = config.useGetAll(queryParams);
+  const { data: countData } = config.useCount ? config.useCount(queryParams) : { data: undefined };
 
   const { rows, total } = useMemo(() => {
     if (!data) {
@@ -79,12 +80,22 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
 
       return {
         rows: maybePage.content ?? [],
-        total: maybePage.totalElements ?? maybePage.content?.length ?? 0,
+        total: maybePage.totalElements ?? countData ?? maybePage.content?.length ?? 0,
       };
     }
 
-    // Support APIs that return a plain array (client-side pagination)
+    // Support APIs that return a plain array (server-side pagination with separate count)
     const allRows = (data as TEntity[]) ?? [];
+
+    // If we have a count from useCount, use it for total
+    if (countData !== undefined) {
+      return {
+        rows: allRows,
+        total: countData,
+      };
+    }
+
+    // Fallback to client-side pagination
     const start = (state.page - 1) * state.pageSize;
     const end = start + state.pageSize;
 
@@ -92,7 +103,7 @@ export function EntityTablePage<TEntity extends object, TStatus extends StatusEn
       rows: allRows.slice(start, end),
       total: allRows.length,
     };
-  }, [data, state.page, state.pageSize]);
+  }, [data, countData, state.page, state.pageSize]);
 
   const { mutateAsync: updateAsync } = config.useUpdate();
 

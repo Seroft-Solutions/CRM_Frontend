@@ -6,6 +6,7 @@ import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/Syste
 import {
   useGetAllSystemConfigs,
   useUpdateSystemConfig,
+  useCountSystemConfigs,
 } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 import { systemConfigTableConfig } from './table.config';
 
@@ -25,6 +26,7 @@ export const systemConfigEntityConfig: EntityTablePageConfig<
   includeViewAction: true,
   includeEditAction: true,
   useGetAll: useGetAllSystemConfigs,
+  useCount: useCountSystemConfigs,
   useUpdate: () => {
     const mutation = useUpdateSystemConfig();
 
