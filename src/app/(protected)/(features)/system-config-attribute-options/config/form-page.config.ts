@@ -30,6 +30,7 @@ export const systemConfigAttributeOptionCreateFormPageConfig: EntityFormPageConf
           const transformedData = {
             ...params.data,
             attribute: attr && typeof attr === 'object' && 'id' in attr ? { id: attr.id } : undefined,
+            sortOrder: params.data.sortOrder ?? 0,
             status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
           };
 

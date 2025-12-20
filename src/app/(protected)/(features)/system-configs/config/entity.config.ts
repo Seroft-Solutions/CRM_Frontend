@@ -23,6 +23,7 @@ export const systemConfigEntityConfig: EntityTablePageConfig<
   statusEnum: SystemConfigDTOStatus,
   getEntityId: (entity) => entity.id,
   includeViewAction: true,
+  includeEditAction: true,
   useGetAll: useGetAllSystemConfigs,
   useUpdate: () => {
     const mutation = useUpdateSystemConfig();

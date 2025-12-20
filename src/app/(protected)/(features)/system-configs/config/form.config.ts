@@ -96,6 +96,10 @@ export const systemConfigEditFormConfig: Omit<
   layout: 'two-column',
   fields: systemConfigEditFields,
   validationSchema: schema,
+  defaultValues: {
+    systemConfigType: SystemConfigDTOSystemConfigType.PRODUCT,
+    status: SystemConfigDTOStatus.ACTIVE,
+  },
   submitButtonText: 'Update System Config',
   cancelButtonText: 'Cancel',
   showCancelButton: true,

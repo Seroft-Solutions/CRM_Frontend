@@ -111,6 +111,15 @@ export const systemConfigAttributeOptionBaseFields: Array<
     colSpan: 2,
   },
   {
+    field: 'sortOrder',
+    label: 'Sort Order',
+    type: 'number',
+    required: false,
+    placeholder: '0',
+    helpText: 'Order for sorting (0 or higher).',
+    min: 0,
+  },
+  {
     field: 'status',
     label: 'Status',
     type: 'select',
@@ -124,9 +133,9 @@ export const systemConfigAttributeOptionBaseFields: Array<
   },
 ];
 
-// For create form, hide the Status field but keep default/validation
+// For create form, hide the Status and Sort Order fields but keep default/validation
 const systemConfigAttributeOptionCreateFields: Array<FieldConfig<SystemConfigAttributeOptionDTO>> =
-  systemConfigAttributeOptionBaseFields.filter((f) => f.field !== 'status');
+  systemConfigAttributeOptionBaseFields.filter((f) => f.field !== 'status' && f.field !== 'sortOrder');
 
 export const systemConfigAttributeOptionCreateFormConfig: Omit<
   FormConfig<SystemConfigAttributeOptionDTO>,
@@ -137,6 +146,7 @@ export const systemConfigAttributeOptionCreateFormConfig: Omit<
   fields: systemConfigAttributeOptionCreateFields,
   validationSchema,
   defaultValues: {
+    sortOrder: 0,
     status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
   } as Partial<SystemConfigAttributeOptionDTO>,
   submitButtonText: 'Create Attribute Option',
@@ -145,19 +155,23 @@ export const systemConfigAttributeOptionCreateFormConfig: Omit<
   successMessage: 'Attribute option created successfully',
 };
 
+// For edit/view forms, hide the Sort Order field
+const systemConfigAttributeOptionEditFields: Array<FieldConfig<SystemConfigAttributeOptionDTO>> =
+  systemConfigAttributeOptionBaseFields.filter((f) => f.field !== 'sortOrder').map((f) =>
+    f.field === 'attribute'
+      ? { ...f, helpText: 'Parent attribute.' }
+      : f.field === 'code'
+        ? { ...f, helpText: 'Unique code (letters, numbers, -, _).' }
+        : f
+  );
+
 export const systemConfigAttributeOptionEditFormConfig: Omit<
   FormConfig<SystemConfigAttributeOptionDTO>,
   'onSuccess' | 'onError'
 > = {
   mode: 'edit',
   layout: 'two-column',
-  fields: systemConfigAttributeOptionBaseFields.map((f) =>
-    f.field === 'attribute'
-      ? { ...f, helpText: 'Parent attribute.' }
-      : f.field === 'code'
-        ? { ...f, helpText: 'Unique code (letters, numbers, -, _).' }
-        : f
-  ),
+  fields: systemConfigAttributeOptionEditFields,
   validationSchema,
   submitButtonText: 'Update Attribute Option',
   cancelButtonText: 'Cancel',

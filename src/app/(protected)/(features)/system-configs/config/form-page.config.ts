@@ -10,6 +10,7 @@ import type { EntityFormPageConfig } from '@/entity-library/config';
 
 import { systemConfigCreateFormConfig, systemConfigEditFormConfig } from './form.config';
 import { SystemConfigDTOStatus } from '@/core/api/generated/spring/schemas/SystemConfigDTOStatus';
+import { SystemConfigDTOSystemConfigType } from '@/core/api/generated/spring/schemas/SystemConfigDTOSystemConfigType';
 
 export const systemConfigCreateFormPageConfig: EntityFormPageConfig<SystemConfigDTO> = {
   entityName: 'System Config',
@@ -56,7 +57,8 @@ export const systemConfigEditFormPageConfig: EntityFormPageConfig<SystemConfigDT
           id: params.id,
           data: {
             ...params.data,
-            systemConfigType: SystemConfigDTOSystemConfigType.PRODUCT,
+            systemConfigType: params.data.systemConfigType || SystemConfigDTOSystemConfigType.PRODUCT,
+            status: params.data.status || SystemConfigDTOStatus.ACTIVE,
           } as SystemConfigDTO,
         }),
     };
