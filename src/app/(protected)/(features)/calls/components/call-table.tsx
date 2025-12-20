@@ -350,6 +350,7 @@ export function CallTable() {
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
+  const isUserGroup = hasGroup('Users') && !isBusinessPartner && !hasGroup('Admins') && !hasGroup('Super Admins');
 
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
@@ -947,24 +948,34 @@ export function CallTable() {
   const filteredData = useMemo(() => {
     if (!data) return data;
 
+    let filtered = data;
+
     if (activeStatusTab === 'crm-leads') {
-      return data.filter(isCrmLeadCall);
+      filtered = filtered.filter(isCrmLeadCall);
     }
 
     if (activeStatusTab === 'business-partners') {
-      return data.filter(isBusinessPartnerCall);
+      filtered = filtered.filter(isBusinessPartnerCall);
     }
 
     if (activeStatusTab === 'active') {
-      return data.filter((call) => call.status === CallDTOStatus.ACTIVE);
+      filtered = filtered.filter((call) => call.status === CallDTOStatus.ACTIVE);
     }
 
     if (activeStatusTab === 'external') {
-      return data.filter((call) => !!call.externalId);
+      filtered = filtered.filter((call) => !!call.externalId);
     }
 
-    return data;
-  }, [data, activeStatusTab]);
+    // Apply user-specific filtering for Users group members
+    if (isUserGroup && accountData?.login) {
+      filtered = filtered.filter((call) =>
+        call.createdBy === accountData.login ||
+        call.assignedTo?.id === accountData.id
+      );
+    }
+
+    return filtered;
+  }, [data, activeStatusTab, isUserGroup, accountData?.login, accountData?.id]);
 
   const filteredCount = useMemo(() => {
     if (!countData) return 0;
@@ -972,13 +983,14 @@ export function CallTable() {
     if (
       activeStatusTab === 'business-partners' ||
       activeStatusTab === 'active' ||
-      activeStatusTab === 'crm-leads'
+      activeStatusTab === 'crm-leads' ||
+      isUserGroup
     ) {
       return filteredData?.length || 0;
     }
 
     return countData;
-  }, [countData, filteredData, activeStatusTab]);
+  }, [countData, filteredData, activeStatusTab, isUserGroup]);
 
   const callIdsForRemarks = useMemo(
     () =>
