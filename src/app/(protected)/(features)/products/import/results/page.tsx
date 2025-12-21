@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
+import { FailedProductsTable } from '../components/failed-products-table';
 
 type RowStatus =
   | 'SUCCESS'
@@ -134,15 +135,17 @@ export default function ImportResultsPage() {
               <Link href="/products/import">Start New Import</Link>
             </Button>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Upload a file to see detailed results for this session.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Upload a file to see detailed results for this session.
+          </p>
+        </CardContent>
+      </Card>
+
+      <FailedProductsTable />
+    </div>
+  );
+}
 
   return (
     <div className="space-y-6">
@@ -222,20 +225,7 @@ export default function ImportResultsPage() {
         </CardContent>
       </Card>
 
-      {/* Failed Products Table - TODO: Implement this component */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Failed Products</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Review products that failed to import for corrections.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Failed products table component will be implemented here.
-          </p>
-        </CardContent>
-      </Card>
+      <FailedProductsTable />
     </div>
   );
 }
