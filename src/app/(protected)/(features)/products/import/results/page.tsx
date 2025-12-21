@@ -43,12 +43,34 @@ interface ImportResponse {
   rowResults?: RowResult[];
 }
 
+const FALLBACK_HEADERS = [
+  'Product Category',
+  'Product Sub Category',
+  'Product Name',
+  'Product code',
+  'Article Number',
+  'Description',
+  'Total Quantity',
+  'Base Price',
+  'Discounted Price',
+  'Sale Price',
+  'System Config',
+  'Size',
+  'Color',
+  'Material',
+  'Style',
+  'Variant Price',
+  'Variant Stock',
+];
+
 export default function ImportResultsPage() {
   const router = useRouter();
   const [responseData, setResponseData] = useState<ImportResponse | null>(null);
+  const [columnHeaders, setColumnHeaders] = useState<string[] | null>(null);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('productImportResponse');
+    const storedHeaders = sessionStorage.getItem('productImportColumns');
 
     if (storedData) {
       try {
@@ -57,6 +79,17 @@ export default function ImportResultsPage() {
         sessionStorage.removeItem('productImportResponse');
       } catch (error) {
         console.error('Failed to parse import response data:', error);
+      }
+    }
+
+    if (storedHeaders) {
+      try {
+        const headers = JSON.parse(storedHeaders);
+        if (Array.isArray(headers)) {
+          setColumnHeaders(headers);
+        }
+      } catch (error) {
+        console.error('Failed to parse import column headers:', error);
       }
     }
   }, [router]);
@@ -77,36 +110,15 @@ export default function ImportResultsPage() {
   const handleDownloadReport = () => {
     if (!responseData) return;
 
-    const headers = [
-      'Row #',
-      'Product Category',
-      'Product Sub Category',
-      'Product Name',
-      'Product code',
-      'Article Number',
-      'Description',
-      'Total Quantity',
-      'Base Price',
-      'Discounted Price',
-      'Sale Price',
-      'Size',
-      'Color',
-      'Material',
-      'Style',
-      'Variant Price',
-      'Variant Stock',
-      'Status',
-      'Reason'
-    ];
+    const headers = columnHeaders && columnHeaders.length > 0 ? columnHeaders : FALLBACK_HEADERS;
+    const fullHeaders = ['Row #', ...headers, 'Status', 'Reason'];
 
-    const sheetRows = tableRows.map((row) => [
-      row.rowNumber,
-      ...Array(16).fill('').map((_, idx) => row.values[idx] ?? ''), // 16 columns for product data
-      row.status,
-      row.reason,
-    ]);
+    const sheetRows = tableRows.map((row) => {
+      const dataValues = headers.map((_, idx) => row.values[idx] ?? '');
+      return [row.rowNumber, ...dataValues, row.status, row.reason];
+    });
 
-    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...sheetRows]);
+    const worksheet = XLSX.utils.aoa_to_sheet([fullHeaders, ...sheetRows]);
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Product Import Results');

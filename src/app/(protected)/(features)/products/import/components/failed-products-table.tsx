@@ -28,21 +28,11 @@ import {
 import {
   useGetAllSystemConfigAttributeOptions,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
+import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 
 const PRODUCT_CODE_REGEX = /^[A-Za-z0-9_-]{2,20}$/;
 const EMPTY_SELECT_VALUE = '__none__';
-
-const ATTRIBUTE_ORDER = ['size', 'color', 'material', 'style'] as const;
-type AttributeKey = typeof ATTRIBUTE_ORDER[number];
-
-const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
-  size: 'Size',
-  color: 'Color',
-  material: 'Material',
-  style: 'Style',
-};
-
-type VariantFields = Partial<Record<AttributeKey, string>>;
+const SYSTEM_CONFIG_LABEL = 'System Config';
 
 const BASE_HEADERS = [
   'Product Category',
@@ -55,13 +45,17 @@ const BASE_HEADERS = [
   'Base Price',
   'Discounted Price',
   'Sale Price',
-  'Size',
-  'Color',
-  'Material',
-  'Style',
-  'Variant Price',
-  'Variant Stock',
+  SYSTEM_CONFIG_LABEL,
 ];
+
+const TRAILING_HEADERS = ['Variant Price', 'Variant Stock'];
+
+type VariantAttributeValues = Record<string, string>;
+type ParsedVariantAttributes = {
+  values: VariantAttributeValues;
+  labels: Record<string, string>;
+  systemConfigKey?: string;
+};
 
 function hasText(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -71,32 +65,53 @@ function normalizeKey(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-function parseVariantAttributes(value: string | null | undefined): VariantFields {
-  const fields: VariantFields = {};
-  if (!hasText(value)) return fields;
+function normalizeSystemConfigKey(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function parseVariantAttributes(value: string | null | undefined): ParsedVariantAttributes {
+  const values: VariantAttributeValues = {};
+  const labels: Record<string, string> = {};
+  let systemConfigKey: string | undefined;
+  if (!hasText(value)) return { values, labels, systemConfigKey };
 
   value.split(',').forEach((part) => {
     const [rawKey, ...rest] = part.split(':');
-    const normalized = normalizeKey(rawKey ?? '');
-    const foundKey = ATTRIBUTE_ORDER.find((key) => normalized === key);
-    if (!foundKey) return;
+    const trimmedKey = (rawKey ?? '').trim();
     const rawValue = rest.join(':').trim();
-    if (rawValue) {
-      fields[foundKey] = rawValue;
+    if (!hasText(trimmedKey) || !hasText(rawValue)) return;
+
+    const normalized = normalizeKey(trimmedKey);
+    if (!normalized) return;
+    if (normalized === normalizeKey(SYSTEM_CONFIG_LABEL)) {
+      systemConfigKey = rawValue;
+      return;
     }
+    values[normalized] = rawValue;
+    labels[normalized] = trimmedKey;
   });
 
-  return fields;
+  return { values, labels, systemConfigKey };
 }
 
-function formatVariantAttributes(fields: VariantFields): string {
+function buildVariantAttributes(
+  values: VariantAttributeValues,
+  labelByKey: Map<string, string>,
+  fallbackLabels: Record<string, string>,
+  systemConfigKey?: string | null
+): string {
   const parts: string[] = [];
-  ATTRIBUTE_ORDER.forEach((key) => {
-    const value = fields[key];
-    if (hasText(value)) {
-      parts.push(`${ATTRIBUTE_LABELS[key]}:${value.trim()}`);
-    }
-  });
+  if (hasText(systemConfigKey)) {
+    parts.push(`${SYSTEM_CONFIG_LABEL}:${systemConfigKey.trim()}`);
+  }
+  Object.keys(values)
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((key) => {
+      const value = values[key];
+      if (!hasText(value)) return;
+      const label = labelByKey.get(key) ?? fallbackLabels[key] ?? key;
+      parts.push(`${label}:${value.trim()}`);
+    });
   return parts.join(',');
 }
 
@@ -118,18 +133,6 @@ function isProductImportHistoryRow(row: ImportHistoryDTO): boolean {
     hasText(row.externalId);
 
   return hasProductSignals && !hasNonProductSignals;
-}
-
-function toAttributeKey(attribute?: SystemConfigAttributeDTO): AttributeKey | null {
-  if (!attribute) return null;
-  const normalizedName = normalizeKey(attribute.name ?? '');
-  const normalizedLabel = normalizeKey(attribute.label ?? '');
-
-  return (
-    ATTRIBUTE_ORDER.find((key) => key === normalizedName) ||
-    ATTRIBUTE_ORDER.find((key) => key === normalizedLabel) ||
-    null
-  );
 }
 
 function formatOptionLabel(option: SystemConfigAttributeOptionDTO): string {
@@ -176,14 +179,48 @@ export function FailedProductsTable() {
     }
   );
 
+  const { data: systemConfigs = [] } = useGetAllSystemConfigs(
+    { page: 0, size: 1000, 'status.equals': 'ACTIVE', 'systemConfigType.equals': 'PRODUCT' },
+    { query: { staleTime: 5 * 60 * 1000 } }
+  );
+
   const { data: allAttributes } = useGetAllSystemConfigAttributes(
     { size: 1000, 'status.equals': 'ACTIVE' },
     { query: { staleTime: 5 * 60 * 1000 } }
   );
 
+  const systemConfigByKey = useMemo(() => {
+    const map = new Map<string, { id: number; configKey: string }>();
+    systemConfigs.forEach((config: any) => {
+      if (typeof config.id !== 'number' || !hasText(config.configKey)) return;
+      map.set(normalizeSystemConfigKey(config.configKey), { id: config.id, configKey: config.configKey });
+    });
+    return map;
+  }, [systemConfigs]);
+
+  const relevantConfigIds = useMemo(() => {
+    const ids = new Set<number>();
+    editableRows.forEach((row) => {
+      const parsed = parseVariantAttributes(row.variantAttributes);
+      if (!hasText(parsed.systemConfigKey)) return;
+      const config = systemConfigByKey.get(normalizeSystemConfigKey(parsed.systemConfigKey));
+      if (config) {
+        ids.add(config.id);
+      }
+    });
+    return ids;
+  }, [editableRows, systemConfigByKey]);
+
   const relevantAttributes = useMemo(() => {
-    return (allAttributes ?? []).filter((attr) => toAttributeKey(attr));
-  }, [allAttributes]);
+    const attributes = allAttributes ?? [];
+    if (relevantConfigIds.size === 0) {
+      return attributes;
+    }
+    return attributes.filter((attr) => {
+      const configId = attr.systemConfig?.id;
+      return typeof configId === 'number' && relevantConfigIds.has(configId);
+    });
+  }, [allAttributes, relevantConfigIds]);
 
   const attributeIds = useMemo(
     () => relevantAttributes.map((attr) => attr.id).filter((id): id is number => typeof id === 'number'),
@@ -200,50 +237,109 @@ export function FailedProductsTable() {
     { query: { enabled: attributeIds.length > 0, staleTime: 5 * 60 * 1000 } }
   );
 
-  const optionsByKey = useMemo(() => {
-    const grouped: Record<AttributeKey, SystemConfigAttributeOptionDTO[]> = {
-      size: [],
-      color: [],
-      material: [],
-      style: [],
-    };
-    const attributeKeyById = new Map<number, AttributeKey>();
-
+  const attributesByConfigId = useMemo(() => {
+    const map = new Map<number, SystemConfigAttributeDTO[]>();
     relevantAttributes.forEach((attr) => {
-      if (attr.id == null) return;
-      const key = toAttributeKey(attr);
-      if (key) {
-        attributeKeyById.set(attr.id, key);
-      }
+      const configId = attr.systemConfig?.id;
+      if (typeof configId !== 'number') return;
+      const list = map.get(configId) ?? [];
+      list.push(attr);
+      map.set(configId, list);
     });
+    map.forEach((list) => list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)));
+    return map;
+  }, [relevantAttributes]);
 
-    (attributeOptions ?? []).forEach((option) => {
-      const attributeId = option.attribute?.id;
-      if (attributeId == null) return;
-      const key = attributeKeyById.get(attributeId);
-      if (!key) return;
-      grouped[key].push(option);
-    });
+  const attributeLabelData = useMemo(() => {
+    const labelByKey = new Map<string, string>();
+    const orderedKeys: string[] = [];
 
-    const deduped: Record<AttributeKey, SystemConfigAttributeOptionDTO[]> = {
-      size: [],
-      color: [],
-      material: [],
-      style: [],
+    const includeConfigAttributes = relevantConfigIds.size > 0;
+    const configOrder = includeConfigAttributes
+      ? systemConfigs
+          .map((config: any) => config.id)
+          .filter((id: unknown): id is number => typeof id === 'number')
+          .filter((id) => relevantConfigIds.has(id))
+      : [];
+
+    const appendAttribute = (attr: SystemConfigAttributeDTO) => {
+      const rawLabel = attr.label ?? attr.name ?? '';
+      const key = normalizeKey(rawLabel);
+      if (!key || labelByKey.has(key)) return;
+      labelByKey.set(key, rawLabel);
+      orderedKeys.push(key);
     };
 
-    ATTRIBUTE_ORDER.forEach((key) => {
-      const seen = new Set<string>();
-      grouped[key].forEach((option) => {
-        const token = `${option.code}`.toLowerCase();
-        if (seen.has(token)) return;
-        seen.add(token);
-        deduped[key].push(option);
+    configOrder.forEach((configId) => {
+      (attributesByConfigId.get(configId) ?? []).forEach(appendAttribute);
+    });
+
+    if (includeConfigAttributes) {
+      attributesByConfigId.forEach((attrs, configId) => {
+        if (configOrder.includes(configId)) return;
+        attrs.forEach(appendAttribute);
+      });
+    }
+
+    editableRows.forEach((row) => {
+      const parsed = parseVariantAttributes(row.variantAttributes);
+      Object.entries(parsed.labels).forEach(([key, label]) => {
+        if (labelByKey.has(key)) return;
+        labelByKey.set(key, label);
+        orderedKeys.push(key);
       });
     });
 
-    return deduped;
-  }, [relevantAttributes, attributeOptions]);
+    return { orderedKeys, labelByKey };
+  }, [systemConfigs, relevantConfigIds, attributesByConfigId, editableRows]);
+
+  const optionsByAttributeId = useMemo(() => {
+    const map = new Map<number, SystemConfigAttributeOptionDTO[]>();
+    (attributeOptions ?? []).forEach((option) => {
+      const attributeId = option.attribute?.id;
+      if (typeof attributeId !== 'number') return;
+      const list = map.get(attributeId) ?? [];
+      list.push(option);
+      map.set(attributeId, list);
+    });
+    return map;
+  }, [attributeOptions]);
+
+  const optionsByConfigAndKey = useMemo(() => {
+    const map = new Map<number, Map<string, SystemConfigAttributeOptionDTO[]>>();
+    relevantAttributes.forEach((attr) => {
+      const configId = attr.systemConfig?.id;
+      const rawLabel = attr.label ?? attr.name ?? '';
+      const key = normalizeKey(rawLabel);
+      if (typeof configId !== 'number' || !key || typeof attr.id !== 'number') return;
+      const options = optionsByAttributeId.get(attr.id) ?? [];
+      if (!map.has(configId)) {
+        map.set(configId, new Map());
+      }
+      map.get(configId)!.set(key, options);
+    });
+    return map;
+  }, [relevantAttributes, optionsByAttributeId]);
+
+  const fallbackOptionsByKey = useMemo(() => {
+    const map = new Map<string, SystemConfigAttributeOptionDTO[]>();
+    relevantAttributes.forEach((attr) => {
+      const rawLabel = attr.label ?? attr.name ?? '';
+      const key = normalizeKey(rawLabel);
+      if (!key || typeof attr.id !== 'number') return;
+      const options = optionsByAttributeId.get(attr.id) ?? [];
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+      const existing = map.get(key)!;
+      options.forEach((option) => {
+        const token = `${option.code}`.toLowerCase();
+        if (existing.some((entry) => `${entry.code}`.toLowerCase() === token)) return;
+        existing.push(option);
+      });
+    });
+    return map;
+  }, [relevantAttributes, optionsByAttributeId]);
 
   useEffect(() => {
     const rows = (importHistoryData ?? []).filter(
@@ -256,12 +352,43 @@ export function FailedProductsTable() {
 
   const { mutateAsync: deleteAllImportHistoryEntriesAsync } = useDeleteAllImportHistoryEntries();
 
+  const attributeColumns = useMemo(
+    () =>
+      attributeLabelData.orderedKeys.map((key) => ({
+        key,
+        label: attributeLabelData.labelByKey.get(key) ?? key,
+      })),
+    [attributeLabelData]
+  );
+
+  const resolveConfigId = useCallback(
+    (systemConfigKey?: string | null) => {
+      if (!hasText(systemConfigKey)) return null;
+      const config = systemConfigByKey.get(normalizeSystemConfigKey(systemConfigKey));
+      return config ? config.id : null;
+    },
+    [systemConfigByKey]
+  );
+
+  const getOptionsForRowAttribute = useCallback(
+    (configId: number | null, key: string) => {
+      if (typeof configId === 'number') {
+        const options = optionsByConfigAndKey.get(configId)?.get(key);
+        if (options && options.length) {
+          return options;
+        }
+      }
+      return fallbackOptionsByKey.get(key) ?? [];
+    },
+    [optionsByConfigAndKey, fallbackOptionsByKey]
+  );
+
   const computeRowIssues = useCallback(
     (row: ImportHistoryDTO): string[] => {
       const issues: string[] = [];
       const name = (row.productName ?? '').trim();
       const code = (row.productCode ?? '').trim();
-      const attributes = parseVariantAttributes(row.variantAttributes);
+      const parsed = parseVariantAttributes(row.variantAttributes);
 
       if (name.length < 2 || name.length > 100) {
         issues.push('Product Name must be 2-100 characters.');
@@ -270,15 +397,31 @@ export function FailedProductsTable() {
         issues.push('Product Code must be 2-20 characters (letters, numbers, underscores, hyphens).');
       }
 
-      const hasAttribute = ATTRIBUTE_ORDER.some((key) => hasText(attributes[key]));
+      const hasAttribute = Object.values(parsed.values).some((value) => hasText(value));
       if (!hasAttribute) {
-        issues.push('Provide at least one of Size, Color, Material, or Style.');
+        issues.push('Provide at least one variant attribute.');
       }
 
-      ATTRIBUTE_ORDER.forEach((key) => {
-        const value = attributes[key];
+      const configId = resolveConfigId(parsed.systemConfigKey);
+      if (hasText(parsed.systemConfigKey) && configId == null) {
+        issues.push(`Unknown ${SYSTEM_CONFIG_LABEL} '${parsed.systemConfigKey}'.`);
+      }
+
+      if (configId != null) {
+        const requiredAttributes = attributesByConfigId.get(configId) ?? [];
+        requiredAttributes.forEach((attr) => {
+          if (!attr.isRequired) return;
+          const key = normalizeKey(attr.label ?? attr.name ?? '');
+          if (!key) return;
+          if (!hasText(parsed.values[key])) {
+            issues.push(`Missing required attribute: ${attr.label ?? attr.name}.`);
+          }
+        });
+      }
+
+      Object.entries(parsed.values).forEach(([key, value]) => {
         if (!hasText(value)) return;
-        const options = optionsByKey[key] ?? [];
+        const options = getOptionsForRowAttribute(configId, key);
         if (!options.length) return;
         const match = options.some(
           (option) =>
@@ -286,13 +429,14 @@ export function FailedProductsTable() {
             option.label?.toLowerCase() === value.toLowerCase()
         );
         if (!match) {
-          issues.push(`${ATTRIBUTE_LABELS[key]} value '${value}' is not in system config options.`);
+          const label = attributeLabelData.labelByKey.get(key) ?? parsed.labels[key] ?? key;
+          issues.push(`${label} value '${value}' is not in system config options.`);
         }
       });
 
       return issues;
     },
-    [optionsByKey]
+    [resolveConfigId, attributesByConfigId, getOptionsForRowAttribute, attributeLabelData]
   );
 
   const validatedRows = useMemo(() => {
@@ -316,17 +460,25 @@ export function FailedProductsTable() {
   }, []);
 
   const handleAttributeChange = useCallback(
-    (rowId: number, key: AttributeKey, value: string) => {
+    (rowId: number, key: string, label: string, value: string) => {
       setEditableRows((prev) =>
         prev.map((row) => {
           if (row.id !== rowId) return row;
-          const fields = parseVariantAttributes(row.variantAttributes);
+          const parsed = parseVariantAttributes(row.variantAttributes);
+          const nextValues = { ...parsed.values };
           if (value === EMPTY_SELECT_VALUE) {
-            delete fields[key];
+            delete nextValues[key];
           } else {
-            fields[key] = value;
+            nextValues[key] = value;
           }
-          return { ...row, variantAttributes: formatVariantAttributes(fields) };
+          const nextLabels = { ...parsed.labels, [key]: label };
+          const nextVariantAttributes = buildVariantAttributes(
+            nextValues,
+            attributeLabelData.labelByKey,
+            nextLabels,
+            parsed.systemConfigKey
+          );
+          return { ...row, variantAttributes: nextVariantAttributes };
         })
       );
       setRowErrors((prev) => {
@@ -336,7 +488,32 @@ export function FailedProductsTable() {
         return next;
       });
     },
-    []
+    [attributeLabelData]
+  );
+
+  const handleSystemConfigChange = useCallback(
+    (rowId: number, value: string) => {
+      setEditableRows((prev) =>
+        prev.map((row) => {
+          if (row.id !== rowId) return row;
+          const parsed = parseVariantAttributes(row.variantAttributes);
+          const nextVariantAttributes = buildVariantAttributes(
+            parsed.values,
+            attributeLabelData.labelByKey,
+            parsed.labels,
+            value === EMPTY_SELECT_VALUE ? null : value
+          );
+          return { ...row, variantAttributes: nextVariantAttributes };
+        })
+      );
+      setRowErrors((prev) => {
+        if (!prev[rowId]) return prev;
+        const next = { ...prev };
+        delete next[rowId];
+        return next;
+      });
+    },
+    [attributeLabelData]
   );
 
   const handleSaveRow = useCallback(
@@ -349,11 +526,16 @@ export function FailedProductsTable() {
         return false;
       }
 
+      const parsed = parseVariantAttributes(row.variantAttributes);
       const payload: ImportHistoryDTO = {
         ...row,
         productName: row.productName?.trim(),
         productCode: row.productCode?.trim(),
-        variantAttributes: formatVariantAttributes(parseVariantAttributes(row.variantAttributes)),
+        variantAttributes: buildVariantAttributes(
+          parsed.values,
+          attributeLabelData.labelByKey,
+          parsed.labels
+        ),
         issue: null,
       };
 
@@ -387,7 +569,7 @@ export function FailedProductsTable() {
         });
       }
     },
-    [computeRowIssues, refetch]
+    [computeRowIssues, refetch, attributeLabelData]
   );
 
   const handleSaveValidated = useCallback(async () => {
@@ -439,34 +621,30 @@ export function FailedProductsTable() {
     }
 
     const sheetRows = editableRows.map((row) => {
-      const fields = parseVariantAttributes(row.variantAttributes);
+      const parsed = parseVariantAttributes(row.variantAttributes);
+      const rowValues: Record<string, string> = {};
+      rowValues['Product Name'] = row.productName ?? '';
+      rowValues['Product code'] = row.productCode ?? '';
+      rowValues[SYSTEM_CONFIG_LABEL] = parsed.systemConfigKey ?? '';
+
+      attributeColumns.forEach((column) => {
+        rowValues[column.label] = parsed.values[column.key] ?? '';
+      });
+
+      const headers = [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
       return [
-        '',
-        '',
-        row.productName ?? '',
-        row.productCode ?? '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        fields.size ?? '',
-        fields.color ?? '',
-        fields.material ?? '',
-        fields.style ?? '',
-        '',
-        '',
+        ...headers.map((header) => rowValues[header] ?? ''),
         row.issue ?? '',
       ];
     });
 
-    const worksheet = XLSX.utils.aoa_to_sheet([ [...BASE_HEADERS, 'Reason'], ...sheetRows ]);
+    const headers = [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
+    const worksheet = XLSX.utils.aoa_to_sheet([[...headers, 'Reason'], ...sheetRows]);
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Failed Products');
     XLSX.writeFile(workbook, 'product-import-failed-rows.xlsx');
-  }, [editableRows]);
+  }, [editableRows, attributeColumns]);
 
   if (isLoading) {
     return (
@@ -539,10 +717,10 @@ export function FailedProductsTable() {
               <TableHead>ID</TableHead>
               <TableHead>Product Name</TableHead>
               <TableHead>Product Code</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Color</TableHead>
-              <TableHead>Material</TableHead>
-              <TableHead>Style</TableHead>
+              <TableHead>{SYSTEM_CONFIG_LABEL}</TableHead>
+              {attributeColumns.map((column) => (
+                <TableHead key={column.key}>{column.label}</TableHead>
+              ))}
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -550,7 +728,8 @@ export function FailedProductsTable() {
           <TableBody>
             {editableRows.map((row) => {
               const rowId = row.id as number;
-              const fields = parseVariantAttributes(row.variantAttributes);
+              const parsed = parseVariantAttributes(row.variantAttributes);
+              const rowConfigId = resolveConfigId(parsed.systemConfigKey);
               const issues = computeRowIssues(row);
               const canSave = issues.length === 0 && !pendingRowIds.has(rowId);
               const errorText = rowErrors[rowId];
@@ -572,9 +751,33 @@ export function FailedProductsTable() {
                       placeholder="PRODUCT-CODE"
                     />
                   </TableCell>
-                  {ATTRIBUTE_ORDER.map((key) => {
-                    const options = optionsByKey[key] ?? [];
-                    const currentValue = fields[key];
+                  <TableCell className="min-w-[180px]">
+                    <Select
+                      value={parsed.systemConfigKey ?? EMPTY_SELECT_VALUE}
+                      onValueChange={(value) => handleSystemConfigChange(rowId, value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={`Select ${SYSTEM_CONFIG_LABEL}`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
+                        {systemConfigs.length === 0 ? (
+                          <SelectItem value="__empty__" disabled>
+                            No System Configs available
+                          </SelectItem>
+                        ) : (
+                          systemConfigs.map((config: any) => (
+                            <SelectItem key={config.id} value={config.configKey}>
+                              {config.configKey}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  {attributeColumns.map((column) => {
+                    const options = getOptionsForRowAttribute(rowConfigId, column.key);
+                    const currentValue = parsed.values[column.key];
                     const match = options.find(
                       (option) =>
                         option.code?.toLowerCase() === currentValue?.toLowerCase() ||
@@ -585,13 +788,13 @@ export function FailedProductsTable() {
                     const showCustom = hasText(currentValue) && !match;
 
                     return (
-                      <TableCell key={key} className="min-w-[160px]">
+                      <TableCell key={`${rowId}-${column.key}`} className="min-w-[160px]">
                         <Select
                           value={selectValue}
-                          onValueChange={(value) => handleAttributeChange(rowId, key, value)}
+                          onValueChange={(value) => handleAttributeChange(rowId, column.key, column.label, value)}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder={`Select ${ATTRIBUTE_LABELS[key]}`} />
+                            <SelectValue placeholder={`Select ${column.label}`} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
@@ -606,7 +809,10 @@ export function FailedProductsTable() {
                               </SelectItem>
                             ) : (
                               options.map((option) => (
-                                <SelectItem key={`${key}-${option.id ?? option.code}`} value={option.code}>
+                                <SelectItem
+                                  key={`${column.key}-${option.id ?? option.code}`}
+                                  value={option.code}
+                                >
                                   {formatOptionLabel(option)}
                                 </SelectItem>
                               ))

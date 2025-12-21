@@ -21,9 +21,11 @@ import {
   useGetImportTemplate3,
   useDownloadImportTemplate,
 } from '@/core/api/generated/spring';
+import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 
 export function ProductDataImport() {
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [selectedSystemConfigId, setSelectedSystemConfigId] = useState<number | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -31,8 +33,17 @@ export function ProductDataImport() {
     },
   });
 
-  // Fetch template info
-  const { data: templateInfo } = useGetImportTemplate3();
+  const { data: systemConfigs = [] } = useGetAllSystemConfigs(
+    { page: 0, size: 1000, 'status.equals': 'ACTIVE', 'systemConfigType.equals': 'PRODUCT' },
+    { query: { staleTime: 5 * 60 * 1000 } }
+  );
+
+  const templateParams = selectedSystemConfigId ? { systemConfigId: selectedSystemConfigId } : undefined;
+
+  // Fetch template info (only after selecting a System Config)
+  const { data: templateInfo } = useGetImportTemplate3(templateParams, {
+    query: { enabled: !!selectedSystemConfigId },
+  });
 
   const {
     mutate: importProducts,
@@ -93,15 +104,24 @@ export function ProductDataImport() {
       return;
     }
 
+    if (templateInfo?.columns) {
+      const headers = templateInfo.columns.map((column: any) => column.header);
+      sessionStorage.setItem('productImportColumns', JSON.stringify(headers));
+    }
+    if (selectedSystemConfigId) {
+      sessionStorage.setItem('productImportSystemConfigId', String(selectedSystemConfigId));
+    }
+
     importProducts({
       data: {
         file: data.importFile,
       },
+      params: templateParams,
     });
   };
 
   const { refetch: downloadTemplate, isFetching: isDownloadingTemplate } = useDownloadImportTemplate(
-    undefined,
+    templateParams,
     {
       query: {
         enabled: false,
@@ -181,6 +201,28 @@ export function ProductDataImport() {
           <CardContent className="p-4 sm:p-6">
             <h4 className="font-semibold mb-2">Product Data Bulk Import Instructions</h4>
             <div className="space-y-4">
+              <div>
+                <h5 className="text-sm font-medium text-muted-foreground mb-2">System Config:</h5>
+                <Select
+                  value={selectedSystemConfigId ? String(selectedSystemConfigId) : ''}
+                  onValueChange={(value) => setSelectedSystemConfigId(value ? Number(value) : null)}
+                >
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue placeholder="Select a System Config to generate the template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {systemConfigs.map((config: any) => (
+                      <SelectItem key={config.id} value={String(config.id)}>
+                        {config.configKey}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Selecting a System Config will generate attribute columns in the template.
+                </p>
+              </div>
+
               {/* Instructions List */}
               <div>
                 <h5 className="text-sm font-medium text-muted-foreground mb-2">Instructions:</h5>
@@ -189,7 +231,7 @@ export function ProductDataImport() {
                   <li>Product Name and Product code columns are required</li>
                   <li>Product code must contain only letters, numbers, underscores, or hyphens</li>
                   <li>Prices must be numbers between 0 and 999999</li>
-                  <li>For products with variants: fill Size, Color, Material, Style columns</li>
+                  <li>Select a System Config and fill the attribute columns shown in the template</li>
                   <li>Variant Price and Variant Stock override base prices for specific variants</li>
                   <li>For products without variants: use Total Quantity column</li>
                   <li>Each row represents either a base product or a product variant</li>
@@ -212,7 +254,7 @@ export function ProductDataImport() {
                       variant="outline"
                       className="flex items-center gap-2"
                       type="button"
-                      disabled={isDownloadingTemplate}
+                      disabled={isDownloadingTemplate || !selectedSystemConfigId}
                     >
                       <Download className="h-4 w-4" />
                       {isDownloadingTemplate ? 'Downloading...' : 'Download Template (.xlsx)'}
