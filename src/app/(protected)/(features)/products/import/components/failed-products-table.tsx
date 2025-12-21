@@ -14,6 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import type {
   ImportHistoryDTO,
   ProductDTO,
+  ProductCategoryDTO,
+  ProductSubCategoryDTO,
   SystemConfigAttributeDTO,
   SystemConfigAttributeOptionDTO,
 } from '@/core/api/generated/spring/schemas';
@@ -22,6 +24,8 @@ import {
   useDeleteAllImportHistoryEntries,
   useGetAllImportHistories,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
+import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 import {
   useGetAllSystemConfigAttributes,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
@@ -50,6 +54,24 @@ const BASE_HEADERS = [
 
 const TRAILING_HEADERS = ['Variant Price', 'Variant Stock'];
 
+const REMARK_HEADERS = [
+  'Product Category',
+  'Product Sub Category',
+  'Product Name',
+  'Product code',
+  'Article Number',
+  'Description',
+  'Total Quantity',
+  'Base Price',
+  'Discounted Price',
+  'Sale Price',
+  'Variant Price',
+  'Variant Stock',
+];
+
+const NUMBER_HEADERS = new Set(['Total Quantity', 'Variant Stock']);
+const PRICE_HEADERS = new Set(['Base Price', 'Discounted Price', 'Sale Price', 'Variant Price']);
+
 type VariantAttributeValues = Record<string, string>;
 type ParsedVariantAttributes = {
   values: VariantAttributeValues;
@@ -66,6 +88,10 @@ function normalizeKey(value: string): string {
 }
 
 function normalizeSystemConfigKey(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function normalizeLookupValue(value: string): string {
   return value.trim().toLowerCase();
 }
 
@@ -92,6 +118,62 @@ function parseVariantAttributes(value: string | null | undefined): ParsedVariant
   });
 
   return { values, labels, systemConfigKey };
+}
+
+function parseRemarkData(rawRemark: string | null | undefined): Record<string, string> {
+  if (!hasText(rawRemark)) return {};
+  try {
+    const parsed = JSON.parse(rawRemark);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {};
+    }
+    const values: Record<string, string> = {};
+    Object.entries(parsed).forEach(([key, value]) => {
+      if (!hasText(key) || value == null) return;
+      values[key] = String(value);
+    });
+    return values;
+  } catch (error) {
+    console.warn('Failed to parse remark data:', error);
+    return {};
+  }
+}
+
+function buildRemarkData(
+  current: Record<string, string>,
+  updates: Record<string, string | null | undefined>
+): string | null {
+  const next: Record<string, string> = { ...current };
+  Object.entries(updates).forEach(([key, value]) => {
+    if (!hasText(key)) return;
+    if (!hasText(value)) {
+      delete next[key];
+      return;
+    }
+    next[key] = value.trim();
+  });
+  const entries = Object.entries(next).filter(([, value]) => hasText(value));
+  if (!entries.length) return null;
+  const normalized: Record<string, string> = {};
+  entries.forEach(([key, value]) => {
+    normalized[key] = value.trim();
+  });
+  return JSON.stringify(normalized);
+}
+
+function resolveRowField(
+  row: ImportHistoryDTO,
+  remarkData: Record<string, string>,
+  header: string,
+  fallback?: string | null
+): string {
+  if (header === 'Product Name') {
+    return (row.productName ?? remarkData[header] ?? fallback ?? '') as string;
+  }
+  if (header === 'Product code') {
+    return (row.productCode ?? remarkData[header] ?? fallback ?? '') as string;
+  }
+  return (remarkData[header] ?? fallback ?? '') as string;
 }
 
 function buildVariantAttributes(
@@ -143,6 +225,42 @@ function formatOptionLabel(option: SystemConfigAttributeOptionDTO): string {
   return option.label || option.code;
 }
 
+function formatCategoryLabel(category: ProductCategoryDTO): string {
+  if (category.name && category.code && category.name !== category.code) {
+    return `${category.name} (${category.code})`;
+  }
+  return category.name || category.code || '';
+}
+
+function formatSubCategoryLabel(subCategory: ProductSubCategoryDTO): string {
+  const name = subCategory.name || subCategory.code || '';
+  const categoryLabel = subCategory.category?.name || subCategory.category?.code || '';
+  if (categoryLabel) {
+    return `${name} — ${categoryLabel}`;
+  }
+  return name;
+}
+
+function resolveCategoryOptionValue(category: ProductCategoryDTO): string {
+  if (hasText(category.code)) {
+    return category.code!;
+  }
+  if (hasText(category.name)) {
+    return category.name!;
+  }
+  return '';
+}
+
+function resolveSubCategoryOptionValue(subCategory: ProductSubCategoryDTO): string {
+  if (hasText(subCategory.code)) {
+    return subCategory.code!;
+  }
+  if (hasText(subCategory.name)) {
+    return subCategory.name!;
+  }
+  return '';
+}
+
 async function processProductImportHistory(
   id: number,
   payload: ImportHistoryDTO
@@ -158,6 +276,8 @@ export function FailedProductsTable() {
   const [editableRows, setEditableRows] = useState<ImportHistoryDTO[]>([]);
   const [pendingRowIds, setPendingRowIds] = useState<Set<number>>(new Set());
   const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
+  const [fallbackSystemConfigKey, setFallbackSystemConfigKey] = useState<string | null>(null);
+  const [templateHeaders, setTemplateHeaders] = useState<string[] | null>(null);
 
   const {
     data: importHistoryData,
@@ -184,6 +304,41 @@ export function FailedProductsTable() {
     { query: { staleTime: 5 * 60 * 1000 } }
   );
 
+  const { data: productCategories = [] } = useGetAllProductCategories(
+    { page: 0, size: 1000, 'status.equals': 'ACTIVE' },
+    { query: { staleTime: 5 * 60 * 1000 } }
+  );
+
+  const { data: productSubCategories = [] } = useGetAllProductSubCategories(
+    { page: 0, size: 2000, 'status.equals': 'ACTIVE' },
+    { query: { staleTime: 5 * 60 * 1000 } }
+  );
+
+  useEffect(() => {
+    const storedHeaders = sessionStorage.getItem('productImportColumns');
+    if (!storedHeaders) return;
+    try {
+      const headers = JSON.parse(storedHeaders);
+      if (Array.isArray(headers) && headers.length > 0) {
+        setTemplateHeaders(headers);
+      }
+    } catch (error) {
+      console.error('Failed to parse import column headers:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!systemConfigs.length) return;
+    const storedId = sessionStorage.getItem('productImportSystemConfigId');
+    if (!storedId) return;
+    const parsedId = Number(storedId);
+    if (!Number.isFinite(parsedId)) return;
+    const match = systemConfigs.find((config: any) => config.id === parsedId);
+    if (match?.configKey) {
+      setFallbackSystemConfigKey(match.configKey);
+    }
+  }, [systemConfigs]);
+
   const { data: allAttributes } = useGetAllSystemConfigAttributes(
     { size: 1000, 'status.equals': 'ACTIVE' },
     { query: { staleTime: 5 * 60 * 1000 } }
@@ -197,6 +352,57 @@ export function FailedProductsTable() {
     });
     return map;
   }, [systemConfigs]);
+
+  const categoryLookup = useMemo(() => {
+    const map = new Map<string, ProductCategoryDTO>();
+    productCategories.forEach((category) => {
+      if (!category) return;
+      if (hasText(category.code)) {
+        map.set(normalizeLookupValue(category.code), category);
+      }
+      if (hasText(category.name)) {
+        map.set(normalizeLookupValue(category.name), category);
+      }
+    });
+    return map;
+  }, [productCategories]);
+
+  const categoryOptions = useMemo(() => {
+    const options = productCategories
+      .filter((category) => category && (hasText(category.code) || hasText(category.name)))
+      .map((category) => category as ProductCategoryDTO);
+    options.sort((a, b) => (a.name || a.code || '').localeCompare(b.name || b.code || ''));
+    return options;
+  }, [productCategories]);
+
+  const subCategoryLookup = useMemo(() => {
+    const map = new Map<string, ProductSubCategoryDTO>();
+    productSubCategories.forEach((subCategory) => {
+      if (!subCategory) return;
+      if (hasText(subCategory.code)) {
+        map.set(normalizeLookupValue(subCategory.code), subCategory);
+      }
+      if (hasText(subCategory.name)) {
+        map.set(normalizeLookupValue(subCategory.name), subCategory);
+      }
+    });
+    return map;
+  }, [productSubCategories]);
+
+  const subCategoriesByCategoryId = useMemo(() => {
+    const map = new Map<number, ProductSubCategoryDTO[]>();
+    productSubCategories.forEach((subCategory) => {
+      const categoryId = subCategory.category?.id;
+      if (typeof categoryId !== 'number') return;
+      const list = map.get(categoryId) ?? [];
+      list.push(subCategory);
+      map.set(categoryId, list);
+    });
+    map.forEach((list) =>
+      list.sort((a, b) => (a.name || a.code || '').localeCompare(b.name || b.code || ''))
+    );
+    return map;
+  }, [productSubCategories]);
 
   const relevantConfigIds = useMemo(() => {
     const ids = new Set<number>();
@@ -254,6 +460,19 @@ export function FailedProductsTable() {
     const labelByKey = new Map<string, string>();
     const orderedKeys: string[] = [];
 
+    if (templateHeaders?.length) {
+      const attributeLabels = templateHeaders.filter(
+        (header) => !BASE_HEADERS.includes(header) && !TRAILING_HEADERS.includes(header)
+      );
+      attributeLabels.forEach((label) => {
+        const key = normalizeKey(label);
+        if (!key || labelByKey.has(key)) return;
+        labelByKey.set(key, label);
+        orderedKeys.push(key);
+      });
+      return { orderedKeys, labelByKey };
+    }
+
     const includeConfigAttributes = relevantConfigIds.size > 0;
     const configOrder = includeConfigAttributes
       ? systemConfigs
@@ -291,7 +510,7 @@ export function FailedProductsTable() {
     });
 
     return { orderedKeys, labelByKey };
-  }, [systemConfigs, relevantConfigIds, attributesByConfigId, editableRows]);
+  }, [templateHeaders, systemConfigs, relevantConfigIds, attributesByConfigId, editableRows]);
 
   const optionsByAttributeId = useMemo(() => {
     const map = new Map<number, SystemConfigAttributeOptionDTO[]>();
@@ -370,6 +589,19 @@ export function FailedProductsTable() {
     [systemConfigByKey]
   );
 
+  const resolveSystemConfigKey = useCallback(
+    (systemConfigKey?: string | null) => {
+      if (hasText(systemConfigKey)) {
+        return systemConfigKey!.trim();
+      }
+      if (hasText(fallbackSystemConfigKey)) {
+        return fallbackSystemConfigKey!.trim();
+      }
+      return null;
+    },
+    [fallbackSystemConfigKey]
+  );
+
   const getOptionsForRowAttribute = useCallback(
     (configId: number | null, key: string) => {
       if (typeof configId === 'number') {
@@ -386,9 +618,11 @@ export function FailedProductsTable() {
   const computeRowIssues = useCallback(
     (row: ImportHistoryDTO): string[] => {
       const issues: string[] = [];
-      const name = (row.productName ?? '').trim();
-      const code = (row.productCode ?? '').trim();
+      const remarkData = parseRemarkData(row.remark);
+      const name = resolveRowField(row, remarkData, 'Product Name').trim();
+      const code = resolveRowField(row, remarkData, 'Product code').trim();
       const parsed = parseVariantAttributes(row.variantAttributes);
+      const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
 
       if (name.length < 2 || name.length > 100) {
         issues.push('Product Name must be 2-100 characters.');
@@ -398,11 +632,14 @@ export function FailedProductsTable() {
       }
 
       const hasAttribute = Object.values(parsed.values).some((value) => hasText(value));
-      if (!hasAttribute) {
-        issues.push('Provide at least one variant attribute.');
+      const totalQuantityRaw = remarkData['Total Quantity'] ?? '';
+      const totalQuantityValue = Number.parseInt(totalQuantityRaw, 10);
+      const hasTotalQuantity = Number.isFinite(totalQuantityValue) && totalQuantityValue > 0;
+      if (!hasAttribute && !hasTotalQuantity) {
+        issues.push('Provide at least one variant attribute or a positive Total Quantity.');
       }
 
-      const configId = resolveConfigId(parsed.systemConfigKey);
+      const configId = resolveConfigId(effectiveSystemConfigKey);
       if (hasText(parsed.systemConfigKey) && configId == null) {
         issues.push(`Unknown ${SYSTEM_CONFIG_LABEL} '${parsed.systemConfigKey}'.`);
       }
@@ -436,7 +673,7 @@ export function FailedProductsTable() {
 
       return issues;
     },
-    [resolveConfigId, attributesByConfigId, getOptionsForRowAttribute, attributeLabelData]
+    [resolveConfigId, resolveSystemConfigKey, attributesByConfigId, getOptionsForRowAttribute, attributeLabelData]
   );
 
   const validatedRows = useMemo(() => {
@@ -449,7 +686,35 @@ export function FailedProductsTable() {
 
   const handleFieldChange = useCallback((rowId: number, field: keyof ImportHistoryDTO, value: string) => {
     setEditableRows((prev) =>
-      prev.map((row) => (row.id === rowId ? { ...row, [field]: value as any } : row))
+      prev.map((row) => {
+        if (row.id !== rowId) return row;
+        const nextRow = { ...row, [field]: value as any };
+        const remarkHeader =
+          field === 'productName' ? 'Product Name' : field === 'productCode' ? 'Product code' : null;
+        if (!remarkHeader) {
+          return nextRow;
+        }
+        const remarkData = parseRemarkData(row.remark);
+        const nextRemark = buildRemarkData(remarkData, { [remarkHeader]: value });
+        return { ...nextRow, remark: nextRemark };
+      })
+    );
+    setRowErrors((prev) => {
+      if (!prev[rowId]) return prev;
+      const next = { ...prev };
+      delete next[rowId];
+      return next;
+    });
+  }, []);
+
+  const handleRemarkFieldChange = useCallback((rowId: number, header: string, value: string) => {
+    setEditableRows((prev) =>
+      prev.map((row) => {
+        if (row.id !== rowId) return row;
+        const remarkData = parseRemarkData(row.remark);
+        const nextRemark = buildRemarkData(remarkData, { [header]: value });
+        return { ...row, remark: nextRemark };
+      })
     );
     setRowErrors((prev) => {
       if (!prev[rowId]) return prev;
@@ -516,6 +781,79 @@ export function FailedProductsTable() {
     [attributeLabelData]
   );
 
+  const handleCategoryChange = useCallback(
+    (rowId: number, value: string) => {
+      setEditableRows((prev) =>
+        prev.map((row) => {
+          if (row.id !== rowId) return row;
+          const remarkData = parseRemarkData(row.remark);
+          const nextCategoryValue = value === EMPTY_SELECT_VALUE ? null : value;
+          const currentSubValue = remarkData['Product Sub Category'];
+          let nextSubValue: string | null | undefined = currentSubValue;
+
+          if (!hasText(nextCategoryValue)) {
+            nextSubValue = null;
+          } else if (hasText(currentSubValue)) {
+            const subMatch = subCategoryLookup.get(normalizeLookupValue(currentSubValue));
+            const selectedCategory = categoryLookup.get(normalizeLookupValue(nextCategoryValue));
+            if (
+              subMatch?.category?.id != null &&
+              selectedCategory?.id != null &&
+              subMatch.category.id !== selectedCategory.id
+            ) {
+              nextSubValue = null;
+            }
+          }
+
+          const nextRemark = buildRemarkData(remarkData, {
+            'Product Category': nextCategoryValue,
+            'Product Sub Category': nextSubValue,
+          });
+          return { ...row, remark: nextRemark };
+        })
+      );
+      setRowErrors((prev) => {
+        if (!prev[rowId]) return prev;
+        const next = { ...prev };
+        delete next[rowId];
+        return next;
+      });
+    },
+    [subCategoryLookup, categoryLookup]
+  );
+
+  const handleSubCategoryChange = useCallback(
+    (rowId: number, value: string) => {
+      setEditableRows((prev) =>
+        prev.map((row) => {
+          if (row.id !== rowId) return row;
+          const remarkData = parseRemarkData(row.remark);
+          const nextSubValue = value === EMPTY_SELECT_VALUE ? null : value;
+          let nextCategoryValue = remarkData['Product Category'];
+          if (hasText(nextSubValue)) {
+            const subMatch = subCategoryLookup.get(normalizeLookupValue(nextSubValue));
+            const categoryValue = subMatch?.category ? resolveCategoryOptionValue(subMatch.category) : '';
+            if (hasText(categoryValue)) {
+              nextCategoryValue = categoryValue;
+            }
+          }
+          const nextRemark = buildRemarkData(remarkData, {
+            'Product Category': nextCategoryValue,
+            'Product Sub Category': nextSubValue,
+          });
+          return { ...row, remark: nextRemark };
+        })
+      );
+      setRowErrors((prev) => {
+        if (!prev[rowId]) return prev;
+        const next = { ...prev };
+        delete next[rowId];
+        return next;
+      });
+    },
+    [subCategoryLookup]
+  );
+
   const handleSaveRow = useCallback(
     async (row: ImportHistoryDTO): Promise<boolean> => {
       if (typeof row.id !== 'number') return false;
@@ -527,14 +865,19 @@ export function FailedProductsTable() {
       }
 
       const parsed = parseVariantAttributes(row.variantAttributes);
+      const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
+      const remarkData = parseRemarkData(row.remark);
+      const resolvedName = resolveRowField(row, remarkData, 'Product Name').trim();
+      const resolvedCode = resolveRowField(row, remarkData, 'Product code').trim();
       const payload: ImportHistoryDTO = {
         ...row,
-        productName: row.productName?.trim(),
-        productCode: row.productCode?.trim(),
+        productName: resolvedName,
+        productCode: resolvedCode,
         variantAttributes: buildVariantAttributes(
           parsed.values,
           attributeLabelData.labelByKey,
-          parsed.labels
+          parsed.labels,
+          effectiveSystemConfigKey
         ),
         issue: null,
       };
@@ -569,7 +912,7 @@ export function FailedProductsTable() {
         });
       }
     },
-    [computeRowIssues, refetch, attributeLabelData]
+    [computeRowIssues, refetch, attributeLabelData, resolveSystemConfigKey]
   );
 
   const handleSaveValidated = useCallback(async () => {
@@ -622,29 +965,39 @@ export function FailedProductsTable() {
 
     const sheetRows = editableRows.map((row) => {
       const parsed = parseVariantAttributes(row.variantAttributes);
+      const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
+      const remarkData = parseRemarkData(row.remark);
       const rowValues: Record<string, string> = {};
-      rowValues['Product Name'] = row.productName ?? '';
-      rowValues['Product code'] = row.productCode ?? '';
-      rowValues[SYSTEM_CONFIG_LABEL] = parsed.systemConfigKey ?? '';
+      REMARK_HEADERS.forEach((header) => {
+        const value = resolveRowField(row, remarkData, header);
+        if (hasText(value)) {
+          rowValues[header] = value;
+        }
+      });
+      rowValues[SYSTEM_CONFIG_LABEL] = effectiveSystemConfigKey ?? rowValues[SYSTEM_CONFIG_LABEL] ?? '';
 
       attributeColumns.forEach((column) => {
         rowValues[column.label] = parsed.values[column.key] ?? '';
       });
 
-      const headers = [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
+      const headers = templateHeaders?.length
+        ? templateHeaders
+        : [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
       return [
         ...headers.map((header) => rowValues[header] ?? ''),
         row.issue ?? '',
       ];
     });
 
-    const headers = [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
+    const headers = templateHeaders?.length
+      ? templateHeaders
+      : [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
     const worksheet = XLSX.utils.aoa_to_sheet([[...headers, 'Reason'], ...sheetRows]);
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Failed Products');
     XLSX.writeFile(workbook, 'product-import-failed-rows.xlsx');
-  }, [editableRows, attributeColumns]);
+  }, [editableRows, attributeColumns, resolveSystemConfigKey, templateHeaders]);
 
   if (isLoading) {
     return (
@@ -715,11 +1068,14 @@ export function FailedProductsTable() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Product Name</TableHead>
-              <TableHead>Product Code</TableHead>
-              <TableHead>{SYSTEM_CONFIG_LABEL}</TableHead>
+              {BASE_HEADERS.map((header) => (
+                <TableHead key={`base-${header}`}>{header}</TableHead>
+              ))}
               {attributeColumns.map((column) => (
                 <TableHead key={column.key}>{column.label}</TableHead>
+              ))}
+              {TRAILING_HEADERS.map((header) => (
+                <TableHead key={`trail-${header}`}>{header}</TableHead>
               ))}
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -729,7 +1085,9 @@ export function FailedProductsTable() {
             {editableRows.map((row) => {
               const rowId = row.id as number;
               const parsed = parseVariantAttributes(row.variantAttributes);
-              const rowConfigId = resolveConfigId(parsed.systemConfigKey);
+              const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
+              const rowConfigId = resolveConfigId(effectiveSystemConfigKey);
+              const remarkData = parseRemarkData(row.remark);
               const issues = computeRowIssues(row);
               const canSave = issues.length === 0 && !pendingRowIds.has(rowId);
               const errorText = rowErrors[rowId];
@@ -737,44 +1095,185 @@ export function FailedProductsTable() {
               return (
                 <TableRow key={rowId}>
                   <TableCell>{rowId}</TableCell>
-                  <TableCell className="min-w-[200px]">
-                    <Input
-                      value={(row.productName ?? '') as string}
-                      onChange={(e) => handleFieldChange(rowId, 'productName', e.target.value)}
-                      placeholder="Product Name"
-                    />
-                  </TableCell>
-                  <TableCell className="min-w-[160px]">
-                    <Input
-                      value={(row.productCode ?? '') as string}
-                      onChange={(e) => handleFieldChange(rowId, 'productCode', e.target.value)}
-                      placeholder="PRODUCT-CODE"
-                    />
-                  </TableCell>
-                  <TableCell className="min-w-[180px]">
-                    <Select
-                      value={parsed.systemConfigKey ?? EMPTY_SELECT_VALUE}
-                      onValueChange={(value) => handleSystemConfigChange(rowId, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={`Select ${SYSTEM_CONFIG_LABEL}`} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
-                        {systemConfigs.length === 0 ? (
-                          <SelectItem value="__empty__" disabled>
-                            No System Configs available
-                          </SelectItem>
-                        ) : (
-                          systemConfigs.map((config: any) => (
-                            <SelectItem key={config.id} value={config.configKey}>
-                              {config.configKey}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
+                  {BASE_HEADERS.map((header) => {
+                    if (header === 'Product Category') {
+                      const currentValue = resolveRowField(row, remarkData, header);
+                      const categoryMatch = hasText(currentValue)
+                        ? categoryLookup.get(normalizeLookupValue(currentValue))
+                        : undefined;
+                      const resolvedCategoryValue = categoryMatch ? resolveCategoryOptionValue(categoryMatch) : '';
+                      const selectValue =
+                        resolvedCategoryValue || (hasText(currentValue) ? currentValue : EMPTY_SELECT_VALUE);
+                      const showCustom = hasText(currentValue) && !categoryMatch;
+
+                      return (
+                        <TableCell key={`${rowId}-${header}`} className="min-w-[200px]">
+                          <Select
+                            value={selectValue}
+                            onValueChange={(value) => handleCategoryChange(rowId, value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Product Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
+                              {showCustom && (
+                                <SelectItem value={currentValue}>
+                                  Current: {currentValue}
+                                </SelectItem>
+                              )}
+                              {categoryOptions.length === 0 ? (
+                                <SelectItem value="__empty__" disabled>
+                                  No Product Categories available
+                                </SelectItem>
+                              ) : (
+                                categoryOptions.map((category) => (
+                                  <SelectItem
+                                    key={category.id ?? category.code ?? category.name}
+                                    value={resolveCategoryOptionValue(category)}
+                                  >
+                                    {formatCategoryLabel(category)}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      );
+                    }
+                    if (header === 'Product Sub Category') {
+                      const currentValue = resolveRowField(row, remarkData, header);
+                      const subCategoryMatch = hasText(currentValue)
+                        ? subCategoryLookup.get(normalizeLookupValue(currentValue))
+                        : undefined;
+                      const resolvedSubCategoryValue = subCategoryMatch
+                        ? resolveSubCategoryOptionValue(subCategoryMatch)
+                        : '';
+                      const selectValue =
+                        resolvedSubCategoryValue || (hasText(currentValue) ? currentValue : EMPTY_SELECT_VALUE);
+                      const showCustom = hasText(currentValue) && !subCategoryMatch;
+                      const categoryValue = resolveRowField(row, remarkData, 'Product Category');
+                      const categoryMatch = hasText(categoryValue)
+                        ? categoryLookup.get(normalizeLookupValue(categoryValue))
+                        : undefined;
+                      const effectiveCategoryId = categoryMatch?.id ?? null;
+                      const subCategoryOptions = typeof effectiveCategoryId === 'number'
+                        ? subCategoriesByCategoryId.get(effectiveCategoryId) ?? []
+                        : [];
+
+                      return (
+                        <TableCell key={`${rowId}-${header}`} className="min-w-[220px]">
+                          <Select
+                            value={selectValue}
+                            onValueChange={(value) => handleSubCategoryChange(rowId, value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Product Sub Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
+                              {showCustom && (
+                                <SelectItem value={currentValue}>
+                                  Current: {currentValue}
+                                </SelectItem>
+                              )}
+                              {effectiveCategoryId == null ? (
+                                <SelectItem value="__empty__" disabled>
+                                  Select a Product Category first
+                                </SelectItem>
+                              ) : subCategoryOptions.length === 0 ? (
+                                <SelectItem value="__empty__" disabled>
+                                  No Product Sub Categories available
+                                </SelectItem>
+                              ) : (
+                                subCategoryOptions.map((subCategory) => (
+                                  <SelectItem
+                                    key={subCategory.id ?? subCategory.code ?? subCategory.name}
+                                    value={resolveSubCategoryOptionValue(subCategory)}
+                                  >
+                                    {formatSubCategoryLabel(subCategory)}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      );
+                    }
+                    if (header === 'Product Name') {
+                      return (
+                        <TableCell key={`${rowId}-${header}`} className="min-w-[200px]">
+                          <Input
+                            value={resolveRowField(row, remarkData, header)}
+                            onChange={(e) => handleFieldChange(rowId, 'productName', e.target.value)}
+                            placeholder="Product Name"
+                          />
+                        </TableCell>
+                      );
+                    }
+                    if (header === 'Product code') {
+                      return (
+                        <TableCell key={`${rowId}-${header}`} className="min-w-[180px]">
+                          <Input
+                            value={resolveRowField(row, remarkData, header)}
+                            onChange={(e) => handleFieldChange(rowId, 'productCode', e.target.value)}
+                            placeholder="PRODUCT-CODE"
+                          />
+                        </TableCell>
+                      );
+                    }
+                    if (header === SYSTEM_CONFIG_LABEL) {
+                      return (
+                        <TableCell key={`${rowId}-${header}`} className="min-w-[180px]">
+                          <Select
+                            value={parsed.systemConfigKey ?? EMPTY_SELECT_VALUE}
+                            onValueChange={(value) => handleSystemConfigChange(rowId, value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={`Select ${SYSTEM_CONFIG_LABEL}`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={EMPTY_SELECT_VALUE}>None</SelectItem>
+                              {systemConfigs.length === 0 ? (
+                                <SelectItem value="__empty__" disabled>
+                                  No System Configs available
+                                </SelectItem>
+                              ) : (
+                                systemConfigs.map((config: any) => (
+                                  <SelectItem key={config.id} value={config.configKey}>
+                                    {config.configKey}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {!hasText(parsed.systemConfigKey) && hasText(fallbackSystemConfigKey) && (
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Using {fallbackSystemConfigKey} from the last import.
+                            </p>
+                          )}
+                        </TableCell>
+                      );
+                    }
+
+                    const inputType = NUMBER_HEADERS.has(header)
+                      ? { type: 'number', min: 0, step: 1 }
+                      : PRICE_HEADERS.has(header)
+                        ? { type: 'number', min: 0, step: 0.01 }
+                        : { type: 'text' };
+                    const cellWidth = header === 'Description' ? 'min-w-[240px]' : 'min-w-[180px]';
+
+                    return (
+                      <TableCell key={`${rowId}-${header}`} className={cellWidth}>
+                        <Input
+                          value={resolveRowField(row, remarkData, header)}
+                          onChange={(e) => handleRemarkFieldChange(rowId, header, e.target.value)}
+                          placeholder={header}
+                          {...inputType}
+                        />
+                      </TableCell>
+                    );
+                  })}
                   {attributeColumns.map((column) => {
                     const options = getOptionsForRowAttribute(rowConfigId, column.key);
                     const currentValue = parsed.values[column.key];
@@ -819,6 +1318,25 @@ export function FailedProductsTable() {
                             )}
                           </SelectContent>
                         </Select>
+                      </TableCell>
+                    );
+                  })}
+                  {TRAILING_HEADERS.map((header) => {
+                    const inputType = NUMBER_HEADERS.has(header)
+                      ? { type: 'number', min: 0, step: 1 }
+                      : PRICE_HEADERS.has(header)
+                        ? { type: 'number', min: 0, step: 0.01 }
+                        : { type: 'text' };
+                    const cellWidth = header === 'Variant Stock' ? 'min-w-[160px]' : 'min-w-[180px]';
+
+                    return (
+                      <TableCell key={`${rowId}-${header}`} className={cellWidth}>
+                        <Input
+                          value={resolveRowField(row, remarkData, header)}
+                          onChange={(e) => handleRemarkFieldChange(rowId, header, e.target.value)}
+                          placeholder={header}
+                          {...inputType}
+                        />
                       </TableCell>
                     );
                   })}
