@@ -62,7 +62,8 @@
       "otherEntityRelationshipName": "variant",
       "relationshipName": "selections",
       "relationshipSide": "left",
-      "relationshipType": "one-to-many"
+      "relationshipType": "one-to-many",
+      "cascade": ["REMOVE"]
     },
     {
       "otherEntityField": "name",

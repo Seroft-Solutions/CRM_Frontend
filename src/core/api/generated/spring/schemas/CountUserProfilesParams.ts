@@ -159,4 +159,5 @@ export type CountUserProfilesParams = {
 'channelTypeId.in'?: number[];
 'channelTypeId.notIn'?: number[];
 distinct?: boolean;
+searchTerm?: string;
 };

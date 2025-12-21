@@ -85,6 +85,7 @@
   "pagination": "pagination",
   "relationships": [
     {
+      "cascade": ["REMOVE"],
       "otherEntityName": "productVariant",
       "otherEntityRelationshipName": "product",
       "relationshipName": "variants",

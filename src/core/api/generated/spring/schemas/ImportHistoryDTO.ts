@@ -21,4 +21,6 @@ export interface ImportHistoryDTO {
   issue?: string;
   remark?: string;
   entityName?: string;
+  variantSku?: string;
+  variantAttributes?: string;
 }

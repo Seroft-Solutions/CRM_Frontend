@@ -230,6 +230,18 @@ export const sidebarItems: SidebarItem[] = [
         path: '/products',
         requiredPermission: 'product:sidebar',
       },
+      {
+        key: 'productImport',
+        label: 'Import Products',
+        path: '/products/import',
+        requiredPermission: 'product:sidebar',
+      },
+      {
+        key: 'productImportHistory',
+        label: 'Import History',
+        path: '/products/import/results',
+        requiredPermission: 'product:sidebar',
+      },
     ],
   },
   {
