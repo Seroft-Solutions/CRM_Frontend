@@ -315,7 +315,7 @@ export const mapOrderAddressDetail = (
   billToSameAsShip: Boolean(address?.billToSameFlag),
   createdBy: address?.createdBy ?? order?.createdBy ?? 'System',
   createdDate: address?.createdDate ?? order?.createdDate ?? '',
-  updatedBy: address?.updatedBy ?? toStringValue(order?.updatedBy) || undefined,
+  updatedBy: address?.updatedBy ?? (toStringValue(order?.updatedBy) || undefined),
   lastUpdated: address?.lastUpdated ?? order?.lastUpdated ?? undefined,
 });
 
