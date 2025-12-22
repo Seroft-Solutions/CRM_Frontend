@@ -1,13 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { OrderRecord, OrderStatus, orderStatusOptions } from '../data/order-data';
+import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
+import type { CountOrdersParams } from '@/core/api/generated/spring/schemas';
+import { getOrderStatusCode, mapOrderDtoToRecord, OrderStatus, orderStatusOptions } from '../data/order-data';
 
 const statusColors: Record<OrderStatus, string> = {
   Pending: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -28,35 +30,72 @@ function formatDateTime(value?: string) {
   return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
-interface OrderTableProps {
-  orders: OrderRecord[];
-}
-
-export function OrderTable({ orders }: OrderTableProps) {
+export function OrderTable() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const filteredOrders = useMemo(() => {
-    const normalizedSearch = searchTerm.toLowerCase().trim();
+  const filterParams = useMemo<CountOrdersParams>(() => {
+    const params: CountOrdersParams = {};
 
-    return orders.filter((order) => {
-      const matchesStatus = statusFilter === 'All' || order.orderStatus === statusFilter;
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        order.orderId.toString().includes(normalizedSearch) ||
-        order.email.toLowerCase().includes(normalizedSearch) ||
-        order.phone.toLowerCase().includes(normalizedSearch);
+    if (statusFilter !== 'All') {
+      const statusCode = getOrderStatusCode(statusFilter);
+      if (typeof statusCode === 'number') {
+        params['orderStatus.equals'] = statusCode;
+      }
+    }
 
-      return matchesStatus && matchesSearch;
-    });
-  }, [orders, statusFilter, searchTerm]);
+    const normalizedSearch = searchTerm.trim();
+    if (normalizedSearch) {
+      const numericOnly = /^\d+$/.test(normalizedSearch);
+      const phoneLike = /^[+()\d\s-]+$/.test(normalizedSearch);
 
-  const totalPages = Math.ceil(filteredOrders.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+      if (numericOnly && normalizedSearch.length < 7) {
+        params['id.equals'] = Number(normalizedSearch);
+      } else if (normalizedSearch.includes('@')) {
+        params['email.contains'] = normalizedSearch;
+      } else if (phoneLike || numericOnly) {
+        params['phone.contains'] = normalizedSearch;
+      } else {
+        params['email.contains'] = normalizedSearch;
+      }
+    }
+
+    return params;
+  }, [searchTerm, statusFilter]);
+
+  const apiPage = Math.max(currentPage - 1, 0);
+
+  const { data, isLoading, isError } = useGetAllOrders(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: ['id,desc'],
+      ...filterParams,
+    },
+    {
+      query: {
+        refetchOnWindowFocus: false,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const { data: countData } = useCountOrders(filterParams, {
+    query: {
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
+  });
+
+  const orders = useMemo(() => (data ?? []).map(mapOrderDtoToRecord), [data]);
+
+  const totalCount = countData ?? orders.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex = totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
+  const paginatedOrders = orders;
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilter: OrderStatus | 'All') => {
@@ -74,6 +113,30 @@ export function OrderTable({ orders }: OrderTableProps) {
     setCurrentPage(1);
   };
 
+  useEffect(() => {
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    } else if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
+        Loading orders...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
+        Unable to load orders right now. Please try again.
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
       <div className="flex flex-col gap-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 md:flex-row md:items-center md:justify-between">
@@ -86,7 +149,7 @@ export function OrderTable({ orders }: OrderTableProps) {
           <div>
             <h3 className="font-bold text-slate-800">All Orders</h3>
             <p className="text-sm text-muted-foreground">
-              Search by ID, email, or phone · {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
+              Search by ID, email, or phone · {totalCount} {totalCount === 1 ? 'order' : 'orders'}
             </p>
           </div>
         </div>
@@ -266,7 +329,7 @@ export function OrderTable({ orders }: OrderTableProps) {
         </Table>
       </div>
 
-      {filteredOrders.length > 0 && (
+      {totalCount > 0 && (
         <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -284,9 +347,9 @@ export function OrderTable({ orders }: OrderTableProps) {
               </select>
             </div>
             <div className="text-sm text-slate-600">
-              Showing <span className="font-bold text-slate-900">{startIndex + 1}</span> to{' '}
-              <span className="font-bold text-slate-900">{Math.min(endIndex, filteredOrders.length)}</span> of{' '}
-              <span className="font-bold text-slate-900">{filteredOrders.length}</span> orders
+              Showing <span className="font-bold text-slate-900">{startIndex}</span> to{' '}
+              <span className="font-bold text-slate-900">{endIndex}</span> of{' '}
+              <span className="font-bold text-slate-900">{totalCount}</span> orders
             </div>
           </div>
 
@@ -325,7 +388,7 @@ export function OrderTable({ orders }: OrderTableProps) {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
+              disabled={totalPages === 0 || currentPage === totalPages}
               className="border-slate-300 disabled:opacity-50"
             >
               Next
@@ -337,7 +400,7 @@ export function OrderTable({ orders }: OrderTableProps) {
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
+              disabled={totalPages === 0 || currentPage === totalPages}
               className="border-slate-300 disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

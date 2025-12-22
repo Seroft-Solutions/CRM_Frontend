@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useGetAllOrderHistories } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+import { useCountOrderHistories, useGetAllOrderHistories } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { mapOrderHistoryEntries } from '../data/order-data';
 
@@ -16,10 +16,14 @@ function formatDateTime(value?: string) {
 }
 
 export function OrderHistoryTable() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const apiPage = Math.max(currentPage - 1, 0);
+
   const { data: historyData, isLoading, isError } = useGetAllOrderHistories(
     {
-      page: 0,
-      size: 200,
+      page: apiPage,
+      size: pageSize,
       sort: ['createdDate,desc'],
     },
     {
@@ -30,14 +34,31 @@ export function OrderHistoryTable() {
     }
   );
 
-  const { data: ordersData } = useGetAllOrders(
-    {
-      page: 0,
-      size: 200,
+  const { data: countData } = useCountOrderHistories(undefined, {
+    query: {
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
     },
+  });
+
+  const orderIds = useMemo(() => {
+    const ids = (historyData ?? [])
+      .map((entry) => entry.orderId ?? 0)
+      .filter((id) => id > 0);
+    return Array.from(new Set(ids));
+  }, [historyData]);
+
+  const { data: ordersData } = useGetAllOrders(
+    orderIds.length
+      ? {
+          'id.in': orderIds,
+          page: 0,
+          size: orderIds.length,
+        }
+      : undefined,
     {
       query: {
-        enabled: Boolean(historyData?.length),
+        enabled: orderIds.length > 0,
         refetchOnWindowFocus: false,
         staleTime: 30_000,
       },
@@ -57,18 +78,24 @@ export function OrderHistoryTable() {
     }));
   }, [historyData, orderEmailById]);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const totalPages = Math.ceil(rows.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const paginatedRows = rows.slice(startIndex, endIndex);
+  const totalCount = countData ?? historyData?.length ?? 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex = totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
+  const paginatedRows = rows;
 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    } else if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
@@ -197,7 +224,7 @@ export function OrderHistoryTable() {
                 </TableRow>
               ))}
 
-              {paginatedRows.length === 0 && rows.length === 0 ? (
+              {paginatedRows.length === 0 && totalCount === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="py-16 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -217,7 +244,7 @@ export function OrderHistoryTable() {
         </div>
       )}
 
-      {!isLoading && !isError && rows.length > 0 && (
+      {!isLoading && !isError && totalCount > 0 && (
         <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -238,7 +265,7 @@ export function OrderHistoryTable() {
               </select>
             </div>
             <div className="text-sm text-slate-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, rows.length)} of {rows.length} entries
+              Showing {startIndex} to {endIndex} of {totalCount} entries
             </div>
           </div>
 
@@ -266,7 +293,7 @@ export function OrderHistoryTable() {
             </span>
             <Button
               onClick={() => setCurrentPage((prev) => prev + 1)}
-              disabled={currentPage === totalPages}
+              disabled={totalPages === 0 || currentPage === totalPages}
               size="sm"
               className="bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
             >
@@ -276,7 +303,7 @@ export function OrderHistoryTable() {
             </Button>
             <Button
               onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
+              disabled={totalPages === 0 || currentPage === totalPages}
               size="sm"
               className="bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
             >
