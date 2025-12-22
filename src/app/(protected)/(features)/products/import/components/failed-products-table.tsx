@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import type {
   ImportHistoryDTO,
@@ -33,6 +34,8 @@ import {
   useGetAllSystemConfigAttributeOptions,
 } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
+import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 const PRODUCT_CODE_REGEX = /^[A-Za-z0-9_-]{2,20}$/;
 const EMPTY_SELECT_VALUE = '__none__';
@@ -200,6 +203,7 @@ function buildVariantAttributes(
 function isProductImportHistoryRow(row: ImportHistoryDTO): boolean {
   const hasIssue = hasText(row.issue);
   if (!hasIssue) return false;
+  if (isDuplicateProductCodeIssue(row.issue)) return false;
 
   if (row.entityName) {
     return row.entityName.toUpperCase() === 'PRODUCT';
@@ -215,6 +219,17 @@ function isProductImportHistoryRow(row: ImportHistoryDTO): boolean {
     hasText(row.externalId);
 
   return hasProductSignals && !hasNonProductSignals;
+}
+
+function isDuplicateProductCodeIssue(issue: string | null | undefined): boolean {
+  if (!hasText(issue)) return false;
+  const normalized = issue.toLowerCase();
+  return (
+    normalized.includes('duplicate product code') ||
+    (normalized.includes('product with code') &&
+      normalized.includes('already exists') &&
+      normalized.includes('skipping'))
+  );
 }
 
 function formatOptionLabel(option: SystemConfigAttributeOptionDTO): string {
@@ -680,9 +695,10 @@ export function FailedProductsTable() {
     return editableRows.filter((row) => {
       if (typeof row.id !== 'number') return false;
       if (pendingRowIds.has(row.id)) return false;
+      if (rowErrors[row.id]) return false;
       return computeRowIssues(row).length === 0;
     });
-  }, [editableRows, pendingRowIds, computeRowIssues]);
+  }, [editableRows, pendingRowIds, computeRowIssues, rowErrors]);
 
   const handleFieldChange = useCallback((rowId: number, field: keyof ImportHistoryDTO, value: string) => {
     setEditableRows((prev) =>
@@ -1089,12 +1105,38 @@ export function FailedProductsTable() {
               const rowConfigId = resolveConfigId(effectiveSystemConfigKey);
               const remarkData = parseRemarkData(row.remark);
               const issues = computeRowIssues(row);
-              const canSave = issues.length === 0 && !pendingRowIds.has(rowId);
               const errorText = rowErrors[rowId];
               const importIssue = hasText(row.issue) ? row.issue!.trim() : '';
+              const rowSaving = pendingRowIds.has(rowId);
+              const displayedIssues = [...issues];
+
+              if (errorText && !displayedIssues.includes(errorText)) {
+                displayedIssues.push(errorText);
+              }
+
+              const issueDetails =
+                displayedIssues.length > 0
+                  ? displayedIssues
+                  : importIssue
+                    ? [`Previous import error: ${importIssue}`]
+                    : [];
+              const issueTitle = displayedIssues.length > 0 ? 'Validation Errors:' : 'Import Error:';
+
+              const rowHasInvalid = issues.length > 0;
+              const rowNeedsAttention = !rowHasInvalid && Boolean(errorText);
+              const isValidated = !rowHasInvalid && !rowNeedsAttention;
+              const canSave = !rowHasInvalid && !rowSaving && !errorText;
 
               return (
-                <TableRow key={rowId}>
+                <TableRow
+                  key={rowId}
+                  className={cn(
+                    'transition-colors',
+                    rowHasInvalid && 'bg-red-50/40 hover:bg-red-50/50',
+                    !rowHasInvalid && rowNeedsAttention && 'bg-amber-50/80 hover:bg-amber-50/90',
+                    isValidated && 'bg-green-100/60 hover:bg-green-100/70'
+                  )}
+                >
                   <TableCell>{rowId}</TableCell>
                   {BASE_HEADERS.map((header) => {
                     if (header === 'Product Category') {
@@ -1343,25 +1385,46 @@ export function FailedProductsTable() {
                   })}
                   <TableCell className="min-w-[240px]">
                     <div className="space-y-1">
-                      {errorText ? (
-                        <Badge variant="destructive">Needs Fix</Badge>
-                      ) : canSave ? (
-                        <Badge variant="default">Validated</Badge>
+                      {rowSaving ? (
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Saving...
+                        </span>
+                      ) : isValidated ? (
+                        <Badge variant="default">Ready</Badge>
+                      ) : rowHasInvalid ? (
+                        <Badge variant="destructive">Fix required</Badge>
+                      ) : rowNeedsAttention ? (
+                        <Badge variant="secondary">Needs review</Badge>
                       ) : (
-                        <Badge variant="secondary">Pending Fix</Badge>
+                        <Badge variant="outline">Pending</Badge>
                       )}
-                      {issues.length > 0 && (
-                        <p className="text-xs text-muted-foreground whitespace-normal">
-                          {issues.join(' ')}
-                        </p>
-                      )}
-                      {importIssue && !errorText && (
-                        <p className="text-xs text-red-700 whitespace-normal">
-                          {importIssue}
-                        </p>
-                      )}
-                      {errorText && (
-                        <p className="text-xs text-red-700 whitespace-normal">{errorText}</p>
+                      {issueDetails.length > 0 ? (
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-xs cursor-help text-red-600 font-medium truncate block max-w-[220px]">
+                                {issueDetails.join(', ')}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-md p-3 bg-white border shadow-lg">
+                              <div className="space-y-1">
+                                <p className="font-semibold text-sm text-red-700 mb-2">
+                                  {issueTitle}
+                                </p>
+                                <ul className="list-disc pl-4 space-y-1">
+                                  {issueDetails.map((issue, idx) => (
+                                    <li key={idx} className="text-sm text-gray-700">
+                                      {issue}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className="text-xs text-green-600 font-medium">No Failures</span>
                       )}
                     </div>
                   </TableCell>
