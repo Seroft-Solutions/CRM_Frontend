@@ -193,10 +193,27 @@ export function OrderDetail({ order }: OrderDetailProps) {
                           {index + 1}
                         </div>
                         <div>
-                          <div className="font-semibold text-slate-800">#{item.itemId}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {item.itemComment || 'No notes'}
-                          </div>
+                          {item.productName ? (
+                            <>
+                              <div className="font-semibold text-slate-800">{item.productName}</div>
+                              {item.sku && (
+                                <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
+                              )}
+                              {item.variantAttributes && (
+                                <div className="text-xs text-blue-600">{item.variantAttributes}</div>
+                              )}
+                              {item.itemComment && (
+                                <div className="text-xs italic text-muted-foreground">{item.itemComment}</div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="font-semibold text-slate-800">Item #{index + 1}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {item.itemComment || 'No product selected'}
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     </TableCell>

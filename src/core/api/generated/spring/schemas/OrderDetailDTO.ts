@@ -9,6 +9,23 @@
 export interface OrderDetailDTO {
   id?: number;
   orderId?: number;
+  productId?: number;
+  variantId?: number;
+  /**
+   * @minLength 0
+   * @maxLength 200
+   */
+  productName?: string;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  sku?: string;
+  /**
+   * @minLength 0
+   * @maxLength 500
+   */
+  variantAttributes?: string;
   itemStatus?: number;
   /** @minimum 0 */
   itemTotalAmount?: number;

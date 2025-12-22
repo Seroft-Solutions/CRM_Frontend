@@ -112,6 +112,11 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
     if (!initialOrder?.items?.length) return [];
     return initialOrder.items.map((item) => ({
       id: item.orderDetailId || undefined,
+      productId: item.productId || undefined,
+      variantId: item.variantId || undefined,
+      productName: item.productName || undefined,
+      sku: item.sku || undefined,
+      variantAttributes: item.variantAttributes || undefined,
       itemStatus: item.itemStatusCode?.toString() || parseItemStatusValue(item.itemStatus),
       quantity: item.quantity ? item.quantity.toString() : '',
       itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
@@ -170,7 +175,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
     }
   };
 
-  const handleItemChange = (index: number, key: keyof OrderItemForm, value: string) => {
+  const handleItemChange = (index: number, key: keyof OrderItemForm, value: string | number | undefined) => {
     setItems((prev) =>
       prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
     );
@@ -531,6 +536,11 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
           const detailPayload = {
             id: item.id,
             orderId,
+            productId: item.productId || undefined,
+            variantId: item.variantId || undefined,
+            productName: item.productName || undefined,
+            sku: item.sku || undefined,
+            variantAttributes: item.variantAttributes || undefined,
             itemStatus,
             quantity,
             itemPrice,

@@ -35,7 +35,11 @@ export type NotificationType = (typeof notificationTypeOptions)[number] | typeof
 export interface OrderDetailItem {
   orderDetailId: number;
   orderId: number;
-  itemId: number;
+  productId?: number;
+  variantId?: number;
+  productName?: string;
+  sku?: string;
+  variantAttributes?: string;
   itemStatus: string;
   itemStatusCode?: number;
   itemTotalAmount: number;
@@ -252,7 +256,11 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
   return {
     orderDetailId: detail.id ?? 0,
     orderId: detail.orderId ?? 0,
-    itemId: detail.id ?? 0,
+    productId: detail.productId ?? undefined,
+    variantId: detail.variantId ?? undefined,
+    productName: detail.productName ?? undefined,
+    sku: detail.sku ?? undefined,
+    variantAttributes: detail.variantAttributes ?? undefined,
     itemStatus,
     itemStatusCode,
     itemTotalAmount: detail.itemTotalAmount ?? 0,
