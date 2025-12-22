@@ -623,49 +623,145 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
     }
   };
 
+  const baseAmount = Number.parseFloat(formState.orderBaseAmount) || 0;
+  const discountAmount = Number.parseFloat(formState.discountAmount) || 0;
+  const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
+  const orderTotal = Math.max(baseAmount - discountAmount + shippingAmount, 0);
+
+  const itemsTotal = items.reduce((sum, item) => {
+    const qty = Number.parseInt(item.quantity, 10) || 0;
+    const price = Number.parseFloat(item.itemPrice) || 0;
+    const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+    const discount = Number.parseFloat(item.discountAmount) || 0;
+    return sum + Math.max(qty * price + tax - discount, 0);
+  }, 0);
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      <OrderFormItems
-        items={items}
-        itemErrors={errors.items}
-        discountTypeOptions={discountTypeSelectOptions}
-        onAddItem={addItem}
-        onRemoveItem={removeItem}
-        onItemChange={handleItemChange}
-      />
+      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="space-y-6">
+          <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Order Details</h3>
+                <p className="text-sm text-muted-foreground">
+                  Set status, pricing, and customer information
+                </p>
+              </div>
+            </div>
+            <OrderFormFields
+              formState={formState}
+              errors={errors}
+              orderStatusOptions={orderStatusSelectOptions}
+              paymentStatusOptions={paymentStatusSelectOptions}
+              userTypeOptions={userTypeSelectOptions}
+              shippingMethodOptions={shippingMethodSelectOptions}
+              discountTypeOptions={discountTypeSelectOptions}
+              notificationTypeOptions={notificationTypeSelectOptions}
+              onChange={handleChange}
+            />
+          </div>
 
-      <OrderFormAddress
-        address={address}
-        errors={errors}
-        onAddressChange={handleAddressChange}
-        onToggleBillToSame={toggleBillToSame}
-      />
+          <OrderFormItems
+            items={items}
+            itemErrors={errors.items}
+            discountTypeOptions={discountTypeSelectOptions}
+            onAddItem={addItem}
+            onRemoveItem={removeItem}
+            onItemChange={handleItemChange}
+          />
 
-      <div className="space-y-4 rounded-lg border border-border bg-white p-4 shadow-sm">
-        <div>
-          <h3 className="text-base font-semibold text-slate-800">Order Details</h3>
-          <p className="text-sm text-muted-foreground">
-            Finalize status, pricing, and customer contact.
-          </p>
+          <OrderFormAddress
+            address={address}
+            errors={errors}
+            onAddressChange={handleAddressChange}
+            onToggleBillToSame={toggleBillToSame}
+          />
         </div>
-        <OrderFormFields
-          formState={formState}
-          errors={errors}
-          orderStatusOptions={orderStatusSelectOptions}
-          paymentStatusOptions={paymentStatusSelectOptions}
-          userTypeOptions={userTypeSelectOptions}
-          shippingMethodOptions={shippingMethodSelectOptions}
-          discountTypeOptions={discountTypeSelectOptions}
-          notificationTypeOptions={notificationTypeSelectOptions}
-          onChange={handleChange}
-        />
-      </div>
 
-      <OrderFormFooter
-        formState={formState}
-        submitting={submitting}
-        onBusyFlagChange={(checked) => handleChange('busyFlag', checked)}
-      />
+        <div className="space-y-6">
+          <div className="sticky top-6 space-y-6">
+            <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
+                  <svg className="h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                  <span className="text-sm font-medium text-slate-600">Base Amount</span>
+                  <span className="font-semibold text-slate-800">
+                    ${baseAmount.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                  <span className="text-sm font-medium text-slate-600">Discount</span>
+                  <span className="font-semibold text-red-600">
+                    -${discountAmount.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                  <span className="text-sm font-medium text-slate-600">Shipping</span>
+                  <span className="font-semibold text-slate-800">
+                    ${shippingAmount.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                  <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
+                  <span className="font-semibold text-slate-800">
+                    ${itemsTotal.toFixed(2)}
+                  </span>
+                </div>
+                <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
+                  <span className="font-bold text-slate-900">Order Total</span>
+                  <span className="text-lg font-bold text-slate-900">
+                    ${orderTotal.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-md bg-white/60 p-3">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  Quick Stats
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <div className="text-muted-foreground">Status</div>
+                    <div className="font-semibold text-slate-800">{formState.orderStatus}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Payment</div>
+                    <div className="font-semibold text-slate-800">{formState.paymentStatus}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Items</div>
+                    <div className="font-semibold text-slate-800">{items.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Type</div>
+                    <div className="font-semibold text-slate-800">{formState.userType}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <OrderFormFooter
+              formState={formState}
+              submitting={submitting}
+              onBusyFlagChange={(checked) => handleChange('busyFlag', checked)}
+            />
+          </div>
+        </div>
+      </div>
     </form>
   );
 }
