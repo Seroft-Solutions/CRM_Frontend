@@ -35,6 +35,8 @@ interface OrderTableProps {
 export function OrderTable({ orders }: OrderTableProps) {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const filteredOrders = useMemo(() => {
     const normalizedSearch = searchTerm.toLowerCase().trim();
@@ -50,6 +52,27 @@ export function OrderTable({ orders }: OrderTableProps) {
       return matchesStatus && matchesSearch;
     });
   }, [orders, statusFilter, searchTerm]);
+
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (newFilter: OrderStatus | 'All') => {
+    setStatusFilter(newFilter);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
@@ -75,11 +98,11 @@ export function OrderTable({ orders }: OrderTableProps) {
             <Input
               placeholder="Search orders..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => handleSearchChange(event.target.value)}
               className="w-full border-slate-300 pl-9 sm:w-72"
             />
           </div>
-          <Button variant="outline" onClick={() => setSearchTerm('')} className="border-slate-300">
+          <Button variant="outline" onClick={() => handleSearchChange('')} className="border-slate-300">
             <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -91,7 +114,7 @@ export function OrderTable({ orders }: OrderTableProps) {
       <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
         <Tabs
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as OrderStatus | 'All')}
+          onValueChange={(value) => handleFilterChange(value as OrderStatus | 'All')}
           className="w-full"
         >
           <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
@@ -128,12 +151,12 @@ export function OrderTable({ orders }: OrderTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders.map((order, index) => (
+            {paginatedOrders.map((order, index) => (
               <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                      {index + 1}
+                      {startIndex + index + 1}
                     </div>
                     <div>
                       <div className="font-bold text-slate-800">#{order.orderId}</div>
@@ -222,7 +245,7 @@ export function OrderTable({ orders }: OrderTableProps) {
               </TableRow>
             ))}
 
-            {filteredOrders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-16 text-center">
                   <div className="flex flex-col items-center justify-center">
@@ -242,6 +265,88 @@ export function OrderTable({ orders }: OrderTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {filteredOrders.length > 0 && (
+        <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-semibold text-slate-700">Rows per page:</label>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="rounded-md border-2 border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+            <div className="text-sm text-slate-600">
+              Showing <span className="font-bold text-slate-900">{startIndex + 1}</span> to{' '}
+              <span className="font-bold text-slate-900">{Math.min(endIndex, filteredOrders.length)}</span> of{' '}
+              <span className="font-bold text-slate-900">{filteredOrders.length}</span> orders
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="border-slate-300 disabled:opacity-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="border-slate-300 disabled:opacity-50"
+            >
+              <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              <span className="rounded-lg bg-slate-600 px-3 py-1.5 text-sm font-bold text-white">
+                {currentPage}
+              </span>
+              <span className="text-sm text-slate-600">of</span>
+              <span className="text-sm font-bold text-slate-900">{totalPages}</span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="border-slate-300 disabled:opacity-50"
+            >
+              Next
+              <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="border-slate-300 disabled:opacity-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

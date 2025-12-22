@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,19 @@ export function OrderHistoryTable() {
       orderEmail: orderEmailById.get(entry.orderId) ?? '',
     }));
   }, [historyData, orderEmailById]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.ceil(rows.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedRows = rows.slice(startIndex, endIndex);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
@@ -119,12 +132,12 @@ export function OrderHistoryTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((entry, index) => (
+              {paginatedRows.map((entry, index) => (
                 <TableRow key={entry.orderHistoryId} className="hover:bg-slate-50/50">
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                        {index + 1}
+                        {startIndex + index + 1}
                       </div>
                       <div>
                         <div className="font-bold text-slate-800">#{entry.orderId}</div>
@@ -184,7 +197,7 @@ export function OrderHistoryTable() {
                 </TableRow>
               ))}
 
-              {rows.length === 0 ? (
+              {paginatedRows.length === 0 && rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="py-16 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -201,6 +214,75 @@ export function OrderHistoryTable() {
               ) : null}
             </TableBody>
           </Table>
+        </div>
+      )}
+
+      {!isLoading && !isError && rows.length > 0 && (
+        <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label htmlFor="pageSize" className="text-sm font-semibold text-slate-700">
+                Rows per page:
+              </label>
+              <select
+                id="pageSize"
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="rounded-md border-2 border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+            <div className="text-sm text-slate-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, rows.length)} of {rows.length} entries
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              size="sm"
+              className="bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+            >
+              First
+            </Button>
+            <Button
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+              disabled={currentPage === 1}
+              size="sm"
+              className="bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </Button>
+            <span className="px-3 text-sm font-semibold text-slate-700">
+              {currentPage} of {totalPages}
+            </span>
+            <Button
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={currentPage === totalPages}
+              size="sm"
+              className="bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Button>
+            <Button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              size="sm"
+              className="bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+            >
+              Last
+            </Button>
+          </div>
         </div>
       )}
     </div>
