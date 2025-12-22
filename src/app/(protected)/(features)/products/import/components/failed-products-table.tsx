@@ -1091,6 +1091,7 @@ export function FailedProductsTable() {
               const issues = computeRowIssues(row);
               const canSave = issues.length === 0 && !pendingRowIds.has(rowId);
               const errorText = rowErrors[rowId];
+              const importIssue = hasText(row.issue) ? row.issue!.trim() : '';
 
               return (
                 <TableRow key={rowId}>
@@ -1352,6 +1353,11 @@ export function FailedProductsTable() {
                       {issues.length > 0 && (
                         <p className="text-xs text-muted-foreground whitespace-normal">
                           {issues.join(' ')}
+                        </p>
+                      )}
+                      {importIssue && !errorText && (
+                        <p className="text-xs text-red-700 whitespace-normal">
+                          {importIssue}
                         </p>
                       )}
                       {errorText && (
