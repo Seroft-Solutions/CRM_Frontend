@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PermissionGuard } from '@/core/auth';
-import { OrderDetail } from '@/app/(protected)/(features)/orders/components/order-detail';
-import { mockOrders } from '@/app/(protected)/(features)/orders/data/mock-orders';
-import { Eye, ArrowDownToLine, ArrowLeft, Edit } from 'lucide-react';
+import { OrderDetailContainer } from '@/app/(protected)/(features)/orders/components/order-detail-container';
+import { Eye, ArrowLeft, Edit } from 'lucide-react';
 
 interface OrderPageProps {
   params: {
@@ -14,7 +13,6 @@ interface OrderPageProps {
 export default function OrderDetailPage({ params }: OrderPageProps) {
   const { id: idParam } = params;
   const id = parseInt(idParam, 10);
-  const order = mockOrders.find((item) => item.orderId === id);
 
   return (
     // <PermissionGuard
@@ -58,15 +56,9 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
           </div>
         </div>
 
-        {order ? (
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <OrderDetail order={order} />
-          </div>
-        ) : (
-          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center text-muted-foreground">
-            Order not found in mock data. Adjust the mockOrders dataset to include this id.
-          </div>
-        )}
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <OrderDetailContainer orderId={id} />
+        </div>
       </div>
     // </PermissionGuard>
   );

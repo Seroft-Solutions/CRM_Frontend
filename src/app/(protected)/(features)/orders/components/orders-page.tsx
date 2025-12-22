@@ -1,13 +1,31 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { Plus, ArrowDownToLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { InlinePermissionGuard } from '@/core/auth';
+import { useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { OrderTable } from './order-table';
-import { mockOrders } from '../data/mock-orders';
+import { mapOrderDtoToRecord } from '../data/order-data';
 
 export function OrdersPage() {
+  const { data, isLoading, isError } = useGetAllOrders(
+    {
+      page: 0,
+      size: 100,
+      sort: ['id,desc'],
+    },
+    {
+      query: {
+        refetchOnWindowFocus: false,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const orders = useMemo(() => (data ?? []).map(mapOrderDtoToRecord), [data]);
+
   return (
     <div className="space-y-4">
       {/* Modern Centered Header with Sidebar Theme */}
@@ -45,7 +63,17 @@ export function OrdersPage() {
         </div>
       </div>
 
-      <OrderTable orders={mockOrders} />
+      {isLoading ? (
+        <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
+          Loading orders...
+        </div>
+      ) : isError ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
+          Unable to load orders right now. Please try again.
+        </div>
+      ) : (
+        <OrderTable orders={orders} />
+      )}
     </div>
   );
 }

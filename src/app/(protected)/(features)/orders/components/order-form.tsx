@@ -1,55 +1,89 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import {
   OrderRecord,
-  OrderStatus,
-  PaymentStatus,
-  UserType,
+  discountTypeOptions,
+  getDiscountTypeCode,
+  getNotificationTypeCode,
+  getOrderStatusCode,
+  getPaymentStatusCode,
+  getShippingMethodCode,
+  getUserTypeCode,
+  notificationTypeOptions,
   orderStatusOptions,
   paymentStatusOptions,
-  shippingMethods,
-} from '../data/mock-orders';
-
-type OrderFormState = {
-  orderStatus: OrderStatus;
-  paymentStatus: PaymentStatus;
-  userType: UserType;
-  orderBaseAmount: string;
-  discountAmount: string;
-  shippingAmount: string;
-  phone: string;
-  email: string;
-  shippingMethod: string;
-  shippingId?: string;
-  discountCode?: string;
-  notificationType?: string;
-  busyFlag: boolean;
-  busyVoucherId?: string;
-  orderComment?: string;
-};
-
+  shippingMethodOptions,
+  userTypeOptions,
+} from '../data/order-data';
+import {
+  useCreateOrder,
+  useUpdateOrder,
+} from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
+import {
+  useCreateOrderDetail,
+  useDeleteOrderDetail,
+  useUpdateOrderDetail,
+} from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
+import {
+  useCreateOrderAddressDetail,
+  useUpdateOrderAddressDetail,
+} from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
+import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+import type { OrderDTO } from '@/core/api/generated/spring/schemas';
 interface OrderFormProps {
   initialOrder?: OrderRecord;
+  addressExists?: boolean;
   onSubmitSuccess?: () => void;
 }
 
-export function OrderForm({ initialOrder, onSubmitSuccess }: OrderFormProps) {
+import { OrderFormAddress } from './order-form-address';
+import { OrderFormFooter } from './order-form-footer';
+import { OrderFormFields } from './order-form-fields';
+import { OrderFormItems } from './order-form-items';
+import type {
+  ItemErrors,
+  OrderAddressForm,
+  OrderFormErrors,
+  OrderFormState,
+  OrderItemForm,
+} from './order-form-types';
+
+const emptyOrderItem = (): OrderItemForm => ({
+  itemStatus: '',
+  quantity: '',
+  itemPrice: '',
+  itemTaxAmount: '',
+  discountType: '',
+  discountCode: '',
+  discountAmount: '',
+  itemComment: '',
+});
+
+const parseItemStatusValue = (value?: string) => {
+  if (!value) return '';
+  const match = value.match(/\d+/);
+  return match ? match[0] : '';
+};
+
+export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: OrderFormProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<OrderFormErrors>({});
+  const isEditing = Boolean(initialOrder?.orderId);
+
+  const { mutateAsync: createOrder } = useCreateOrder();
+  const { mutateAsync: updateOrder } = useUpdateOrder();
+  const { mutateAsync: createOrderDetail } = useCreateOrderDetail();
+  const { mutateAsync: updateOrderDetail } = useUpdateOrderDetail();
+  const { mutateAsync: deleteOrderDetail } = useDeleteOrderDetail();
+  const { mutateAsync: createOrderAddressDetail } = useCreateOrderAddressDetail();
+  const { mutateAsync: updateOrderAddressDetail } = useUpdateOrderAddressDetail();
+  const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
   const defaultState: OrderFormState = useMemo(
     () => ({
@@ -63,6 +97,7 @@ export function OrderForm({ initialOrder, onSubmitSuccess }: OrderFormProps) {
       email: initialOrder?.email || '',
       shippingMethod: initialOrder?.shippingMethod || '',
       shippingId: initialOrder?.shippingId || '',
+      discountType: initialOrder?.discountType || '',
       discountCode: initialOrder?.discountCode || '',
       notificationType: initialOrder?.notificationType || '',
       busyFlag: Boolean(initialOrder?.busyFlag),
@@ -73,229 +108,564 @@ export function OrderForm({ initialOrder, onSubmitSuccess }: OrderFormProps) {
   );
 
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
+  const [items, setItems] = useState<OrderItemForm[]>(() => {
+    if (!initialOrder?.items?.length) return [];
+    return initialOrder.items.map((item) => ({
+      id: item.orderDetailId || undefined,
+      itemStatus: item.itemStatusCode?.toString() || parseItemStatusValue(item.itemStatus),
+      quantity: item.quantity ? item.quantity.toString() : '',
+      itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
+      itemTaxAmount: item.itemTaxAmount ? item.itemTaxAmount.toString() : '',
+      discountType: item.discountType || '',
+      discountCode: item.discountCode || '',
+      discountAmount: item.discountAmount ? item.discountAmount.toString() : '',
+      itemComment: item.itemComment || '',
+    }));
+  });
+  const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
+  const [address, setAddress] = useState<OrderAddressForm>(() => {
+    const initial = initialOrder?.address;
+    return {
+      shipTo: {
+        firstName: initial?.shipTo?.firstName || '',
+        middleName: initial?.shipTo?.middleName || '',
+        lastName: initial?.shipTo?.lastName || '',
+        addrLine1: initial?.shipTo?.addrLine1 || '',
+        addrLine2: initial?.shipTo?.addrLine2 || '',
+        city: initial?.shipTo?.city || '',
+        state: initial?.shipTo?.state || '',
+        zipcode: initial?.shipTo?.zipcode || '',
+        country: initial?.shipTo?.country || '',
+        contact: initial?.shipTo?.phone || '',
+      },
+      billTo: {
+        firstName: initial?.billTo?.firstName || '',
+        middleName: initial?.billTo?.middleName || '',
+        lastName: initial?.billTo?.lastName || '',
+        addrLine1: initial?.billTo?.addrLine1 || '',
+        addrLine2: initial?.billTo?.addrLine2 || '',
+        city: initial?.billTo?.city || '',
+        state: initial?.billTo?.state || '',
+        zipcode: initial?.billTo?.zipcode || '',
+        country: initial?.billTo?.country || '',
+        contact: initial?.billTo?.phone || '',
+      },
+      billToSameFlag: Boolean(initial?.billToSameAsShip),
+    };
+  });
 
   const handleChange = (key: keyof OrderFormState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
+    if (
+      key === 'orderBaseAmount' ||
+      key === 'discountAmount' ||
+      key === 'shippingAmount' ||
+      key === 'phone' ||
+      key === 'email' ||
+      key === 'shippingId' ||
+      key === 'discountCode' ||
+      key === 'busyVoucherId'
+    ) {
+      setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+    }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitting(true);
+  const handleItemChange = (index: number, key: keyof OrderItemForm, value: string) => {
+    setItems((prev) =>
+      prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
+    );
+    setErrors((prev) => {
+      if (!prev.items?.[index]?.[key]) {
+        return prev;
+      }
+      const nextItems = prev.items ? [...prev.items] : [];
+      const nextItem = { ...nextItems[index] };
+      delete nextItem[key];
+      nextItems[index] = nextItem;
+      return { ...prev, items: nextItems };
+    });
+  };
 
-    const payload = {
-      ...formState,
-      orderBaseAmount: parseFloat(formState.orderBaseAmount || '0'),
-      discountAmount: parseFloat(formState.discountAmount || '0'),
-      shippingAmount: parseFloat(formState.shippingAmount || '0'),
+  const addItem = () => {
+    setItems((prev) => [...prev, emptyOrderItem()]);
+  };
+
+  const removeItem = (index: number) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(index, 1);
+      if (removed?.id) {
+        setRemovedItemIds((current) => [...current, removed.id!]);
+      }
+      return next;
+    });
+  };
+
+  const handleAddressChange = (
+    section: 'shipTo' | 'billTo',
+    key: keyof AddressFieldsForm,
+    value: string
+  ) => {
+    const nextValue = key === 'zipcode' ? value.slice(0, 10) : value;
+    setAddress((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [key]: nextValue,
+      },
+    }));
+    if (key === 'zipcode' || key === 'contact') {
+      const errorKey =
+        section === 'shipTo'
+          ? key === 'zipcode'
+            ? 'shipToZipcode'
+            : 'shipToContact'
+          : key === 'zipcode'
+            ? 'billToZipcode'
+            : 'billToContact';
+      setErrors((prev) => (prev[errorKey] ? { ...prev, [errorKey]: undefined } : prev));
+    }
+  };
+
+  const toggleBillToSame = (checked: boolean) => {
+    setAddress((prev) => ({
+      ...prev,
+      billToSameFlag: checked,
+      billTo: checked ? { ...prev.shipTo } : prev.billTo,
+    }));
+    if (checked) {
+      setErrors((prev) => ({
+        ...prev,
+        billToZipcode: undefined,
+        billToContact: undefined,
+      }));
+    }
+  };
+
+  const shouldSaveAddress = (value: OrderAddressForm) => {
+    const hasShipTo = Object.values(value.shipTo).some((field) => field.trim() !== '');
+    const hasBillTo = Object.values(value.billTo).some((field) => field.trim() !== '');
+    return hasShipTo || hasBillTo || value.billToSameFlag;
+  };
+
+  const validateForm = (): OrderFormErrors => {
+    const nextErrors: OrderFormErrors = {};
+    const numberPattern = /^-?\d+(\.\d+)?$/;
+    const phonePattern = /^[+]?[0-9\s\-()]{10,20}$/;
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    const validateAmount = (value: string, key: 'orderBaseAmount' | 'discountAmount' | 'shippingAmount') => {
+      if (!value.trim()) {
+        return;
+      }
+      if (!numberPattern.test(value.trim())) {
+        nextErrors[key] = 'Enter a valid number.';
+        return;
+      }
+      const parsed = Number.parseFloat(value);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        nextErrors[key] = 'Amount cannot be negative.';
+      }
     };
 
-    setTimeout(() => {
-      setSubmitting(false);
-      toast.success('Order draft saved', {
-        description: 'Form uses mock data for now. Hook up backend actions when ready.',
+    validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
+    validateAmount(formState.discountAmount, 'discountAmount');
+    validateAmount(formState.shippingAmount, 'shippingAmount');
+
+    if (formState.phone.trim()) {
+      if (formState.phone.length > 20 || !phonePattern.test(formState.phone.trim())) {
+        nextErrors.phone = 'Enter a valid phone number (10-20 digits).';
+      }
+    }
+
+    if (formState.email.trim()) {
+      if (formState.email.length > 50 || !emailPattern.test(formState.email.trim())) {
+        nextErrors.email = 'Enter a valid email address.';
+      }
+    }
+
+    if (formState.discountCode && formState.discountCode.length > 20) {
+      nextErrors.discountCode = 'Max 20 characters.';
+    }
+
+    if (formState.shippingId && formState.shippingId.length > 50) {
+      nextErrors.shippingId = 'Max 50 characters.';
+    }
+
+    if (formState.busyVoucherId && formState.busyVoucherId.length > 50) {
+      nextErrors.busyVoucherId = 'Max 50 characters.';
+    }
+
+    if (shouldSaveAddress(address)) {
+      if (address.shipTo.zipcode.trim().length > 10) {
+        nextErrors.shipToZipcode = 'Max 10 characters.';
+      }
+      if (address.shipTo.contact.trim().length > 50) {
+        nextErrors.shipToContact = 'Max 50 characters.';
+      }
+      if (!address.billToSameFlag) {
+        if (address.billTo.zipcode.trim().length > 10) {
+          nextErrors.billToZipcode = 'Max 10 characters.';
+        }
+        if (address.billTo.contact.trim().length > 50) {
+          nextErrors.billToContact = 'Max 50 characters.';
+        }
+      }
+    }
+
+    const hasText = (value?: string) => Boolean(value && value.trim() !== '');
+    const nextItemErrors: ItemErrors[] = items.map(() => ({}));
+
+    items.forEach((item, index) => {
+      const hasData =
+        hasText(item.quantity) ||
+        hasText(item.itemPrice) ||
+        hasText(item.itemTaxAmount) ||
+        hasText(item.discountAmount) ||
+        hasText(item.discountCode) ||
+        hasText(item.itemComment) ||
+        hasText(item.itemStatus);
+
+      if (!hasData) return;
+
+      if (item.itemStatus.trim() && !/^\d+$/.test(item.itemStatus.trim())) {
+        nextItemErrors[index].itemStatus = 'Use a numeric status code.';
+      }
+
+      if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
+        nextItemErrors[index].quantity = 'Use a whole number.';
+      }
+
+      if (item.itemPrice.trim()) {
+        const value = Number.parseFloat(item.itemPrice);
+        if (!Number.isFinite(value) || value < 0) {
+          nextItemErrors[index].itemPrice = 'Enter a valid amount.';
+        }
+      }
+
+      if (item.itemTaxAmount.trim()) {
+        const value = Number.parseFloat(item.itemTaxAmount);
+        if (!Number.isFinite(value) || value < 0) {
+          nextItemErrors[index].itemTaxAmount = 'Enter a valid amount.';
+        }
+      }
+
+      if (item.discountAmount?.trim()) {
+        const value = Number.parseFloat(item.discountAmount);
+        if (!Number.isFinite(value) || value < 0) {
+          nextItemErrors[index].discountAmount = 'Enter a valid amount.';
+        }
+      }
+
+      if (item.discountCode && item.discountCode.length > 20) {
+        nextItemErrors[index].discountCode = 'Max 20 characters.';
+      }
+    });
+
+    const hasItemErrors = nextItemErrors.some((entry) => Object.keys(entry).length > 0);
+    if (hasItemErrors) {
+      nextErrors.items = nextItemErrors;
+    }
+
+    return nextErrors;
+  };
+
+  const orderStatusSelectOptions =
+    formState.orderStatus === 'Unknown'
+      ? [...orderStatusOptions, 'Unknown']
+      : orderStatusOptions;
+  const paymentStatusSelectOptions =
+    formState.paymentStatus === 'Unknown'
+      ? [...paymentStatusOptions, 'Unknown']
+      : paymentStatusOptions;
+  const userTypeSelectOptions =
+    formState.userType === 'Unknown' ? [...userTypeOptions, 'Unknown'] : userTypeOptions;
+  const shippingMethodSelectOptions =
+    formState.shippingMethod === 'Unknown'
+      ? [...shippingMethodOptions, 'Unknown']
+      : shippingMethodOptions;
+  const discountTypeSelectOptions =
+    formState.discountType === 'Unknown'
+      ? [...discountTypeOptions, 'Unknown']
+      : discountTypeOptions;
+  const notificationTypeSelectOptions =
+    formState.notificationType === 'Unknown'
+      ? [...notificationTypeOptions, 'Unknown']
+      : notificationTypeOptions;
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const validationErrors = validateForm();
+    const hasErrors = Object.values(validationErrors).some((value) => {
+      if (Array.isArray(value)) {
+        return value.some((entry) => Object.keys(entry).length > 0);
+      }
+      return Boolean(value);
+    });
+    if (hasErrors) {
+      setErrors(validationErrors);
+      toast.error('Please fix the highlighted fields.');
+      return;
+    }
+
+    setErrors({});
+    setSubmitting(true);
+
+    const parseAmount = (value: string) => {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const parseInteger = (value: string) => {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const buildAddressPayload = (orderId: number) => {
+      const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
+      return {
+        id: addressExists ? orderId : undefined,
+        orderId,
+        shipToFirstName: address.shipTo.firstName || undefined,
+        shipToMiddleName: address.shipTo.middleName || undefined,
+        shipToLastName: address.shipTo.lastName || undefined,
+        shipToAddLine1: address.shipTo.addrLine1 || undefined,
+        shipToAddLine2: address.shipTo.addrLine2 || undefined,
+        shipToCity: address.shipTo.city || undefined,
+        shipToState: address.shipTo.state || undefined,
+        shipToZipcode: address.shipTo.zipcode || undefined,
+        shipToContact: address.shipTo.contact || undefined,
+        shipToCountry: address.shipTo.country || undefined,
+        billToSameFlag: address.billToSameFlag || false,
+        billToFirstName: billTo.firstName || undefined,
+        billToMiddleName: billTo.middleName || undefined,
+        billToLastName: billTo.lastName || undefined,
+        billToAddLine1: billTo.addrLine1 || undefined,
+        billToAddLine2: billTo.addrLine2 || undefined,
+        billToCity: billTo.city || undefined,
+        billToState: billTo.state || undefined,
+        billToZipcode: billTo.zipcode || undefined,
+        billToContact: billTo.contact || undefined,
+        billToCountry: billTo.country || undefined,
+      };
+    };
+
+    const baseAmount = parseAmount(formState.orderBaseAmount || '0');
+    const discountAmount = parseAmount(formState.discountAmount || '0');
+    const shippingAmount = parseAmount(formState.shippingAmount || '0');
+    const orderTotalAmount = Math.max(baseAmount - discountAmount + shippingAmount, 0);
+
+    const orderStatusCode =
+      getOrderStatusCode(formState.orderStatus) ?? initialOrder?.orderStatusCode ?? 0;
+    const paymentStatusCode =
+      getPaymentStatusCode(formState.paymentStatus) ?? initialOrder?.paymentStatusCode ?? 0;
+    const userTypeCode =
+      getUserTypeCode(formState.userType) ?? initialOrder?.userTypeCode ?? 0;
+    const discountTypeCode =
+      getDiscountTypeCode(formState.discountType || undefined) ??
+      initialOrder?.discountTypeCode ??
+      undefined;
+    const notificationTypeCode =
+      getNotificationTypeCode(formState.notificationType || undefined) ??
+      initialOrder?.notificationTypeCode ??
+      undefined;
+    const shippingMethodCode =
+      getShippingMethodCode(formState.shippingMethod || undefined) ??
+      initialOrder?.shippingMethodCode ??
+      undefined;
+
+    const payload: OrderDTO = {
+      id: initialOrder?.orderId,
+      orderStatus: orderStatusCode,
+      orderTotalAmount,
+      orderBaseAmount: baseAmount,
+      discountAmount,
+      shippingAmount,
+      userType: userTypeCode,
+      phone: formState.phone || undefined,
+      email: formState.email || undefined,
+      paymentStatus: paymentStatusCode,
+      discountType: discountTypeCode,
+      discountCode: formState.discountCode || undefined,
+      busyFlag: formState.busyFlag ? 1 : 0,
+      busyVoucherId: formState.busyVoucherId || undefined,
+      notificationType: notificationTypeCode,
+      shippingMethod: shippingMethodCode,
+      shippingId: formState.shippingId || undefined,
+    };
+
+    try {
+      const result = isEditing
+        ? await updateOrder({ id: initialOrder!.orderId, data: payload })
+        : await createOrder({ data: payload });
+
+      const orderId = result?.id ?? initialOrder?.orderId;
+      if (!orderId) {
+        throw new Error('Order ID missing after save.');
+      }
+
+      const hasText = (value?: string) => Boolean(value && value.trim() !== '');
+      const itemTasks = items
+        .filter((item) => {
+          const hasData =
+            hasText(item.quantity) ||
+            hasText(item.itemPrice) ||
+            hasText(item.itemTaxAmount) ||
+            hasText(item.discountAmount) ||
+            hasText(item.discountCode) ||
+            hasText(item.itemComment);
+          return hasData;
+        })
+        .map((item) => {
+          const quantity = parseInteger(item.quantity || '0');
+          const itemPrice = parseAmount(item.itemPrice || '0');
+          const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
+          const discountAmountValue = parseAmount(item.discountAmount || '0');
+          const itemTotalAmount = Math.max(
+            quantity * itemPrice + itemTaxAmount - discountAmountValue,
+            0
+          );
+          const itemStatus = parseInteger(item.itemStatus || '0');
+          const discountType = getDiscountTypeCode(item.discountType || undefined);
+
+          const detailPayload = {
+            id: item.id,
+            orderId,
+            itemStatus,
+            quantity,
+            itemPrice,
+            itemTaxAmount,
+            itemTotalAmount,
+            discountType,
+            discountCode: item.discountCode || undefined,
+            discountAmount: discountAmountValue || undefined,
+            itemComment: item.itemComment || undefined,
+          };
+
+          return item.id
+            ? updateOrderDetail({ id: item.id, data: detailPayload })
+            : createOrderDetail({ data: detailPayload });
+        });
+
+      const deleteTasks = removedItemIds.map((id) => deleteOrderDetail({ id }));
+
+      const addressTasks: Promise<unknown>[] = [];
+      if (shouldSaveAddress(address)) {
+        const addressPayload = buildAddressPayload(orderId);
+        if (addressExists) {
+          addressTasks.push(updateOrderAddressDetail({ id: orderId, data: addressPayload }));
+        } else {
+          addressTasks.push(createOrderAddressDetail({ data: addressPayload }));
+        }
+      }
+
+      const statusChanged =
+        initialOrder?.orderStatus && initialOrder.orderStatus !== formState.orderStatus;
+      const historyStatus = isEditing
+        ? statusChanged
+          ? `Status changed to ${formState.orderStatus}`
+          : 'Order updated'
+        : `Order created (${formState.orderStatus})`;
+      const historyTask = createOrderHistory({
+        data: {
+          orderId,
+          status: historyStatus,
+          notificationSent: Boolean(formState.notificationType),
+        },
       });
-      onSubmitSuccess?.();
-      // eslint-disable-next-line no-console
-      console.log('Order payload', payload);
-    }, 300);
+
+      const results = await Promise.allSettled([
+        ...itemTasks,
+        ...deleteTasks,
+        ...addressTasks,
+        historyTask,
+      ]);
+
+      const failed = results.filter((entry) => entry.status === 'rejected');
+      if (failed.length > 0) {
+        toast.error('Order saved, but some related records failed.', {
+          description: 'Please review items, address, or history.',
+        });
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      if (result?.id) {
+        await queryClient.invalidateQueries({ queryKey: [`/api/orders/${result.id}`] });
+      }
+      if (initialOrder?.orderId) {
+        await queryClient.invalidateQueries({ queryKey: [`/api/orders/${initialOrder.orderId}`] });
+      }
+      await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
+
+      toast.success(isEditing ? 'Order updated' : 'Order created', {
+        description: isEditing ? 'Changes saved successfully.' : 'New order is now available.',
+      });
+
+      setRemovedItemIds([]);
+
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      } else if (isEditing && initialOrder?.orderId) {
+        router.push(`/orders/${initialOrder.orderId}`);
+      } else if (result?.id) {
+        router.push(`/orders/${result.id}`);
+      } else {
+        router.push('/orders');
+      }
+    } catch (_error) {
+      toast.error('Unable to save order', {
+        description: 'Please check the details and try again.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select
-            value={formState.orderStatus}
-            onValueChange={(value) => handleChange('orderStatus', value as OrderStatus)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              {orderStatusOptions.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <OrderFormItems
+        items={items}
+        itemErrors={errors.items}
+        discountTypeOptions={discountTypeSelectOptions}
+        onAddItem={addItem}
+        onRemoveItem={removeItem}
+        onItemChange={handleItemChange}
+      />
 
-        <div className="space-y-2">
-          <Label>Payment Status</Label>
-          <Select
-            value={formState.paymentStatus}
-            onValueChange={(value) => handleChange('paymentStatus', value as PaymentStatus)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select payment status" />
-            </SelectTrigger>
-            <SelectContent>
-              {paymentStatusOptions.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <OrderFormAddress
+        address={address}
+        errors={errors}
+        onAddressChange={handleAddressChange}
+        onToggleBillToSame={toggleBillToSame}
+      />
 
-        <div className="space-y-2">
-          <Label>User Type</Label>
-          <Select
-            value={formState.userType}
-            onValueChange={(value) => handleChange('userType', value as UserType)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select user type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="B2C">B2C</SelectItem>
-              <SelectItem value="B2B">B2B</SelectItem>
-              <SelectItem value="Guest">Guest</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="space-y-4 rounded-lg border border-border bg-white p-4 shadow-sm">
+        <div>
+          <h3 className="text-base font-semibold text-slate-800">Order Details</h3>
+          <p className="text-sm text-muted-foreground">
+            Finalize status, pricing, and customer contact.
+          </p>
         </div>
-
-        <div className="space-y-2">
-          <Label>Shipping Method</Label>
-          <Select
-            value={formState.shippingMethod}
-            onValueChange={(value) => handleChange('shippingMethod', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pick a method" />
-            </SelectTrigger>
-            <SelectContent>
-              {shippingMethods.map((method) => (
-                <SelectItem key={method} value={method}>
-                  {method}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Base Amount</Label>
-          <Input
-            type="number"
-            placeholder="0.00"
-            value={formState.orderBaseAmount}
-            onChange={(event) => handleChange('orderBaseAmount', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Discount Amount</Label>
-          <Input
-            type="number"
-            placeholder="0.00"
-            value={formState.discountAmount}
-            onChange={(event) => handleChange('discountAmount', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Shipping Amount</Label>
-          <Input
-            type="number"
-            placeholder="0.00"
-            value={formState.shippingAmount}
-            onChange={(event) => handleChange('shippingAmount', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Phone</Label>
-          <Input
-            placeholder="+1 555 123 4567"
-            value={formState.phone}
-            onChange={(event) => handleChange('phone', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Email</Label>
-          <Input
-            type="email"
-            placeholder="customer@email.com"
-            value={formState.email}
-            onChange={(event) => handleChange('email', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Shipping Id</Label>
-          <Input
-            placeholder="Tracking / shipment id"
-            value={formState.shippingId}
-            onChange={(event) => handleChange('shippingId', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Discount Code</Label>
-          <Input
-            placeholder="PROMO2024"
-            value={formState.discountCode}
-            onChange={(event) => handleChange('discountCode', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Notification Type</Label>
-          <Input
-            placeholder="Email / SMS / Push"
-            value={formState.notificationType}
-            onChange={(event) => handleChange('notificationType', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Busy Voucher Id</Label>
-          <Input
-            placeholder="Voucher id"
-            value={formState.busyVoucherId}
-            onChange={(event) => handleChange('busyVoucherId', event.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Order Note</Label>
-          <Textarea
-            placeholder="Internal note for this order..."
-            value={formState.orderComment}
-            onChange={(event) => handleChange('orderComment', event.target.value)}
-          />
-        </div>
+        <OrderFormFields
+          formState={formState}
+          errors={errors}
+          orderStatusOptions={orderStatusSelectOptions}
+          paymentStatusOptions={paymentStatusSelectOptions}
+          userTypeOptions={userTypeSelectOptions}
+          shippingMethodOptions={shippingMethodSelectOptions}
+          discountTypeOptions={discountTypeSelectOptions}
+          notificationTypeOptions={notificationTypeSelectOptions}
+          onChange={handleChange}
+        />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4">
-        <div className="inline-flex items-center gap-2">
-          <Checkbox
-            id="busyFlag"
-            checked={formState.busyFlag}
-            onCheckedChange={(checked) => handleChange('busyFlag', Boolean(checked))}
-          />
-          <Label htmlFor="busyFlag">Busy / voucher applied</Label>
-          {formState.discountCode ? (
-            <Badge variant="secondary" className="bg-amber-50 text-amber-800">
-              Discount {formState.discountCode}
-            </Badge>
-          ) : null}
-          {formState.busyVoucherId ? (
-            <Badge variant="secondary" className="bg-emerald-50 text-emerald-800">
-              Voucher {formState.busyVoucherId}
-            </Badge>
-          ) : null}
-        </div>
-
-        <Button type="submit" disabled={submitting} className="px-8">
-          {submitting ? 'Saving...' : 'Save order'}
-        </Button>
-      </div>
+      <OrderFormFooter
+        formState={formState}
+        submitting={submitting}
+        onBusyFlagChange={(checked) => handleChange('busyFlag', checked)}
+      />
     </form>
   );
 }

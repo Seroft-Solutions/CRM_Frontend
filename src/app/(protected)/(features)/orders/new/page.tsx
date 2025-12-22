@@ -1,6 +1,6 @@
 import { PermissionGuard } from '@/core/auth';
 import { OrderForm } from '@/app/(protected)/(features)/orders/components/order-form';
-import { Plus, ArrowDownToLine } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export const metadata = {
   title: 'Create Order',

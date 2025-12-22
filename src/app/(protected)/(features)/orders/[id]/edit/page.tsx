@@ -1,7 +1,6 @@
 import { PermissionGuard } from '@/core/auth';
-import { OrderForm } from '@/app/(protected)/(features)/orders/components/order-form';
-import { mockOrders } from '@/app/(protected)/(features)/orders/data/mock-orders';
-import { Edit, ArrowDownToLine } from 'lucide-react';
+import { OrderEditForm } from '@/app/(protected)/(features)/orders/components/order-edit-form';
+import { Edit } from 'lucide-react';
 
 interface EditOrderPageProps {
   params: {
@@ -16,7 +15,6 @@ export const metadata = {
 export default function EditOrderPage({ params }: EditOrderPageProps) {
   const { id: idParam } = params;
   const id = parseInt(idParam, 10);
-  const order = mockOrders.find((item) => item.orderId === id);
 
   return (
     // <PermissionGuard
@@ -48,13 +46,7 @@ export default function EditOrderPage({ params }: EditOrderPageProps) {
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          {order ? (
-            <OrderForm initialOrder={order} />
-          ) : (
-            <div className="rounded-md border border-dashed border-border p-6 text-center text-muted-foreground">
-              Order not found in mock data. Update mockOrders to edit this record.
-            </div>
-          )}
+          <OrderEditForm orderId={id} />
         </div>
       </div>
     // </PermissionGuard>

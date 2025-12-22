@@ -1,7 +1,6 @@
 import { PermissionGuard } from '@/core/auth';
 import { OrderHistoryTable } from '@/app/(protected)/(features)/orders/components/order-history-table';
-import { mockOrders } from '@/app/(protected)/(features)/orders/data/mock-orders';
-import { History, ArrowDownToLine } from 'lucide-react';
+import { History } from 'lucide-react';
 
 export const metadata = {
   title: 'Order History',
@@ -37,7 +36,7 @@ export default function OrderHistoryPage() {
           </div>
         </div>
 
-        <OrderHistoryTable orders={mockOrders} />
+        <OrderHistoryTable />
       </div>
     // </PermissionGuard>
   );

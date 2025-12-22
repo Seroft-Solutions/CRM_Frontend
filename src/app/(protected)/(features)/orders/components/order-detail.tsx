@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { OrderRecord, OrderStatus } from '../data/mock-orders';
+import { OrderRecord, OrderStatus } from '../data/order-data';
 
 const statusColors: Record<OrderStatus, string> = {
   Pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -11,11 +11,13 @@ const statusColors: Record<OrderStatus, string> = {
   Shipped: 'bg-indigo-100 text-indigo-700 border-indigo-200',
   Delivered: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   Cancelled: 'bg-rose-100 text-rose-700 border-rose-200',
+  Unknown: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
 function formatDateTime(value?: string) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
 function formatCurrency(amount: number) {
@@ -34,7 +36,10 @@ export function OrderDetail({ order }: OrderDetailProps) {
           <CardHeader>
             <CardTitle className="flex items-center justify-between text-base">
               Order Value
-              <Badge variant="outline" className={statusColors[order.orderStatus]}>
+              <Badge
+                variant="outline"
+                className={statusColors[order.orderStatus] ?? statusColors.Unknown}
+              >
                 {order.orderStatus}
               </Badge>
             </CardTitle>
@@ -77,11 +82,11 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </div>
             <div className="flex items-center justify-between">
               <span>Phone</span>
-              <span className="font-semibold">{order.phone}</span>
+              <span className="font-semibold">{order.phone || '—'}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Email</span>
-              <span className="font-semibold">{order.email}</span>
+              <span className="font-semibold">{order.email || '—'}</span>
             </div>
             <div className="flex items-center justify-between">
               <span>Notification</span>
@@ -147,35 +152,44 @@ export function OrderDetail({ order }: OrderDetailProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {order.items.map((item) => (
-                <TableRow key={item.orderDetailId}>
-                  <TableCell className="font-semibold text-slate-800">
-                    #{item.itemId}
-                    <div className="text-xs text-muted-foreground">
-                      {item.itemComment || 'No comment'}
-                    </div>
-                  </TableCell>
-                  <TableCell>{item.itemStatus}</TableCell>
-                  <TableCell>{item.quantity}</TableCell>
-                  <TableCell>{formatCurrency(item.itemPrice)}</TableCell>
-                  <TableCell>{formatCurrency(item.itemTaxAmount)}</TableCell>
-                  <TableCell className="font-semibold">
-                    {formatCurrency(item.itemTotalAmount)}
-                  </TableCell>
-                  <TableCell>
-                    {item.discountAmount ? (
-                      <div className="space-y-1 text-sm">
-                        <div>-{formatCurrency(item.discountAmount)}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {item.discountType} {item.discountCode ? `· ${item.discountCode}` : ''}
-                        </div>
+              {order.items.length > 0 ? (
+                order.items.map((item) => (
+                  <TableRow key={item.orderDetailId}>
+                    <TableCell className="font-semibold text-slate-800">
+                      #{item.itemId}
+                      <div className="text-xs text-muted-foreground">
+                        {item.itemComment || 'No comment'}
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground">None</span>
-                    )}
+                    </TableCell>
+                    <TableCell>{item.itemStatus}</TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                    <TableCell>{formatCurrency(item.itemPrice)}</TableCell>
+                    <TableCell>{formatCurrency(item.itemTaxAmount)}</TableCell>
+                    <TableCell className="font-semibold">
+                      {formatCurrency(item.itemTotalAmount)}
+                    </TableCell>
+                    <TableCell>
+                      {item.discountAmount ? (
+                        <div className="space-y-1 text-sm">
+                          <div>-{formatCurrency(item.discountAmount)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {item.discountType || 'Discount'}{' '}
+                            {item.discountCode ? `· ${item.discountCode}` : ''}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">None</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                    No items available for this order yet.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -202,7 +216,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                   ) : null}
                   {entry.notificationSent ? (
                     <Badge variant="secondary" className="bg-amber-50 text-amber-800">
-                      Notified via {entry.notificationSent}
+                      Notification sent
                     </Badge>
                   ) : null}
                 </div>
@@ -264,29 +278,32 @@ export function OrderDetail({ order }: OrderDetailProps) {
 }
 
 function AddressBlock(address: {
-  firstName: string;
+  firstName?: string;
   middleName?: string;
-  lastName: string;
-  addrLine1: string;
+  lastName?: string;
+  addrLine1?: string;
   addrLine2?: string;
-  city: string;
-  state: string;
-  zipcode: string;
-  country: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+  country?: string;
   phone?: string;
   email?: string;
 }) {
+  const displayValue = (value?: string) => value || '—';
+
   return (
     <div className="space-y-1 text-sm">
       <div className="font-semibold text-slate-800">
-        {[address.firstName, address.middleName, address.lastName].filter(Boolean).join(' ')}
+        {[address.firstName, address.middleName, address.lastName].filter(Boolean).join(' ') ||
+          '—'}
       </div>
-      <div>{address.addrLine1}</div>
+      <div>{displayValue(address.addrLine1)}</div>
       {address.addrLine2 ? <div>{address.addrLine2}</div> : null}
       <div>
-        {address.city}, {address.state} {address.zipcode}
+        {displayValue(address.city)}, {displayValue(address.state)} {displayValue(address.zipcode)}
       </div>
-      <div>{address.country}</div>
+      <div>{displayValue(address.country)}</div>
       {address.phone ? <div className="text-muted-foreground">Phone: {address.phone}</div> : null}
       {address.email ? <div className="text-muted-foreground">Email: {address.email}</div> : null}
     </div>

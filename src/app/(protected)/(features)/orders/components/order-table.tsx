@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { OrderRecord, OrderStatus, orderStatusOptions } from '../data/mock-orders';
+import { OrderRecord, OrderStatus, orderStatusOptions } from '../data/order-data';
 
 const statusColors: Record<OrderStatus, string> = {
   Pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -15,10 +15,17 @@ const statusColors: Record<OrderStatus, string> = {
   Shipped: 'bg-indigo-100 text-indigo-700 border-indigo-200',
   Delivered: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   Cancelled: 'bg-rose-100 text-rose-700 border-rose-200',
+  Unknown: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
 function formatCurrency(amount: number) {
   return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return '—';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
 interface OrderTableProps {
@@ -103,11 +110,14 @@ export function OrderTable({ orders }: OrderTableProps) {
                 <TableCell className="font-semibold text-slate-800">
                   #{order.orderId}
                   <div className="text-xs text-muted-foreground">
-                    {new Date(order.createdDate).toLocaleString()}
+                    {formatDateTime(order.createdDate)}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={statusColors[order.orderStatus]}>
+                  <Badge
+                    variant="outline"
+                    className={statusColors[order.orderStatus] ?? statusColors.Unknown}
+                  >
                     {order.orderStatus}
                   </Badge>
                 </TableCell>
@@ -132,8 +142,8 @@ export function OrderTable({ orders }: OrderTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1 text-sm text-slate-800">
-                    <div>{order.email}</div>
-                    <div className="text-xs text-muted-foreground">{order.phone}</div>
+                    <div>{order.email || '—'}</div>
+                    <div className="text-xs text-muted-foreground">{order.phone || '—'}</div>
                     <div className="text-xs text-muted-foreground">Type: {order.userType}</div>
                   </div>
                 </TableCell>
