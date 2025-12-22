@@ -97,7 +97,7 @@ export function OrderFormItems({
                       <div className="text-sm font-bold text-slate-800">Item #{index + 1}</div>
                       {itemTotal > 0 && (
                         <div className="text-xs text-muted-foreground">
-                          Total: <span className="font-semibold text-slate-700">${itemTotal.toFixed(2)}</span>
+                          Total: <span className="font-semibold text-slate-700">₹{itemTotal.toFixed(2)}</span>
                         </div>
                       )}
                     </div>

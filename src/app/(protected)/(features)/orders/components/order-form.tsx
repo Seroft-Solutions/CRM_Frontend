@@ -700,31 +700,31 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">Base Amount</span>
                   <span className="font-semibold text-slate-800">
-                    ${baseAmount.toFixed(2)}
+                    ₹{baseAmount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">Discount</span>
                   <span className="font-semibold text-red-600">
-                    -${discountAmount.toFixed(2)}
+                    -₹{discountAmount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">Shipping</span>
                   <span className="font-semibold text-slate-800">
-                    ${shippingAmount.toFixed(2)}
+                    ₹{shippingAmount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
                   <span className="font-semibold text-slate-800">
-                    ${itemsTotal.toFixed(2)}
+                    ₹{itemsTotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
                   <span className="font-bold text-slate-900">Order Total</span>
                   <span className="text-lg font-bold text-slate-900">
-                    ${orderTotal.toFixed(2)}
+                    ₹{orderTotal.toFixed(2)}
                   </span>
                 </div>
               </div>
