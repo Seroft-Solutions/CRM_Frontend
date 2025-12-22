@@ -127,7 +127,7 @@ function ProductVariantSelector({
   const selectedVariant = variants.find((v) => v.id === item.variantId);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
       {/* Product Combobox */}
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
@@ -137,17 +137,17 @@ function ProductVariantSelector({
               variant="outline"
               role="combobox"
               aria-expanded={productOpen}
-              className="w-full justify-between border-slate-300 hover:border-blue-400"
+              className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
             >
               {selectedProduct ? (
-                <span className="truncate">{selectedProduct.name}</span>
+                <span className="truncate text-sm">{selectedProduct.name}</span>
               ) : (
-                <span className="text-muted-foreground">Choose a product...</span>
+                <span className="text-muted-foreground text-sm">Choose a product...</span>
               )}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0" align="start">
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0" align="start">
             <Command>
               <CommandInput placeholder="Search products..." className="h-9" />
               <CommandList>
@@ -160,7 +160,7 @@ function ProductVariantSelector({
                       onSelect={() => handleProductSelect(product.id!)}
                     >
                       <div className="flex flex-1 flex-col">
-                        <span className="font-medium">{product.name}</span>
+                        <span className="font-medium text-sm">{product.name}</span>
                         <span className="text-xs text-muted-foreground">
                           {product.code} • ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
                         </span>
@@ -190,17 +190,17 @@ function ProductVariantSelector({
                 variant="outline"
                 role="combobox"
                 aria-expanded={variantOpen}
-                className="w-full justify-between border-slate-300 hover:border-blue-400"
+                className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
               >
                 {selectedVariant ? (
-                  <span className="truncate">{selectedVariant.sku}</span>
+                  <span className="truncate text-sm">{selectedVariant.sku}</span>
                 ) : (
-                  <span className="text-muted-foreground">Choose a variant...</span>
+                  <span className="text-muted-foreground text-sm">Choose a variant...</span>
                 )}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[400px] p-0" align="start">
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0" align="start">
               <Command>
                 <CommandInput placeholder="Search variants..." className="h-9" />
                 <CommandList>
@@ -213,7 +213,7 @@ function ProductVariantSelector({
                         onSelect={() => handleVariantSelect(variant.id!)}
                       >
                         <div className="flex flex-1 flex-col">
-                          <span className="font-medium">{variant.sku}</span>
+                          <span className="font-medium text-sm">{variant.sku}</span>
                           <span className="text-xs text-muted-foreground">
                             Stock: {variant.stockQuantity ?? 0} • ₹{variant.price ?? 0}
                           </span>
@@ -245,9 +245,29 @@ export function OrderFormItems({
   onRemoveItem,
   onItemChange,
 }: OrderFormItemsProps) {
+  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (index: number) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedItems(newExpanded);
+  };
+
+  const calculateItemTotal = (item: OrderItemForm) => {
+    const qty = Number.parseInt(item.quantity, 10) || 0;
+    const price = Number.parseFloat(item.itemPrice) || 0;
+    const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+    const discount = Number.parseFloat(item.discountAmount) || 0;
+    return Math.max(qty * price + tax - discount, 0);
+  };
+
   return (
     <div className="space-y-4 rounded-lg border-2 border-cyan-200 bg-gradient-to-br from-white to-cyan-50/30 p-6 shadow-lg">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
             <svg className="h-5 w-5 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,16 +275,16 @@ export function OrderFormItems({
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800">Order Items</h3>
+            <h3 className="text-lg font-bold text-slate-800">Shopping Cart</h3>
             <p className="text-sm text-muted-foreground">
-              Add products to this order {items.length > 0 && `(${items.length} item${items.length !== 1 ? 's' : ''})`}
+              {items.length === 0 ? 'No items added' : `${items.length} item${items.length !== 1 ? 's' : ''} in cart`}
             </p>
           </div>
         </div>
         <Button
           type="button"
           onClick={onAddItem}
-          className="bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
+          className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
         >
           <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -277,113 +297,72 @@ export function OrderFormItems({
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-cyan-300 bg-cyan-50/50 p-12 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100">
             <svg className="h-8 w-8 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
           </div>
-          <p className="mb-2 text-base font-semibold text-slate-700">No items added yet</p>
+          <p className="mb-2 text-base font-semibold text-slate-700">Your cart is empty</p>
           <p className="mb-4 text-sm text-muted-foreground">
             Click "Add Item" above to start adding products to this order
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {items.map((item, index) => {
-            const qty = Number.parseInt(item.quantity, 10) || 0;
-            const price = Number.parseFloat(item.itemPrice) || 0;
-            const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-            const discount = Number.parseFloat(item.discountAmount) || 0;
-            const itemTotal = Math.max(qty * price + tax - discount, 0);
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          {/* Cart Items */}
+          <div className="divide-y divide-slate-200">
+            {items.map((item, index) => {
+              const itemTotal = calculateItemTotal(item);
+              const isExpanded = expandedItems.has(index);
 
-            return (
-              <div
-                key={`item-${index}`}
-                className="group relative overflow-hidden rounded-xl border-2 border-slate-200 bg-white p-5 shadow-md transition-all hover:border-cyan-300 hover:shadow-lg"
-              >
-                <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 opacity-50" />
-
-                <div className="relative mb-4 flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white shadow-sm">
-                      {index + 1}
+              return (
+                <div key={`item-${index}`} className="hover:bg-slate-50/50 transition-colors">
+                  {/* Desktop View - Grid Layout */}
+                  <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
+                    {/* Number */}
+                    <div className="col-span-1 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+                        {index + 1}
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-slate-800">Item #{index + 1}</div>
-                      {itemTotal > 0 && (
-                        <div className="text-xs text-muted-foreground">
-                          Total: <span className="font-semibold text-slate-700">₹{itemTotal.toFixed(2)}</span>
+
+                    {/* Product Selector & Info */}
+                    <div className="col-span-5">
+                      <ProductVariantSelector
+                        item={item}
+                        index={index}
+                        onItemChange={onItemChange}
+                      />
+                      {(item.productName || item.sku) && (
+                        <div className="mt-2 space-y-1">
+                          {item.productName && (
+                            <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                          )}
+                          {item.sku && (
+                            <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
+                          )}
+                          {item.variantAttributes && (
+                            <Badge variant="secondary" className="text-xs">{item.variantAttributes}</Badge>
+                          )}
                         </div>
                       )}
                     </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveItem(index)}
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Remove
-                  </Button>
-                </div>
 
-                <div className="relative">
-                  {/* Product/Variant Selection */}
-                  <div className="mb-4 rounded-lg bg-blue-50/50 p-4 border border-blue-200">
-                    <div className="mb-3 flex items-center gap-2">
-                      <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                      <Label className="text-xs font-bold uppercase tracking-wide text-blue-700">Product Selection</Label>
-                    </div>
-                    <ProductVariantSelector
-                      item={item}
-                      index={index}
-                      onItemChange={onItemChange}
-                    />
-
-                    {/* Display selected product info */}
-                    {(item.productName || item.sku || item.variantAttributes) && (
-                      <div className="mt-3 space-y-2 border-t border-blue-200 pt-3">
-                        {item.productName && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-slate-600">Product:</span>
-                            <Badge variant="outline" className="bg-white">{item.productName}</Badge>
-                          </div>
-                        )}
-                        {item.sku && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-slate-600">SKU:</span>
-                            <Badge variant="secondary">{item.sku}</Badge>
-                          </div>
-                        )}
-                        {item.variantAttributes && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-slate-600">Variant:</span>
-                            <span className="text-xs text-slate-700">{item.variantAttributes}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mb-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
+                    {/* Quantity */}
+                    <div className="col-span-2">
+                      <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
                       <Input
                         type="number"
                         min={0}
                         placeholder="0"
                         value={item.quantity}
                         onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                        className="border-slate-300 focus:border-cyan-400"
+                        className="h-9 border-slate-300"
                       />
                       <FieldError message={itemErrors?.[index]?.quantity} />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-600">Item Price</Label>
+
+                    {/* Price */}
+                    <div className="col-span-2">
+                      <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
                       <Input
                         type="number"
                         min={0}
@@ -391,100 +370,234 @@ export function OrderFormItems({
                         placeholder="0.00"
                         value={item.itemPrice}
                         onChange={(event) => onItemChange(index, 'itemPrice', event.target.value)}
-                        className="border-slate-300 focus:border-cyan-400"
+                        className="h-9 border-slate-300"
                       />
                       <FieldError message={itemErrors?.[index]?.itemPrice} />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-600">Tax Amount</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        placeholder="0.00"
-                        value={item.itemTaxAmount}
-                        onChange={(event) => onItemChange(index, 'itemTaxAmount', event.target.value)}
-                        className="border-slate-300 focus:border-cyan-400"
-                      />
-                      <FieldError message={itemErrors?.[index]?.itemTaxAmount} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-600">Item Status</Label>
-                      <Input
-                        placeholder="Status code"
-                        value={item.itemStatus}
-                        onChange={(event) => onItemChange(index, 'itemStatus', event.target.value)}
-                        className="border-slate-300 focus:border-cyan-400"
-                      />
-                      <FieldError message={itemErrors?.[index]?.itemStatus} />
+
+                    {/* Total & Actions */}
+                    <div className="col-span-2 flex flex-col gap-2">
+                      <div className="text-right">
+                        <div className="text-xs text-muted-foreground mb-1">Total</div>
+                        <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                      </div>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleExpanded(index)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <svg
+                            className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onRemoveItem(index)}
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mb-4 rounded-lg bg-slate-50 p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <svg className="h-4 w-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <Label className="text-xs font-bold uppercase tracking-wide text-slate-600">Discount Details</Label>
+                  {/* Mobile/Tablet View - Stacked Layout */}
+                  <div className="lg:hidden p-4 space-y-4">
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="text-sm font-bold text-slate-900">Item #{index + 1}</div>
+                          {itemTotal > 0 && (
+                            <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleExpanded(index)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <svg
+                            className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onRemoveItem(index)}
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </Button>
+                      </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-3">
+
+                    {/* Product Selector */}
+                    <div>
+                      <ProductVariantSelector
+                        item={item}
+                        index={index}
+                        onItemChange={onItemChange}
+                      />
+                      {(item.productName || item.sku) && (
+                        <div className="mt-2 space-y-1">
+                          {item.productName && (
+                            <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                          )}
+                          {item.sku && (
+                            <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
+                          )}
+                          {item.variantAttributes && (
+                            <Badge variant="secondary" className="text-xs">{item.variantAttributes}</Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quantity & Price Row */}
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Discount Amount</Label>
+                        <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="0"
+                          value={item.quantity}
+                          onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                          className="h-9 border-slate-300"
+                        />
+                        <FieldError message={itemErrors?.[index]?.quantity} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-600">Price</Label>
                         <Input
                           type="number"
                           min={0}
                           step="0.01"
                           placeholder="0.00"
-                          value={item.discountAmount}
-                          onChange={(event) => onItemChange(index, 'discountAmount', event.target.value)}
-                          className="border-slate-300 focus:border-cyan-400"
+                          value={item.itemPrice}
+                          onChange={(event) => onItemChange(index, 'itemPrice', event.target.value)}
+                          className="h-9 border-slate-300"
                         />
-                        <FieldError message={itemErrors?.[index]?.discountAmount} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
-                        <Select
-                          value={item.discountType || ''}
-                          onValueChange={(value) => onItemChange(index, 'discountType', value)}
-                        >
-                          <SelectTrigger className="border-slate-300 focus:border-cyan-400">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {discountTypeOptions.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Discount Code</Label>
-                        <Input
-                          placeholder="PROMO2024"
-                          value={item.discountCode}
-                          onChange={(event) => onItemChange(index, 'discountCode', event.target.value)}
-                          className="border-slate-300 focus:border-cyan-400"
-                        />
-                        <FieldError message={itemErrors?.[index]?.discountCode} />
+                        <FieldError message={itemErrors?.[index]?.itemPrice} />
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-600">Item Notes</Label>
-                    <Textarea
-                      placeholder="Add notes, variant info, or special instructions..."
-                      value={item.itemComment}
-                      onChange={(event) => onItemChange(index, 'itemComment', event.target.value)}
-                      className="min-h-[60px] resize-none border-slate-300 focus:border-cyan-400"
-                    />
-                  </div>
+                  {/* Expanded Details */}
+                  {isExpanded && (
+                    <div className="bg-slate-50 px-4 py-3 border-t border-slate-200">
+                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Tax Amount</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            placeholder="0.00"
+                            value={item.itemTaxAmount}
+                            onChange={(event) => onItemChange(index, 'itemTaxAmount', event.target.value)}
+                            className="h-9 border-slate-300"
+                          />
+                          <FieldError message={itemErrors?.[index]?.itemTaxAmount} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Discount Amount</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            placeholder="0.00"
+                            value={item.discountAmount}
+                            onChange={(event) => onItemChange(index, 'discountAmount', event.target.value)}
+                            className="h-9 border-slate-300"
+                          />
+                          <FieldError message={itemErrors?.[index]?.discountAmount} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
+                          <Select
+                            value={item.discountType || ''}
+                            onValueChange={(value) => onItemChange(index, 'discountType', value)}
+                          >
+                            <SelectTrigger className="h-9 border-slate-300">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {discountTypeOptions.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Discount Code</Label>
+                          <Input
+                            placeholder="PROMO2024"
+                            value={item.discountCode}
+                            onChange={(event) => onItemChange(index, 'discountCode', event.target.value)}
+                            className="h-9 border-slate-300"
+                          />
+                          <FieldError message={itemErrors?.[index]?.discountCode} />
+                        </div>
+                      </div>
+                      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Item Status</Label>
+                          <Input
+                            placeholder="Status code"
+                            value={item.itemStatus}
+                            onChange={(event) => onItemChange(index, 'itemStatus', event.target.value)}
+                            className="h-9 border-slate-300"
+                          />
+                          <FieldError message={itemErrors?.[index]?.itemStatus} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold text-slate-600">Item Notes</Label>
+                          <Textarea
+                            placeholder="Add notes or special instructions..."
+                            value={item.itemComment}
+                            onChange={(event) => onItemChange(index, 'itemComment', event.target.value)}
+                            className="min-h-[36px] resize-none border-slate-300"
+                            rows={1}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
