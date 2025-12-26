@@ -629,38 +629,6 @@ export function ProductVariantManager({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 rounded-xl border-2 border-primary/10 bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm shadow-lg">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center shadow-sm">
-              <span className="text-lg">🏷️</span>
-            </div>
-            <h2 className="text-2xl font-bold text-foreground">Product Variants</h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground font-medium">
-              Configuration: {variantConfig?.configKey || (
-                <span className="inline-flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  Loading...
-                </span>
-              )}
-            </p>
-            {isLoadingAttributes && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                Loading attributes...
-              </div>
-            )}
-            {!isLoadingAttributes && configAttributes && (
-              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
-                {configAttributes.length} attribute{configAttributes.length !== 1 ? 's' : ''} configured
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
 
       <VariantGenerator
         newVariantsCount={newDraftVariants.length}
