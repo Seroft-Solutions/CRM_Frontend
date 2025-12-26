@@ -7,6 +7,7 @@
  */
 import type { ProductVariantDTOStatus } from './ProductVariantDTOStatus';
 import type { ProductDTO } from './ProductDTO';
+import type { ProductVariantSelectionDTO } from './ProductVariantSelectionDTO';
 
 export interface ProductVariantDTO {
   id?: number;
@@ -36,5 +37,6 @@ export interface ProductVariantDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  product: ProductDTO;
+  product?: ProductDTO;
+  selections?: ProductVariantSelectionDTO[];
 }

@@ -2,33 +2,47 @@
 
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { ProductVariantManager } from './ProductVariantManager';
+import { UseFormReturn } from 'react-hook-form';
 
 interface ProductVariantManagerWrapperProps {
-  productId: number;
+  productId?: number;
+  // For create mode when productId is not available
+  productName?: string;
+  variantConfigId?: number;
+  form?: UseFormReturn<Record<string, any>>;
 }
 
-export function ProductVariantManagerWrapper({ productId }: ProductVariantManagerWrapperProps) {
-  const { data: product, isLoading } = useGetProduct(productId, {
+export function ProductVariantManagerWrapper({
+  productId,
+  productName: providedProductName,
+  variantConfigId: providedVariantConfigId,
+  form
+}: ProductVariantManagerWrapperProps) {
+  const { data: product, isLoading } = useGetProduct(productId!, {
     query: { enabled: !!productId },
   });
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <div className="p-8 text-center">Loading variants...</div>
+      <div className="p-4 text-center text-sm text-muted-foreground">
+        Loading variants...
       </div>
     );
   }
 
-  if (!product) return null;
+  // For edit mode: use fetched product data
+  // For create mode: use provided props
+  const productName = product?.name ?? providedProductName ?? 'Product';
+  const variantConfigId = product?.variantConfig?.id ?? providedVariantConfigId;
+
+  if (!variantConfigId) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-      <ProductVariantManager
-        productId={productId}
-        productName={product.name}
-        variantConfigId={product.variantConfig?.id}
-      />
-    </div>
+    <ProductVariantManager
+      productId={productId}
+      productName={productName}
+      variantConfigId={variantConfigId}
+      form={form}
+    />
   );
 }

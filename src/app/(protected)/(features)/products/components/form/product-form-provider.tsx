@@ -335,7 +335,8 @@ export function ProductFormProvider({
       return;
     }
 
-    if (currentStep !== config.steps.length - 1) {
+    // Skip step validation for single-page forms
+    if (config.behavior?.rendering?.useGeneratedSteps !== false && currentStep !== config.steps.length - 1) {
       return;
     }
 
@@ -431,6 +432,17 @@ export function ProductFormProvider({
         }
       }
     });
+
+    // Handle special fields that are not in config but should be included
+    // Variants are managed by ProductVariantManager and stored in form data
+    if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
+      entityToSave.variants = data.variants;
+    }
+
+    // Include status field if it exists in the data
+    if (data.status) {
+      entityToSave.status = data.status;
+    }
 
     Object.keys(entityToSave).forEach((key) => {
       if (entityToSave[key] === undefined) {

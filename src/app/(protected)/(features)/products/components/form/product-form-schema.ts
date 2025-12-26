@@ -47,9 +47,10 @@ export const productFormSchemaFields = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string().optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
+  variantConfig: z.number().optional(),
+  variants: z.array(z.any()).optional(),
   frontImage: productImageFieldSchema,
   backImage: productImageFieldSchema,
   sideImage: productImageFieldSchema,
@@ -114,14 +115,20 @@ export const productFieldSchemas = {
     })
     .optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
-  status: z.string().optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
+  variantConfig: z.number().optional(),
+  variants: z.array(z.any()).optional(),
   frontImage: productImageFieldSchema,
   backImage: productImageFieldSchema,
   sideImage: productImageFieldSchema,
 };
 
+/**
+ * @deprecated Step schemas are no longer used in single-page form.
+ * Use productFormSchema for full form validation instead.
+ * Kept for backward compatibility with multi-step wizard if needed.
+ */
 export const productStepSchemas = {
   basic: z
     .object({
@@ -133,7 +140,6 @@ export const productStepSchemas = {
       discountedPrice: productFieldSchemas.discountedPrice,
       salePrice: productFieldSchemas.salePrice,
       remark: productFieldSchemas.remark,
-      status: productFieldSchemas.status,
       category: productFieldSchemas.category,
       subCategory: productFieldSchemas.subCategory,
     })
@@ -156,6 +162,11 @@ export const productStepSchemas = {
   review: productFormSchema,
 };
 
+/**
+ * @deprecated validateStep is no longer used in single-page form.
+ * Use form.trigger() to validate the entire form instead.
+ * Kept for backward compatibility with multi-step wizard if needed.
+ */
 export const validateStep = (stepId: string, data: any) => {
   const schema = productStepSchemas[stepId as keyof typeof productStepSchemas];
   if (!schema) return { success: true, data };

@@ -18,10 +18,10 @@ export const productFormConfig: FormConfig = {
         'articleNumber',
         'description',
         'remark',
-        'status',
         'basePrice',
         'discountedPrice',
         'salePrice',
+        'status',
       ],
       relationships: ['category', 'subCategory', 'variantConfig'],
       validation: {
@@ -195,6 +195,17 @@ export const productFormConfig: FormConfig = {
       accept: 'image/jpeg,image/png,image/webp',
       validation: {
         required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'enum',
+      label: 'Status',
+      placeholder: 'Product status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },

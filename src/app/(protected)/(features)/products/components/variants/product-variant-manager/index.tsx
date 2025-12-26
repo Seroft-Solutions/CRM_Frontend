@@ -30,14 +30,16 @@ import { VariantsTable } from './VariantsTable';
 /**
  * @interface ProductVariantManagerProps
  * @description Props for the ProductVariantManager component.
- * @property {number} productId - The ID of the product to manage variants for.
+ * @property {number} [productId] - The ID of the product to manage variants for (optional for create mode).
  * @property {string} productName - The name of the product.
  * @property {number} [variantConfigId] - The ID of the system configuration for variants.
+ * @property {any} [form] - React Hook Form instance for create mode.
  */
 interface ProductVariantManagerProps {
-  productId: number;
+  productId?: number;
   productName: string;
   variantConfigId?: number;
+  form?: any;
 }
 
 /**
@@ -52,6 +54,7 @@ export function ProductVariantManager({
   productId,
   productName,
   variantConfigId,
+  form,
 }: ProductVariantManagerProps) {
   const queryClient = useQueryClient();
 
@@ -59,7 +62,6 @@ export function ProductVariantManager({
   const [preSelectedOptionIdsByAttributeId, setPreSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
   const [userSelectedOptionIdsByAttributeId, setUserSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
   const [draftVariantsByKey, setDraftVariantsByKey] = useState<Record<string, DraftVariantRow>>({});
-  const [isSavingDrafts, setIsSavingDrafts] = useState(false);
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
 
   // Combine pre-selected and user-selected options for visual display
@@ -86,9 +88,11 @@ export function ProductVariantManager({
 
   // #region Data Fetching
   const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants({
-    'productId.equals': productId,
+    'productId.equals': productId!,
     size: 1000,
     sort: ['sku,asc'],
+  }, {
+    query: { enabled: !!productId },
   });
 
   useEffect(() => {
@@ -556,11 +560,36 @@ export function ProductVariantManager({
     !isLoadingSelections;
   // #endregion
 
-  // #region Mutations & Handlers
+  // #region Mutations & Handlers (moved up for auto-save useEffect)
   const createVariantMutation = useCreateProductVariant();
   const createSelectionMutation = useCreateProductVariantSelection();
   const updateVariantMutation = useUpdateProductVariant();
   const deleteVariantMutation = useDeleteProductVariant();
+
+  // #region Handle variants for product save
+  useEffect(() => {
+    // Handle variants for product save (both create and edit modes)
+    if (newDraftVariants.length > 0 && canSaveDrafts && form) {
+      // Both CREATE and EDIT modes: Save to form state so they get saved with the product
+      const variantsForForm = newDraftVariants.map((variant) => ({
+        sku: variant.sku,
+        price: variant.price,
+        stockQuantity: variant.stockQuantity,
+        status: 'ACTIVE',
+        selections: variant.selections.map((sel) => ({
+          status: 'ACTIVE',
+          attribute: { id: sel.attributeId },
+          option: { id: sel.optionId },
+        })),
+      }));
+
+      form.setValue('variants', variantsForForm, { shouldValidate: false, shouldDirty: false });
+      toast.success(`${newDraftVariants.length} variant(s) will be created when you save the product`);
+    }
+  }, [newDraftVariants, form, canSaveDrafts]);
+  // #endregion
+
+  // #region Mutations & Handlers (continued)
 
   const invalidateVariantQueries = () => {
     return queryClient.invalidateQueries({
@@ -639,60 +668,6 @@ export function ProductVariantManager({
     }));
   };
   
-  const handleSaveDrafts = async () => {
-    if (!canSaveDrafts) {
-      toast.error('Cannot save variants.', { description: 'Check for missing required options or wait for loading to complete.' });
-      return;
-    }
-
-    const skuPattern = /^[A-Za-z0-9_-]+$/;
-    const invalidSku = newDraftVariants.find((v) => !v.sku || v.sku.length < 2 || v.sku.length > 50 || !skuPattern.test(v.sku));
-    if (invalidSku) {
-      toast.error(`Invalid SKU: ${invalidSku.sku || '(empty)'}`);
-      return;
-    }
-
-    setIsSavingDrafts(true);
-    let successCount = 0, failureCount = 0;
-
-    for (const variant of newDraftVariants) {
-      try {
-        const createdVariant = await createVariantMutation.mutateAsync({
-          data: {
-            sku: variant.sku,
-            price: variant.price,
-            stockQuantity: variant.stockQuantity,
-            status: variant.status,
-            product: { id: productId },
-          } as any,
-        });
-
-        for (const selection of variant.selections) {
-          await createSelectionMutation.mutateAsync({
-            data: {
-              status: ProductVariantSelectionDTOStatus.ACTIVE,
-              variant: { id: createdVariant.id },
-              attribute: { id: selection.attributeId },
-              option: selection.optionId ? { id: selection.optionId } : undefined,
-            } as any,
-          });
-        }
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to create variant ${variant.sku}:`, error);
-        failureCount++;
-      }
-    }
-
-    if (successCount > 0) toast.success(`Created ${successCount} new variant(s)`);
-    if (failureCount > 0) toast.error(`Failed to create ${failureCount} variant(s)`);
-
-    await invalidateVariantQueries();
-
-    setUserSelectedOptionIdsByAttributeId({});
-    setDraftVariantsByKey({});
-    setIsSavingDrafts(false);
-  };
   // #endregion
 
   if (!variantConfigId) {
@@ -711,11 +686,9 @@ export function ProductVariantManager({
         enumAttributeOptions={enumAttributeOptions}
         selectedOptionIdsByAttributeId={selectedOptionIdsByAttributeId}
         visibleEnumAttributes={visibleEnumAttributes}
-        onSave={handleSaveDrafts}
-        isSaving={isSavingDrafts}
-        canSave={canSaveDrafts}
         onToggleOption={toggleOption}
         disabledOptionIds={precomputeDisabledOptionIds}
+        isCreateMode={!productId}
       />
 
       <VariantsTable

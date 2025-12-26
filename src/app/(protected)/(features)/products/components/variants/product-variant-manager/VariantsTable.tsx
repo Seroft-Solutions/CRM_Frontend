@@ -59,13 +59,10 @@ export function VariantsTable({
   const showTable = hasDrafts || totalExistingRows > 0;
   if (!showTable && !isLoading) {
     return (
-      <div className="rounded-xl border-2 border-dashed border-muted-foreground/30 bg-gradient-to-br from-muted/10 to-muted/5 p-12 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/20 flex items-center justify-center">
-          <span className="text-3xl">📦</span>
-        </div>
-        <h3 className="text-lg font-semibold text-muted-foreground mb-2">No variants found</h3>
-        <p className="text-sm text-muted-foreground">
-          No variants found for this product. Create new variants using the generator above.
+      <div className="rounded-lg border border-dashed bg-muted/5 p-8 text-center">
+        <p className="text-sm text-muted-foreground font-medium mb-1">No variants found</p>
+        <p className="text-xs text-muted-foreground">
+          Create new variants using the generator above.
         </p>
       </div>
     );
@@ -74,41 +71,23 @@ export function VariantsTable({
   const totalColumnCount = visibleEnumAttributes.length + 5;
 
   return (
-    <div className="rounded-xl border-2 border-border/50 bg-gradient-to-br from-background to-background/95 shadow-lg">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-gradient-to-r from-muted/20 to-muted/10 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
-              <span className="text-xs font-bold text-primary">📊</span>
-            </div>
-            <h4 className="text-base font-bold text-foreground">Variants Table</h4>
-          </div>
-          <Badge variant="outline" className="text-xs font-semibold border-green-300 bg-green-50 text-green-700 hover:bg-green-100 transition-colors">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+    <div className="rounded-lg border bg-card">
+      <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/30">
+        <h4 className="text-sm font-semibold text-foreground">Variants</h4>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs border-green-300 bg-green-50 text-green-700">
             {totalExistingRows} saved
           </Badge>
           {hasDrafts && (
-            <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">
-              <div className="w-2 h-2 bg-white/30 rounded-full mr-2"></div>
+            <Badge className="bg-blue-500 text-white text-xs">
               {newDraftVariants.length} new
             </Badge>
           )}
           {hasDuplicates && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105">
-              <div className="w-2 h-2 bg-white/30 rounded-full mr-2"></div>
+            <Badge className="bg-amber-500 text-white text-xs">
               {duplicateDraftVariants.length} duplicate{duplicateDraftVariants.length !== 1 ? 's' : ''}
             </Badge>
           )}
-        </div>
-        <div className="text-right">
-          <p className="text-sm font-semibold text-foreground">
-            {totalRowsToDisplay} total variants
-          </p>
-          <div className="text-xs text-muted-foreground space-y-1">
-            <p>{totalExistingRows} saved</p>
-            {newDraftVariants.length > 0 && <p className="text-blue-600">{newDraftVariants.length} new pending</p>}
-            {duplicateDraftVariants.length > 0 && <p className="text-amber-600">{duplicateDraftVariants.length} duplicate{duplicateDraftVariants.length !== 1 ? 's' : ''}</p>}
-          </div>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -117,13 +96,10 @@ export function VariantsTable({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={totalColumnCount} className="h-32 text-center">
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="relative">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-ping"></div>
-                    </div>
-                    <p className="text-sm text-muted-foreground font-medium">Loading variants...</p>
+                <TableCell colSpan={totalColumnCount} className="h-24 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">Loading variants...</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -145,13 +121,10 @@ export function VariantsTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={totalColumnCount} className="h-32 text-center">
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <span className="text-2xl">🔍</span>
-                    <p className="text-sm text-muted-foreground font-medium">
-                      No variants to display for this filter.
-                    </p>
-                  </div>
+                <TableCell colSpan={totalColumnCount} className="h-24 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No variants to display for this filter.
+                  </p>
                 </TableCell>
               </TableRow>
             )}

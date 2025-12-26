@@ -30,6 +30,7 @@ interface EnumAttributeWithOptions {
  * @property {boolean} isSaving - A flag indicating if the save operation is in progress.
  * @property {boolean} canSave - A flag indicating if saving is currently allowed.
  * @property {(attributeId: number, optionId: number) => void} onToggleOption - The callback function to toggle the selection state of an option.
+ * @property {boolean} isCreateMode - Flag indicating if in create mode (no productId).
  */
 interface VariantGeneratorProps {
   newVariantsCount: number;
@@ -40,11 +41,9 @@ interface VariantGeneratorProps {
   enumAttributeOptions: EnumAttributeWithOptions[];
   selectedOptionIdsByAttributeId: Record<number, Set<number>>;
   visibleEnumAttributes: SystemConfigAttributeDTO[];
-  onSave: () => void;
-  isSaving: boolean;
-  canSave: boolean;
   onToggleOption: (attributeId: number, optionId: number) => void;
   disabledOptionIds: Set<number>;
+  isCreateMode?: boolean;
 }
 
 /**
@@ -63,27 +62,26 @@ export function VariantGenerator({
   enumAttributeOptions,
   selectedOptionIdsByAttributeId,
   visibleEnumAttributes,
-  onSave,
-  isSaving,
-  canSave,
   onToggleOption,
   disabledOptionIds,
+  isCreateMode = false,
 }: VariantGeneratorProps) {
   return (
-    <div className="rounded-xl border-2 border-primary/10 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm p-6 space-y-6 shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="rounded-lg border bg-card p-4 space-y-4">
       <VariantGeneratorHeader
         newVariantsCount={newVariantsCount}
         duplicateVariantsCount={duplicateVariantsCount}
         missingRequiredCount={missingRequiredEnumAttributes.length}
-        onSave={onSave}
-        isSaving={isSaving}
-        canSave={canSave}
+        onSave={() => {}} // Empty function since button is removed
+        isSaving={false}
+        canSave={false}
+        isCreateMode={isCreateMode}
       />
 
       {missingRequiredEnumAttributes.length > 0 && (
-        <Alert className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-l-amber-400">
-          <AlertDescription className="text-amber-800 font-medium">
-            <span className="font-semibold">Required selections missing:</span>{' '}
+        <Alert className="border-amber-200 bg-amber-50 border-l-4 border-l-amber-500 py-2">
+          <AlertDescription className="text-amber-800 text-sm">
+            <span className="font-medium">Required selections missing:</span>{' '}
             {missingRequiredEnumAttributes
               .map((a) => a.label ?? a.name)
               .join(', ')}
@@ -92,30 +90,27 @@ export function VariantGenerator({
       )}
 
       {isLoadingSelections && (
-        <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-l-blue-400">
-          <AlertDescription className="text-blue-800 font-medium">
+        <Alert className="border-blue-200 bg-blue-50 border-l-4 border-l-blue-500 py-2">
+          <AlertDescription className="text-blue-800 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-              Loading existing variant selections… duplicate prevention will activate once complete.
+              <div className="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <span>Loading existing variant selections...</span>
             </div>
           </AlertDescription>
         </Alert>
       )}
 
       {visibleEnumAttributes.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-2xl">📋</span>
-          </div>
-          <p className="text-sm text-muted-foreground font-medium">
+        <div className="text-center py-6 text-muted-foreground">
+          <p className="text-sm font-medium">
             No ENUM attributes found for this configuration.
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs mt-1">
             Add ENUM-type attributes to enable variant generation.
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visibleEnumAttributes.map((attr) => {
             const attributeId = attr.id!;
             const options = enumAttributeOptions.find((x) => x.attribute.id === attributeId)?.options ?? [];
@@ -131,22 +126,6 @@ export function VariantGenerator({
               />
             );
           })}
-        </div>
-      )}
-
-      {visibleEnumAttributes.length > 0 && !isLoadingOptions && missingRequiredEnumAttributes.length === 0 && (
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg p-4 border border-primary/20">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-xs text-primary font-bold">💡</span>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-primary mb-1">Pro Tip</p>
-              <p className="text-sm text-muted-foreground">
-                Select options for just one attribute to create partial variants, or combine multiple attributes for full combinations.
-              </p>
-            </div>
-          </div>
         </div>
       )}
     </div>

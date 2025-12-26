@@ -1,8 +1,6 @@
-import { ProductDetails } from '../components/product-details';
+import { ProductViewForm } from '../components/product-view-form';
 import { PermissionGuard } from '@/core/auth';
-import { ProductImagesManager } from '@/features/product-images/components/ProductImagesManager';
-import { ProductVariantManagerWrapper } from '../components/variants/ProductVariantManagerWrapper';
-import { Eye, Box } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 interface ProductPageProps {
   params: Promise<{
@@ -25,7 +23,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       unauthorizedDescription="You don't have permission to view this product."
     >
       <div className="space-y-6">
-        {/* Modern Centered Header for View Page */}
+        {/* Modern Centered Header - Matching Edit/Create Pages */}
         <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
           <div className="flex items-center justify-center">
             {/* Left Section: Icon and Title */}
@@ -35,7 +33,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-sidebar-foreground">Product Details</h1>
-                <p className="text-sm text-sidebar-foreground/80">View product information and variants</p>
+                <p className="text-sm text-sidebar-foreground/80">View product information</p>
               </div>
             </div>
 
@@ -48,11 +46,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <ProductDetails id={id} />
+          <ProductViewForm id={id} />
         </div>
-
-        {/* Product Variants Section */}
-        <ProductVariantManagerWrapper productId={id} />
       </div>
     </PermissionGuard>
   );

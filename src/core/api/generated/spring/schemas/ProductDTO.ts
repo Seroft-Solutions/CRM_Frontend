@@ -10,6 +10,7 @@ import type { SystemConfigDTO } from './SystemConfigDTO';
 import type { ProductCategoryDTO } from './ProductCategoryDTO';
 import type { ProductSubCategoryDTO } from './ProductSubCategoryDTO';
 import type { ProductImageDTO } from './ProductImageDTO';
+import type { ProductVariantDTO } from './ProductVariantDTO';
 
 export interface ProductDTO {
   id?: number;
@@ -71,4 +72,5 @@ export interface ProductDTO {
   category?: ProductCategoryDTO;
   subCategory?: ProductSubCategoryDTO;
   images?: ProductImageDTO[];
+  variants?: ProductVariantDTO[];
 }
