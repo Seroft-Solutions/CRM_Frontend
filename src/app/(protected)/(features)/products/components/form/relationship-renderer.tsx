@@ -3,6 +3,8 @@
 import React from 'react';
 import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
+import { useWatch } from 'react-hook-form';
+import { Badge } from '@/components/ui/badge';
 
 import {
   useCountProductCategories,
@@ -19,8 +21,12 @@ import {
   useGetAllSystemConfigs,
   useSearchSystemConfigs,
 } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
+import { useGetAllSystemConfigAttributes } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 
 import type { RelationshipConfig } from './form-types';
+import type {
+  SystemConfigAttributeDTO,
+} from '@/core/api/generated/spring/schemas';
 
 interface RelationshipRendererProps {
   relConfig: RelationshipConfig;
@@ -37,6 +43,86 @@ export function RelationshipRenderer({
   actions,
   config,
 }: RelationshipRendererProps) {
+  const selectedValue = useWatch({ control: form.control, name: relConfig.name as any }) as unknown;
+
+  const isVariantConfig = relConfig.name === 'variantConfig';
+  const selectedVariantConfigId =
+    isVariantConfig && typeof selectedValue === 'number' ? selectedValue : undefined;
+
+  const { data: variantAttributes = [], isLoading: isLoadingVariantAttributes } =
+    useGetAllSystemConfigAttributes(
+      {
+        'systemConfigId.equals': selectedVariantConfigId,
+        page: 0,
+        size: 1000,
+        sort: ['sortOrder,asc'],
+      },
+      {
+        query: {
+          enabled: Boolean(selectedVariantConfigId),
+          staleTime: 60_000,
+        },
+      }
+    );
+
+  const attributeIds = React.useMemo(() => {
+    return (variantAttributes ?? [])
+      .map((attr) => attr.id)
+      .filter((id): id is number => typeof id === 'number');
+  }, [variantAttributes]);
+
+  const renderVariantAttributePreview = React.useCallback(() => {
+    if (!selectedVariantConfigId) return null;
+
+    if (isLoadingVariantAttributes) {
+      return (
+        <div className="text-xs text-muted-foreground">Loading config attributes…</div>
+      );
+    }
+
+    const attributes = variantAttributes ?? [];
+    if (!attributes.length) {
+      return (
+        <div className="text-xs text-muted-foreground">
+          No attributes found for this variant configuration.
+        </div>
+      );
+    }
+
+    const sorted = [...attributes].sort((a, b) => {
+      const reqA = Boolean((a as any).isRequired);
+      const reqB = Boolean((b as any).isRequired);
+      if (reqA !== reqB) return reqA ? -1 : 1;
+      const labelA = (a.label || a.name || '').toLowerCase();
+      const labelB = (b.label || b.name || '').toLowerCase();
+      return labelA.localeCompare(labelB);
+    });
+
+    return (
+      <div className="flex flex-wrap gap-2">
+        {sorted.map((attr) => {
+          const label = attr.label || attr.name || `Attribute #${attr.id}`;
+          const required = Boolean((attr as any).isRequired);
+
+          return (
+            <Badge
+              key={attr.id ?? label}
+              variant={required ? 'destructive' : 'secondary'}
+              className="text-[11px] font-medium"
+            >
+              {label}
+            </Badge>
+          );
+        })}
+      </div>
+    );
+  }, [
+    attributeIds.length,
+    isLoadingVariantAttributes,
+    selectedVariantConfigId,
+    variantAttributes,
+  ]);
+
   const handleDataLoaded = React.useCallback(
     (relationshipName: string, data: any[]) => {
       const autoPopulateRelationships = config.relationships.filter(
@@ -164,47 +250,50 @@ export function RelationshipRenderer({
 
       case 'variantConfig':
         return (
-          <PaginatedRelationshipCombobox
-            value={field.value}
-            onValueChange={(value) => {
-              field.onChange(value);
-              if (relConfig.cascadingFilter) {
-                const dependentRelationships = config.relationships.filter(
-                  (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
-                );
-                dependentRelationships.forEach((depRel: any) => {
-                  form.setValue(depRel.name, undefined);
-                });
+          <div className="space-y-2">
+            <PaginatedRelationshipCombobox
+              value={field.value}
+              onValueChange={(value) => {
+                field.onChange(value);
+                if (relConfig.cascadingFilter) {
+                  const dependentRelationships = config.relationships.filter(
+                    (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
+                  );
+                  dependentRelationships.forEach((depRel: any) => {
+                    form.setValue(depRel.name, undefined);
+                  });
+                }
+              }}
+              displayField={relConfig.displayField}
+              placeholder={relConfig.ui.placeholder}
+              multiple={relConfig.multiple}
+              useGetAllHook={useGetAllSystemConfigs}
+              useSearchHook={useSearchSystemConfigs}
+              useCountHook={useCountSystemConfigs}
+              entityName={relConfig.api.entityName}
+              searchField={relConfig.displayField}
+              canCreate={relConfig.creation?.canCreate}
+              createEntityPath={relConfig.creation?.createPath || ''}
+              createPermission={relConfig.creation?.createPermission || ''}
+              onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
+              parentFilter={
+                relConfig.cascadingFilter
+                  ? form.watch(relConfig.cascadingFilter.parentField)
+                  : undefined
               }
-            }}
-            displayField={relConfig.displayField}
-            placeholder={relConfig.ui.placeholder}
-            multiple={relConfig.multiple}
-            useGetAllHook={useGetAllSystemConfigs}
-            useSearchHook={useSearchSystemConfigs}
-            useCountHook={useCountSystemConfigs}
-            entityName={relConfig.api.entityName}
-            searchField={relConfig.displayField}
-            canCreate={relConfig.creation?.canCreate}
-            createEntityPath={relConfig.creation?.createPath || ''}
-            createPermission={relConfig.creation?.createPermission || ''}
-            onEntityCreated={(entityId) => actions.handleEntityCreated(entityId, relConfig.name)}
-            parentFilter={
-              relConfig.cascadingFilter
-                ? form.watch(relConfig.cascadingFilter.parentField)
-                : undefined
-            }
-            parentField={relConfig.cascadingFilter?.parentField}
-            customFilters={relConfig.customFilters}
-            onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
-            disabled={
-              relConfig.cascadingFilter
-                ? !form.watch(relConfig.cascadingFilter.parentField)
-                : relConfig.ui.disabled
-            }
-            helpText={relConfig.ui.helpText}
-            {...actions.getNavigationProps(relConfig.name)}
-          />
+              parentField={relConfig.cascadingFilter?.parentField}
+              customFilters={relConfig.customFilters}
+              onDataLoaded={(data) => handleDataLoaded(relConfig.name, data)}
+              disabled={
+                relConfig.cascadingFilter
+                  ? !form.watch(relConfig.cascadingFilter.parentField)
+                  : relConfig.ui.disabled
+              }
+              helpText={(relConfig.ui as any).helpText}
+              {...actions.getNavigationProps(relConfig.name)}
+            />
+            {renderVariantAttributePreview()}
+          </div>
         );
 
       default:
