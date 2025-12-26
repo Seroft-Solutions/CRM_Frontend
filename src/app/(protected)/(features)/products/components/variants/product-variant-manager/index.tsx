@@ -56,12 +56,33 @@ export function ProductVariantManager({
   const queryClient = useQueryClient();
 
   const defaultGeneratedStatus = ProductVariantDTOStatus.ACTIVE;
-  const [selectedOptionIdsByAttributeId, setSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
+  const [preSelectedOptionIdsByAttributeId, setPreSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
+  const [userSelectedOptionIdsByAttributeId, setUserSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
   const [draftVariantsByKey, setDraftVariantsByKey] = useState<Record<string, DraftVariantRow>>({});
   const [isSavingDrafts, setIsSavingDrafts] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
-  const PAGE_SIZE = 10;
+
+  // Combine pre-selected and user-selected options for visual display
+  const selectedOptionIdsByAttributeId = useMemo(() => {
+    const combined: Record<number, Set<number>> = {};
+
+    // Add pre-selected options (from existing variants)
+    Object.entries(preSelectedOptionIdsByAttributeId).forEach(([attrId, optionSet]) => {
+      const attrIdNum = parseInt(attrId, 10);
+      combined[attrIdNum] = new Set(optionSet);
+    });
+
+    // Add user-selected options
+    Object.entries(userSelectedOptionIdsByAttributeId).forEach(([attrId, optionSet]) => {
+      const attrIdNum = parseInt(attrId, 10);
+      if (!combined[attrIdNum]) {
+        combined[attrIdNum] = new Set();
+      }
+      optionSet.forEach(optionId => combined[attrIdNum].add(optionId));
+    });
+
+    return combined;
+  }, [preSelectedOptionIdsByAttributeId, userSelectedOptionIdsByAttributeId]);
 
   // #region Data Fetching
   const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants({
@@ -71,7 +92,6 @@ export function ProductVariantManager({
   });
 
   useEffect(() => {
-    setCurrentPage(1);
     setEditingRowData(null);
   }, []);
 
@@ -122,6 +142,30 @@ export function ProductVariantManager({
       )
     ),
   });
+
+  // Initialize pre-selected options based on existing variant selections for visual indication
+  useEffect(() => {
+    if (variantSelections && variantSelections.length > 0) {
+      const initialSelectedOptions: Record<number, Set<number>> = {};
+
+      variantSelections.forEach((selection) => {
+        const attributeId = selection.attribute?.id;
+        const optionId = selection.option?.id;
+
+        if (typeof attributeId === 'number' && typeof optionId === 'number') {
+          if (!initialSelectedOptions[attributeId]) {
+            initialSelectedOptions[attributeId] = new Set<number>();
+          }
+          initialSelectedOptions[attributeId].add(optionId);
+        }
+      });
+
+      setPreSelectedOptionIdsByAttributeId(initialSelectedOptions);
+      // Reset user selections when existing variants are loaded
+      setUserSelectedOptionIdsByAttributeId({});
+    }
+  }, [variantSelections]);
+
   // #endregion
 
   // #region Memoized Data Transformation
@@ -311,9 +355,8 @@ export function ProductVariantManager({
 
         if (!existingSkus.has(sku) && !existingCombinationKeys.has(key)) {
           newVariants.push(variant);
-        } else {
-          duplicateVariants.push(variant);
         }
+        // Only generate truly new variants, skip duplicates entirely
         return;
       }
 
@@ -334,7 +377,7 @@ export function ProductVariantManager({
     }
 
     generate(0, []);
-    return { newVariants, duplicateVariants };
+    return { newVariants, duplicateVariants: [] };
   }, [
     variantConfigId,
     enumAttributeOptions,
@@ -353,16 +396,10 @@ export function ProductVariantManager({
     setDraftVariantsByKey((prev) => {
       const next: Record<string, DraftVariantRow> = {};
 
-      // Add new variants
+      // Add new variants only (duplicates are excluded)
       draftCombinations.newVariants?.forEach((row) => {
         const existing = prev[row.key];
         next[row.key] = existing ? { ...row, ...existing, isDuplicate: false } : { ...row, isDuplicate: false };
-      });
-
-      // Add duplicate variants
-      draftCombinations.duplicateVariants?.forEach((row) => {
-        const existing = prev[row.key];
-        next[row.key] = existing ? { ...row, ...existing, isDuplicate: true } : { ...row, isDuplicate: true };
       });
 
       // Basic check to prevent re-render if only references changed
@@ -381,7 +418,7 @@ export function ProductVariantManager({
   const precomputeDisabledOptionIds = useMemo(() => {
     const disabledOptions = new Set<number>();
 
-    // Collect all currently selected attribute options from state
+    // Collect all currently selected attribute options from state (for duplicate prevention)
     const currentSelectedAttributeOptions: Array<{ attributeId: number; optionId: number }> = [];
     Object.entries(selectedOptionIdsByAttributeId).forEach(([attrIdStr, optionIdSet]) => {
       const attributeId = parseInt(attrIdStr, 10);
@@ -441,20 +478,6 @@ export function ProductVariantManager({
       ...existingVariantRows.map((e) => ({ kind: 'existing' as const, rowKey: `existing-${e.id}`, row: e })),
     ];
   }, [newDraftVariants, duplicateDraftVariants, existingVariantRows]);
-
-  const totalPages = Math.ceil(combinedRows.length / PAGE_SIZE);
-
-  const paginatedRows = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    return combinedRows.slice(start, end);
-  }, [combinedRows, currentPage]);
-
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
 
   const visibleEnumAttributes = useMemo(() => {
     return enumAttributes
@@ -545,7 +568,7 @@ export function ProductVariantManager({
 
 
   const toggleOption = (attributeId: number, optionId: number) => {
-    setSelectedOptionIdsByAttributeId((prev) => {
+    setUserSelectedOptionIdsByAttributeId((prev) => {
       const next = { ...prev };
       const currentSet = new Set(next[attributeId] ?? []);
       if (currentSet.has(optionId)) currentSet.delete(optionId);
@@ -609,15 +632,10 @@ export function ProductVariantManager({
 
     if (successCount > 0) toast.success(`Created ${successCount} new variant(s)`);
     if (failureCount > 0) toast.error(`Failed to create ${failureCount} variant(s)`);
-    if (duplicateDraftVariants.length > 0) {
-      toast.info(`${duplicateDraftVariants.length} duplicate variant(s) were skipped`, {
-        description: 'These combinations already exist in your product variants.'
-      });
-    }
 
     await invalidateVariantQueries();
 
-    setSelectedOptionIdsByAttributeId({});
+    setUserSelectedOptionIdsByAttributeId({});
     setDraftVariantsByKey({});
     setIsSavingDrafts(false);
   };
@@ -629,39 +647,6 @@ export function ProductVariantManager({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 rounded-xl border-2 border-primary/10 bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm shadow-lg">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center shadow-sm">
-              <span className="text-lg">🏷️</span>
-            </div>
-            <h2 className="text-2xl font-bold text-foreground">Product Variants</h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground font-medium">
-              Configuration: {variantConfig?.configKey || (
-                <span className="inline-flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  Loading...
-                </span>
-              )}
-            </p>
-            {isLoadingAttributes && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                Loading attributes...
-              </div>
-            )}
-            {!isLoadingAttributes && configAttributes && (
-              <Badge variant="secondary" className="text-xs font-semibold bg-primary/10 text-primary border-primary/20">
-                {configAttributes.length} attribute{configAttributes.length !== 1 ? 's' : ''} configured
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
-
       <VariantGenerator
         newVariantsCount={newDraftVariants.length}
         duplicateVariantsCount={duplicateDraftVariants.length}
@@ -679,15 +664,12 @@ export function ProductVariantManager({
       />
 
       <VariantsTable
-          rows={paginatedRows}
+          rows={combinedRows}
           existingVariantRows={existingVariantRows}
           draftVariants={draftVariants}
           visibleEnumAttributes={visibleEnumAttributes}
           existingSkus={existingSkus}
           onUpdateDraft={updateDraft}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
           editingRowData={editingRowData}
           onEditRow={setEditingRowData}
           onUpdateEditingRow={handleUpdateEditingRow}

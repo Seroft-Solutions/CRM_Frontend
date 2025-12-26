@@ -5,14 +5,6 @@ import { CombinedVariantRow, DraftVariantRow, ExistingVariantRow } from './types
 import { VariantsTableHeader } from './VariantsTableHeader';
 import { VariantTableRow } from './VariantTableRow';
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
 import { Loader2 } from 'lucide-react';
 
 /**
@@ -26,9 +18,6 @@ interface VariantsTableProps {
   visibleEnumAttributes: SystemConfigAttributeDTO[];
   existingSkus: Set<string>;
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
   editingRowData: ExistingVariantRow | null;
   onEditRow: (row: ExistingVariantRow) => void;
   onUpdateEditingRow: (updatedValues: Partial<ExistingVariantRow>) => void;
@@ -52,9 +41,6 @@ export function VariantsTable({
   visibleEnumAttributes,
   existingSkus,
   onUpdateDraft,
-  currentPage,
-  totalPages,
-  onPageChange,
   editingRowData,
   onEditRow,
   onUpdateEditingRow,
@@ -85,19 +71,6 @@ export function VariantsTable({
     );
   }
 
-  const getPageNumbers = () => {
-    const pages = [];
-    if (totalPages <= 1) return [];
-    pages.push(1);
-    if (currentPage > 3) pages.push('...');
-    if (currentPage > 2) pages.push(currentPage - 1);
-    if (currentPage !== 1 && currentPage !== totalPages) pages.push(currentPage);
-    if (currentPage < totalPages - 1) pages.push(currentPage + 1);
-    if (currentPage < totalPages - 2) pages.push('...');
-    pages.push(totalPages);
-    return [...new Set(pages)];
-  };
-  
   const totalColumnCount = visibleEnumAttributes.length + 5;
 
   return (
@@ -185,52 +158,6 @@ export function VariantsTable({
           </TableBody>
         </Table>
       </div>
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center p-4 border-t">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange(currentPage - 1);
-                  }}
-                  className={!isLoading && currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((page, index) => (
-                <PaginationItem key={index}>
-                  {typeof page === 'string' ? (
-                    <span className="px-3">...</span>
-                  ) : (
-                    <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onPageChange(page);
-                      }}
-                      isActive={currentPage === page}
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages) onPageChange(currentPage + 1);
-                  }}
-                  className={!isLoading && currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
     </div>
   );
 }
