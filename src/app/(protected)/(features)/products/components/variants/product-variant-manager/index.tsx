@@ -327,7 +327,7 @@ export function ProductVariantManager({
 
     if (targetAttributes.length === 0) return;
 
-    setSelectedOptionIdsByAttributeId(() => {
+    setUserSelectedOptionIdsByAttributeId(() => {
       const next: Record<number, Set<number>> = {};
 
       enumAttributeOptions.forEach(({ attribute, options }) => {
