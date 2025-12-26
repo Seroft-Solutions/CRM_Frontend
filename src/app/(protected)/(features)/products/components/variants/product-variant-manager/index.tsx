@@ -267,9 +267,55 @@ export function ProductVariantManager({
   }, [enumAttributes, attributeOptionsResults]);
   // #endregion
 
+  // #region Default Selections (Colour/Size)
+  useEffect(() => {
+    if (Object.keys(selectedOptionIdsByAttributeId).length > 0) return;
+    if (!variantConfigId) return;
+    if (isLoadingOptions) return;
+    if (enumAttributeOptions.length === 0) return;
+
+    const isColourOrColor = (value?: string | null) => !!value && /colou?r/i.test(value);
+    const isSize = (value?: string | null) => !!value && /size/i.test(value);
+
+    const targetAttributes = enumAttributeOptions
+      .map((x) => x.attribute)
+      .filter((attr) => isColourOrColor(attr.label) || isColourOrColor(attr.name) || isSize(attr.label) || isSize(attr.name));
+
+    if (targetAttributes.length === 0) return;
+
+    setSelectedOptionIdsByAttributeId(() => {
+      const next: Record<number, Set<number>> = {};
+
+      enumAttributeOptions.forEach(({ attribute, options }) => {
+        if (typeof attribute.id !== 'number') return;
+
+        const isTarget =
+          isColourOrColor(attribute.label) ||
+          isColourOrColor(attribute.name) ||
+          isSize(attribute.label) ||
+          isSize(attribute.name);
+
+        if (!isTarget) return;
+
+        const firstOptionId = options.find((o) => typeof o.id === 'number')?.id;
+        if (typeof firstOptionId === 'number') {
+          next[attribute.id] = new Set([firstOptionId]);
+        }
+      });
+
+      return next;
+    });
+  }, [enumAttributeOptions, isLoadingOptions, selectedOptionIdsByAttributeId, variantConfigId]);
+  // #endregion
+
   // #region Draft Variant Generation
-  const draftCombinations = useMemo(() => {
-    if (!variantConfigId || enumAttributeOptions.length === 0 || isLoadingOptions) return [];
+  const draftCombinations = useMemo<{
+    newVariants: DraftVariantRow[];
+    duplicateVariants: DraftVariantRow[];
+  }>(() => {
+    if (!variantConfigId || enumAttributeOptions.length === 0 || isLoadingOptions) {
+      return { newVariants: [], duplicateVariants: [] };
+    }
 
     const basePrefix = (productName.substring(0, 4) || 'PROD').toUpperCase();
 
@@ -281,7 +327,9 @@ export function ProductVariantManager({
       .filter(({ attribute }) => typeof attribute.id === 'number' && attribute.id)
       .filter((x) => x.selectedOptions.length > 0);
 
-    if (selectionsForCrossProduct.length === 0) return [];
+    if (selectionsForCrossProduct.length === 0) {
+      return { newVariants: [], duplicateVariants: [] };
+    }
 
     const newVariants: DraftVariantRow[] = [];
     const duplicateVariants: DraftVariantRow[] = [];
@@ -354,13 +402,13 @@ export function ProductVariantManager({
       const next: Record<string, DraftVariantRow> = {};
 
       // Add new variants
-      draftCombinations.newVariants?.forEach((row) => {
+      draftCombinations.newVariants.forEach((row) => {
         const existing = prev[row.key];
         next[row.key] = existing ? { ...row, ...existing, isDuplicate: false } : { ...row, isDuplicate: false };
       });
 
       // Add duplicate variants
-      draftCombinations.duplicateVariants?.forEach((row) => {
+      draftCombinations.duplicateVariants.forEach((row) => {
         const existing = prev[row.key];
         next[row.key] = existing ? { ...row, ...existing, isDuplicate: true } : { ...row, isDuplicate: true };
       });
