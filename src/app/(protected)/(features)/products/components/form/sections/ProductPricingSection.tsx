@@ -5,7 +5,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { DollarSign, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
@@ -85,13 +85,13 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
         <Card className="rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-md">
           <CardHeader className="pb-2 pt-3 px-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <DollarSign className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
-                <p className="text-[10px] text-muted-foreground">Product pricing information</p>
-              </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <span className="text-sm font-bold text-primary">₹</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
+              <p className="text-[10px] text-muted-foreground">Product pricing information</p>
+            </div>
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-3">
@@ -106,13 +106,13 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
         <Card className="rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-md">
           <CardHeader className="pb-2 pt-3 px-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <DollarSign className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
-                <p className="text-[10px] text-muted-foreground">Product pricing information</p>
-              </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <span className="text-sm font-bold text-primary">₹</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
+              <p className="text-[10px] text-muted-foreground">Product pricing information</p>
+            </div>
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-3">
@@ -128,7 +128,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
         <CardHeader className="pb-2 pt-3 px-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <DollarSign className="h-4 w-4 text-primary" />
+              <span className="text-sm font-bold text-primary">₹</span>
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
@@ -144,7 +144,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
                 Base Price
               </div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
-                ${viewBasePrice || '0.00'}
+                ₹{viewBasePrice || '0.00'}
               </div>
             </div>
 
@@ -154,7 +154,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
                 Discounted Price
               </div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
-                ${viewDiscountedPrice || 'Not set'}
+                {viewDiscountedPrice ? `₹${viewDiscountedPrice}` : 'Not set'}
               </div>
             </div>
 
@@ -164,7 +164,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
                 Sale Price
               </div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
-                ${viewSalePrice || 'Not set'}
+                {viewSalePrice ? `₹${viewSalePrice}` : 'Not set'}
               </div>
             </div>
           </div>
@@ -195,7 +195,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-            <DollarSign className="h-4 w-4 text-primary" />
+            <span className="text-sm font-bold text-primary">₹</span>
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-800">Pricing</h3>

@@ -25,6 +25,7 @@ interface VariantsTableProps {
   onCancelEdit: () => void;
   onDeleteRow: (row: ExistingVariantRow) => void;
   isLoading?: boolean;
+  isViewMode?: boolean;
 }
 
 /**
@@ -48,6 +49,7 @@ export function VariantsTable({
   onCancelEdit,
   onDeleteRow,
   isLoading,
+  isViewMode = false,
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
@@ -68,7 +70,7 @@ export function VariantsTable({
     );
   }
 
-  const totalColumnCount = visibleEnumAttributes.length + 5;
+  const totalColumnCount = visibleEnumAttributes.length + (isViewMode ? 4 : 5);
 
   return (
     <div className="rounded-lg border bg-card">
@@ -92,7 +94,7 @@ export function VariantsTable({
       </div>
       <div className="overflow-x-auto">
         <Table>
-          <VariantsTableHeader visibleEnumAttributes={visibleEnumAttributes} />
+          <VariantsTableHeader visibleEnumAttributes={visibleEnumAttributes} isViewMode={isViewMode} />
           <TableBody>
             {isLoading ? (
               <TableRow>
@@ -117,6 +119,7 @@ export function VariantsTable({
                   onSaveExisting={onSaveExisting}
                   onCancelEdit={onCancelEdit}
                   onDeleteRow={onDeleteRow}
+                  isViewMode={isViewMode}
                 />
               ))
             ) : (

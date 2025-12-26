@@ -11,6 +11,7 @@ import {
   Download,
   Eye,
   EyeOff,
+  Loader2,
   RotateCcw,
   Settings2,
   X,
@@ -303,6 +304,10 @@ export function ProductTable() {
   const [showBulkStatusChangeDialog, setShowBulkStatusChangeDialog] = useState(false);
   const [bulkNewStatus, setBulkNewStatus] = useState<string | null>(null);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
+
+  // Loading states for bulk operations
+  const [isBulkArchiving, setIsBulkArchiving] = useState(false);
+  const [isBulkUpdatingStatus, setIsBulkUpdatingStatus] = useState(false);
 
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
 
@@ -1009,6 +1014,8 @@ export function ProductTable() {
   };
 
   const confirmBulkArchive = async () => {
+    setIsBulkArchiving(true);
+
     await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
 
     const previousData = queryClient.getQueryData([
@@ -1081,12 +1088,16 @@ export function ProductTable() {
         'Bulk Archive Failed',
         'Some items could not be archived. Please try again.'
       );
+    } finally {
+      setIsBulkArchiving(false);
     }
     setShowBulkArchiveDialog(false);
   };
 
   const confirmBulkStatusChange = async () => {
     if (!bulkNewStatus) return;
+
+    setIsBulkUpdatingStatus(true);
 
     await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
 
@@ -1163,6 +1174,8 @@ export function ProductTable() {
         'Bulk Status Update Failed',
         'Some items could not be updated. Please try again.'
       );
+    } finally {
+      setIsBulkUpdatingStatus(false);
     }
     setShowBulkStatusChangeDialog(false);
     setBulkNewStatus(null);
@@ -1557,7 +1570,10 @@ export function ProductTable() {
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
-                      Loading...
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">Loading products...</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : data?.length ? (
@@ -1628,10 +1644,15 @@ export function ProductTable() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmBulkArchive}
+                disabled={isBulkArchiving}
                 className="bg-red-600 text-white hover:bg-red-700"
               >
-                <Archive className="w-4 h-4 mr-2" />
-                Archive All
+                {isBulkArchiving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Archive className="w-4 h-4 mr-2" />
+                )}
+                {isBulkArchiving ? 'Archiving...' : 'Archive All'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -1655,9 +1676,17 @@ export function ProductTable() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmBulkStatusChange}
+                disabled={isBulkUpdatingStatus}
                 className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                Update Status
+                {isBulkUpdatingStatus ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  'Update Status'
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

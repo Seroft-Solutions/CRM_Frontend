@@ -34,12 +34,14 @@ import { VariantsTable } from './VariantsTable';
  * @property {string} productName - The name of the product.
  * @property {number} [variantConfigId] - The ID of the system configuration for variants.
  * @property {any} [form] - React Hook Form instance for create mode.
+ * @property {boolean} [isViewMode] - Whether the component is in view-only mode.
  */
 interface ProductVariantManagerProps {
   productId?: number;
   productName: string;
   variantConfigId?: number;
   form?: any;
+  isViewMode?: boolean;
 }
 
 /**
@@ -55,6 +57,7 @@ export function ProductVariantManager({
   productName,
   variantConfigId,
   form,
+  isViewMode = false,
 }: ProductVariantManagerProps) {
   const queryClient = useQueryClient();
 
@@ -315,55 +318,9 @@ export function ProductVariantManager({
   }, [enumAttributes, attributeOptionsResults]);
   // #endregion
 
-  // #region Default Selections (Colour/Size)
-  useEffect(() => {
-    if (Object.keys(selectedOptionIdsByAttributeId).length > 0) return;
-    if (!variantConfigId) return;
-    if (isLoadingOptions) return;
-    if (enumAttributeOptions.length === 0) return;
-
-    const isColourOrColor = (value?: string | null) => !!value && /colou?r/i.test(value);
-    const isSize = (value?: string | null) => !!value && /size/i.test(value);
-
-    const targetAttributes = enumAttributeOptions
-      .map((x) => x.attribute)
-      .filter((attr) => isColourOrColor(attr.label) || isColourOrColor(attr.name) || isSize(attr.label) || isSize(attr.name));
-
-    if (targetAttributes.length === 0) return;
-
-    setUserSelectedOptionIdsByAttributeId(() => {
-      const next: Record<number, Set<number>> = {};
-
-      enumAttributeOptions.forEach(({ attribute, options }) => {
-        if (typeof attribute.id !== 'number') return;
-
-        const isTarget =
-          isColourOrColor(attribute.label) ||
-          isColourOrColor(attribute.name) ||
-          isSize(attribute.label) ||
-          isSize(attribute.name);
-
-        if (!isTarget) return;
-
-        const firstOptionId = options.find((o) => typeof o.id === 'number')?.id;
-        if (typeof firstOptionId === 'number') {
-          next[attribute.id] = new Set([firstOptionId]);
-        }
-      });
-
-      return next;
-    });
-  }, [enumAttributeOptions, isLoadingOptions, selectedOptionIdsByAttributeId, variantConfigId]);
-  // #endregion
-
   // #region Draft Variant Generation
-  const draftCombinations = useMemo<{
-    newVariants: DraftVariantRow[];
-    duplicateVariants: DraftVariantRow[];
-  }>(() => {
-    if (!variantConfigId || enumAttributeOptions.length === 0 || isLoadingOptions) {
-      return { newVariants: [], duplicateVariants: [] };
-    }
+  const draftCombinations = useMemo(() => {
+    if (!variantConfigId || enumAttributeOptions.length === 0 || isLoadingOptions) return [];
 
     const basePrefix = (productName.substring(0, 4) || 'PROD').toUpperCase();
 
@@ -375,9 +332,7 @@ export function ProductVariantManager({
       .filter(({ attribute }) => typeof attribute.id === 'number' && attribute.id)
       .filter((x) => x.selectedOptions.length > 0);
 
-    if (selectionsForCrossProduct.length === 0) {
-      return { newVariants: [], duplicateVariants: [] };
-    }
+    if (selectionsForCrossProduct.length === 0) return [];
 
     const newVariants: DraftVariantRow[] = [];
     const duplicateVariants: DraftVariantRow[] = [];
@@ -454,12 +409,6 @@ export function ProductVariantManager({
         next[row.key] = existing ? { ...row, ...existing, isDuplicate: false } : { ...row, isDuplicate: false };
       });
 
-      // Add duplicate variants
-      draftCombinations.duplicateVariants.forEach((row) => {
-        const existing = prev[row.key];
-        next[row.key] = existing ? { ...row, ...existing, isDuplicate: true } : { ...row, isDuplicate: true };
-      });
-
       // Basic check to prevent re-render if only references changed
       if (JSON.stringify(Object.keys(prev)) === JSON.stringify(Object.keys(next))) {
         return prev;
@@ -476,7 +425,7 @@ export function ProductVariantManager({
   const precomputeDisabledOptionIds = useMemo(() => {
     const disabledOptions = new Set<number>();
 
-    // Collect all currently selected attribute options from state
+    // Collect all currently selected attribute options from state (for duplicate prevention)
     const currentSelectedAttributeOptions: Array<{ attributeId: number; optionId: number }> = [];
     Object.entries(selectedOptionIdsByAttributeId).forEach(([attrIdStr, optionIdSet]) => {
       const attributeId = parseInt(attrIdStr, 10);
@@ -568,8 +517,8 @@ export function ProductVariantManager({
 
   // #region Handle variants for product save
   useEffect(() => {
-    // Handle variants for product save (both create and edit modes)
-    if (newDraftVariants.length > 0 && canSaveDrafts && form) {
+    // Handle variants for product save (both create and edit modes, but not in view mode)
+    if (!isViewMode && newDraftVariants.length > 0 && canSaveDrafts && form) {
       // Both CREATE and EDIT modes: Save to form state so they get saved with the product
       const variantsForForm = newDraftVariants.map((variant) => ({
         sku: variant.sku,
@@ -586,7 +535,7 @@ export function ProductVariantManager({
       form.setValue('variants', variantsForForm, { shouldValidate: false, shouldDirty: false });
       toast.success(`${newDraftVariants.length} variant(s) will be created when you save the product`);
     }
-  }, [newDraftVariants, form, canSaveDrafts]);
+  }, [isViewMode, newDraftVariants, form, canSaveDrafts]);
   // #endregion
 
   // #region Mutations & Handlers (continued)
@@ -676,21 +625,24 @@ export function ProductVariantManager({
 
   return (
     <div className="space-y-6">
+      {/* Only show variant generator in non-view modes */}
+      {!isViewMode && (
+        <VariantGenerator
+          newVariantsCount={newDraftVariants.length}
+          duplicateVariantsCount={duplicateDraftVariants.length}
+          missingRequiredEnumAttributes={missingRequiredEnumAttributes}
+          isLoadingSelections={isLoadingSelections}
+          isLoadingOptions={isLoadingOptions}
+          enumAttributeOptions={enumAttributeOptions}
+          selectedOptionIdsByAttributeId={selectedOptionIdsByAttributeId}
+          visibleEnumAttributes={visibleEnumAttributes}
+          onToggleOption={toggleOption}
+          disabledOptionIds={precomputeDisabledOptionIds}
+          isCreateMode={!productId}
+        />
+      )}
 
-      <VariantGenerator
-        newVariantsCount={newDraftVariants.length}
-        duplicateVariantsCount={duplicateDraftVariants.length}
-        missingRequiredEnumAttributes={missingRequiredEnumAttributes}
-        isLoadingSelections={isLoadingSelections}
-        isLoadingOptions={isLoadingOptions}
-        enumAttributeOptions={enumAttributeOptions}
-        selectedOptionIdsByAttributeId={selectedOptionIdsByAttributeId}
-        visibleEnumAttributes={visibleEnumAttributes}
-        onToggleOption={toggleOption}
-        disabledOptionIds={precomputeDisabledOptionIds}
-        isCreateMode={!productId}
-      />
-
+      {/* Show variants table in all modes, but make it read-only in view mode */}
       <VariantsTable
           rows={combinedRows}
           existingVariantRows={existingVariantRows}
@@ -705,6 +657,7 @@ export function ProductVariantManager({
           onCancelEdit={() => setEditingRowData(null)}
           onDeleteRow={handleDeleteRow}
           isLoading={isLoadingVariants || isLoadingSelections}
+          isViewMode={isViewMode}
         />
     </div>
   );

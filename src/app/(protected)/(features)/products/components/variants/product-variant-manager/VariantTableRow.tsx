@@ -32,6 +32,7 @@ interface VariantTableRowProps {
   onSaveExisting: () => void;
   onCancelEdit: () => void;
   onDeleteRow: (row: ExistingVariantRow) => void;
+  isViewMode?: boolean;
 }
 
 /**
@@ -51,6 +52,7 @@ export function VariantTableRow({
   onSaveExisting,
   onCancelEdit,
   onDeleteRow,
+  isViewMode = false,
 }: VariantTableRowProps) {
   const isDraft = item.kind === 'draft';
   const isDuplicate = item.kind === 'duplicate';
@@ -248,9 +250,10 @@ export function VariantTableRow({
           )}
         </TableCell>
 
-        {/* Actions Column */}
-        <TableCell className="py-2 text-right">
-        <div className="flex items-center justify-end gap-1">
+        {/* Actions Column - Hidden in view mode */}
+        {!isViewMode && (
+          <TableCell className="py-2 text-right">
+            <div className="flex items-center justify-end gap-1">
           {!isDraft && !isDuplicate && !isEditing && (
             <>
               <Button
@@ -301,8 +304,9 @@ export function VariantTableRow({
                 </Button>
               </>
             )}
-          </div>
-        </TableCell>
+            </div>
+          </TableCell>
+        )}
       </TableRow>
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

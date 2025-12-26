@@ -10,13 +10,15 @@ interface ProductVariantManagerWrapperProps {
   productName?: string;
   variantConfigId?: number;
   form?: UseFormReturn<Record<string, any>>;
+  isViewMode?: boolean;
 }
 
 export function ProductVariantManagerWrapper({
   productId,
   productName: providedProductName,
   variantConfigId: providedVariantConfigId,
-  form
+  form,
+  isViewMode = false
 }: ProductVariantManagerWrapperProps) {
   const { data: product, isLoading } = useGetProduct(productId!, {
     query: { enabled: !!productId },
@@ -43,6 +45,7 @@ export function ProductVariantManagerWrapper({
       productName={productName}
       variantConfigId={variantConfigId}
       form={form}
+      isViewMode={isViewMode}
     />
   );
 }

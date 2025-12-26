@@ -108,10 +108,8 @@ export function ProductVariantConfigSection({
           </CardContent>
         </Card>
 
-        {/* Product Variants Section - Only show if product has variants */}
-        {product.variants && product.variants.length > 0 && (
-          <ProductVariantManagerWrapper productId={productId} />
-        )}
+        {/* Product Variants Section - Show in read-only mode */}
+        <ProductVariantManagerWrapper productId={productId} isViewMode={true} />
       </>
     );
   }
