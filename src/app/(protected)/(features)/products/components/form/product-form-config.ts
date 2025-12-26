@@ -261,7 +261,7 @@ export const productFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'configuration',
+      category: 'other',
       api: {
         useGetAllHook: 'useGetAllSystemConfigs',
         useSearchHook: 'useSearchSystemConfigs',
@@ -277,7 +277,6 @@ export const productFormConfig: FormConfig = {
         label: 'Variant Configuration (Optional)',
         placeholder: 'Select if product has variants (e.g., sizes, colors)',
         icon: '⚙️',
-        helpText: 'Only needed if this product will have variants. You can add this later when creating variants.',
       },
     },
   ],
@@ -292,7 +291,7 @@ export const productFormConfig: FormConfig = {
     responsive: {
       mobile: 'grid-cols-1',
       tablet: 'md:grid-cols-2',
-      desktop: 'xl:grid-cols-3',
+      desktop: 'lg:grid-cols-4',
     },
     animations: {
       stepTransition: 'transition-all duration-300',
