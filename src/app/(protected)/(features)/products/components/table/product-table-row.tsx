@@ -149,7 +149,7 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'code') {
+                  if (column.id === 'barcodeText') {
                     return field?.toString() || '';
                   }
 

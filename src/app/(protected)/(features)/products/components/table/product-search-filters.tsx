@@ -86,8 +86,8 @@ export function ProductSearchAndFilters({
     if (key === 'name') {
       return 'name';
     }
-    if (key === 'code') {
-      return 'code';
+    if (key === 'barcodeText') {
+      return 'Barcode Text';
     }
     if (key === 'description') {
       return 'description';
@@ -256,11 +256,13 @@ export function ProductSearchAndFilters({
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">code</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Barcode Text</label>
                     <Input
-                      placeholder="Filter by code..."
-                      value={(filters['code'] as string) || ''}
-                      onChange={(e) => onFilterChange('code', e.target.value || undefined)}
+                      placeholder="Filter by barcode text..."
+                      value={(filters['barcodeText'] as string) || ''}
+                      onChange={(e) =>
+                        onFilterChange('barcodeText', e.target.value || undefined)
+                      }
                       className="h-8"
                     />
                   </div>

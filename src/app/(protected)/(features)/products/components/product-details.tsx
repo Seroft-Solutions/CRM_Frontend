@@ -321,7 +321,7 @@ function OrientationPreviewCard({
                   const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
                   if (!fieldConfig) return null;
 
-                  const value = entity[fieldName];
+                  const value = (entity as any)[fieldName];
 
                   return (
                     <div key={fieldName} className="space-y-1">
@@ -342,7 +342,7 @@ function OrientationPreviewCard({
                   );
                   if (!relConfig) return null;
 
-                  const value = entity[relationshipName];
+                  const value = (entity as any)[relationshipName];
 
                   return (
                     <div key={relationshipName} className="space-y-1">

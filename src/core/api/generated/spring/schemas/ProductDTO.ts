@@ -23,7 +23,7 @@ export interface ProductDTO {
    * @maxLength 20
    * @pattern ^[A-Za-z0-9_-]+$
    */
-  code: string;
+  barcodeText: string;
   /**
    * @minLength 0
    * @maxLength 100

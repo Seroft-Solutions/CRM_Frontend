@@ -88,7 +88,7 @@ function ProductVariantSelector({
     // Set product info
     onItemChange(index, 'productId', product.id);
     onItemChange(index, 'productName', product.name);
-    onItemChange(index, 'sku', product.code);
+    onItemChange(index, 'sku', product.barcodeText);
     onItemChange(index, 'variantAttributes', undefined);
     onItemChange(index, 'variantId', undefined);
 
@@ -156,13 +156,13 @@ function ProductVariantSelector({
                   {products.map((product) => (
                     <CommandItem
                       key={product.id}
-                      value={`${product.name} ${product.code}`}
+                      value={`${product.name} ${product.barcodeText}`}
                       onSelect={() => handleProductSelect(product.id!)}
                     >
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium text-sm">{product.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {product.code} • ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                          {product.barcodeText} • ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
                         </span>
                       </div>
                       <Check

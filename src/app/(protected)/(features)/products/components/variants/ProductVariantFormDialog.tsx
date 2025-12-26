@@ -178,7 +178,7 @@ export function ProductVariantFormDialog({
             price: values.price,
             stockQuantity: values.stockQuantity,
             status: values.status,
-            product: { id: productId },
+            product: { id: productId } as any,
           },
         });
       } else {
@@ -188,7 +188,7 @@ export function ProductVariantFormDialog({
             price: values.price,
             stockQuantity: values.stockQuantity,
             status: values.status,
-            product: { id: productId },
+            product: { id: productId } as any,
           },
         });
         variantIdToUse = newVariant.id;

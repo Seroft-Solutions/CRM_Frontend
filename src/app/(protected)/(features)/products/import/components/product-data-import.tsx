@@ -228,8 +228,8 @@ export function ProductDataImport() {
                 <h5 className="text-sm font-medium text-muted-foreground mb-2">Instructions:</h5>
                 <ul className="list-disc pl-5 text-sm text-foreground">
                   <li>Fill in the data starting from row 2 (row 1 contains headers)</li>
-                  <li>Product Name and Product code columns are required</li>
-                  <li>Product code must contain only letters, numbers, underscores, or hyphens</li>
+                  <li>Product Name and Barcode Text columns are required</li>
+                  <li>Barcode Text must contain only letters, numbers, underscores, or hyphens</li>
                   <li>Prices must be numbers between 0 and 999999</li>
                   <li>Select a System Config and fill the attribute columns shown in the template</li>
                   <li>Variant Price and Variant Stock override base prices for specific variants</li>

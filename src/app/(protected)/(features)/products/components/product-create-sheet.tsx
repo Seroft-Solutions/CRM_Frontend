@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Loader2, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -62,20 +63,7 @@ const productCreationSchema = productFormSchemaBase
     }
   );
 
-type ProductCreationFormData = {
-  name: string;
-  code: string;
-  articleNumber?: string;
-  description?: string;
-  basePrice?: string;
-  discountedPrice?: string;
-  salePrice?: string;
-  remark?: string;
-  categoryHierarchy?: {
-    category?: number;
-    subCategory?: number;
-  };
-};
+type ProductCreationFormData = z.infer<typeof productCreationSchema>;
 
 interface ProductCreateSheetProps {
   onSuccess?: (product: ProductDTO) => void;
@@ -95,7 +83,7 @@ export function ProductCreateSheet({
     resolver: zodResolver(productCreationSchema),
     defaultValues: {
       name: '',
-      code: '',
+      barcodeText: '',
       description: '',
       basePrice: '',
       discountedPrice: '',
@@ -139,9 +127,9 @@ export function ProductCreateSheet({
   });
 
   const onSubmit = (data: ProductCreationFormData) => {
-    const productData: Partial<ProductDTO> = {
+    const productData: ProductDTO = {
       name: data.name,
-      code: data.code,
+      barcodeText: data.barcodeText,
       articleNumber: data.articleNumber || undefined,
       description: data.description || undefined,
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
@@ -253,14 +241,14 @@ export function ProductCreateSheet({
                           onChange={(e) => {
                             field.onChange(e);
 
-                            const currentCode = form.getValues('code');
-                            if (!currentCode && e.target.value) {
-                              const generatedCode = e.target.value
+                            const currentBarcodeText = form.getValues('barcodeText');
+                            if (!currentBarcodeText && e.target.value) {
+                              const generatedBarcodeText = e.target.value
                                 .replace(/[^a-zA-Z0-9\s]/g, '')
                                 .replace(/\s+/g, '_')
                                 .toUpperCase()
                                 .substring(0, 20);
-                              form.setValue('code', generatedCode);
+                              form.setValue('barcodeText', generatedBarcodeText);
                             }
                           }}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
@@ -273,16 +261,16 @@ export function ProductCreateSheet({
 
                 <FormField
                   control={form.control}
-                  name="code"
+                  name="barcodeText"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Product Code
+                        Barcode Text
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter product code (auto-generated from name)"
+                          placeholder="Enter barcode text"
                           {...field}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 font-mono"
                         />

@@ -148,13 +148,15 @@ export function ProductTableHeader({
                       );
                     }
 
-                    if (column.accessor === 'code') {
+                    if (column.accessor === 'barcodeText') {
                       return (
                         <Input
                           placeholder="Filter..."
                           className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                          value={(filters['code'] as string) || ''}
-                          onChange={(e) => onFilterChange('code', e.target.value || undefined)}
+                          value={(filters['barcodeText'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('barcodeText', e.target.value || undefined)
+                          }
                         />
                       );
                     }

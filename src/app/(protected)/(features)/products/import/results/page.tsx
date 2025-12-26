@@ -47,7 +47,7 @@ const FALLBACK_HEADERS = [
   'Product Category',
   'Product Sub Category',
   'Product Name',
-  'Product code',
+  'Barcode Text',
   'Article Number',
   'Description',
   'Total Quantity',

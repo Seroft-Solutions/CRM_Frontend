@@ -113,7 +113,7 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
       const formValues: Record<string, any> = {};
 
       config.fields.forEach((fieldConfig) => {
-        const value = entity[fieldConfig.name];
+        const value = (entity as any)[fieldConfig.name];
 
         if (fieldConfig.type === 'date') {
           if (value) {
@@ -140,7 +140,7 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
       });
 
       config.relationships.forEach((relConfig) => {
-        const value = entity[relConfig.name];
+        const value = (entity as any)[relConfig.name];
 
         if (relConfig.multiple) {
           formValues[relConfig.name] = value

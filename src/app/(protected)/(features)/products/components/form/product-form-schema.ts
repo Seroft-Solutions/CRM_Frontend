@@ -14,12 +14,12 @@ export const productFormSchemaFields = {
     .min(1, { message: 'Please enter name' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
-  code: z
-    .string({ message: 'Please enter code' })
-    .min(1, { message: 'Please enter code' })
+  barcodeText: z
+    .string({ message: 'Please enter barcode text' })
+    .min(1, { message: 'Please enter barcode text' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
-    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
+    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid barcode text' }),
   articleNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
   description: z
     .string()
@@ -81,12 +81,12 @@ export const productFieldSchemas = {
     .min(1, { message: 'Please enter name' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
-  code: z
-    .string({ message: 'Please enter code' })
-    .min(1, { message: 'Please enter code' })
+  barcodeText: z
+    .string({ message: 'Please enter barcode text' })
+    .min(1, { message: 'Please enter barcode text' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
-    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
+    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid barcode text' }),
   articleNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
   description: z
     .string()
@@ -126,7 +126,7 @@ export const productStepSchemas = {
   basic: z
     .object({
       name: productFieldSchemas.name,
-      code: productFieldSchemas.code,
+      barcodeText: productFieldSchemas.barcodeText,
       articleNumber: productFieldSchemas.articleNumber,
       description: productFieldSchemas.description,
       basePrice: productFieldSchemas.basePrice,

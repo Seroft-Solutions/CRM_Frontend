@@ -40,12 +40,14 @@ import { Loader2 } from 'lucide-react';
 const PRODUCT_CODE_REGEX = /^[A-Za-z0-9_-]{2,20}$/;
 const EMPTY_SELECT_VALUE = '__none__';
 const SYSTEM_CONFIG_LABEL = 'System Config';
+const BARCODE_TEXT_HEADER = 'Barcode Text';
+const LEGACY_PRODUCT_CODE_HEADER = 'Product code';
 
 const BASE_HEADERS = [
   'Product Category',
   'Product Sub Category',
   'Product Name',
-  'Product code',
+  BARCODE_TEXT_HEADER,
   'Article Number',
   'Description',
   'Total Quantity',
@@ -61,7 +63,7 @@ const REMARK_HEADERS = [
   'Product Category',
   'Product Sub Category',
   'Product Name',
-  'Product code',
+  BARCODE_TEXT_HEADER,
   'Article Number',
   'Description',
   'Total Quantity',
@@ -173,8 +175,12 @@ function resolveRowField(
   if (header === 'Product Name') {
     return (row.productName ?? remarkData[header] ?? fallback ?? '') as string;
   }
-  if (header === 'Product code') {
-    return (row.productCode ?? remarkData[header] ?? fallback ?? '') as string;
+  if (header === BARCODE_TEXT_HEADER || header === LEGACY_PRODUCT_CODE_HEADER) {
+    return (row.productCode ??
+      remarkData[BARCODE_TEXT_HEADER] ??
+      remarkData[LEGACY_PRODUCT_CODE_HEADER] ??
+      fallback ??
+      '') as string;
   }
   return (remarkData[header] ?? fallback ?? '') as string;
 }
@@ -225,7 +231,11 @@ function isDuplicateProductCodeIssue(issue: string | null | undefined): boolean 
   if (!hasText(issue)) return false;
   const normalized = issue.toLowerCase();
   return (
+    normalized.includes('duplicate barcode text') ||
     normalized.includes('duplicate product code') ||
+    (normalized.includes('product with barcode text') &&
+      normalized.includes('already exists') &&
+      normalized.includes('skipping')) ||
     (normalized.includes('product with code') &&
       normalized.includes('already exists') &&
       normalized.includes('skipping'))
@@ -635,15 +645,15 @@ export function FailedProductsTable() {
       const issues: string[] = [];
       const remarkData = parseRemarkData(row.remark);
       const name = resolveRowField(row, remarkData, 'Product Name').trim();
-      const code = resolveRowField(row, remarkData, 'Product code').trim();
+      const barcodeText = resolveRowField(row, remarkData, BARCODE_TEXT_HEADER).trim();
       const parsed = parseVariantAttributes(row.variantAttributes);
       const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
 
       if (name.length < 2 || name.length > 100) {
         issues.push('Product Name must be 2-100 characters.');
       }
-      if (!PRODUCT_CODE_REGEX.test(code)) {
-        issues.push('Product Code must be 2-20 characters (letters, numbers, underscores, hyphens).');
+      if (!PRODUCT_CODE_REGEX.test(barcodeText)) {
+        issues.push('Barcode Text must be 2-20 characters (letters, numbers, underscores, hyphens).');
       }
 
       const hasAttribute = Object.values(parsed.values).some((value) => hasText(value));
@@ -705,13 +715,15 @@ export function FailedProductsTable() {
       prev.map((row) => {
         if (row.id !== rowId) return row;
         const nextRow = { ...row, [field]: value as any };
-        const remarkHeader =
-          field === 'productName' ? 'Product Name' : field === 'productCode' ? 'Product code' : null;
-        if (!remarkHeader) {
+        if (field !== 'productName' && field !== 'productCode') {
           return nextRow;
         }
         const remarkData = parseRemarkData(row.remark);
-        const nextRemark = buildRemarkData(remarkData, { [remarkHeader]: value });
+        const updates =
+          field === 'productCode'
+            ? { [BARCODE_TEXT_HEADER]: value, [LEGACY_PRODUCT_CODE_HEADER]: '' }
+            : { ['Product Name']: value };
+        const nextRemark = buildRemarkData(remarkData, updates);
         return { ...nextRow, remark: nextRemark };
       })
     );
@@ -884,11 +896,11 @@ export function FailedProductsTable() {
       const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
       const remarkData = parseRemarkData(row.remark);
       const resolvedName = resolveRowField(row, remarkData, 'Product Name').trim();
-      const resolvedCode = resolveRowField(row, remarkData, 'Product code').trim();
+      const resolvedBarcodeText = resolveRowField(row, remarkData, BARCODE_TEXT_HEADER).trim();
       const payload: ImportHistoryDTO = {
         ...row,
         productName: resolvedName,
-        productCode: resolvedCode,
+        productCode: resolvedBarcodeText,
         variantAttributes: buildVariantAttributes(
           parsed.values,
           attributeLabelData.labelByKey,
@@ -1254,13 +1266,13 @@ export function FailedProductsTable() {
                         </TableCell>
                       );
                     }
-                    if (header === 'Product code') {
+                    if (header === BARCODE_TEXT_HEADER) {
                       return (
                         <TableCell key={`${rowId}-${header}`} className="min-w-[180px]">
                           <Input
                             value={resolveRowField(row, remarkData, header)}
                             onChange={(e) => handleFieldChange(rowId, 'productCode', e.target.value)}
-                            placeholder="PRODUCT-CODE"
+                            placeholder="BARCODE-TEXT"
                           />
                         </TableCell>
                       );

@@ -95,7 +95,7 @@ export function ProductFormProvider({
   });
 
   const form = useForm<Record<string, any>>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(productFormSchema) as any,
     mode: config.validation.mode,
     revalidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),

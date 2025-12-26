@@ -14,7 +14,7 @@ export const productFormConfig: FormConfig = {
       description: 'Enter essential details and categorize the product',
       fields: [
         'name',
-        'code',
+        'barcodeText',
         'articleNumber',
         'description',
         'remark',
@@ -68,10 +68,10 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'code',
+      name: 'barcodeText',
       type: 'text',
-      label: 'Code',
-      placeholder: 'Enter code',
+      label: 'Barcode Text',
+      placeholder: 'Enter barcode text',
       required: true,
       validation: {
         required: true,

@@ -144,9 +144,9 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'code',
-    label: 'Code',
-    accessor: 'code',
+    id: 'barcodeText',
+    label: 'Barcode Text',
+    accessor: 'barcodeText',
     type: 'field',
     visible: true,
     sortable: true,
@@ -555,9 +555,9 @@ export function ProductTable() {
           if (typeof value === 'string' && value.trim() !== '') {
             params['name.contains'] = value;
           }
-        } else if (key === 'code') {
+        } else if (key === 'barcodeText') {
           if (typeof value === 'string' && value.trim() !== '') {
-            params['code.contains'] = value;
+            params['barcodeText.contains'] = value;
           }
         } else if (key === 'description') {
           if (typeof value === 'string' && value.trim() !== '') {
