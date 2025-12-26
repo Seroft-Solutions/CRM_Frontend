@@ -221,7 +221,7 @@ function OrientationPreviewCard({
     : 'No image uploaded';
 
   return (
-    <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+    <div className="space-y-3 rounded-xl border border-dashed border-slate-100 bg-slate-50/60 p-3">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-800">{field.label}</p>
@@ -232,12 +232,12 @@ function OrientationPreviewCard({
         </Badge>
       </div>
 
-      <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-white border border-slate-200">
+      <div className="relative flex h-28 w-full items-center justify-center overflow-hidden rounded-lg bg-white border border-slate-100">
         {previewUrl ? (
           <img src={previewUrl} alt={`${field.label} preview`} className="h-full w-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-2 text-slate-400">
-            <Camera className="h-10 w-10" />
+            <Camera className="h-8 w-8" />
             <span className="text-sm font-medium">No image uploaded</span>
           </div>
         )}
@@ -305,7 +305,7 @@ function OrientationPreviewCard({
                 </div>
               </div>
               {isImagesStep ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                   {ORIENTATION_FIELDS.map((field) => (
                     <OrientationPreviewCard
                       key={field.name}
@@ -315,7 +315,7 @@ function OrientationPreviewCard({
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                 {/* Render Fields */}
                 {step.fields.map((fieldName) => {
                   const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
