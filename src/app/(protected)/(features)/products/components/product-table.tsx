@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { handleProductError, productToast } from './product-toast';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import { useQueryClient } from '@tanstack/react-query';
+import { usePermission } from '@/core/auth';
 import {
   AlertTriangle,
   Archive,
@@ -14,7 +16,6 @@ import {
   Loader2,
   RotateCcw,
   Settings2,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -58,6 +59,8 @@ import { ProductTableHeader } from './table/product-table-header';
 import { ProductTableRow } from './table/product-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
+import { ProductSearchAndFilters } from './table/product-search-filters';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -284,6 +287,7 @@ interface DateRange {
 
 export function ProductTable() {
   const queryClient = useQueryClient();
+  const canUpdate = usePermission('product:update');
 
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
@@ -299,6 +303,8 @@ export function ProductTable() {
   const [activeStatusTab, setActiveStatusTab] = useState<string>('active');
   const [filters, setFilters] = useState<FilterState>({});
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const normalizedSearchTerm = debouncedSearchTerm.trim();
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkArchiveDialog, setShowBulkArchiveDialog] = useState(false);
   const [showBulkStatusChangeDialog, setShowBulkStatusChangeDialog] = useState(false);
@@ -326,6 +332,7 @@ export function ProductTable() {
         setColumnVisibility(JSON.parse(saved));
       } else {
         const oldSaved = localStorage.getItem(oldKey);
+
         if (oldSaved) {
           localStorage.removeItem(oldKey);
         }
@@ -337,6 +344,7 @@ export function ProductTable() {
           }),
           {}
         );
+
         setColumnVisibility(defaultVisibility);
       }
     } catch (error) {
@@ -349,6 +357,7 @@ export function ProductTable() {
         }),
         {}
       );
+
       setColumnVisibility(defaultVisibility);
     } finally {
       setIsColumnVisibilityLoaded(true);
@@ -404,6 +413,7 @@ export function ProductTable() {
   const exportToCSV = () => {
     if (!data || data.length === 0) {
       toast.error('No data to export');
+
       return;
     }
 
@@ -414,11 +424,15 @@ export function ProductTable() {
         return visibleColumns
           .map((col) => {
             let value = '';
+
             if (col.type === 'field') {
               const fieldValue = item[col.accessor as keyof typeof item];
+
               value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
             } else if (col.type === 'relationship') {
-              const relationship = item[col.accessor as keyof typeof item] as any;
+              const relationship = item[col.accessor as keyof ProductDTO] as
+                | { name?: string }
+                | undefined;
 
               if (col.id === 'category' && relationship) {
                 value = relationship.name || '';
@@ -435,6 +449,7 @@ export function ProductTable() {
             ) {
               value = `"${value.replace(/"/g, '""')}"`;
             }
+
             return value;
           })
           .join(',');
@@ -444,6 +459,7 @@ export function ProductTable() {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
+
     link.href = url;
     link.download = `product-export-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
@@ -466,11 +482,18 @@ export function ProductTable() {
     { query: { enabled: true } }
   );
 
-  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
+  const findEntityIdByName = (
+    entities: Array<Record<string, unknown>>,
+    name: string,
+    displayField: string = 'name'
+  ) => {
     const entity = entities?.find((e) =>
-      e[displayField]?.toLowerCase().includes(name.toLowerCase())
+      String(e[displayField] ?? '')
+        .toLowerCase()
+        .includes(name.toLowerCase())
     );
-    return entity?.id;
+
+    return (entity as { id?: number })?.id;
   };
 
   const statusOptions = [
@@ -514,7 +537,7 @@ export function ProductTable() {
   };
 
   const buildFilterParams = () => {
-    const params: Record<string, any> = {
+    const params: Record<string, unknown> = {
       ...getStatusFilter(),
     };
 
@@ -541,6 +564,7 @@ export function ProductTable() {
             value as string,
             mapping.displayField
           );
+
           if (entityId) {
             params[mapping.apiParam] = entityId;
           }
@@ -615,50 +639,49 @@ export function ProductTable() {
       params['createdDate.lessThanOrEqual'] = dateRange.to.toISOString();
     }
 
-    if (dateRange.from) {
-      params['lastModifiedDate.greaterThanOrEqual'] = dateRange.from.toISOString();
-    }
-    if (dateRange.to) {
-      params['lastModifiedDate.lessThanOrEqual'] = dateRange.to.toISOString();
-    }
-
     return params;
   };
 
   const filterParams = buildFilterParams();
 
-  const { data, isLoading, refetch } = searchTerm
-    ? useSearchProducts(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
-    : useGetAllProducts(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+  const searchQuery = useSearchProducts(
+    {
+      query: normalizedSearchTerm,
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: Boolean(normalizedSearchTerm),
+        staleTime: 0,
+        refetchOnWindowFocus: true,
+      },
+    }
+  );
+
+  const listQuery = useGetAllProducts(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: !normalizedSearchTerm,
+        staleTime: 0,
+        refetchOnWindowFocus: true,
+      },
+    }
+  );
+
+  const data = normalizedSearchTerm ? searchQuery.data : listQuery.data;
+  const isLoading = normalizedSearchTerm ? searchQuery.isLoading : listQuery.isLoading;
+  const isFetching = normalizedSearchTerm ? searchQuery.isFetching : listQuery.isFetching;
+  const error = normalizedSearchTerm ? searchQuery.error : listQuery.error;
+  const refetch = normalizedSearchTerm ? searchQuery.refetch : listQuery.refetch;
 
   const { data: countData } = useCountProducts(filterParams, {
     query: {
@@ -668,7 +691,7 @@ export function ProductTable() {
     },
   });
 
-  const { mutate: updateEntity, isPending: isUpdating } = useUpdateProduct({
+  const { mutate: updateEntity } = useUpdateProduct({
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
@@ -700,26 +723,26 @@ export function ProductTable() {
                 ...filterParams,
               },
             ],
-            (old: any[]) =>
-              old.map((product) =>
+            (old: ProductDTO[] | undefined) =>
+              old?.map((product) =>
                 product.id === variables.id ? { ...product, ...variables.data } : product
               )
           );
         }
 
-        if (searchTerm) {
+        if (normalizedSearchTerm) {
           queryClient.setQueryData(
             [
               'searchProducts',
               {
-                query: searchTerm,
+                query: normalizedSearchTerm,
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
                 ...filterParams,
               },
             ],
-            (old: any[]) =>
+            (old: ProductDTO[] | undefined) =>
               old?.map((product) =>
                 product.id === variables.id ? { ...product, ...variables.data } : product
               )
@@ -739,22 +762,24 @@ export function ProductTable() {
               ...filterParams,
             },
           ],
-          (old: any[]) => old?.map((product) => (product.id === variables.id ? data : product))
+          (old: ProductDTO[] | undefined) =>
+            old?.map((product) => (product.id === variables.id ? data : product))
         );
 
-        if (searchTerm) {
+        if (normalizedSearchTerm) {
           queryClient.setQueryData(
             [
               'searchProducts',
               {
-                query: searchTerm,
+                query: normalizedSearchTerm,
                 page: apiPage,
                 size: pageSize,
                 sort: [`${sort},${order}`],
                 ...filterParams,
               },
             ],
-            (old: any[]) => old?.map((product) => (product.id === variables.id ? data : product))
+            (old: ProductDTO[] | undefined) =>
+              old?.map((product) => (product.id === variables.id ? data : product))
           );
         }
 
@@ -820,29 +845,18 @@ export function ProductTable() {
               ...filterParams,
             },
           ],
-          (old: any[]) => {
+          (old: ProductDTO[] | undefined) => {
             if (!old) return old;
 
             const newStatus = variables.data.status;
             const currentFilter = getStatusFilter();
             const currentStatusFilter = currentFilter['status.equals'];
 
-            console.log('Optimistic Update Debug:', {
-              newStatus,
-              currentStatusFilter,
-              activeStatusTab,
-              shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
-              comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
-
             if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
-              console.log(`Updating item ${variables.id} in place`);
               return old.map((product) =>
                 product.id === variables.id ? { ...product, ...variables.data } : product
               );
             } else {
-              console.log(`Removing item ${variables.id} from current view`);
               return old.filter((product) => product.id !== variables.id);
             }
           }
@@ -854,6 +868,7 @@ export function ProductTable() {
         const statusLabel =
           statusOptions.find((opt) => opt.value.includes(variables.data.status))?.label ||
           variables.data.status;
+
         productToast.custom.success(`Status Updated`, `Product status changed to ${statusLabel}`);
 
         const currentFilter = getStatusFilter();
@@ -861,9 +876,6 @@ export function ProductTable() {
         const newStatus = variables.data.status;
 
         if (currentStatusFilter !== newStatus && activeStatusTab !== 'all') {
-          console.log(
-            `Updating count cache - removing 1 item due to status change from ${currentStatusFilter} to ${newStatus}`
-          );
           queryClient.setQueryData(['countProducts', filterParams], (old: number) =>
             Math.max(0, (old || 0) - 1)
           );
@@ -917,6 +929,7 @@ export function ProductTable() {
     if (sort !== column) {
       return 'ChevronsUpDown';
     }
+
     return order === ASC ? 'ChevronUp' : 'ChevronDown';
   };
 
@@ -934,6 +947,7 @@ export function ProductTable() {
   const confirmArchive = () => {
     if (archiveId) {
       const currentEntity = data?.find((item) => item.id === archiveId);
+
       if (currentEntity) {
         updateEntityStatus({
           id: archiveId,
@@ -948,8 +962,10 @@ export function ProductTable() {
   const confirmStatusChange = () => {
     if (statusChangeId && newStatus) {
       const currentEntity = data?.find((item) => item.id === statusChangeId);
+
       if (currentEntity) {
         const statusValue = ProductDTOStatus[newStatus as keyof typeof ProductDTOStatus];
+
         updateEntityStatus({
           id: statusChangeId,
           data: { ...currentEntity, status: statusValue },
@@ -961,7 +977,7 @@ export function ProductTable() {
     setNewStatus(null);
   };
 
-  const handleFilterChange = (column: string, value: any) => {
+  const handleFilterChange = (column: string, value: unknown) => {
     setFilters((prev) => ({
       ...prev,
       [column]: value,
@@ -976,16 +992,20 @@ export function ProductTable() {
     resetPagination();
   };
 
+  const handleDateRangeChange = (range: DateRange) => {
+    setDateRange(range);
+    resetPagination();
+  };
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     resetPagination();
   };
 
   const totalItems = countData || 0;
-  const totalPages = Math.ceil(totalItems / pageSize);
-
   const handleSelectRow = (id: number) => {
     const newSelected = new Set(selectedRows);
+
     if (newSelected.has(id)) {
       newSelected.delete(id);
     } else {
@@ -1031,6 +1051,7 @@ export function ProductTable() {
     try {
       const updatePromises = Array.from(selectedRows).map(async (id) => {
         const currentEntity = data?.find((item) => item.id === id);
+
         if (currentEntity) {
           return new Promise<void>((resolve, reject) => {
             updateEntityStatus(
@@ -1045,6 +1066,7 @@ export function ProductTable() {
             );
           });
         }
+
         return Promise.resolve();
       });
 
@@ -1070,6 +1092,7 @@ export function ProductTable() {
       );
       setSelectedRows(new Set());
     } catch (error) {
+      console.error('Bulk archive failed:', error);
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1115,6 +1138,7 @@ export function ProductTable() {
       const statusValue = ProductDTOStatus[bulkNewStatus as keyof typeof ProductDTOStatus];
       const updatePromises = Array.from(selectedRows).map(async (id) => {
         const currentEntity = data?.find((item) => item.id === id);
+
         if (currentEntity) {
           return new Promise<void>((resolve, reject) => {
             updateEntityStatus(
@@ -1129,6 +1153,7 @@ export function ProductTable() {
             );
           });
         }
+
         return Promise.resolve();
       });
 
@@ -1150,12 +1175,14 @@ export function ProductTable() {
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
+
       productToast.custom.success(
         'Bulk Status Update Complete',
         `${selectedRows.size} item${selectedRows.size > 1 ? 's' : ''} updated to ${statusLabel}`
       );
       setSelectedRows(new Set());
     } catch (error) {
+      console.error('Bulk status update failed:', error);
       if (previousData) {
         queryClient.setQueryData(
           [
@@ -1193,17 +1220,21 @@ export function ProductTable() {
 
     return new Promise<void>((resolve, reject) => {
       const currentEntity = data?.find((item) => item.id === entityId);
+
       if (!currentEntity) {
         setUpdatingCells((prev) => {
           const newSet = new Set(prev);
+
           newSet.delete(cellKey);
+
           return newSet;
         });
         reject(new Error('Product not found in current data'));
+
         return;
       }
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         ...currentEntity,
         id: entityId,
       };
@@ -1213,6 +1244,7 @@ export function ProductTable() {
           (config) => config.name === relationshipName
         );
         const selectedOption = relationshipConfig?.options.find((opt) => opt.id === newValue);
+
         updateData[relationshipName] = selectedOption || { id: newValue };
       } else {
         updateData[relationshipName] = null;
@@ -1236,23 +1268,23 @@ export function ProductTable() {
                     ...filterParams,
                   },
                 ],
-                (old: any[]) =>
+                (old: ProductDTO[] | undefined) =>
                   old?.map((product) => (product.id === entityId ? serverResponse : product))
               );
 
-              if (searchTerm) {
+              if (normalizedSearchTerm) {
                 queryClient.setQueryData(
                   [
                     'searchProducts',
                     {
-                      query: searchTerm,
+                      query: normalizedSearchTerm,
                       page: apiPage,
                       size: pageSize,
                       sort: [`${sort},${order}`],
                       ...filterParams,
                     },
                   ],
-                  (old: any[]) =>
+                  (old: ProductDTO[] | undefined) =>
                     old?.map((product) => (product.id === entityId ? serverResponse : product))
                 );
               }
@@ -1263,13 +1295,15 @@ export function ProductTable() {
             }
             resolve();
           },
-          onError: (error: any) => {
+          onError: (error: unknown) => {
             reject(error);
           },
           onSettled: () => {
             setUpdatingCells((prev) => {
               const newSet = new Set(prev);
+
               newSet.delete(cellKey);
+
               return newSet;
             });
           },
@@ -1311,6 +1345,7 @@ export function ProductTable() {
 
       if (successCount > 0) {
         const action = newValue === null ? 'cleared' : 'updated';
+
         productToast.custom.success(
           `🔗 Bulk ${action.charAt(0).toUpperCase() + action.slice(1)}!`,
           `${relationshipName} ${action} for ${successCount} item${successCount > 1 ? 's' : ''}`
@@ -1350,7 +1385,7 @@ export function ProductTable() {
       displayName: 'Category',
       options: productcategoryOptions || [],
       displayField: 'name',
-      isEditable: false,
+      isEditable: canUpdate,
     },
 
     {
@@ -1358,13 +1393,13 @@ export function ProductTable() {
       displayName: 'SubCategory',
       options: productsubcategoryOptions || [],
       displayField: 'name',
-      isEditable: false,
+      isEditable: canUpdate,
     },
   ];
 
   const hasActiveFilters =
     Object.keys(filters).length > 0 ||
-    Boolean(searchTerm) ||
+    Boolean(searchTerm.trim()) ||
     Boolean(dateRange.from) ||
     Boolean(dateRange.to);
   const isAllSelected = data && data.length > 0 && selectedRows.size === data.length;
@@ -1390,7 +1425,13 @@ export function ProductTable() {
       <style dangerouslySetInnerHTML={{ __html: tableScrollStyles }} />
       <div className="w-full space-y-4">
         {/* Status Filter Tabs */}
-        <Tabs value={activeStatusTab} onValueChange={setActiveStatusTab}>
+        <Tabs
+          value={activeStatusTab}
+          onValueChange={(value) => {
+            setActiveStatusTab(value);
+            resetPagination();
+          }}
+        >
           <TabsList
             className={`grid w-full ${TABLE_CONFIG.showDraftTab ? 'grid-cols-5' : 'grid-cols-4'}`}
           >
@@ -1415,6 +1456,17 @@ export function ProductTable() {
             <TabsTrigger value="all">All</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        <ProductSearchAndFilters
+          searchTerm={searchTerm}
+          onSearchChange={handleSearch}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+          onClearAll={clearAllFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
 
         {/* Table Controls */}
         <div className="table-container flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1449,6 +1501,22 @@ export function ProductTable() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            {/* Refresh Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              className="gap-2 text-xs sm:text-sm"
+              disabled={isFetching}
+            >
+              {isFetching ? (
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+              ) : (
+                <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+              )}
+              <span className="hidden sm:inline">Refresh</span>
+              <span className="sm:hidden">Refresh</span>
+            </Button>
             {/* Export Button */}
             <Button
               variant="outline"
@@ -1462,23 +1530,10 @@ export function ProductTable() {
               <span className="sm:hidden">CSV</span>
             </Button>
           </div>
-
-          {/* Clear Filters Button */}
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearAllFilters}
-              className="gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-              Clear All Filters
-            </Button>
-          )}
         </div>
 
         {/* Bulk Actions */}
-        {selectedRows.size > 0 && (
+        {selectedRows.size > 0 && canUpdate && (
           <div className="table-container flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-muted rounded-lg">
             <span className="text-sm text-muted-foreground">
               {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''} selected
@@ -1564,10 +1619,30 @@ export function ProductTable() {
                 isAllSelected={isAllSelected}
                 isIndeterminate={isIndeterminate}
                 onSelectAll={handleSelectAll}
+                selectionEnabled={canUpdate}
                 visibleColumns={visibleColumns}
               />
               <TableBody>
-                {isLoading ? (
+                {error ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="flex items-center gap-2 text-red-600">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span className="text-sm font-medium">Failed to load products</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {error instanceof Error
+                            ? error.message
+                            : 'Something went wrong while fetching products.'}
+                        </p>
+                        <Button variant="outline" size="sm" onClick={handleRefresh}>
+                          Retry
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : isLoading ? (
                   <TableRow>
                     <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -1587,6 +1662,7 @@ export function ProductTable() {
                       statusOptions={statusOptions}
                       isSelected={selectedRows.has(product.id || 0)}
                       onSelect={handleSelectRow}
+                      selectionEnabled={canUpdate}
                       relationshipConfigs={relationshipConfigs}
                       onRelationshipUpdate={handleRelationshipUpdate}
                       updatingCells={updatingCells}
@@ -1636,8 +1712,8 @@ export function ProductTable() {
                 Archive {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This will change the status of the selected products to "Archived". They will no
-                longer appear in the active view but can be restored later.
+                This will change the status of the selected products to &quot;Archived&quot;. They
+                will no longer appear in the active view but can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1666,10 +1742,10 @@ export function ProductTable() {
                 Change Status for {selectedRows.size} item{selectedRows.size > 1 ? 's' : ''}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This will update the status of the selected products to "
+                This will update the status of the selected products to &quot;
                 {statusOptions.find((opt) => opt.value.includes(bulkNewStatus || ''))?.label ||
                   bulkNewStatus}
-                ".
+                &quot;.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1698,8 +1774,8 @@ export function ProductTable() {
             <AlertDialogHeader>
               <AlertDialogTitle>Archive this product?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will change the status to "Archived". The product will no longer appear in the
-                active view but can be restored later.
+                This will change the status to &quot;Archived&quot;. The product will no longer
+                appear in the active view but can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1721,10 +1797,10 @@ export function ProductTable() {
             <AlertDialogHeader>
               <AlertDialogTitle>Change Status</AlertDialogTitle>
               <AlertDialogDescription>
-                Change the status of this product to "
+                Change the status of this product to &quot;
                 {statusOptions.find((opt) => opt.value.includes(newStatus || ''))?.label ||
                   newStatus}
-                "?
+                &quot;?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

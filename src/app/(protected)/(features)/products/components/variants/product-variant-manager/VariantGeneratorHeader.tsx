@@ -1,6 +1,5 @@
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 /**
  * @interface VariantGeneratorHeaderProps
@@ -8,18 +7,12 @@ import { Loader2, Sparkles } from 'lucide-react';
  * @property {number} newVariantsCount - The number of new variants that will be created.
  * @property {number} duplicateVariantsCount - The number of duplicate variants that already exist.
  * @property {number} missingRequiredCount - The number of required attributes that are missing a selection.
- * @property {() => void} onSave - The callback function to execute when the save button is clicked.
- * @property {boolean} isSaving - A flag indicating whether the save operation is in progress.
- * @property {boolean} canSave - A flag indicating whether the save button should be enabled.
  * @property {boolean} isCreateMode - Flag indicating if in create mode (no productId).
  */
 interface VariantGeneratorHeaderProps {
   newVariantsCount: number;
   duplicateVariantsCount: number;
   missingRequiredCount: number;
-  onSave?: () => void;
-  isSaving?: boolean;
-  canSave?: boolean;
   isCreateMode?: boolean;
 }
 
@@ -34,9 +27,6 @@ export function VariantGeneratorHeader({
   newVariantsCount,
   duplicateVariantsCount,
   missingRequiredCount,
-  onSave = () => {},
-  isSaving = false,
-  canSave = false,
   isCreateMode = false,
 }: VariantGeneratorHeaderProps) {
   return (
@@ -55,7 +45,10 @@ export function VariantGeneratorHeader({
           )}
 
           {duplicateVariantsCount > 0 && (
-            <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
+            <Badge
+              variant="secondary"
+              className="bg-amber-100 text-amber-800 border-amber-300 text-xs"
+            >
               {duplicateVariantsCount} duplicate{duplicateVariantsCount !== 1 ? 's' : ''}
             </Badge>
           )}
@@ -76,12 +69,12 @@ export function VariantGeneratorHeader({
         {duplicateVariantsCount > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-md p-2">
             <p className="text-xs text-amber-800">
-              {duplicateVariantsCount} variant combination{duplicateVariantsCount !== 1 ? 's' : ''} already exist{duplicateVariantsCount === 1 ? 's' : ''} and will be skipped.
+              {duplicateVariantsCount} variant combination{duplicateVariantsCount !== 1 ? 's' : ''}{' '}
+              already exist{duplicateVariantsCount === 1 ? 's' : ''} and will be skipped.
             </p>
           </div>
         )}
       </div>
-
     </div>
   );
 }

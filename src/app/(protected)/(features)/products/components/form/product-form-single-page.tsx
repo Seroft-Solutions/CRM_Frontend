@@ -3,6 +3,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
+import type { FormActions, FormConfig } from './form-types';
 import { ProductBasicInfoSection } from './sections/ProductBasicInfoSection';
 import { ProductPricingSection } from './sections/ProductPricingSection';
 import { ProductClassificationSection } from './sections/ProductClassificationSection';
@@ -10,12 +11,10 @@ import { ProductVariantConfigSection } from './sections/ProductVariantConfigSect
 import { ProductImagesSidebar } from './sections/ProductImagesSidebar';
 
 interface ProductFormSinglePageProps {
-  form: UseFormReturn<Record<string, any>>;
-  config: any;
-  actions: any;
-  entity?: any;
+  form: UseFormReturn<Record<string, unknown>>;
+  config: FormConfig;
+  actions: FormActions;
   existingImages?: ProductImageDTO[];
-  onSubmit: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
   productId?: number;
@@ -25,9 +24,7 @@ export function ProductFormSinglePage({
   form,
   config,
   actions,
-  entity,
   existingImages,
-  onSubmit,
   onCancel,
   isSubmitting = false,
   productId,
@@ -59,7 +56,6 @@ export function ProductFormSinglePage({
         <ProductImagesSidebar
           form={form}
           existingImages={existingImages}
-          onSubmit={onSubmit}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
         />

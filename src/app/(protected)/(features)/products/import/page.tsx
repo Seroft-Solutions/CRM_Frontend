@@ -20,7 +20,9 @@ export default function ImportPage() {
 
             <div>
               <h1 className="text-xl font-semibold text-sidebar-foreground">Import Products</h1>
-              <p className="text-sm text-sidebar-foreground/80">Bulk import your product data with variants</p>
+              <p className="text-sm text-sidebar-foreground/80">
+                Bulk import your product data with variants
+              </p>
             </div>
           </div>
 

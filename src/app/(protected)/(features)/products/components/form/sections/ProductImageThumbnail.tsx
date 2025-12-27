@@ -10,12 +10,20 @@ import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import type { RenamableProductImageFile } from '@/features/product-images/types';
 
 interface ProductImageThumbnailProps {
-  form?: UseFormReturn<Record<string, any>>;
+  form?: UseFormReturn<Record<string, unknown>>;
   name: string;
   label: string;
   badge: string;
   existingImage?: ProductImageDTO;
   isViewMode?: boolean;
+}
+
+interface ProductImageThumbnailEditProps {
+  form: UseFormReturn<Record<string, unknown>>;
+  name: string;
+  label: string;
+  badge: string;
+  existingImageUrl: string | null;
 }
 
 export function ProductImageThumbnail({
@@ -28,6 +36,7 @@ export function ProductImageThumbnail({
 }: ProductImageThumbnailProps) {
   const existingImageUrl = useMemo(() => {
     if (!existingImage) return null;
+
     return existingImage.thumbnailUrl || existingImage.cdnUrl || null;
   }, [existingImage]);
 
@@ -43,7 +52,12 @@ export function ProductImageThumbnail({
 
         <div className="relative w-[100px] h-[100px] overflow-hidden rounded-md border border-slate-200 bg-slate-50 flex-shrink-0">
           {existingImageUrl ? (
-            <img src={existingImageUrl} alt={`${label} preview`} className="h-full w-full object-cover" />
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={existingImageUrl}
+              alt={`${label} preview`}
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex flex-col items-center justify-center gap-1 h-full text-slate-400">
               <Camera className="h-6 w-6" />
@@ -52,7 +66,10 @@ export function ProductImageThumbnail({
           )}
         </div>
         {existingImage?.originalFilename && (
-          <p className="text-[9px] text-slate-500 max-w-[100px] truncate" title={existingImage.originalFilename}>
+          <p
+            className="text-[9px] text-slate-500 max-w-[100px] truncate"
+            title={existingImage.originalFilename}
+          >
             {existingImage.originalFilename}
           </p>
         )}
@@ -60,9 +77,31 @@ export function ProductImageThumbnail({
     );
   }
 
+  if (!form) {
+    return null;
+  }
+
+  return (
+    <ProductImageThumbnailEdit
+      form={form}
+      name={name}
+      label={label}
+      badge={badge}
+      existingImageUrl={existingImageUrl}
+    />
+  );
+}
+
+function ProductImageThumbnailEdit({
+  form,
+  name,
+  label,
+  badge,
+  existingImageUrl,
+}: ProductImageThumbnailEditProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const watchedFile = useWatch({
-    control: form?.control,
+    control: form.control,
     name,
   }) as RenamableProductImageFile | null | undefined;
 
@@ -71,7 +110,9 @@ export function ProductImageThumbnail({
   useEffect(() => {
     if (watchedFile && typeof window !== 'undefined' && watchedFile instanceof File) {
       const url = URL.createObjectURL(watchedFile);
+
       setPreviewUrl(url);
+
       return () => URL.revokeObjectURL(url);
     }
     setPreviewUrl(null);
@@ -98,6 +139,7 @@ export function ProductImageThumbnail({
             <div className="group relative w-[100px] h-[100px] overflow-hidden rounded-md border border-slate-200 bg-slate-50 flex-shrink-0">
               {previewUrl || existingImageUrl ? (
                 <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={previewUrl || existingImageUrl || ''}
                     alt={`${label} preview`}
@@ -151,13 +193,17 @@ export function ProductImageThumbnail({
             className="hidden"
             onChange={(event) => {
               const file = event.target.files?.[0];
+
               field.onChange(file ?? null);
               form.trigger(name);
             }}
           />
 
           {watchedFile instanceof File && (
-            <p className="truncate text-[9px] text-slate-500 max-w-[100px]" title={watchedFile.name}>
+            <p
+              className="truncate text-[9px] text-slate-500 max-w-[100px]"
+              title={watchedFile.name}
+            >
               {watchedFile.name}
             </p>
           )}

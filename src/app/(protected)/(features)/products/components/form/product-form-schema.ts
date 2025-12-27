@@ -3,9 +3,6 @@
  */
 import { z } from 'zod';
 
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
-
 const productImageFieldSchema = z.any().optional();
 
 export const productFormSchemaFields = {
@@ -14,13 +11,16 @@ export const productFormSchemaFields = {
     .min(1, { message: 'Please enter name' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
-  barcodeText: z
-    .string({ message: 'Please enter barcode text' })
-    .min(1, { message: 'Please enter barcode text' })
+  code: z
+    .string({ message: 'Please enter code' })
+    .min(1, { message: 'Please enter code' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
-    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid barcode text' }),
-  articleNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
+    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
+  articleNumber: z
+    .string()
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional(),
   description: z
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
@@ -66,6 +66,7 @@ export const productFormSchema = productFormSchemaBase.refine(
     if (discountedPrice !== null && salePrice !== null) {
       return salePrice > discountedPrice;
     }
+
     return true;
   },
   {
@@ -82,13 +83,16 @@ export const productFieldSchemas = {
     .min(1, { message: 'Please enter name' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
-  barcodeText: z
-    .string({ message: 'Please enter barcode text' })
-    .min(1, { message: 'Please enter barcode text' })
+  code: z
+    .string({ message: 'Please enter code' })
+    .min(1, { message: 'Please enter code' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
-    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid barcode text' }),
-  articleNumber: z.string().max(100, { message: 'Please enter no more than 100 characters' }).optional(),
+    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid code' }),
+  articleNumber: z
+    .string()
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional(),
   description: z
     .string()
     .max(500, { message: 'Please enter no more than 500 characters' })
@@ -133,7 +137,7 @@ export const productStepSchemas = {
   basic: z
     .object({
       name: productFieldSchemas.name,
-      barcodeText: productFieldSchemas.barcodeText,
+      code: productFieldSchemas.code,
       articleNumber: productFieldSchemas.articleNumber,
       description: productFieldSchemas.description,
       basePrice: productFieldSchemas.basePrice,
@@ -151,6 +155,7 @@ export const productStepSchemas = {
         if (discountedPrice !== null && salePrice !== null) {
           return salePrice > discountedPrice;
         }
+
         return true;
       },
       {
@@ -167,12 +172,14 @@ export const productStepSchemas = {
  * Use form.trigger() to validate the entire form instead.
  * Kept for backward compatibility with multi-step wizard if needed.
  */
-export const validateStep = (stepId: string, data: any) => {
+export const validateStep = (stepId: string, data: unknown) => {
   const schema = productStepSchemas[stepId as keyof typeof productStepSchemas];
+
   if (!schema) return { success: true, data };
 
   try {
     const validData = schema.parse(data);
+
     return { success: true, data: validData };
   } catch (error) {
     return { success: false, error };

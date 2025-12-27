@@ -9,14 +9,16 @@ import { RelationshipRenderer } from '../relationship-renderer';
 import { ProductVariantManagerWrapper } from '../../variants/ProductVariantManagerWrapper';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
-import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import type { FormActions, FormConfig } from '../form-types';
 
 interface ProductVariantConfigSectionProps {
-  form?: UseFormReturn<Record<string, any>>;
-  config?: any;
-  actions?: any;
+  form?: UseFormReturn<Record<string, unknown>>;
+  config?: FormConfig;
+  actions?: FormActions;
   productId?: number;
   isViewMode?: boolean;
+  product?: ProductDTO | null;
 }
 
 export function ProductVariantConfigSection({
@@ -25,41 +27,14 @@ export function ProductVariantConfigSection({
   actions,
   productId,
   isViewMode = false,
+  product,
 }: ProductVariantConfigSectionProps) {
-  const variantConfigRelConfig = config?.relationships?.find(
-    (r: any) => r.name === 'variantConfig'
-  );
-
-  // Fetch product data for view mode
-  const { data: product, isLoading } = useGetProduct(productId || 0, {
-    query: { enabled: isViewMode && !!productId },
-  });
+  const variantConfigRelConfig = config?.relationships?.find((r) => r.name === 'variantConfig');
 
   const watchedVariantConfigId = form?.watch?.('variantConfig');
   const [helpOpen, setHelpOpen] = React.useState(false);
 
   if (isViewMode) {
-    if (isLoading) {
-      return (
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3 pt-4 px-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
-                <Grid3x3 className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-slate-800">Variant Configuration</h3>
-                <p className="text-[10px] text-muted-foreground">Configure product variations</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <div className="text-sm text-muted-foreground">Loading...</div>
-          </CardContent>
-        </Card>
-      );
-    }
-
     if (!product) {
       return (
         <Card className="border shadow-sm">
@@ -98,9 +73,7 @@ export function ProductVariantConfigSection({
           <CardContent className="space-y-3 px-4 pb-4">
             {/* Variant Config */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Variant Configuration
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Variant Configuration</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
                 {product.variantConfig?.configKey || 'Not configured'}
               </div>
@@ -109,7 +82,12 @@ export function ProductVariantConfigSection({
         </Card>
 
         {/* Product Variants Section - Show in read-only mode */}
-        <ProductVariantManagerWrapper productId={productId} isViewMode={true} />
+        <ProductVariantManagerWrapper
+          productId={productId}
+          productName={product.name || 'Product'}
+          variantConfigId={product.variantConfig?.id}
+          isViewMode={true}
+        />
       </>
     );
   }
@@ -156,12 +134,15 @@ export function ProductVariantConfigSection({
             <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <Info className="h-3 w-3" />
               <span>Help</span>
-              <ChevronDown className={`h-3 w-3 transition-transform ${helpOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`h-3 w-3 transition-transform ${helpOpen ? 'rotate-180' : ''}`}
+              />
             </CollapsibleTrigger>
             <CollapsibleContent className="absolute right-4 top-12 z-10 w-72 rounded-md border bg-white p-3 shadow-lg">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Select a variant configuration if this product has variations (sizes, colors, etc.).
-                You can then choose attribute options and generate variant combinations automatically.
+                You can then choose attribute options and generate variant combinations
+                automatically.
                 {!productId && ' Save the product first to enable full variant management.'}
               </p>
             </CollapsibleContent>

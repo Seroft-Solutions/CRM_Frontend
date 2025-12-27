@@ -9,12 +9,7 @@ export function NoVariantConfigPlaceholder() {
     <div className="p-8 text-center bg-gray-50 rounded-lg border-2 border-dashed">
       <div className="max-w-md mx-auto">
         <div className="mb-4 text-gray-400">
-          <svg
-            className="w-16 h-16 mx-auto"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -23,15 +18,13 @@ export function NoVariantConfigPlaceholder() {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No Variant Configuration
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Variant Configuration</h3>
         <p className="text-gray-600 mb-4">
           Please select a variant configuration for this product before adding variants.
         </p>
         <p className="text-sm text-gray-500">
-          Edit the product and choose a System Config that defines the variant attributes
-          (e.g., size, color, material).
+          Edit the product and choose a System Config that defines the variant attributes (e.g.,
+          size, color, material).
         </p>
       </div>
     </div>

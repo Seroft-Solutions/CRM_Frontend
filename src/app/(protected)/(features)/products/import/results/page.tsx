@@ -10,20 +10,7 @@ import Link from 'next/link';
 import * as XLSX from 'xlsx';
 import { FailedProductsTable } from '../components/failed-products-table';
 
-type RowStatus =
-  | 'SUCCESS'
-  | 'DUPLICATE'
-  | 'VALIDATION_FAILED'
-  | 'SYSTEM_ERROR';
-
-interface ImportSummary {
-  totalRows: number;
-  successCount: number;
-  duplicateCount: number;
-  failedCount: number;
-  validationErrorCount: number;
-  systemErrorCount: number;
-}
+type RowStatus = 'SUCCESS' | 'DUPLICATE' | 'VALIDATION_FAILED' | 'SYSTEM_ERROR';
 
 interface RowResult {
   rowNumber?: number;
@@ -75,6 +62,7 @@ export default function ImportResultsPage() {
     if (storedData) {
       try {
         const data = JSON.parse(storedData);
+
         setResponseData(data);
         sessionStorage.removeItem('productImportResponse');
       } catch (error) {
@@ -85,6 +73,7 @@ export default function ImportResultsPage() {
     if (storedHeaders) {
       try {
         const headers = JSON.parse(storedHeaders);
+
         if (Array.isArray(headers)) {
           setColumnHeaders(headers);
         }
@@ -115,6 +104,7 @@ export default function ImportResultsPage() {
 
     const sheetRows = tableRows.map((row) => {
       const dataValues = headers.map((_, idx) => row.values[idx] ?? '');
+
       return [row.rowNumber, ...dataValues, row.status, row.reason];
     });
 
@@ -126,8 +116,7 @@ export default function ImportResultsPage() {
   };
 
   const failedCount =
-    (responseData?.validationErrorCount ?? 0) +
-    (responseData?.systemErrorCount ?? 0);
+    (responseData?.validationErrorCount ?? 0) + (responseData?.systemErrorCount ?? 0);
 
   if (!responseData) {
     return (
@@ -138,26 +127,24 @@ export default function ImportResultsPage() {
               <CheckCircle className="h-5 w-5 text-green-500" />
               <div>
                 <CardTitle>Import History</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  No recent import session found.
-                </p>
+                <p className="text-sm text-muted-foreground">No recent import session found.</p>
               </div>
             </div>
             <Button asChild>
               <Link href="/products/import">Start New Import</Link>
             </Button>
           </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Upload a file to see detailed results for this session.
-          </p>
-        </CardContent>
-      </Card>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Upload a file to see detailed results for this session.
+            </p>
+          </CardContent>
+        </Card>
 
-      <FailedProductsTable />
-    </div>
-  );
-}
+        <FailedProductsTable />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -172,7 +159,9 @@ export default function ImportResultsPage() {
 
             <div>
               <h1 className="text-xl font-semibold text-sidebar-foreground">Import Results</h1>
-              <p className="text-sm text-sidebar-foreground/80">Review your product bulk upload summary</p>
+              <p className="text-sm text-sidebar-foreground/80">
+                Review your product bulk upload summary
+              </p>
             </div>
           </div>
 
@@ -208,29 +197,17 @@ export default function ImportResultsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <SummaryCard label="Total Rows" value={responseData.totalRows} />
-            <SummaryCard
-              label="Successful"
-              value={responseData.successCount}
-              tone="success"
-            />
-            <SummaryCard
-              label="Duplicates"
-              value={responseData.duplicateCount}
-              tone="warning"
-            />
+            <SummaryCard label="Successful" value={responseData.successCount} tone="success" />
+            <SummaryCard label="Duplicates" value={responseData.duplicateCount} tone="warning" />
             <SummaryCard label="Failed" value={failedCount} tone="error" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-muted-foreground">
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">
-                {responseData.validationErrorCount}
-              </p>
+              <p className="font-semibold text-foreground">{responseData.validationErrorCount}</p>
               <p>Validation issues</p>
             </div>
             <div className="p-3 border rounded-lg">
-              <p className="font-semibold text-foreground">
-                {responseData.systemErrorCount}
-              </p>
+              <p className="font-semibold text-foreground">{responseData.systemErrorCount}</p>
               <p>System errors</p>
             </div>
           </div>

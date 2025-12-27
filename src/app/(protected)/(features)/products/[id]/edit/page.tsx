@@ -33,7 +33,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-sidebar-foreground">Edit Product</h1>
-                <p className="text-sm text-sidebar-foreground/80">Update product information and details</p>
+                <p className="text-sm text-sidebar-foreground/80">
+                  Update product information and details
+                </p>
               </div>
             </div>
 

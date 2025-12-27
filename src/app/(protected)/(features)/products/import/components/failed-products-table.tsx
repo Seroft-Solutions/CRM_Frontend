@@ -8,8 +8,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import type {
@@ -17,6 +30,7 @@ import type {
   ProductDTO,
   ProductCategoryDTO,
   ProductSubCategoryDTO,
+  SystemConfigDTO,
   SystemConfigAttributeDTO,
   SystemConfigAttributeOptionDTO,
 } from '@/core/api/generated/spring/schemas';
@@ -27,12 +41,8 @@ import {
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
-import {
-  useGetAllSystemConfigAttributes,
-} from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
-import {
-  useGetAllSystemConfigAttributeOptions,
-} from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
+import { useGetAllSystemConfigAttributes } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
+import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { useGetAllSystemConfigs } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -40,14 +50,12 @@ import { Loader2 } from 'lucide-react';
 const PRODUCT_CODE_REGEX = /^[A-Za-z0-9_-]{2,20}$/;
 const EMPTY_SELECT_VALUE = '__none__';
 const SYSTEM_CONFIG_LABEL = 'System Config';
-const BARCODE_TEXT_HEADER = 'Barcode Text';
-const LEGACY_PRODUCT_CODE_HEADER = 'Product code';
 
 const BASE_HEADERS = [
   'Product Category',
   'Product Sub Category',
   'Product Name',
-  BARCODE_TEXT_HEADER,
+  'Product code',
   'Article Number',
   'Description',
   'Total Quantity',
@@ -63,7 +71,7 @@ const REMARK_HEADERS = [
   'Product Category',
   'Product Sub Category',
   'Product Name',
-  BARCODE_TEXT_HEADER,
+  'Product code',
   'Article Number',
   'Description',
   'Total Quantity',
@@ -89,7 +97,10 @@ function hasText(value: unknown): value is string {
 }
 
 function normalizeKey(value: string): string {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
 }
 
 function normalizeSystemConfigKey(value: string): string {
@@ -104,18 +115,22 @@ function parseVariantAttributes(value: string | null | undefined): ParsedVariant
   const values: VariantAttributeValues = {};
   const labels: Record<string, string> = {};
   let systemConfigKey: string | undefined;
+
   if (!hasText(value)) return { values, labels, systemConfigKey };
 
   value.split(',').forEach((part) => {
     const [rawKey, ...rest] = part.split(':');
     const trimmedKey = (rawKey ?? '').trim();
     const rawValue = rest.join(':').trim();
+
     if (!hasText(trimmedKey) || !hasText(rawValue)) return;
 
     const normalized = normalizeKey(trimmedKey);
+
     if (!normalized) return;
     if (normalized === normalizeKey(SYSTEM_CONFIG_LABEL)) {
       systemConfigKey = rawValue;
+
       return;
     }
     values[normalized] = rawValue;
@@ -129,17 +144,21 @@ function parseRemarkData(rawRemark: string | null | undefined): Record<string, s
   if (!hasText(rawRemark)) return {};
   try {
     const parsed = JSON.parse(rawRemark);
+
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return {};
     }
     const values: Record<string, string> = {};
+
     Object.entries(parsed).forEach(([key, value]) => {
       if (!hasText(key) || value == null) return;
       values[key] = String(value);
     });
+
     return values;
   } catch (error) {
     console.warn('Failed to parse remark data:', error);
+
     return {};
   }
 }
@@ -149,20 +168,25 @@ function buildRemarkData(
   updates: Record<string, string | null | undefined>
 ): string | null {
   const next: Record<string, string> = { ...current };
+
   Object.entries(updates).forEach(([key, value]) => {
     if (!hasText(key)) return;
     if (!hasText(value)) {
       delete next[key];
+
       return;
     }
     next[key] = value.trim();
   });
   const entries = Object.entries(next).filter(([, value]) => hasText(value));
+
   if (!entries.length) return null;
   const normalized: Record<string, string> = {};
+
   entries.forEach(([key, value]) => {
     normalized[key] = value.trim();
   });
+
   return JSON.stringify(normalized);
 }
 
@@ -175,13 +199,10 @@ function resolveRowField(
   if (header === 'Product Name') {
     return (row.productName ?? remarkData[header] ?? fallback ?? '') as string;
   }
-  if (header === BARCODE_TEXT_HEADER || header === LEGACY_PRODUCT_CODE_HEADER) {
-    return (row.productCode ??
-      remarkData[BARCODE_TEXT_HEADER] ??
-      remarkData[LEGACY_PRODUCT_CODE_HEADER] ??
-      fallback ??
-      '') as string;
+  if (header === 'Product code') {
+    return (row.productCode ?? remarkData[header] ?? fallback ?? '') as string;
   }
+
   return (remarkData[header] ?? fallback ?? '') as string;
 }
 
@@ -192,6 +213,7 @@ function buildVariantAttributes(
   systemConfigKey?: string | null
 ): string {
   const parts: string[] = [];
+
   if (hasText(systemConfigKey)) {
     parts.push(`${SYSTEM_CONFIG_LABEL}:${systemConfigKey.trim()}`);
   }
@@ -199,15 +221,19 @@ function buildVariantAttributes(
     .sort((a, b) => a.localeCompare(b))
     .forEach((key) => {
       const value = values[key];
+
       if (!hasText(value)) return;
       const label = labelByKey.get(key) ?? fallbackLabels[key] ?? key;
+
       parts.push(`${label}:${value.trim()}`);
     });
+
   return parts.join(',');
 }
 
 function isProductImportHistoryRow(row: ImportHistoryDTO): boolean {
   const hasIssue = hasText(row.issue);
+
   if (!hasIssue) return false;
   if (isDuplicateProductCodeIssue(row.issue)) return false;
 
@@ -230,12 +256,9 @@ function isProductImportHistoryRow(row: ImportHistoryDTO): boolean {
 function isDuplicateProductCodeIssue(issue: string | null | undefined): boolean {
   if (!hasText(issue)) return false;
   const normalized = issue.toLowerCase();
+
   return (
-    normalized.includes('duplicate barcode text') ||
     normalized.includes('duplicate product code') ||
-    (normalized.includes('product with barcode text') &&
-      normalized.includes('already exists') &&
-      normalized.includes('skipping')) ||
     (normalized.includes('product with code') &&
       normalized.includes('already exists') &&
       normalized.includes('skipping'))
@@ -254,15 +277,18 @@ function formatCategoryLabel(category: ProductCategoryDTO): string {
   if (category.name && category.code && category.name !== category.code) {
     return `${category.name} (${category.code})`;
   }
+
   return category.name || category.code || '';
 }
 
 function formatSubCategoryLabel(subCategory: ProductSubCategoryDTO): string {
   const name = subCategory.name || subCategory.code || '';
   const categoryLabel = subCategory.category?.name || subCategory.category?.code || '';
+
   if (categoryLabel) {
     return `${name} — ${categoryLabel}`;
   }
+
   return name;
 }
 
@@ -273,6 +299,7 @@ function resolveCategoryOptionValue(category: ProductCategoryDTO): string {
   if (hasText(category.name)) {
     return category.name!;
   }
+
   return '';
 }
 
@@ -283,6 +310,7 @@ function resolveSubCategoryOptionValue(subCategory: ProductSubCategoryDTO): stri
   if (hasText(subCategory.name)) {
     return subCategory.name!;
   }
+
   return '';
 }
 
@@ -324,10 +352,11 @@ export function FailedProductsTable() {
     }
   );
 
-  const { data: systemConfigs = [] } = useGetAllSystemConfigs(
+  const { data: systemConfigsData = [] } = useGetAllSystemConfigs(
     { page: 0, size: 1000, 'status.equals': 'ACTIVE', 'systemConfigType.equals': 'PRODUCT' },
     { query: { staleTime: 5 * 60 * 1000 } }
   );
+  const systemConfigs = systemConfigsData as SystemConfigDTO[];
 
   const { data: productCategories = [] } = useGetAllProductCategories(
     { page: 0, size: 1000, 'status.equals': 'ACTIVE' },
@@ -341,9 +370,11 @@ export function FailedProductsTable() {
 
   useEffect(() => {
     const storedHeaders = sessionStorage.getItem('productImportColumns');
+
     if (!storedHeaders) return;
     try {
       const headers = JSON.parse(storedHeaders);
+
       if (Array.isArray(headers) && headers.length > 0) {
         setTemplateHeaders(headers);
       }
@@ -355,10 +386,13 @@ export function FailedProductsTable() {
   useEffect(() => {
     if (!systemConfigs.length) return;
     const storedId = sessionStorage.getItem('productImportSystemConfigId');
+
     if (!storedId) return;
     const parsedId = Number(storedId);
+
     if (!Number.isFinite(parsedId)) return;
-    const match = systemConfigs.find((config: any) => config.id === parsedId);
+    const match = systemConfigs.find((config) => config.id === parsedId);
+
     if (match?.configKey) {
       setFallbackSystemConfigKey(match.configKey);
     }
@@ -371,15 +405,21 @@ export function FailedProductsTable() {
 
   const systemConfigByKey = useMemo(() => {
     const map = new Map<string, { id: number; configKey: string }>();
-    systemConfigs.forEach((config: any) => {
+
+    systemConfigs.forEach((config) => {
       if (typeof config.id !== 'number' || !hasText(config.configKey)) return;
-      map.set(normalizeSystemConfigKey(config.configKey), { id: config.id, configKey: config.configKey });
+      map.set(normalizeSystemConfigKey(config.configKey), {
+        id: config.id,
+        configKey: config.configKey,
+      });
     });
+
     return map;
   }, [systemConfigs]);
 
   const categoryLookup = useMemo(() => {
     const map = new Map<string, ProductCategoryDTO>();
+
     productCategories.forEach((category) => {
       if (!category) return;
       if (hasText(category.code)) {
@@ -389,6 +429,7 @@ export function FailedProductsTable() {
         map.set(normalizeLookupValue(category.name), category);
       }
     });
+
     return map;
   }, [productCategories]);
 
@@ -396,12 +437,15 @@ export function FailedProductsTable() {
     const options = productCategories
       .filter((category) => category && (hasText(category.code) || hasText(category.name)))
       .map((category) => category as ProductCategoryDTO);
+
     options.sort((a, b) => (a.name || a.code || '').localeCompare(b.name || b.code || ''));
+
     return options;
   }, [productCategories]);
 
   const subCategoryLookup = useMemo(() => {
     const map = new Map<string, ProductSubCategoryDTO>();
+
     productSubCategories.forEach((subCategory) => {
       if (!subCategory) return;
       if (hasText(subCategory.code)) {
@@ -411,50 +455,65 @@ export function FailedProductsTable() {
         map.set(normalizeLookupValue(subCategory.name), subCategory);
       }
     });
+
     return map;
   }, [productSubCategories]);
 
   const subCategoriesByCategoryId = useMemo(() => {
     const map = new Map<number, ProductSubCategoryDTO[]>();
+
     productSubCategories.forEach((subCategory) => {
       const categoryId = subCategory.category?.id;
+
       if (typeof categoryId !== 'number') return;
       const list = map.get(categoryId) ?? [];
+
       list.push(subCategory);
       map.set(categoryId, list);
     });
     map.forEach((list) =>
       list.sort((a, b) => (a.name || a.code || '').localeCompare(b.name || b.code || ''))
     );
+
     return map;
   }, [productSubCategories]);
 
   const relevantConfigIds = useMemo(() => {
     const ids = new Set<number>();
+
     editableRows.forEach((row) => {
       const parsed = parseVariantAttributes(row.variantAttributes);
+
       if (!hasText(parsed.systemConfigKey)) return;
       const config = systemConfigByKey.get(normalizeSystemConfigKey(parsed.systemConfigKey));
+
       if (config) {
         ids.add(config.id);
       }
     });
+
     return ids;
   }, [editableRows, systemConfigByKey]);
 
   const relevantAttributes = useMemo(() => {
     const attributes = allAttributes ?? [];
+
     if (relevantConfigIds.size === 0) {
       return attributes;
     }
+
     return attributes.filter((attr) => {
       const configId = attr.systemConfig?.id;
+
       return typeof configId === 'number' && relevantConfigIds.has(configId);
     });
   }, [allAttributes, relevantConfigIds]);
 
   const attributeIds = useMemo(
-    () => relevantAttributes.map((attr) => attr.id).filter((id): id is number => typeof id === 'number'),
+    () =>
+      relevantAttributes
+        .map((attr) => attr.id)
+        .filter((id): id is number => typeof id === 'number'),
     [relevantAttributes]
   );
 
@@ -470,14 +529,18 @@ export function FailedProductsTable() {
 
   const attributesByConfigId = useMemo(() => {
     const map = new Map<number, SystemConfigAttributeDTO[]>();
+
     relevantAttributes.forEach((attr) => {
       const configId = attr.systemConfig?.id;
+
       if (typeof configId !== 'number') return;
       const list = map.get(configId) ?? [];
+
       list.push(attr);
       map.set(configId, list);
     });
     map.forEach((list) => list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)));
+
     return map;
   }, [relevantAttributes]);
 
@@ -489,19 +552,22 @@ export function FailedProductsTable() {
       const attributeLabels = templateHeaders.filter(
         (header) => !BASE_HEADERS.includes(header) && !TRAILING_HEADERS.includes(header)
       );
+
       attributeLabels.forEach((label) => {
         const key = normalizeKey(label);
+
         if (!key || labelByKey.has(key)) return;
         labelByKey.set(key, label);
         orderedKeys.push(key);
       });
+
       return { orderedKeys, labelByKey };
     }
 
     const includeConfigAttributes = relevantConfigIds.size > 0;
     const configOrder = includeConfigAttributes
       ? systemConfigs
-          .map((config: any) => config.id)
+          .map((config) => config.id)
           .filter((id: unknown): id is number => typeof id === 'number')
           .filter((id) => relevantConfigIds.has(id))
       : [];
@@ -509,6 +575,7 @@ export function FailedProductsTable() {
     const appendAttribute = (attr: SystemConfigAttributeDTO) => {
       const rawLabel = attr.label ?? attr.name ?? '';
       const key = normalizeKey(rawLabel);
+
       if (!key || labelByKey.has(key)) return;
       labelByKey.set(key, rawLabel);
       orderedKeys.push(key);
@@ -527,6 +594,7 @@ export function FailedProductsTable() {
 
     editableRows.forEach((row) => {
       const parsed = parseVariantAttributes(row.variantAttributes);
+
       Object.entries(parsed.labels).forEach(([key, label]) => {
         if (labelByKey.has(key)) return;
         labelByKey.set(key, label);
@@ -539,49 +607,63 @@ export function FailedProductsTable() {
 
   const optionsByAttributeId = useMemo(() => {
     const map = new Map<number, SystemConfigAttributeOptionDTO[]>();
+
     (attributeOptions ?? []).forEach((option) => {
       const attributeId = option.attribute?.id;
+
       if (typeof attributeId !== 'number') return;
       const list = map.get(attributeId) ?? [];
+
       list.push(option);
       map.set(attributeId, list);
     });
+
     return map;
   }, [attributeOptions]);
 
   const optionsByConfigAndKey = useMemo(() => {
     const map = new Map<number, Map<string, SystemConfigAttributeOptionDTO[]>>();
+
     relevantAttributes.forEach((attr) => {
       const configId = attr.systemConfig?.id;
       const rawLabel = attr.label ?? attr.name ?? '';
       const key = normalizeKey(rawLabel);
+
       if (typeof configId !== 'number' || !key || typeof attr.id !== 'number') return;
       const options = optionsByAttributeId.get(attr.id) ?? [];
+
       if (!map.has(configId)) {
         map.set(configId, new Map());
       }
       map.get(configId)!.set(key, options);
     });
+
     return map;
   }, [relevantAttributes, optionsByAttributeId]);
 
   const fallbackOptionsByKey = useMemo(() => {
     const map = new Map<string, SystemConfigAttributeOptionDTO[]>();
+
     relevantAttributes.forEach((attr) => {
       const rawLabel = attr.label ?? attr.name ?? '';
       const key = normalizeKey(rawLabel);
+
       if (!key || typeof attr.id !== 'number') return;
       const options = optionsByAttributeId.get(attr.id) ?? [];
+
       if (!map.has(key)) {
         map.set(key, []);
       }
       const existing = map.get(key)!;
+
       options.forEach((option) => {
         const token = `${option.code}`.toLowerCase();
+
         if (existing.some((entry) => `${entry.code}`.toLowerCase() === token)) return;
         existing.push(option);
       });
     });
+
     return map;
   }, [relevantAttributes, optionsByAttributeId]);
 
@@ -589,6 +671,7 @@ export function FailedProductsTable() {
     const rows = (importHistoryData ?? []).filter(
       (row) => typeof row.id === 'number' && isProductImportHistoryRow(row)
     );
+
     setEditableRows(rows);
     setPendingRowIds(new Set());
     setRowErrors({});
@@ -609,6 +692,7 @@ export function FailedProductsTable() {
     (systemConfigKey?: string | null) => {
       if (!hasText(systemConfigKey)) return null;
       const config = systemConfigByKey.get(normalizeSystemConfigKey(systemConfigKey));
+
       return config ? config.id : null;
     },
     [systemConfigByKey]
@@ -622,6 +706,7 @@ export function FailedProductsTable() {
       if (hasText(fallbackSystemConfigKey)) {
         return fallbackSystemConfigKey!.trim();
       }
+
       return null;
     },
     [fallbackSystemConfigKey]
@@ -631,10 +716,12 @@ export function FailedProductsTable() {
     (configId: number | null, key: string) => {
       if (typeof configId === 'number') {
         const options = optionsByConfigAndKey.get(configId)?.get(key);
+
         if (options && options.length) {
           return options;
         }
       }
+
       return fallbackOptionsByKey.get(key) ?? [];
     },
     [optionsByConfigAndKey, fallbackOptionsByKey]
@@ -645,35 +732,41 @@ export function FailedProductsTable() {
       const issues: string[] = [];
       const remarkData = parseRemarkData(row.remark);
       const name = resolveRowField(row, remarkData, 'Product Name').trim();
-      const barcodeText = resolveRowField(row, remarkData, BARCODE_TEXT_HEADER).trim();
+      const code = resolveRowField(row, remarkData, 'Product code').trim();
       const parsed = parseVariantAttributes(row.variantAttributes);
       const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
 
       if (name.length < 2 || name.length > 100) {
         issues.push('Product Name must be 2-100 characters.');
       }
-      if (!PRODUCT_CODE_REGEX.test(barcodeText)) {
-        issues.push('Barcode Text must be 2-20 characters (letters, numbers, underscores, hyphens).');
+      if (!PRODUCT_CODE_REGEX.test(code)) {
+        issues.push(
+          'Product Code must be 2-20 characters (letters, numbers, underscores, hyphens).'
+        );
       }
 
       const hasAttribute = Object.values(parsed.values).some((value) => hasText(value));
       const totalQuantityRaw = remarkData['Total Quantity'] ?? '';
       const totalQuantityValue = Number.parseInt(totalQuantityRaw, 10);
       const hasTotalQuantity = Number.isFinite(totalQuantityValue) && totalQuantityValue > 0;
+
       if (!hasAttribute && !hasTotalQuantity) {
         issues.push('Provide at least one variant attribute or a positive Total Quantity.');
       }
 
       const configId = resolveConfigId(effectiveSystemConfigKey);
+
       if (hasText(parsed.systemConfigKey) && configId == null) {
         issues.push(`Unknown ${SYSTEM_CONFIG_LABEL} '${parsed.systemConfigKey}'.`);
       }
 
       if (configId != null) {
         const requiredAttributes = attributesByConfigId.get(configId) ?? [];
+
         requiredAttributes.forEach((attr) => {
           if (!attr.isRequired) return;
           const key = normalizeKey(attr.label ?? attr.name ?? '');
+
           if (!key) return;
           if (!hasText(parsed.values[key])) {
             issues.push(`Missing required attribute: ${attr.label ?? attr.name}.`);
@@ -684,21 +777,30 @@ export function FailedProductsTable() {
       Object.entries(parsed.values).forEach(([key, value]) => {
         if (!hasText(value)) return;
         const options = getOptionsForRowAttribute(configId, key);
+
         if (!options.length) return;
         const match = options.some(
           (option) =>
             option.code?.toLowerCase() === value.toLowerCase() ||
             option.label?.toLowerCase() === value.toLowerCase()
         );
+
         if (!match) {
           const label = attributeLabelData.labelByKey.get(key) ?? parsed.labels[key] ?? key;
+
           issues.push(`${label} value '${value}' is not in system config options.`);
         }
       });
 
       return issues;
     },
-    [resolveConfigId, resolveSystemConfigKey, attributesByConfigId, getOptionsForRowAttribute, attributeLabelData]
+    [
+      resolveConfigId,
+      resolveSystemConfigKey,
+      attributesByConfigId,
+      getOptionsForRowAttribute,
+      attributeLabelData,
+    ]
   );
 
   const validatedRows = useMemo(() => {
@@ -706,34 +808,44 @@ export function FailedProductsTable() {
       if (typeof row.id !== 'number') return false;
       if (pendingRowIds.has(row.id)) return false;
       if (rowErrors[row.id]) return false;
+
       return computeRowIssues(row).length === 0;
     });
   }, [editableRows, pendingRowIds, computeRowIssues, rowErrors]);
 
-  const handleFieldChange = useCallback((rowId: number, field: keyof ImportHistoryDTO, value: string) => {
-    setEditableRows((prev) =>
-      prev.map((row) => {
-        if (row.id !== rowId) return row;
-        const nextRow = { ...row, [field]: value as any };
-        if (field !== 'productName' && field !== 'productCode') {
-          return nextRow;
-        }
-        const remarkData = parseRemarkData(row.remark);
-        const updates =
-          field === 'productCode'
-            ? { [BARCODE_TEXT_HEADER]: value, [LEGACY_PRODUCT_CODE_HEADER]: '' }
-            : { ['Product Name']: value };
-        const nextRemark = buildRemarkData(remarkData, updates);
-        return { ...nextRow, remark: nextRemark };
-      })
-    );
-    setRowErrors((prev) => {
-      if (!prev[rowId]) return prev;
-      const next = { ...prev };
-      delete next[rowId];
-      return next;
-    });
-  }, []);
+  const handleFieldChange = useCallback(
+    (rowId: number, field: keyof ImportHistoryDTO, value: string) => {
+      setEditableRows((prev) =>
+        prev.map((row) => {
+          if (row.id !== rowId) return row;
+          const nextRow = { ...row, [field]: value } as ImportHistoryDTO;
+          const remarkHeader =
+            field === 'productName'
+              ? 'Product Name'
+              : field === 'productCode'
+                ? 'Product code'
+                : null;
+
+          if (!remarkHeader) {
+            return nextRow;
+          }
+          const remarkData = parseRemarkData(row.remark);
+          const nextRemark = buildRemarkData(remarkData, { [remarkHeader]: value });
+
+          return { ...nextRow, remark: nextRemark };
+        })
+      );
+      setRowErrors((prev) => {
+        if (!prev[rowId]) return prev;
+        const next = { ...prev };
+
+        delete next[rowId];
+
+        return next;
+      });
+    },
+    []
+  );
 
   const handleRemarkFieldChange = useCallback((rowId: number, header: string, value: string) => {
     setEditableRows((prev) =>
@@ -741,13 +853,16 @@ export function FailedProductsTable() {
         if (row.id !== rowId) return row;
         const remarkData = parseRemarkData(row.remark);
         const nextRemark = buildRemarkData(remarkData, { [header]: value });
+
         return { ...row, remark: nextRemark };
       })
     );
     setRowErrors((prev) => {
       if (!prev[rowId]) return prev;
       const next = { ...prev };
+
       delete next[rowId];
+
       return next;
     });
   }, []);
@@ -759,6 +874,7 @@ export function FailedProductsTable() {
           if (row.id !== rowId) return row;
           const parsed = parseVariantAttributes(row.variantAttributes);
           const nextValues = { ...parsed.values };
+
           if (value === EMPTY_SELECT_VALUE) {
             delete nextValues[key];
           } else {
@@ -771,13 +887,16 @@ export function FailedProductsTable() {
             nextLabels,
             parsed.systemConfigKey
           );
+
           return { ...row, variantAttributes: nextVariantAttributes };
         })
       );
       setRowErrors((prev) => {
         if (!prev[rowId]) return prev;
         const next = { ...prev };
+
         delete next[rowId];
+
         return next;
       });
     },
@@ -796,13 +915,16 @@ export function FailedProductsTable() {
             parsed.labels,
             value === EMPTY_SELECT_VALUE ? null : value
           );
+
           return { ...row, variantAttributes: nextVariantAttributes };
         })
       );
       setRowErrors((prev) => {
         if (!prev[rowId]) return prev;
         const next = { ...prev };
+
         delete next[rowId];
+
         return next;
       });
     },
@@ -824,6 +946,7 @@ export function FailedProductsTable() {
           } else if (hasText(currentSubValue)) {
             const subMatch = subCategoryLookup.get(normalizeLookupValue(currentSubValue));
             const selectedCategory = categoryLookup.get(normalizeLookupValue(nextCategoryValue));
+
             if (
               subMatch?.category?.id != null &&
               selectedCategory?.id != null &&
@@ -837,13 +960,16 @@ export function FailedProductsTable() {
             'Product Category': nextCategoryValue,
             'Product Sub Category': nextSubValue,
           });
+
           return { ...row, remark: nextRemark };
         })
       );
       setRowErrors((prev) => {
         if (!prev[rowId]) return prev;
         const next = { ...prev };
+
         delete next[rowId];
+
         return next;
       });
     },
@@ -858,9 +984,13 @@ export function FailedProductsTable() {
           const remarkData = parseRemarkData(row.remark);
           const nextSubValue = value === EMPTY_SELECT_VALUE ? null : value;
           let nextCategoryValue = remarkData['Product Category'];
+
           if (hasText(nextSubValue)) {
             const subMatch = subCategoryLookup.get(normalizeLookupValue(nextSubValue));
-            const categoryValue = subMatch?.category ? resolveCategoryOptionValue(subMatch.category) : '';
+            const categoryValue = subMatch?.category
+              ? resolveCategoryOptionValue(subMatch.category)
+              : '';
+
             if (hasText(categoryValue)) {
               nextCategoryValue = categoryValue;
             }
@@ -869,13 +999,16 @@ export function FailedProductsTable() {
             'Product Category': nextCategoryValue,
             'Product Sub Category': nextSubValue,
           });
+
           return { ...row, remark: nextRemark };
         })
       );
       setRowErrors((prev) => {
         if (!prev[rowId]) return prev;
         const next = { ...prev };
+
         delete next[rowId];
+
         return next;
       });
     },
@@ -886,9 +1019,11 @@ export function FailedProductsTable() {
     async (row: ImportHistoryDTO): Promise<boolean> => {
       if (typeof row.id !== 'number') return false;
       const issues = computeRowIssues(row);
+
       if (issues.length) {
         toast.error('Please fix validation errors before saving.');
         setRowErrors((prev) => ({ ...prev, [row.id!]: issues.join(' ') }));
+
         return false;
       }
 
@@ -896,11 +1031,11 @@ export function FailedProductsTable() {
       const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
       const remarkData = parseRemarkData(row.remark);
       const resolvedName = resolveRowField(row, remarkData, 'Product Name').trim();
-      const resolvedBarcodeText = resolveRowField(row, remarkData, BARCODE_TEXT_HEADER).trim();
+      const resolvedCode = resolveRowField(row, remarkData, 'Product code').trim();
       const payload: ImportHistoryDTO = {
         ...row,
         productName: resolvedName,
-        productCode: resolvedBarcodeText,
+        productCode: resolvedCode,
         variantAttributes: buildVariantAttributes(
           parsed.values,
           attributeLabelData.labelByKey,
@@ -917,25 +1052,34 @@ export function FailedProductsTable() {
         toast.success(`Created product for row ${row.id}.`);
         setEditableRows((prev) => prev.filter((entry) => entry.id !== row.id));
         refetch();
+
         return true;
-      } catch (e: any) {
-        const responseData = e?.response?.data;
+      } catch (e: unknown) {
+        const responseData = (e as { response?: { data?: Record<string, unknown> } })?.response
+          ?.data as { title?: string; detail?: string; message?: string } | undefined;
         let message =
           responseData?.title ||
           responseData?.detail ||
           responseData?.message ||
-          e?.message ||
+          (e as { message?: string })?.message ||
           'Unknown error';
-        if (typeof responseData?.message === 'string' && responseData.message.startsWith('error.')) {
+
+        if (
+          typeof responseData?.message === 'string' &&
+          responseData.message.startsWith('error.')
+        ) {
           message = responseData?.title || message;
         }
         toast.error(`Failed to create product for row ${row.id}: ${message}`);
         setRowErrors((prev) => ({ ...prev, [row.id!]: message }));
+
         return false;
       } finally {
         setPendingRowIds((prev) => {
           const next = new Set(prev);
+
           next.delete(row.id!);
+
           return next;
         });
       }
@@ -946,12 +1090,15 @@ export function FailedProductsTable() {
   const handleSaveValidated = useCallback(async () => {
     if (!validatedRows.length) {
       toast.info('No validated rows available to save.');
+
       return;
     }
 
     let successCount = 0;
+
     for (const row of validatedRows) {
       const ok = await handleSaveRow(row);
+
       if (ok) successCount += 1;
     }
 
@@ -965,12 +1112,14 @@ export function FailedProductsTable() {
     const confirmed = window.confirm(
       `Delete ${editableRows.length} failed product import entr${editableRows.length === 1 ? 'y' : 'ies'}?`
     );
+
     if (!confirmed) return;
 
     try {
       const resp = await deleteAllImportHistoryEntriesAsync({ params: { entityName: 'PRODUCT' } });
-      const deleted = Number((resp as any)?.deletedCount ?? 0);
-      const message = typeof (resp as any)?.message === 'string' ? ((resp as any).message as string) : undefined;
+      const response = resp as { deletedCount?: number; message?: string };
+      const deleted = Number(response?.deletedCount ?? 0);
+      const message = typeof response?.message === 'string' ? response.message : undefined;
 
       if (deleted > 0) {
         toast.success(message ?? `Deleted ${deleted} entr${deleted === 1 ? 'y' : 'ies'}.`);
@@ -979,6 +1128,7 @@ export function FailedProductsTable() {
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
+
       toast.error(`Failed to clear failed product import rows: ${message}`);
     } finally {
       refetch();
@@ -988,6 +1138,7 @@ export function FailedProductsTable() {
   const handleDownloadCorrectedRows = useCallback(() => {
     if (!editableRows.length) {
       toast.info('No failed rows to download.');
+
       return;
     }
 
@@ -996,13 +1147,16 @@ export function FailedProductsTable() {
       const effectiveSystemConfigKey = resolveSystemConfigKey(parsed.systemConfigKey);
       const remarkData = parseRemarkData(row.remark);
       const rowValues: Record<string, string> = {};
+
       REMARK_HEADERS.forEach((header) => {
         const value = resolveRowField(row, remarkData, header);
+
         if (hasText(value)) {
           rowValues[header] = value;
         }
       });
-      rowValues[SYSTEM_CONFIG_LABEL] = effectiveSystemConfigKey ?? rowValues[SYSTEM_CONFIG_LABEL] ?? '';
+      rowValues[SYSTEM_CONFIG_LABEL] =
+        effectiveSystemConfigKey ?? rowValues[SYSTEM_CONFIG_LABEL] ?? '';
 
       attributeColumns.forEach((column) => {
         rowValues[column.label] = parsed.values[column.key] ?? '';
@@ -1011,10 +1165,8 @@ export function FailedProductsTable() {
       const headers = templateHeaders?.length
         ? templateHeaders
         : [...BASE_HEADERS, ...attributeColumns.map((column) => column.label), ...TRAILING_HEADERS];
-      return [
-        ...headers.map((header) => rowValues[header] ?? ''),
-        row.issue ?? '',
-      ];
+
+      return [...headers.map((header) => rowValues[header] ?? ''), row.issue ?? ''];
     });
 
     const headers = templateHeaders?.length
@@ -1042,6 +1194,7 @@ export function FailedProductsTable() {
 
   if (isError) {
     const msg = error instanceof Error ? error.message : 'Unable to load import history.';
+
     return (
       <Card className="border-red-200 bg-red-50">
         <CardHeader>
@@ -1086,9 +1239,7 @@ export function FailedProductsTable() {
           <Button variant="outline" onClick={handleClearAllFailed}>
             Clear All
           </Button>
-          <Button onClick={handleSaveValidated}>
-            Create Products ({validatedRows.length})
-          </Button>
+          <Button onClick={handleSaveValidated}>Create Products ({validatedRows.length})</Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -1132,7 +1283,8 @@ export function FailedProductsTable() {
                   : importIssue
                     ? [`Previous import error: ${importIssue}`]
                     : [];
-              const issueTitle = displayedIssues.length > 0 ? 'Validation Errors:' : 'Import Error:';
+              const issueTitle =
+                displayedIssues.length > 0 ? 'Validation Errors:' : 'Import Error:';
 
               const rowHasInvalid = issues.length > 0;
               const rowNeedsAttention = !rowHasInvalid && Boolean(errorText);
@@ -1156,9 +1308,12 @@ export function FailedProductsTable() {
                       const categoryMatch = hasText(currentValue)
                         ? categoryLookup.get(normalizeLookupValue(currentValue))
                         : undefined;
-                      const resolvedCategoryValue = categoryMatch ? resolveCategoryOptionValue(categoryMatch) : '';
+                      const resolvedCategoryValue = categoryMatch
+                        ? resolveCategoryOptionValue(categoryMatch)
+                        : '';
                       const selectValue =
-                        resolvedCategoryValue || (hasText(currentValue) ? currentValue : EMPTY_SELECT_VALUE);
+                        resolvedCategoryValue ||
+                        (hasText(currentValue) ? currentValue : EMPTY_SELECT_VALUE);
                       const showCustom = hasText(currentValue) && !categoryMatch;
 
                       return (
@@ -1205,16 +1360,18 @@ export function FailedProductsTable() {
                         ? resolveSubCategoryOptionValue(subCategoryMatch)
                         : '';
                       const selectValue =
-                        resolvedSubCategoryValue || (hasText(currentValue) ? currentValue : EMPTY_SELECT_VALUE);
+                        resolvedSubCategoryValue ||
+                        (hasText(currentValue) ? currentValue : EMPTY_SELECT_VALUE);
                       const showCustom = hasText(currentValue) && !subCategoryMatch;
                       const categoryValue = resolveRowField(row, remarkData, 'Product Category');
                       const categoryMatch = hasText(categoryValue)
                         ? categoryLookup.get(normalizeLookupValue(categoryValue))
                         : undefined;
                       const effectiveCategoryId = categoryMatch?.id ?? null;
-                      const subCategoryOptions = typeof effectiveCategoryId === 'number'
-                        ? subCategoriesByCategoryId.get(effectiveCategoryId) ?? []
-                        : [];
+                      const subCategoryOptions =
+                        typeof effectiveCategoryId === 'number'
+                          ? (subCategoriesByCategoryId.get(effectiveCategoryId) ?? [])
+                          : [];
 
                       return (
                         <TableCell key={`${rowId}-${header}`} className="min-w-[220px]">
@@ -1260,19 +1417,23 @@ export function FailedProductsTable() {
                         <TableCell key={`${rowId}-${header}`} className="min-w-[200px]">
                           <Input
                             value={resolveRowField(row, remarkData, header)}
-                            onChange={(e) => handleFieldChange(rowId, 'productName', e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(rowId, 'productName', e.target.value)
+                            }
                             placeholder="Product Name"
                           />
                         </TableCell>
                       );
                     }
-                    if (header === BARCODE_TEXT_HEADER) {
+                    if (header === 'Product code') {
                       return (
                         <TableCell key={`${rowId}-${header}`} className="min-w-[180px]">
                           <Input
                             value={resolveRowField(row, remarkData, header)}
-                            onChange={(e) => handleFieldChange(rowId, 'productCode', e.target.value)}
-                            placeholder="BARCODE-TEXT"
+                            onChange={(e) =>
+                              handleFieldChange(rowId, 'productCode', e.target.value)
+                            }
+                            placeholder="PRODUCT-CODE"
                           />
                         </TableCell>
                       );
@@ -1294,7 +1455,7 @@ export function FailedProductsTable() {
                                   No System Configs available
                                 </SelectItem>
                               ) : (
-                                systemConfigs.map((config: any) => (
+                                systemConfigs.map((config) => (
                                   <SelectItem key={config.id} value={config.configKey}>
                                     {config.configKey}
                                   </SelectItem>
@@ -1345,7 +1506,9 @@ export function FailedProductsTable() {
                       <TableCell key={`${rowId}-${column.key}`} className="min-w-[160px]">
                         <Select
                           value={selectValue}
-                          onValueChange={(value) => handleAttributeChange(rowId, column.key, column.label, value)}
+                          onValueChange={(value) =>
+                            handleAttributeChange(rowId, column.key, column.label, value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder={`Select ${column.label}`} />
@@ -1382,7 +1545,8 @@ export function FailedProductsTable() {
                       : PRICE_HEADERS.has(header)
                         ? { type: 'number', min: 0, step: 0.01 }
                         : { type: 'text' };
-                    const cellWidth = header === 'Variant Stock' ? 'min-w-[160px]' : 'min-w-[180px]';
+                    const cellWidth =
+                      header === 'Variant Stock' ? 'min-w-[160px]' : 'min-w-[180px]';
 
                     return (
                       <TableCell key={`${rowId}-${header}`} className={cellWidth}>
@@ -1419,7 +1583,10 @@ export function FailedProductsTable() {
                                 {issueDetails.join(', ')}
                               </span>
                             </TooltipTrigger>
-                            <TooltipContent side="left" className="max-w-md p-3 bg-white border shadow-lg">
+                            <TooltipContent
+                              side="left"
+                              className="max-w-md p-3 bg-white border shadow-lg"
+                            >
                               <div className="space-y-1">
                                 <p className="font-semibold text-sm text-red-700 mb-2">
                                   {issueTitle}

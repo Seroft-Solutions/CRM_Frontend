@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Image, Save, X, Pencil } from 'lucide-react';
+import { Image as ImageIcon, Save, X, Pencil } from 'lucide-react';
 import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import { ProductImageThumbnail } from './ProductImageThumbnail';
 import {
@@ -14,9 +14,8 @@ import {
 import Link from 'next/link';
 
 interface ProductImagesSidebarProps {
-  form?: UseFormReturn<Record<string, any>>;
+  form?: UseFormReturn<Record<string, unknown>>;
   existingImages?: ProductImageDTO[];
-  onSubmit: () => void;
   onCancel: () => void;
   isSubmitting?: boolean;
   isViewMode?: boolean;
@@ -26,7 +25,6 @@ interface ProductImagesSidebarProps {
 export function ProductImagesSidebar({
   form,
   existingImages,
-  onSubmit,
   onCancel,
   isSubmitting = false,
   isViewMode = false,
@@ -44,7 +42,7 @@ export function ProductImagesSidebar({
           <CardHeader className="pb-2 pt-3 px-3">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <Image className="h-4 w-4 text-primary" />
+                <ImageIcon className="h-4 w-4 text-primary" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-800">Images</h3>
@@ -81,7 +79,11 @@ export function ProductImagesSidebar({
         <Card className="border shadow-md">
           <CardContent className="p-3">
             <div className="flex flex-col gap-2">
-              <Button variant="outline" asChild className="flex items-center gap-2 justify-center h-9">
+              <Button
+                variant="outline"
+                asChild
+                className="flex items-center gap-2 justify-center h-9"
+              >
                 <Link href={`/products/${productId}/edit`}>
                   <Pencil className="h-3.5 w-3.5" />
                   Edit Product
@@ -101,7 +103,7 @@ export function ProductImagesSidebar({
         <CardHeader className="pb-2 pt-3 px-3">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <Image className="h-4 w-4 text-primary" />
+              <ImageIcon className="h-4 w-4 text-primary" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-800">Images</h3>
@@ -138,11 +140,7 @@ export function ProductImagesSidebar({
       <Card className="border shadow-md">
         <CardContent className="p-3">
           <div className="flex flex-col gap-2">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full h-9 text-sm"
-            >
+            <Button type="submit" disabled={isSubmitting} className="w-full h-9 text-sm">
               <Save className="mr-1.5 h-3.5 w-3.5" />
               {isSubmitting ? 'Saving...' : 'Save Product'}
             </Button>

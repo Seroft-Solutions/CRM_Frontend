@@ -34,7 +34,7 @@ function transformEnumValue(enumValue: string): string {
 interface RelationshipConfig {
   name: string;
   displayName: string;
-  options: Array<{ id: number; [key: string]: any }>;
+  options: Array<{ id: number; [key: string]: unknown }>;
   displayField: string;
   isEditable: boolean;
 }
@@ -53,6 +53,7 @@ interface ProductTableRowProps {
   statusOptions: StatusOption[];
   isSelected: boolean;
   onSelect: (id: number) => void;
+  selectionEnabled?: boolean;
   relationshipConfigs?: RelationshipConfig[];
   onRelationshipUpdate?: (
     entityId: number,
@@ -79,20 +80,18 @@ export function ProductTableRow({
   statusOptions,
   isSelected,
   onSelect,
+  selectionEnabled = true,
   relationshipConfigs = [],
   onRelationshipUpdate,
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
   const currentStatus = product.status;
-  const statusInfo = statusOptions.find(
-    (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
-  );
-
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
     );
+
     if (!info) return <Badge variant="secondary">{transformEnumValue(status)}</Badge>;
 
     return (
@@ -101,12 +100,17 @@ export function ProductTableRow({
       </Badge>
     );
   };
+
   return (
     <TableRow className="hover:bg-gray-50 transition-colors">
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
-        <Checkbox checked={isSelected} onCheckedChange={() => product.id && onSelect(product.id)} />
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => product.id && onSelect(product.id)}
+          disabled={!selectionEnabled}
+        />
       </TableCell>
-      {visibleColumns.map((column, index) => {
+      {visibleColumns.map((column) => {
         const getColumnClassName = () => {
           if (column.id === 'image') {
             return 'px-2 sm:px-3 py-2 w-[60px]';
@@ -198,18 +202,15 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'id') {
-                    return (
-                      <ClickableId
-                        id={field as string | number}
-                        entityType="products"
-                      />
-                    );
+                    return <ClickableId id={field as string | number} entityType="products" />;
                   }
 
                   if (column.id === 'image') {
-                    const images = (product as any).images as any[] | undefined;
+                    const images = product.images as
+                      | Array<{ cdnUrl?: string; isPrimary?: boolean }>
+                      | undefined;
                     const primaryImageUrl =
-                      images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
+                      images?.find((img) => img.isPrimary === true)?.cdnUrl ||
                       images?.[0]?.cdnUrl ||
                       null;
 
@@ -227,6 +228,7 @@ export function ProductTableRow({
               : (() => {
                   if (column.id === 'category') {
                     const cellKey = `${product.id}-category`;
+
                     return (
                       <RelationshipCell
                         entityId={product.id || 0}
@@ -256,6 +258,7 @@ export function ProductTableRow({
 
                   if (column.id === 'subCategory') {
                     const cellKey = `${product.id}-subCategory`;
+
                     return (
                       <RelationshipCell
                         entityId={product.id || 0}

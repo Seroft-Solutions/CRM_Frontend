@@ -53,12 +53,13 @@ export function VariantsTable({
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
-  const newDraftVariants = draftVariants.filter(v => !v.isDuplicate);
-  const duplicateDraftVariants = draftVariants.filter(v => v.isDuplicate);
+  const newDraftVariants = draftVariants.filter((v) => !v.isDuplicate);
+  const duplicateDraftVariants = draftVariants.filter((v) => v.isDuplicate);
   const hasDrafts = newDraftVariants.length > 0;
   const hasDuplicates = duplicateDraftVariants.length > 0;
 
   const showTable = hasDrafts || totalExistingRows > 0;
+
   if (!showTable && !isLoading) {
     return (
       <div className="rounded-lg border border-dashed bg-muted/5 p-8 text-center">
@@ -81,20 +82,22 @@ export function VariantsTable({
             {totalExistingRows} saved
           </Badge>
           {hasDrafts && (
-            <Badge className="bg-blue-500 text-white text-xs">
-              {newDraftVariants.length} new
-            </Badge>
+            <Badge className="bg-blue-500 text-white text-xs">{newDraftVariants.length} new</Badge>
           )}
           {hasDuplicates && (
             <Badge className="bg-amber-500 text-white text-xs">
-              {duplicateDraftVariants.length} duplicate{duplicateDraftVariants.length !== 1 ? 's' : ''}
+              {duplicateDraftVariants.length} duplicate
+              {duplicateDraftVariants.length !== 1 ? 's' : ''}
             </Badge>
           )}
         </div>
       </div>
       <div className="overflow-x-auto">
         <Table>
-          <VariantsTableHeader visibleEnumAttributes={visibleEnumAttributes} isViewMode={isViewMode} />
+          <VariantsTableHeader
+            visibleEnumAttributes={visibleEnumAttributes}
+            isViewMode={isViewMode}
+          />
           <TableBody>
             {isLoading ? (
               <TableRow>

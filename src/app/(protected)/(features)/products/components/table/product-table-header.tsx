@@ -14,10 +14,11 @@ interface ProductTableHeaderProps {
   onSort: (column: string) => void;
   getSortIcon: (column: string) => string;
   filters: FilterState;
-  onFilterChange: (column: string, value: any) => void;
+  onFilterChange: (column: string, value: unknown) => void;
   isAllSelected: boolean;
   isIndeterminate: boolean;
   onSelectAll: () => void;
+  selectionEnabled?: boolean;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -36,10 +37,12 @@ export function ProductTableHeader({
   isAllSelected,
   isIndeterminate,
   onSelectAll,
+  selectionEnabled = true,
   visibleColumns,
 }: ProductTableHeaderProps) {
   const renderSortIcon = (column: string) => {
     const iconType = getSortIcon(column);
+
     switch (iconType) {
       case 'ChevronUp':
         return <ChevronUp className="h-4 w-4" />;
@@ -58,12 +61,13 @@ export function ProductTableHeader({
           <Checkbox
             checked={isAllSelected}
             onCheckedChange={onSelectAll}
+            disabled={!selectionEnabled}
             ref={(el) => {
               if (el) el.indeterminate = isIndeterminate;
             }}
           />
         </TableHead>
-        {visibleColumns.map((column, index) => {
+        {visibleColumns.map((column) => {
           const getHeaderClassName = () => {
             if (column.id === 'image') {
               return 'px-2 sm:px-3 py-2 w-[60px] whitespace-nowrap';
@@ -80,6 +84,7 @@ export function ProductTableHeader({
             if (column.id === 'id') {
               return 'px-2 sm:px-3 py-2 w-[80px] whitespace-nowrap';
             }
+
             return 'px-2 sm:px-3 py-2 whitespace-nowrap';
           };
 
@@ -113,7 +118,7 @@ export function ProductTableHeader({
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
-        {visibleColumns.map((column, index) => {
+        {visibleColumns.map((column) => {
           const getFilterClassName = () => {
             if (column.id === 'image') {
               return 'px-2 sm:px-3 py-2 w-[60px]';
@@ -130,6 +135,7 @@ export function ProductTableHeader({
             if (column.id === 'id') {
               return 'px-2 sm:px-3 py-2 w-[80px]';
             }
+
             return 'px-2 sm:px-3 py-2';
           };
 

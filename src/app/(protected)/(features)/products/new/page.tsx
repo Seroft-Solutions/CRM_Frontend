@@ -26,12 +26,20 @@ export default function CreateProductPage() {
                   viewBox="0 0 24 24"
                   strokeWidth="2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Create New Product</h1>
-                <p className="text-sm text-sidebar-foreground/80">Add a new product to your catalog</p>
+                <h1 className="text-xl font-semibold text-sidebar-foreground">
+                  Create New Product
+                </h1>
+                <p className="text-sm text-sidebar-foreground/80">
+                  Add a new product to your catalog
+                </p>
               </div>
             </div>
 

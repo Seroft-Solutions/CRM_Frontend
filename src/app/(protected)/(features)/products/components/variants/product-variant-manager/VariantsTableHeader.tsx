@@ -19,7 +19,10 @@ interface VariantsTableHeaderProps {
  * @param {VariantsTableHeaderProps} props - The props for the component.
  * @returns {JSX.Element} The rendered table header.
  */
-export function VariantsTableHeader({ visibleEnumAttributes, isViewMode = false }: VariantsTableHeaderProps) {
+export function VariantsTableHeader({
+  visibleEnumAttributes,
+  isViewMode = false,
+}: VariantsTableHeaderProps) {
   return (
     <TableHeader>
       <TableRow className="bg-muted/50">
@@ -32,9 +35,7 @@ export function VariantsTableHeader({ visibleEnumAttributes, isViewMode = false 
         <TableHead className="font-semibold">Price</TableHead>
         <TableHead className="font-semibold">Stock</TableHead>
         <TableHead className="font-semibold">Status</TableHead>
-        {!isViewMode && (
-          <TableHead className="font-semibold text-right">Actions</TableHead>
-        )}
+        {!isViewMode && <TableHead className="font-semibold text-right">Actions</TableHead>}
       </TableRow>
     </TableHeader>
   );

@@ -3,27 +3,25 @@
 import React, { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 
 interface ProductPricingSectionProps {
-  form?: UseFormReturn<Record<string, any>>;
+  form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
-  productId?: number;
+  product?: ProductDTO | null;
 }
 
-export function ProductPricingSection({ form, isViewMode = false, productId }: ProductPricingSectionProps) {
+export function ProductPricingSection({
+  form,
+  isViewMode = false,
+  product,
+}: ProductPricingSectionProps) {
   const errors = form?.formState?.errors;
 
-  // Fetch product data for view mode
-  const { data: product, isLoading } = useGetProduct(productId || 0, {
-    query: { enabled: isViewMode && !!productId },
-  });
-
-  const basePrice = parseFloat(form?.watch?.('basePrice')) || 0;
   const discountedPrice = parseFloat(form?.watch?.('discountedPrice')) || 0;
   const salePrice = parseFloat(form?.watch?.('salePrice')) || 0;
 
@@ -42,6 +40,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
 
     if (salePrice && discountedPrice && salePrice > discountedPrice) {
       const discount = ((1 - discountedPrice / salePrice) * 100).toFixed(1);
+
       return {
         type: 'success',
         message: `Discount: ${discount}% off`,
@@ -49,7 +48,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
     }
 
     return null;
-  }, [basePrice, discountedPrice, salePrice]);
+  }, [discountedPrice, salePrice]);
 
   // Prepare view mode data (always calculated to ensure consistent hooks)
   const viewBasePrice = product?.basePrice || 0;
@@ -70,6 +69,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
 
     if (viewSalePrice && viewDiscountedPrice && viewSalePrice > viewDiscountedPrice) {
       const discount = ((1 - viewDiscountedPrice / viewSalePrice) * 100).toFixed(1);
+
       return {
         type: 'success',
         message: `Discount: ${discount}% off`,
@@ -77,42 +77,21 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
     }
 
     return null;
-  }, [viewBasePrice, viewDiscountedPrice, viewSalePrice]);
+  }, [viewDiscountedPrice, viewSalePrice]);
 
   if (isViewMode) {
-    if (isLoading) {
-      return (
-        <Card className="rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-md">
-          <CardHeader className="pb-2 pt-3 px-4">
-            <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <span className="text-sm font-bold text-primary">₹</span>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
-              <p className="text-[10px] text-muted-foreground">Product pricing information</p>
-            </div>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <div className="text-sm text-muted-foreground">Loading...</div>
-          </CardContent>
-        </Card>
-      );
-    }
-
     if (!product) {
       return (
         <Card className="rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-md">
           <CardHeader className="pb-2 pt-3 px-4">
             <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-              <span className="text-sm font-bold text-primary">₹</span>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
-              <p className="text-[10px] text-muted-foreground">Product pricing information</p>
-            </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                <span className="text-sm font-bold text-primary">₹</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Pricing</h3>
+                <p className="text-[10px] text-muted-foreground">Product pricing information</p>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-3">
@@ -121,7 +100,6 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
         </Card>
       );
     }
-
 
     return (
       <Card className="rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 shadow-md">
@@ -140,9 +118,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
             {/* Base Price */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Base Price
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Base Price</div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
                 ₹{viewBasePrice || '0.00'}
               </div>
@@ -150,9 +126,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
 
             {/* Discounted Price */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Discounted Price
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Discounted Price</div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
                 {viewDiscountedPrice ? `₹${viewDiscountedPrice}` : 'Not set'}
               </div>
@@ -160,9 +134,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
 
             {/* Sale Price */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Sale Price
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Sale Price</div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
                 {viewSalePrice ? `₹${viewSalePrice}` : 'Not set'}
               </div>
@@ -171,12 +143,14 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
 
           {/* Price Validation Message */}
           {viewPriceValidation && (
-            <div className={cn(
-              'flex items-center gap-2 text-xs px-3 py-2 rounded-md',
-              viewPriceValidation.type === 'error'
-                ? 'bg-red-50 text-red-700 border border-red-200'
-                : 'bg-green-50 text-green-700 border border-green-200'
-            )}>
+            <div
+              className={cn(
+                'flex items-center gap-2 text-xs px-3 py-2 rounded-md',
+                viewPriceValidation.type === 'error'
+                  ? 'bg-red-50 text-red-700 border border-red-200'
+                  : 'bg-green-50 text-green-700 border border-green-200'
+              )}
+            >
               {viewPriceValidation.type === 'error' ? (
                 <AlertCircle className="h-3 w-3" />
               ) : (
@@ -211,9 +185,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
             name="basePrice"
             render={({ field }) => (
               <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold text-slate-600">
-                  Base Price
-                </FormLabel>
+                <FormLabel className="text-xs font-semibold text-slate-600">Base Price</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -290,9 +262,7 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
             name="salePrice"
             render={({ field }) => (
               <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold text-slate-600">
-                  Sale Price
-                </FormLabel>
+                <FormLabel className="text-xs font-semibold text-slate-600">Sale Price</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -330,10 +300,8 @@ export function ProductPricingSection({ form, isViewMode = false, productId }: P
           <div
             className={cn(
               'rounded-md border p-2',
-              priceValidation.type === 'error' &&
-                'border-rose-200 bg-rose-50',
-              priceValidation.type === 'success' &&
-                'border-green-200 bg-green-50'
+              priceValidation.type === 'error' && 'border-rose-200 bg-rose-50',
+              priceValidation.type === 'success' && 'border-green-200 bg-green-50'
             )}
           >
             <div className="flex items-center gap-2">

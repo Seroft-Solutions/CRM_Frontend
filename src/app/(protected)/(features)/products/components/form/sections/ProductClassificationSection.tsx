@@ -13,14 +13,15 @@ import {
 } from '@/components/ui/select';
 import { FolderTree } from 'lucide-react';
 import { RelationshipRenderer } from '../relationship-renderer';
-import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import type { FormActions, FormConfig } from '../form-types';
 
 interface ProductClassificationSectionProps {
-  form?: UseFormReturn<Record<string, any>>;
-  config?: any;
-  actions?: any;
+  form?: UseFormReturn<Record<string, unknown>>;
+  config?: FormConfig;
+  actions?: FormActions;
   isViewMode?: boolean;
-  productId?: number;
+  product?: ProductDTO | null;
 }
 
 function transformEnumValue(enumValue: string): string {
@@ -38,38 +39,12 @@ export function ProductClassificationSection({
   config,
   actions,
   isViewMode = false,
-  productId,
+  product,
 }: ProductClassificationSectionProps) {
-  const categoryRelConfig = config?.relationships?.find((r: any) => r.name === 'category');
-  const subCategoryRelConfig = config?.relationships?.find((r: any) => r.name === 'subCategory');
-
-  // Fetch product data for view mode
-  const { data: product, isLoading } = useGetProduct(productId || 0, {
-    query: { enabled: isViewMode && !!productId },
-  });
+  const categoryRelConfig = config?.relationships?.find((r) => r.name === 'category');
+  const subCategoryRelConfig = config?.relationships?.find((r) => r.name === 'subCategory');
 
   if (isViewMode) {
-    if (isLoading) {
-      return (
-        <Card className="border shadow-md">
-          <CardHeader className="pb-2 pt-3 px-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <FolderTree className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">Classification</h3>
-                <p className="text-[10px] text-muted-foreground">Categorize your product</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <div className="text-sm text-muted-foreground">Loading...</div>
-          </CardContent>
-        </Card>
-      );
-    }
-
     if (!product) {
       return (
         <Card className="border shadow-md">
@@ -108,9 +83,7 @@ export function ProductClassificationSection({
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
             {/* Category */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Category
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Category</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
                 {product.category?.name || 'Not selected'}
               </div>
@@ -118,9 +91,7 @@ export function ProductClassificationSection({
 
             {/* Sub Category */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Sub Category
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Sub Category</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
                 {product.subCategory?.name || 'Not selected'}
               </div>

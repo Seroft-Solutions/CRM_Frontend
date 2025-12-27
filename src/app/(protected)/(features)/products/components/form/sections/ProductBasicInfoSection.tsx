@@ -8,44 +8,22 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 
 interface ProductBasicInfoSectionProps {
-  form?: UseFormReturn<Record<string, any>>;
+  form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
-  productId?: number;
+  product?: ProductDTO | null;
 }
 
-export function ProductBasicInfoSection({ form, isViewMode = false, productId }: ProductBasicInfoSectionProps) {
+export function ProductBasicInfoSection({
+  form,
+  isViewMode = false,
+  product,
+}: ProductBasicInfoSectionProps) {
   const errors = form?.formState?.errors;
 
-  // Fetch product data for view mode
-  const { data: product, isLoading } = useGetProduct(productId || 0, {
-    query: { enabled: isViewMode && !!productId },
-  });
-
   if (isViewMode) {
-    if (isLoading) {
-      return (
-        <Card className="border shadow-md">
-          <CardHeader className="pb-2 pt-3 px-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <Package className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">Basic Information</h3>
-                <p className="text-[10px] text-muted-foreground">Essential product details</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="px-4 pb-3">
-            <div className="text-sm text-muted-foreground">Loading...</div>
-          </CardContent>
-        </Card>
-      );
-    }
-
     if (!product) {
       return (
         <Card className="border shadow-md">
@@ -106,9 +84,7 @@ export function ProductBasicInfoSection({ form, isViewMode = false, productId }:
 
             {/* Article Number */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Article Number
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Article Number</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
                 {product.articleNumber || 'Not specified'}
               </div>
@@ -127,9 +103,7 @@ export function ProductBasicInfoSection({ form, isViewMode = false, productId }:
 
             {/* Description */}
             <div className="space-y-1 sm:col-span-2 lg:col-span-4">
-              <div className="text-xs font-semibold text-slate-600">
-                Description
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Description</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border min-h-[60px]">
                 {product.description || 'Not specified'}
               </div>
@@ -137,9 +111,7 @@ export function ProductBasicInfoSection({ form, isViewMode = false, productId }:
 
             {/* Remark */}
             <div className="space-y-1 sm:col-span-2 lg:col-span-4">
-              <div className="text-xs font-semibold text-slate-600">
-                Remark
-              </div>
+              <div className="text-xs font-semibold text-slate-600">Remark</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border min-h-[60px]">
                 {product.remark || 'Not specified'}
               </div>
@@ -261,12 +233,7 @@ export function ProductBasicInfoSection({ form, isViewMode = false, productId }:
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-semibold text-slate-600">Status</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    value={field.value || 'ACTIVE'}
-                    className="h-9"
-                    readOnly
-                  />
+                  <Input {...field} value={field.value || 'ACTIVE'} className="h-9" readOnly />
                 </FormControl>
               </FormItem>
             )}

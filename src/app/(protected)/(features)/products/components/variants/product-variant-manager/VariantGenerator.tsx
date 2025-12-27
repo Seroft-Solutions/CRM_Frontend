@@ -22,7 +22,6 @@ interface EnumAttributeWithOptions {
  * @property {number} duplicateVariantsCount - The number of duplicate variants that already exist.
  * @property {SystemConfigAttributeDTO[]} missingRequiredEnumAttributes - A list of required attributes that have no selected options.
  * @property {boolean} isLoadingSelections - Flag indicating if existing variant selections are being loaded.
- * @property {boolean} isLoadingOptions - Flag indicating if attribute options are being loaded.
  * @property {EnumAttributeWithOptions[]} enumAttributeOptions - A list of all ENUM attributes paired with their options.
  * @property {Record<number, Set<number>>} selectedOptionIdsByAttributeId - A map of selected option IDs for each attribute ID.
  * @property {SystemConfigAttributeDTO[]} visibleEnumAttributes - A sorted list of ENUM attributes to be displayed.
@@ -37,7 +36,6 @@ interface VariantGeneratorProps {
   duplicateVariantsCount: number;
   missingRequiredEnumAttributes: SystemConfigAttributeDTO[];
   isLoadingSelections: boolean;
-  isLoadingOptions: boolean;
   enumAttributeOptions: EnumAttributeWithOptions[];
   selectedOptionIdsByAttributeId: Record<number, Set<number>>;
   visibleEnumAttributes: SystemConfigAttributeDTO[];
@@ -58,7 +56,6 @@ export function VariantGenerator({
   duplicateVariantsCount,
   missingRequiredEnumAttributes,
   isLoadingSelections,
-  isLoadingOptions,
   enumAttributeOptions,
   selectedOptionIdsByAttributeId,
   visibleEnumAttributes,
@@ -72,9 +69,6 @@ export function VariantGenerator({
         newVariantsCount={newVariantsCount}
         duplicateVariantsCount={duplicateVariantsCount}
         missingRequiredCount={missingRequiredEnumAttributes.length}
-        onSave={() => {}} // Empty function since button is removed
-        isSaving={false}
-        canSave={false}
         isCreateMode={isCreateMode}
       />
 
@@ -82,9 +76,7 @@ export function VariantGenerator({
         <Alert className="border-amber-200 bg-amber-50 border-l-4 border-l-amber-500 py-2">
           <AlertDescription className="text-amber-800 text-sm">
             <span className="font-medium">Required selections missing:</span>{' '}
-            {missingRequiredEnumAttributes
-              .map((a) => a.label ?? a.name)
-              .join(', ')}
+            {missingRequiredEnumAttributes.map((a) => a.label ?? a.name).join(', ')}
           </AlertDescription>
         </Alert>
       )}
@@ -102,19 +94,17 @@ export function VariantGenerator({
 
       {visibleEnumAttributes.length === 0 ? (
         <div className="text-center py-6 text-muted-foreground">
-          <p className="text-sm font-medium">
-            No ENUM attributes found for this configuration.
-          </p>
-          <p className="text-xs mt-1">
-            Add ENUM-type attributes to enable variant generation.
-          </p>
+          <p className="text-sm font-medium">No ENUM attributes found for this configuration.</p>
+          <p className="text-xs mt-1">Add ENUM-type attributes to enable variant generation.</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visibleEnumAttributes.map((attr) => {
             const attributeId = attr.id!;
-            const options = enumAttributeOptions.find((x) => x.attribute.id === attributeId)?.options ?? [];
+            const options =
+              enumAttributeOptions.find((x) => x.attribute.id === attributeId)?.options ?? [];
             const selectedSet = selectedOptionIdsByAttributeId[attributeId] ?? new Set<number>();
+
             return (
               <AttributeOptionsSelector
                 key={attributeId}

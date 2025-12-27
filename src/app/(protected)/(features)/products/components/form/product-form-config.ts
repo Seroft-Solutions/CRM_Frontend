@@ -14,7 +14,7 @@ export const productFormConfig: FormConfig = {
       description: 'Enter essential details and categorize the product',
       fields: [
         'name',
-        'barcodeText',
+        'code',
         'articleNumber',
         'description',
         'remark',
@@ -68,10 +68,10 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'barcodeText',
+      name: 'code',
       type: 'text',
-      label: 'Barcode Text',
-      placeholder: 'Enter barcode text',
+      label: 'Code',
+      placeholder: 'Enter code',
       required: true,
       validation: {
         required: true,
@@ -272,7 +272,7 @@ export const productFormConfig: FormConfig = {
       primaryKey: 'id',
       required: false,
       multiple: false,
-      category: 'other',
+      category: 'configuration',
       api: {
         useGetAllHook: 'useGetAllSystemConfigs',
         useSearchHook: 'useSearchSystemConfigs',
@@ -288,6 +288,8 @@ export const productFormConfig: FormConfig = {
         label: 'Variant Configuration (Optional)',
         placeholder: 'Select if product has variants (e.g., sizes, colors)',
         icon: '⚙️',
+        helpText:
+          'Only needed if this product will have variants. You can add this later when creating variants.',
       },
     },
   ],
@@ -302,7 +304,7 @@ export const productFormConfig: FormConfig = {
     responsive: {
       mobile: 'grid-cols-1',
       tablet: 'md:grid-cols-2',
-      desktop: 'lg:grid-cols-4',
+      desktop: 'xl:grid-cols-3',
     },
     animations: {
       stepTransition: 'transition-all duration-300',
@@ -358,6 +360,7 @@ export const productFormHelpers = {
     productFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
     const step = productFormConfig.steps.find((s) => s.id === stepId);
+
     return step ? [...step.fields, ...step.relationships] : [];
   },
 };

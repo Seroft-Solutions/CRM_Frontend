@@ -1,34 +1,25 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProductFormProvider, useEntityForm } from './product-form-provider';
 import { FormStateManager } from './form-state-manager';
 import { Form } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
 import { ProductFormSinglePage } from './product-form-single-page';
-import { Card, CardContent } from '@/components/ui/card';
 
 import {
   useCreateProduct,
   useGetProduct,
   useUpdateProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import {
-  useCreateProductVariant,
-} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import {
-  useCreateProductVariantSelection,
-} from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
+import { useCreateProductVariant } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  useUploadImages,
-  useHardDeleteImage,
-  useReorderImages,
-} from '@/features/product-images';
-import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
-import { useOrganizationContext } from '@/features/user-management/hooks';
+import { useUploadImages, useHardDeleteImage, useReorderImages } from '@/features/product-images';
+import type { ProductDTO, ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import { toast } from 'sonner';
 import {
   ORIENTATION_FILENAME_SUFFIX,
@@ -62,14 +53,17 @@ const sanitizeProductNameForFile = (productName?: string, productId?: number) =>
   }
 
   const sanitized = productName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+
   return sanitized || fallbackBaseName(productId);
 };
 
 const resolveFileExtension = (file: File) => {
   const nameMatch = file.name.match(/(\.[^.]+)$/);
+
   if (nameMatch?.[1]) {
     return nameMatch[1].toLowerCase();
   }
+
   return PRODUCT_IMAGE_MIME_EXTENSION_MAP[file.type] ?? '';
 };
 
@@ -84,6 +78,7 @@ const renameImageFileForOrientation = (
   }
 
   const fileWithCustomName = file as RenamableProductImageFile;
+
   if (fileWithCustomName?.productCustomName) {
     return fileWithCustomName;
   }
@@ -99,13 +94,23 @@ const renameImageFileForOrientation = (
   });
 };
 
-function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: (entity: any) => void }) {
+function ProductFormContent({
+  id,
+  onEntityData,
+}: {
+  id?: number;
+  onEntityData?: (entity: unknown) => void;
+}) {
   const router = useRouter();
-  const isNew = !id;
-  const { state, actions, form, navigation, config } = useEntityForm();
+  const { state, actions, form, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
 
-  const { data: entity, isLoading: isLoadingEntity } = useGetProduct(id || 0, {
+  const {
+    data: entity,
+    isLoading: isLoadingEntity,
+    error: entityError,
+    refetch: refetchEntity,
+  } = useGetProduct(id || 0, {
     query: {
       enabled: !!id,
       queryKey: ['get-product', id],
@@ -114,7 +119,7 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
 
   React.useEffect(() => {
     if (entity && !state.isLoading) {
-      const formValues: Record<string, any> = {};
+      const formValues: Record<string, unknown> = {};
 
       config.fields.forEach((fieldConfig) => {
         const value = (entity as any)[fieldConfig.name];
@@ -123,9 +128,11 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
           if (value) {
             try {
               const date = new Date(value);
+
               if (!isNaN(date.getTime())) {
                 const offset = date.getTimezoneOffset();
                 const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
+
                 formValues[fieldConfig.name] = adjustedDate.toISOString().slice(0, 16);
               } else {
                 formValues[fieldConfig.name] = '';
@@ -148,7 +155,7 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
 
         if (relConfig.multiple) {
           formValues[relConfig.name] = value
-            ? value.map((item: any) => item[relConfig.primaryKey])
+            ? value.map((item: Record<string, unknown>) => item[relConfig.primaryKey])
             : [];
         } else {
           formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
@@ -157,6 +164,7 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
 
       // Don't reset variants field if it already exists (set by ProductVariantManager)
       const currentVariants = form.getValues('variants');
+
       if (currentVariants && currentVariants.length > 0) {
         formValues.variants = currentVariants;
       }
@@ -198,6 +206,29 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
     );
   }
 
+  if (id && entityError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="bg-red-50 border border-red-200 p-6 rounded-lg shadow-sm text-center max-w-md">
+          <p className="text-sm font-semibold text-red-700">Unable to load product</p>
+          <p className="mt-2 text-sm text-red-600">
+            {entityError instanceof Error
+              ? entityError.message
+              : 'There was a problem loading this product. Please try again.'}
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetchEntity()}>
+              Retry
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              Back
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full relative">
       {/* Auto-population loading overlay */}
@@ -219,7 +250,6 @@ function ProductFormContent({ id, onEntityData }: { id?: number; onEntityData?: 
             actions={actions}
             entity={entity}
             existingImages={entity?.images}
-            onSubmit={actions.submitForm}
             onCancel={handleCancel}
             isSubmitting={state.isSubmitting}
             productId={id}
@@ -242,17 +272,11 @@ export function ProductForm({ id }: ProductFormProps) {
   const uploadImagesMutation = useUploadImages();
   const hardDeleteImageMutation = useHardDeleteImage();
   const reorderImagesMutation = useReorderImages();
-  const { organizationId } = useOrganizationContext();
-  const [existingEntity, setExistingEntity] = useState<any>(null);
+  const [existingEntity, setExistingEntity] = useState<unknown | null>(null);
 
   // Get mutation functions at component level to avoid hook calls in async callbacks
   const createVariantMutation = useCreateProductVariant();
   const createSelectionMutation = useCreateProductVariantSelection();
-
-  const resolvedOrganizationId = useMemo(() => {
-    const parsed = Number(organizationId);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
-  }, [organizationId]);
 
   const invalidateProductQueries = useCallback(async () => {
     await Promise.all([
@@ -260,7 +284,9 @@ export function ProductForm({ id }: ProductFormProps) {
       queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' }),
       // Also invalidate the specific product query if we have an ID
-      ...(id ? [queryClient.invalidateQueries({ queryKey: ['get-product', id], refetchType: 'active' })] : []),
+      ...(id
+        ? [queryClient.invalidateQueries({ queryKey: ['get-product', id], refetchType: 'active' })]
+        : []),
     ]);
   }, [queryClient, id]);
 
@@ -285,7 +311,7 @@ export function ProductForm({ id }: ProductFormProps) {
   }, [router]);
 
   const handleVariantsCreation = useCallback(
-    async (productId: number | undefined, variants: any[]) => {
+    async (productId: number | undefined, variants: Array<Record<string, unknown>>) => {
       if (!productId || !variants.length) {
         return;
       }
@@ -359,6 +385,7 @@ export function ProductForm({ id }: ProductFormProps) {
             productName,
             productId
           );
+
           filesToUpload.push({ orientation: orientationKey, file: renamedFile });
           if (existingOrientationMap[orientationKey]) {
             imagesToDelete.push(existingOrientationMap[orientationKey]!);
@@ -419,7 +446,9 @@ export function ProductForm({ id }: ProductFormProps) {
         } catch (error) {
           const message =
             error instanceof Error ? error.message : 'Unable to upload product images.';
+
           toast.error('Image upload failed', { description: message });
+
           return;
         }
       }
@@ -431,15 +460,18 @@ export function ProductForm({ id }: ProductFormProps) {
 
         createdImages.forEach((image) => {
           const detected = detectOrientationFromImage(image);
+
           if (detected && pendingOrientations.has(detected)) {
             finalOrientationState[detected] = image;
             pendingOrientations.delete(detected);
+
             return;
           }
 
           const fallback = pendingOrientations.values().next().value as
             | OrientationFieldName
             | undefined;
+
           if (fallback) {
             finalOrientationState[fallback] = image;
             pendingOrientations.delete(fallback);
@@ -506,21 +538,22 @@ export function ProductForm({ id }: ProductFormProps) {
     <ProductFormProvider
       id={id}
       onSuccess={async ({ entity, attachments }) => {
-        const productData = entity as Record<string, any>;
+        const productData = entity as Record<string, unknown>;
 
         // Extract variants from product data before sending to create/update
         const { variants: productVariants, ...productDataWithoutVariants } = productData;
 
         const productDataWithStatus = {
           ...productDataWithoutVariants,
-          status: 'ACTIVE',
+          status: productDataWithoutVariants.status || 'ACTIVE',
         };
 
         if (isNew) {
           try {
             const createdProduct = await createProductAsync({
-              data: productDataWithStatus as any,
+              data: productDataWithStatus as ProductDTO,
             });
+
             await handleImageUploads(
               createdProduct?.id,
               attachments,
@@ -533,7 +566,10 @@ export function ProductForm({ id }: ProductFormProps) {
             }
             await invalidateProductQueries();
             // Invalidate variant queries
-            await queryClient.invalidateQueries({ queryKey: ['getAllProductVariants'], refetchType: 'active' });
+            await queryClient.invalidateQueries({
+              queryKey: ['getAllProductVariants'],
+              refetchType: 'active',
+            });
             handlePostCreateNavigation(createdProduct?.id);
           } catch {
             // Error already handled via mutation onError
@@ -541,7 +577,8 @@ export function ProductForm({ id }: ProductFormProps) {
         } else if (id) {
           try {
             const entityData = { ...productDataWithStatus, id };
-            await updateProductAsync({ id, data: entityData as any });
+
+            await updateProductAsync({ id, data: entityData as ProductDTO });
             await handleImageUploads(
               id,
               attachments,
@@ -554,7 +591,10 @@ export function ProductForm({ id }: ProductFormProps) {
             }
             await invalidateProductQueries();
             // Invalidate variant queries
-            await queryClient.invalidateQueries({ queryKey: ['getAllProductVariants'], refetchType: 'active' });
+            await queryClient.invalidateQueries({
+              queryKey: ['getAllProductVariants'],
+              refetchType: 'active',
+            });
             handlePostUpdateNavigation();
           } catch {
             // Error already handled via mutation onError

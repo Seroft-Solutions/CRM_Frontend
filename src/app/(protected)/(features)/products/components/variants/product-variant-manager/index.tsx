@@ -1,26 +1,21 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
   useGetAllProductVariants,
-  useCreateProductVariant,
   useUpdateProductVariant,
   useDeleteProductVariant,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import {
-  useCreateProductVariantSelection,
-  useGetAllProductVariantSelections,
-} from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
-import { useGetSystemConfig } from '@/core/api/generated/spring/endpoints/system-config-resource/system-config-resource.gen';
+import { useGetAllProductVariantSelections } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { useGetAllSystemConfigAttributes } from '@/core/api/generated/spring/endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';
 import { getGetAllSystemConfigAttributeOptionsQueryOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
+import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
 import { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTO';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
-import { ProductVariantSelectionDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
-import { Badge } from '@/components/ui/badge';
 
 import { DraftVariantRow, ExistingVariantRow, VariantSelection } from './types';
 import { NoVariantConfigPlaceholder } from './NoVariantConfigPlaceholder';
@@ -33,14 +28,14 @@ import { VariantsTable } from './VariantsTable';
  * @property {number} [productId] - The ID of the product to manage variants for (optional for create mode).
  * @property {string} productName - The name of the product.
  * @property {number} [variantConfigId] - The ID of the system configuration for variants.
- * @property {any} [form] - React Hook Form instance for create mode.
+ * @property {UseFormReturn<Record<string, unknown>>} [form] - React Hook Form instance for create mode.
  * @property {boolean} [isViewMode] - Whether the component is in view-only mode.
  */
 interface ProductVariantManagerProps {
   productId?: number;
   productName: string;
   variantConfigId?: number;
-  form?: any;
+  form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
 }
 
@@ -62,8 +57,12 @@ export function ProductVariantManager({
   const queryClient = useQueryClient();
 
   const defaultGeneratedStatus = ProductVariantDTOStatus.ACTIVE;
-  const [preSelectedOptionIdsByAttributeId, setPreSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
-  const [userSelectedOptionIdsByAttributeId, setUserSelectedOptionIdsByAttributeId] = useState<Record<number, Set<number>>>({});
+  const [preSelectedOptionIdsByAttributeId, setPreSelectedOptionIdsByAttributeId] = useState<
+    Record<number, Set<number>>
+  >({});
+  const [userSelectedOptionIdsByAttributeId, setUserSelectedOptionIdsByAttributeId] = useState<
+    Record<number, Set<number>>
+  >({});
   const [draftVariantsByKey, setDraftVariantsByKey] = useState<Record<string, DraftVariantRow>>({});
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
 
@@ -74,65 +73,76 @@ export function ProductVariantManager({
     // Add pre-selected options (from existing variants)
     Object.entries(preSelectedOptionIdsByAttributeId).forEach(([attrId, optionSet]) => {
       const attrIdNum = parseInt(attrId, 10);
+
       combined[attrIdNum] = new Set(optionSet);
     });
 
     // Add user-selected options
     Object.entries(userSelectedOptionIdsByAttributeId).forEach(([attrId, optionSet]) => {
       const attrIdNum = parseInt(attrId, 10);
+
       if (!combined[attrIdNum]) {
         combined[attrIdNum] = new Set();
       }
-      optionSet.forEach(optionId => combined[attrIdNum].add(optionId));
+      optionSet.forEach((optionId) => combined[attrIdNum].add(optionId));
     });
 
     return combined;
   }, [preSelectedOptionIdsByAttributeId, userSelectedOptionIdsByAttributeId]);
 
   // #region Data Fetching
-  const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants({
-    'productId.equals': productId!,
-    size: 1000,
-    sort: ['sku,asc'],
-  }, {
-    query: { enabled: !!productId },
-  });
+  const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants(
+    {
+      'productId.equals': productId!,
+      size: 1000,
+      sort: ['sku,asc'],
+    },
+    {
+      query: { enabled: !!productId },
+    }
+  );
 
   useEffect(() => {
     setEditingRowData(null);
   }, []);
 
-  const { data: variantConfig } = useGetSystemConfig(variantConfigId!, {
-    query: { enabled: !!variantConfigId },
-  });
-
-  const { data: configAttributes, isLoading: isLoadingAttributes } = useGetAllSystemConfigAttributes({
-    'systemConfigId.equals': variantConfigId!,
-    size: 1000,
-    sort: ['sortOrder,asc'],
-  }, {
-    query: { enabled: !!variantConfigId },
-  });
-
-  const variantIds = useMemo(
-    () => (variants ?? []).map((variant) => variant.id!).filter((id): id is number => typeof id === 'number'),
-    [variants]
-  );
-
-  const { data: variantSelections, isLoading: isLoadingSelections } = useGetAllProductVariantSelections(
-    variantIds.length > 0
-      ? {
-          'variantId.in': variantIds,
-          size: 2000,
-        }
-      : undefined,
+  const { data: configAttributes } = useGetAllSystemConfigAttributes(
     {
-      query: { enabled: variantIds.length > 0 },
+      'systemConfigId.equals': variantConfigId!,
+      size: 1000,
+      sort: ['sortOrder,asc'],
+    },
+    {
+      query: { enabled: !!variantConfigId },
     }
   );
 
+  const variantIds = useMemo(
+    () =>
+      (variants ?? [])
+        .map((variant) => variant.id!)
+        .filter((id): id is number => typeof id === 'number'),
+    [variants]
+  );
+
+  const { data: variantSelections, isLoading: isLoadingSelections } =
+    useGetAllProductVariantSelections(
+      variantIds.length > 0
+        ? {
+            'variantId.in': variantIds,
+            size: 2000,
+          }
+        : undefined,
+      {
+        query: { enabled: variantIds.length > 0 },
+      }
+    );
+
   const enumAttributes = useMemo(
-    () => (configAttributes ?? []).filter((attr) => attr.attributeType === SystemConfigAttributeDTOAttributeType.ENUM),
+    () =>
+      (configAttributes ?? []).filter(
+        (attr) => attr.attributeType === SystemConfigAttributeDTOAttributeType.ENUM
+      ),
     [configAttributes]
   );
 
@@ -178,6 +188,7 @@ export function ProductVariantManager({
   // #region Memoized Data Transformation
   const optionLabelById = useMemo(() => {
     const map = new Map<number, string>();
+
     attributeOptionsResults.forEach((result) => {
       result.data?.forEach((opt) => {
         if (typeof opt.id === 'number') {
@@ -185,11 +196,13 @@ export function ProductVariantManager({
         }
       });
     });
+
     return map;
   }, [attributeOptionsResults]);
 
   const optionById = useMemo(() => {
     const map = new Map<number, { label: string; code?: string }>();
+
     attributeOptionsResults.forEach((result) => {
       result.data?.forEach((opt) => {
         if (typeof opt.id === 'number') {
@@ -200,6 +213,7 @@ export function ProductVariantManager({
         }
       });
     });
+
     return map;
   }, [attributeOptionsResults]);
 
@@ -207,22 +221,27 @@ export function ProductVariantManager({
 
   const attributeOrderMap = useMemo(() => {
     const map = new Map<number, number>();
+
     (configAttributes ?? []).forEach((attr, index) => {
       if (typeof attr.id === 'number') {
         map.set(attr.id, attr.sortOrder ?? index);
       }
     });
+
     return map;
   }, [configAttributes]);
 
   const selectionsByVariantId = useMemo(() => {
     const map: Record<number, ProductVariantSelectionDTO[]> = {};
+
     (variantSelections ?? []).forEach((selection) => {
       const vId = selection.variant?.id;
+
       if (!vId) return;
       if (!map[vId]) map[vId] = [];
       map[vId].push(selection);
     });
+
     return map;
   }, [variantSelections]);
 
@@ -235,7 +254,9 @@ export function ProductVariantManager({
         .sort((a, b) => {
           const aOrder = attributeOrderMap.get(a.attributeId) ?? Number.MAX_SAFE_INTEGER;
           const bOrder = attributeOrderMap.get(b.attributeId) ?? Number.MAX_SAFE_INTEGER;
+
           if (aOrder !== bOrder) return aOrder - bOrder;
+
           return a.attributeId - b.attributeId;
         })
         .map((p) => `${p.attributeId}:${p.optionId}`)
@@ -245,11 +266,14 @@ export function ProductVariantManager({
 
   const existingCombinationKeys = useMemo(() => {
     const set = new Set<string>();
+
     Object.values(selectionsByVariantId).forEach((selections) => {
       const parts: Array<{ attributeId: number; optionId: number }> = [];
+
       selections.forEach((s) => {
         const attributeId = s.attribute?.id;
         const optionId = s.option?.id;
+
         if (typeof attributeId === 'number' && typeof optionId === 'number') {
           parts.push({ attributeId, optionId });
         }
@@ -258,11 +282,13 @@ export function ProductVariantManager({
         set.add(buildCombinationKey(parts));
       }
     });
+
     return set;
   }, [selectionsByVariantId, buildCombinationKey]);
 
   const attributeById = useMemo(() => {
     const map = new Map<number, { label: string; name: string; sortOrder: number }>();
+
     (configAttributes ?? []).forEach((attr) => {
       if (typeof attr.id === 'number') {
         map.set(attr.id, {
@@ -272,6 +298,7 @@ export function ProductVariantManager({
         });
       }
     });
+
     return map;
   }, [configAttributes]);
 
@@ -290,7 +317,8 @@ export function ProductVariantManager({
 
             return {
               attributeId,
-              attributeLabel: attrMeta?.label ?? s.attribute?.label ?? s.attribute?.name ?? 'Attribute',
+              attributeLabel:
+                attrMeta?.label ?? s.attribute?.label ?? s.attribute?.name ?? 'Attribute',
               optionId,
               optionLabel,
               optionCode: s.option?.code,
@@ -327,7 +355,10 @@ export function ProductVariantManager({
     const selectionsForCrossProduct = enumAttributeOptions
       .map(({ attribute, options }) => ({
         attribute,
-        selectedOptions: options.filter((o) => typeof o.id === 'number' && selectedOptionIdsByAttributeId[attribute.id!]?.has(o.id!)),
+        selectedOptions: options.filter(
+          (o) =>
+            typeof o.id === 'number' && selectedOptionIdsByAttributeId[attribute.id!]?.has(o.id!)
+        ),
       }))
       .filter(({ attribute }) => typeof attribute.id === 'number' && attribute.id)
       .filter((x) => x.selectedOptions.length > 0);
@@ -335,9 +366,10 @@ export function ProductVariantManager({
     if (selectionsForCrossProduct.length === 0) return [];
 
     const newVariants: DraftVariantRow[] = [];
-    const duplicateVariants: DraftVariantRow[] = [];
-    const sortedAttributes = [...selectionsForCrossProduct].sort((a, b) =>
-      (attributeOrderMap.get(a.attribute.id!) ?? 999) - (attributeOrderMap.get(b.attribute.id!) ?? 999)
+    const sortedAttributes = [...selectionsForCrossProduct].sort(
+      (a, b) =>
+        (attributeOrderMap.get(a.attribute.id!) ?? 999) -
+        (attributeOrderMap.get(b.attribute.id!) ?? 999)
     );
 
     function generate(index: number, current: VariantSelection[]) {
@@ -345,11 +377,17 @@ export function ProductVariantManager({
         // Clean option codes for SKU generation - remove # prefix from hex colors
         const cleanOptionCode = (code: string | undefined) => {
           if (!code) return code;
+
           return code.startsWith('#') ? code.substring(1) : code;
         };
-        const skuParts = [basePrefix, ...current.map(sel => cleanOptionCode(sel.optionCode)).filter(Boolean)];
+        const skuParts = [
+          basePrefix,
+          ...current.map((sel) => cleanOptionCode(sel.optionCode)).filter(Boolean),
+        ];
         const sku = skuParts.join('-');
-        const key = buildCombinationKey(current.map(s => ({ attributeId: s.attributeId, optionId: s.optionId })));
+        const key = buildCombinationKey(
+          current.map((s) => ({ attributeId: s.attributeId, optionId: s.optionId }))
+        );
 
         const variant = {
           key,
@@ -363,13 +401,16 @@ export function ProductVariantManager({
         if (!existingSkus.has(sku) && !existingCombinationKeys.has(key)) {
           newVariants.push(variant);
         }
+
         // Only generate truly new variants, skip duplicates entirely
         return;
       }
 
       const { attribute, selectedOptions } = sortedAttributes[index];
+
       selectedOptions.forEach((opt) => {
         const optionMeta = typeof opt.id === 'number' ? optionById.get(opt.id) : undefined;
+
         generate(index + 1, [
           ...current,
           {
@@ -384,6 +425,7 @@ export function ProductVariantManager({
     }
 
     generate(0, []);
+
     return { newVariants, duplicateVariants: [] };
   }, [
     variantConfigId,
@@ -406,20 +448,30 @@ export function ProductVariantManager({
       // Add new variants only (duplicates are excluded)
       draftCombinations.newVariants?.forEach((row) => {
         const existing = prev[row.key];
-        next[row.key] = existing ? { ...row, ...existing, isDuplicate: false } : { ...row, isDuplicate: false };
+
+        next[row.key] = existing
+          ? { ...row, ...existing, isDuplicate: false }
+          : { ...row, isDuplicate: false };
       });
 
       // Basic check to prevent re-render if only references changed
       if (JSON.stringify(Object.keys(prev)) === JSON.stringify(Object.keys(next))) {
         return prev;
       }
+
       return next;
     });
   }, [draftCombinations]);
 
   const draftVariants = useMemo(() => Object.values(draftVariantsByKey), [draftVariantsByKey]);
-  const newDraftVariants = useMemo(() => draftVariants.filter(v => !v.isDuplicate), [draftVariants]);
-  const duplicateDraftVariants = useMemo(() => draftVariants.filter(v => v.isDuplicate), [draftVariants]);
+  const newDraftVariants = useMemo(
+    () => draftVariants.filter((v) => !v.isDuplicate),
+    [draftVariants]
+  );
+  const duplicateDraftVariants = useMemo(
+    () => draftVariants.filter((v) => v.isDuplicate),
+    [draftVariants]
+  );
   // #endregion
 
   const precomputeDisabledOptionIds = useMemo(() => {
@@ -427,9 +479,11 @@ export function ProductVariantManager({
 
     // Collect all currently selected attribute options from state (for duplicate prevention)
     const currentSelectedAttributeOptions: Array<{ attributeId: number; optionId: number }> = [];
+
     Object.entries(selectedOptionIdsByAttributeId).forEach(([attrIdStr, optionIdSet]) => {
       const attributeId = parseInt(attrIdStr, 10);
-      optionIdSet.forEach(optionId => {
+
+      optionIdSet.forEach((optionId) => {
         currentSelectedAttributeOptions.push({ attributeId, optionId });
       });
     });
@@ -439,7 +493,7 @@ export function ProductVariantManager({
       const currentAttributeId = attribute.id!;
 
       // For each option in that attribute
-      options.forEach(option => {
+      options.forEach((option) => {
         const currentOptionId = option.id!;
 
         // If this option is already selected for its attribute, it should NOT be disabled.
@@ -451,9 +505,9 @@ export function ProductVariantManager({
         // Create a hypothetical set of selections if this option were chosen
         const hypotheticalSelections = [
           // All currently selected options from *other* attributes
-          ...currentSelectedAttributeOptions.filter(s => s.attributeId !== currentAttributeId),
+          ...currentSelectedAttributeOptions.filter((s) => s.attributeId !== currentAttributeId),
           // Plus the current option being evaluated
-          { attributeId: currentAttributeId, optionId: currentOptionId }
+          { attributeId: currentAttributeId, optionId: currentOptionId },
         ];
 
         // Only check for duplication if there are selections to form a key
@@ -476,13 +530,24 @@ export function ProductVariantManager({
     buildCombinationKey,
   ]);
 
-
   // #region Combined Logic & UI State
   const combinedRows = useMemo(() => {
     return [
-      ...newDraftVariants.map((d) => ({ kind: 'draft' as const, rowKey: `draft-${d.key}`, row: d })),
-      ...duplicateDraftVariants.map((d) => ({ kind: 'duplicate' as const, rowKey: `duplicate-${d.key}`, row: d })),
-      ...existingVariantRows.map((e) => ({ kind: 'existing' as const, rowKey: `existing-${e.id}`, row: e })),
+      ...newDraftVariants.map((d) => ({
+        kind: 'draft' as const,
+        rowKey: `draft-${d.key}`,
+        row: d,
+      })),
+      ...duplicateDraftVariants.map((d) => ({
+        kind: 'duplicate' as const,
+        rowKey: `duplicate-${d.key}`,
+        row: d,
+      })),
+      ...existingVariantRows.map((e) => ({
+        kind: 'existing' as const,
+        rowKey: `existing-${e.id}`,
+        row: e,
+      })),
     ];
   }, [newDraftVariants, duplicateDraftVariants, existingVariantRows]);
 
@@ -493,6 +558,7 @@ export function ProductVariantManager({
       .sort((a, b) => {
         const aOrder = attributeOrderMap.get(a.id!) ?? Number.MAX_SAFE_INTEGER;
         const bOrder = attributeOrderMap.get(b.id!) ?? Number.MAX_SAFE_INTEGER;
+
         return aOrder - bOrder;
       });
   }, [enumAttributes, attributeOrderMap]);
@@ -504,14 +570,10 @@ export function ProductVariantManager({
   }, [visibleEnumAttributes, selectedOptionIdsByAttributeId]);
 
   const canSaveDrafts =
-    draftVariants.length > 0 &&
-    missingRequiredEnumAttributes.length === 0 &&
-    !isLoadingSelections;
+    draftVariants.length > 0 && missingRequiredEnumAttributes.length === 0 && !isLoadingSelections;
   // #endregion
 
   // #region Mutations & Handlers (moved up for auto-save useEffect)
-  const createVariantMutation = useCreateProductVariant();
-  const createSelectionMutation = useCreateProductVariantSelection();
   const updateVariantMutation = useUpdateProductVariant();
   const deleteVariantMutation = useDeleteProductVariant();
 
@@ -533,7 +595,9 @@ export function ProductVariantManager({
       }));
 
       form.setValue('variants', variantsForForm, { shouldValidate: false, shouldDirty: false });
-      toast.success(`${newDraftVariants.length} variant(s) will be created when you save the product`);
+      toast.success(
+        `${newDraftVariants.length} variant(s) will be created when you save the product`
+      );
     }
   }, [isViewMode, newDraftVariants, form, canSaveDrafts]);
   // #endregion
@@ -546,35 +610,36 @@ export function ProductVariantManager({
         query.queryKey[0] === '/api/product-variants' ||
         query.queryKey[0] === '/api/product-variant-selections',
     });
-  }
+  };
 
   const handleUpdateEditingRow = (updatedValues: Partial<ExistingVariantRow>) => {
     if (!editingRowData) return;
-    setEditingRowData(prev => prev ? { ...prev, ...updatedValues } : null);
+    setEditingRowData((prev) => (prev ? { ...prev, ...updatedValues } : null));
   };
 
   const handleSaveExisting = async () => {
     if (!editingRowData) return;
 
-    const payload = {
+    const payload: ProductVariantDTO = {
       id: editingRowData.id,
       sku: editingRowData.sku,
       price: editingRowData.price,
       stockQuantity: editingRowData.stockQuantity,
       status: editingRowData.status,
-      product: { id: productId },
+      product: productId ? { id: productId } : undefined,
     };
 
     toast.promise(
       updateVariantMutation.mutateAsync({
         id: editingRowData.id,
-        data: payload as any,
+        data: payload,
       }),
       {
         loading: 'Saving variant...',
         success: async () => {
           await invalidateVariantQueries();
           setEditingRowData(null);
+
           return 'Variant saved successfully.';
         },
         error: (err) => `Failed to save: ${err.message}`,
@@ -591,6 +656,7 @@ export function ProductVariantManager({
         loading: 'Deleting variant...',
         success: async () => {
           await invalidateVariantQueries();
+
           return 'Variant deleted successfully.';
         },
         error: (err) => `Failed to delete: ${err.message}`,
@@ -598,25 +664,26 @@ export function ProductVariantManager({
     );
   };
 
-
   const toggleOption = (attributeId: number, optionId: number) => {
     setUserSelectedOptionIdsByAttributeId((prev) => {
       const next = { ...prev };
       const currentSet = new Set(next[attributeId] ?? []);
+
       if (currentSet.has(optionId)) currentSet.delete(optionId);
       else currentSet.add(optionId);
       next[attributeId] = currentSet;
+
       return next;
     });
   };
 
   const updateDraft = (key: string, updatedValues: Partial<DraftVariantRow>) => {
-    setDraftVariantsByKey(prev => ({
+    setDraftVariantsByKey((prev) => ({
       ...prev,
-      [key]: { ...prev[key], ...updatedValues }
+      [key]: { ...prev[key], ...updatedValues },
     }));
   };
-  
+
   // #endregion
 
   if (!variantConfigId) {
@@ -632,7 +699,6 @@ export function ProductVariantManager({
           duplicateVariantsCount={duplicateDraftVariants.length}
           missingRequiredEnumAttributes={missingRequiredEnumAttributes}
           isLoadingSelections={isLoadingSelections}
-          isLoadingOptions={isLoadingOptions}
           enumAttributeOptions={enumAttributeOptions}
           selectedOptionIdsByAttributeId={selectedOptionIdsByAttributeId}
           visibleEnumAttributes={visibleEnumAttributes}
@@ -644,21 +710,21 @@ export function ProductVariantManager({
 
       {/* Show variants table in all modes, but make it read-only in view mode */}
       <VariantsTable
-          rows={combinedRows}
-          existingVariantRows={existingVariantRows}
-          draftVariants={draftVariants}
-          visibleEnumAttributes={visibleEnumAttributes}
-          existingSkus={existingSkus}
-          onUpdateDraft={updateDraft}
-          editingRowData={editingRowData}
-          onEditRow={setEditingRowData}
-          onUpdateEditingRow={handleUpdateEditingRow}
-          onSaveExisting={handleSaveExisting}
-          onCancelEdit={() => setEditingRowData(null)}
-          onDeleteRow={handleDeleteRow}
-          isLoading={isLoadingVariants || isLoadingSelections}
-          isViewMode={isViewMode}
-        />
+        rows={combinedRows}
+        existingVariantRows={existingVariantRows}
+        draftVariants={draftVariants}
+        visibleEnumAttributes={visibleEnumAttributes}
+        existingSkus={existingSkus}
+        onUpdateDraft={updateDraft}
+        editingRowData={editingRowData}
+        onEditRow={setEditingRowData}
+        onUpdateEditingRow={handleUpdateEditingRow}
+        onSaveExisting={handleSaveExisting}
+        onCancelEdit={() => setEditingRowData(null)}
+        onDeleteRow={handleDeleteRow}
+        isLoading={isLoadingVariants || isLoadingSelections}
+        isViewMode={isViewMode}
+      />
     </div>
   );
 }

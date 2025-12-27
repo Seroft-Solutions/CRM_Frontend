@@ -1,6 +1,5 @@
 'use client';
 
-import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { ProductVariantManager } from './ProductVariantManager';
 import { UseFormReturn } from 'react-hook-form';
 
@@ -9,7 +8,7 @@ interface ProductVariantManagerWrapperProps {
   // For create mode when productId is not available
   productName?: string;
   variantConfigId?: number;
-  form?: UseFormReturn<Record<string, any>>;
+  form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
 }
 
@@ -18,26 +17,14 @@ export function ProductVariantManagerWrapper({
   productName: providedProductName,
   variantConfigId: providedVariantConfigId,
   form,
-  isViewMode = false
+  isViewMode = false,
 }: ProductVariantManagerWrapperProps) {
-  const { data: product, isLoading } = useGetProduct(productId!, {
-    query: { enabled: !!productId },
-  });
+  const productName = providedProductName ?? 'Product';
+  const variantConfigId = providedVariantConfigId;
 
-  if (isLoading) {
-    return (
-      <div className="p-4 text-center text-sm text-muted-foreground">
-        Loading variants...
-      </div>
-    );
+  if (!variantConfigId) {
+    return null;
   }
-
-  // For edit mode: use fetched product data
-  // For create mode: use provided props
-  const productName = product?.name ?? providedProductName ?? 'Product';
-  const variantConfigId = product?.variantConfig?.id ?? providedVariantConfigId;
-
-  if (!variantConfigId) return null;
 
   return (
     <ProductVariantManager
