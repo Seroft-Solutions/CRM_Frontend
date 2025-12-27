@@ -59,7 +59,7 @@ export function ProductBasicInfoSection({
           </div>
         </CardHeader>
         <CardContent className="space-y-2 px-4 pb-3">
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Product Name */}
             <div className="space-y-1">
               <div className="text-xs font-semibold text-slate-600">
@@ -91,7 +91,7 @@ export function ProductBasicInfoSection({
             </div>
 
             {/* Description */}
-            <div className="space-y-1 sm:col-span-2 lg:col-span-4">
+            <div className="space-y-1 md:col-span-3">
               <div className="text-xs font-semibold text-slate-600">Description</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border min-h-[60px]">
                 {product.description || 'Not specified'}
@@ -99,7 +99,7 @@ export function ProductBasicInfoSection({
             </div>
 
             {/* Remark */}
-            <div className="space-y-1 sm:col-span-2 lg:col-span-4">
+            <div className="space-y-1 md:col-span-3">
               <div className="text-xs font-semibold text-slate-600">Remark</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border min-h-[60px]">
                 {product.remark || 'Not specified'}
@@ -125,7 +125,7 @@ export function ProductBasicInfoSection({
         </div>
       </CardHeader>
       <CardContent className="space-y-2 px-4 pb-3">
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Product Name */}
           <FormField
             control={form.control}
