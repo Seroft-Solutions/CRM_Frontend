@@ -3,14 +3,7 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { FormField } from '@/components/ui/form';
 import { FolderTree } from 'lucide-react';
 import { RelationshipRenderer } from '../relationship-renderer';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
@@ -22,16 +15,6 @@ interface ProductClassificationSectionProps {
   actions?: FormActions;
   isViewMode?: boolean;
   product?: ProductDTO | null;
-}
-
-function transformEnumValue(enumValue: string): string {
-  if (!enumValue || typeof enumValue !== 'string') return enumValue;
-
-  return enumValue
-    .toLowerCase()
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
 }
 
 export function ProductClassificationSection({
@@ -171,37 +154,7 @@ export function ProductClassificationSection({
             />
           )}
 
-          {/* Status */}
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold text-slate-600">Status</FormLabel>
-                <FormControl>
-                  <Select
-                    value={field.value || 'ACTIVE'}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      form.trigger('status');
-                    }}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue
-                        placeholder={field.value ? transformEnumValue(field.value) : 'Active'}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DRAFT">Draft</SelectItem>
-                      <SelectItem value="ACTIVE">Active</SelectItem>
-                      <SelectItem value="INACTIVE">Inactive</SelectItem>
-                      <SelectItem value="ARCHIVED">Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {/* Status field intentionally hidden; defaults to ACTIVE on submission */}
         </div>
       </CardContent>
     </Card>

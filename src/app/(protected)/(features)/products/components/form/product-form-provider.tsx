@@ -118,6 +118,10 @@ export function ProductFormProvider({
       defaults[rel.name] = rel.multiple ? [] : undefined;
     });
 
+    if (Object.prototype.hasOwnProperty.call(defaults, 'status')) {
+      defaults.status = 'ACTIVE';
+    }
+
     return defaults;
   }, [config.fields, config.relationships]);
 
@@ -424,9 +428,10 @@ export function ProductFormProvider({
         entityToSave.variants = data.variants;
       }
 
-      // Include status field if it exists in the data
-      if (data.status) {
+      if (typeof data.status === 'string' && data.status.trim() !== '') {
         entityToSave.status = data.status;
+      } else {
+        entityToSave.status = 'ACTIVE';
       }
 
       Object.keys(entityToSave).forEach((key) => {

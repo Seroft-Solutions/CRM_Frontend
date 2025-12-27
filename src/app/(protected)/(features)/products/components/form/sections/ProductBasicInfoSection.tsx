@@ -90,17 +90,6 @@ export function ProductBasicInfoSection({
               </div>
             </div>
 
-            {/* Status */}
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Status
-                <span className="ml-1 text-rose-600">*</span>
-              </div>
-              <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
-                {product.status || 'Not specified'}
-              </div>
-            </div>
-
             {/* Description */}
             <div className="space-y-1 sm:col-span-2 lg:col-span-4">
               <div className="text-xs font-semibold text-slate-600">Description</div>
@@ -225,19 +214,7 @@ export function ProductBasicInfoSection({
             )}
           />
 
-          {/* Status */}
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold text-slate-600">Status</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || 'ACTIVE'} className="h-9" readOnly />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {/* Status field intentionally hidden; defaults to ACTIVE on submission */}
         </div>
 
         {/* Description & Remark in 2 columns */}
