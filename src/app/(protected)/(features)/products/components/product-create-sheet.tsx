@@ -64,7 +64,7 @@ const productCreationSchema = productFormSchemaBase
 
 type ProductCreationFormData = {
   name: string;
-  code: string;
+  barcodeText: string;
   articleNumber?: string;
   description?: string;
   basePrice?: string;
@@ -95,7 +95,7 @@ export function ProductCreateSheet({
     resolver: zodResolver(productCreationSchema),
     defaultValues: {
       name: '',
-      code: '',
+      barcodeText: '',
       description: '',
       basePrice: '',
       discountedPrice: '',
@@ -141,7 +141,7 @@ export function ProductCreateSheet({
   const onSubmit = (data: ProductCreationFormData) => {
     const productData: Partial<ProductDTO> = {
       name: data.name,
-      code: data.code,
+      barcodeText: data.barcodeText,
       articleNumber: data.articleNumber || undefined,
       description: data.description || undefined,
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
@@ -251,16 +251,16 @@ export function ProductCreateSheet({
                           onChange={(e) => {
                             field.onChange(e);
 
-                            const currentCode = form.getValues('code');
+                            const currentBarcodeText = form.getValues('barcodeText');
 
-                            if (!currentCode && e.target.value) {
+                            if (!currentBarcodeText && e.target.value) {
                               const generatedCode = e.target.value
                                 .replace(/[^a-zA-Z0-9\s]/g, '')
                                 .replace(/\s+/g, '_')
                                 .toUpperCase()
                                 .substring(0, 20);
 
-                              form.setValue('code', generatedCode);
+                              form.setValue('barcodeText', generatedCode);
                             }
                           }}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
@@ -273,16 +273,16 @@ export function ProductCreateSheet({
 
                 <FormField
                   control={form.control}
-                  name="code"
+                  name="barcodeText"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Product Code
+                        Barcode Text
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter product code (auto-generated from name)"
+                          placeholder="Enter barcode text (auto-generated from name)"
                           {...field}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 font-mono"
                         />

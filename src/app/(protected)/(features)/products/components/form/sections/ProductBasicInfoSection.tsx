@@ -71,14 +71,14 @@ export function ProductBasicInfoSection({
               </div>
             </div>
 
-            {/* Product Code */}
+            {/* Barcode Text */}
             <div className="space-y-1">
               <div className="text-xs font-semibold text-slate-600">
-                Product Code
+                Barcode Text
                 <span className="ml-1 text-rose-600">*</span>
               </div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
-                {product.code || 'Not specified'}
+                {product.barcodeText || 'Not specified'}
               </div>
             </div>
 
@@ -168,32 +168,32 @@ export function ProductBasicInfoSection({
             )}
           />
 
-          {/* Product Code */}
+          {/* Barcode Text */}
           <FormField
             control={form.control}
-            name="code"
+            name="barcodeText"
             render={({ field }) => (
               <FormItem className="space-y-1">
                 <FormLabel className="text-xs font-semibold text-slate-600">
-                  Product Code
+                  Barcode Text
                   <span className="ml-1 text-rose-600">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="e.g., PROD-001"
+                    placeholder="e.g., 0123456789"
                     className={cn(
                       'h-9',
-                      errors.code && 'border-rose-500 focus-visible:ring-rose-500'
+                      errors.barcodeText && 'border-rose-500 focus-visible:ring-rose-500'
                     )}
                     onChange={(e) => {
                       field.onChange(e.target.value);
-                      form.trigger('code');
+                      form.trigger('barcodeText');
                     }}
                   />
                 </FormControl>
-                {errors.code && (
-                  <p className="text-xs text-rose-600">{String(errors.code.message)}</p>
+                {errors.barcodeText && (
+                  <p className="text-xs text-rose-600">{String(errors.barcodeText.message)}</p>
                 )}
               </FormItem>
             )}

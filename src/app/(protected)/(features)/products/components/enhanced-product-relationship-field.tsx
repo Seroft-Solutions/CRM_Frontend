@@ -108,7 +108,7 @@ export function EnhancedProductRelationshipField({
         selected.push({
           id: id,
           name: `Product #${id}`,
-          code: `PROD_${id}`,
+          barcodeText: `PROD_${id}`,
           status: ProductDTOStatus.ACTIVE,
         });
       }
@@ -128,7 +128,7 @@ export function EnhancedProductRelationshipField({
       return {
         id: value,
         name: `Product #${value}`,
-        code: `PROD_${value}`,
+        barcodeText: `PROD_${value}`,
         status: ProductDTOStatus.ACTIVE,
       };
     }
@@ -218,8 +218,8 @@ export function EnhancedProductRelationshipField({
           {getSelectedOptions().map((option) => (
             <Badge key={option.id} variant="secondary" className="text-xs flex items-center gap-1">
               {option.name || `Product #${option.id}`}
-              {option.code && option.code !== `PROD_${option.id}` && (
-                <span className="text-muted-foreground">({option.code})</span>
+              {option.barcodeText && option.barcodeText !== `PROD_${option.id}` && (
+                <span className="text-muted-foreground">({option.barcodeText})</span>
               )}
               {option.name?.startsWith('Product #') && (
                 <span className="text-green-600 text-xs">✓ New</span>
