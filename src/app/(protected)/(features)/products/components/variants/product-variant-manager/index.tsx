@@ -264,28 +264,6 @@ export function ProductVariantManager({
     };
   }, [attributeOrderMap]);
 
-  const existingCombinationKeys = useMemo(() => {
-    const set = new Set<string>();
-
-    Object.values(selectionsByVariantId).forEach((selections) => {
-      const parts: Array<{ attributeId: number; optionId: number }> = [];
-
-      selections.forEach((s) => {
-        const attributeId = s.attribute?.id;
-        const optionId = s.option?.id;
-
-        if (typeof attributeId === 'number' && typeof optionId === 'number') {
-          parts.push({ attributeId, optionId });
-        }
-      });
-      if (parts.length > 0) {
-        set.add(buildCombinationKey(parts));
-      }
-    });
-
-    return set;
-  }, [selectionsByVariantId, buildCombinationKey]);
-
   const attributeById = useMemo(() => {
     const map = new Map<number, { label: string; name: string; sortOrder: number }>();
 
@@ -335,6 +313,97 @@ export function ProductVariantManager({
         };
       });
   }, [variants, selectionsByVariantId, optionLabelById, attributeById]);
+
+  const upgradeCandidate = useMemo(() => {
+    if (!productId) return null;
+    if (existingVariantRows.length !== 1) return null;
+
+    const existing = existingVariantRows[0];
+    const selectedEntries = Object.entries(selectedOptionIdsByAttributeId)
+      .map(([attrId, optionSet]) => ({
+        attributeId: Number(attrId),
+        optionIds: Array.from(optionSet),
+      }))
+      .filter((entry) => entry.optionIds.length > 0);
+
+    if (selectedEntries.length === 0) return null;
+    if (selectedEntries.some((entry) => entry.optionIds.length !== 1)) return null;
+
+    for (const selection of existing.selections) {
+      const currentSet = selectedOptionIdsByAttributeId[selection.attributeId];
+
+      if (!currentSet || !currentSet.has(selection.optionId)) {
+        return null;
+      }
+    }
+
+    const existingAttributeIds = new Set(existing.selections.map((sel) => sel.attributeId));
+    const missingEntries = selectedEntries.filter(
+      (entry) => !existingAttributeIds.has(entry.attributeId)
+    );
+
+    if (missingEntries.length === 0) return null;
+
+    const missingSelections: VariantSelection[] = missingEntries.map((entry) => {
+      const optionId = entry.optionIds[0];
+      const optionMeta = optionById.get(optionId);
+      const attrMeta = attributeById.get(entry.attributeId);
+
+      return {
+        attributeId: entry.attributeId,
+        attributeLabel: attrMeta?.label ?? attrMeta?.name ?? 'Attribute',
+        optionId,
+        optionLabel: optionMeta?.label ?? '',
+        optionCode: optionMeta?.code,
+      };
+    });
+
+    return {
+      ...existing,
+      selections: [...existing.selections, ...missingSelections],
+    };
+  }, [productId, existingVariantRows, selectedOptionIdsByAttributeId, optionById, attributeById]);
+
+  const displayExistingVariantRows = useMemo(() => {
+    if (upgradeCandidate) {
+      return [upgradeCandidate];
+    }
+
+    return existingVariantRows;
+  }, [existingVariantRows, upgradeCandidate]);
+
+  const existingCombinationKeys = useMemo(() => {
+    const set = new Set<string>();
+
+    Object.values(selectionsByVariantId).forEach((selections) => {
+      const parts: Array<{ attributeId: number; optionId: number }> = [];
+
+      selections.forEach((s) => {
+        const attributeId = s.attribute?.id;
+        const optionId = s.option?.id;
+
+        if (typeof attributeId === 'number' && typeof optionId === 'number') {
+          parts.push({ attributeId, optionId });
+        }
+      });
+      if (parts.length > 0) {
+        set.add(buildCombinationKey(parts));
+      }
+    });
+
+    if (upgradeCandidate) {
+      const parts = upgradeCandidate.selections.map((sel) => ({
+        attributeId: sel.attributeId,
+        optionId: sel.optionId,
+      }));
+
+      if (parts.length > 0) {
+        set.add(buildCombinationKey(parts));
+      }
+    }
+
+    return set;
+  }, [selectionsByVariantId, buildCombinationKey, upgradeCandidate]);
 
   const enumAttributeOptions = useMemo(() => {
     return enumAttributes
@@ -543,13 +612,13 @@ export function ProductVariantManager({
         rowKey: `duplicate-${d.key}`,
         row: d,
       })),
-      ...existingVariantRows.map((e) => ({
+      ...displayExistingVariantRows.map((e) => ({
         kind: 'existing' as const,
         rowKey: `existing-${e.id}`,
         row: e,
       })),
     ];
-  }, [newDraftVariants, duplicateDraftVariants, existingVariantRows]);
+  }, [newDraftVariants, duplicateDraftVariants, displayExistingVariantRows]);
 
   const visibleEnumAttributes = useMemo(() => {
     return enumAttributes
@@ -569,8 +638,9 @@ export function ProductVariantManager({
       .filter((attr) => (selectedOptionIdsByAttributeId[attr.id!] ?? new Set<number>()).size === 0);
   }, [visibleEnumAttributes, selectedOptionIdsByAttributeId]);
 
-  const canSaveDrafts =
-    draftVariants.length > 0 && missingRequiredEnumAttributes.length === 0 && !isLoadingSelections;
+  const canApplySelections =
+    missingRequiredEnumAttributes.length === 0 && !isLoadingSelections && !isLoadingOptions;
+
   // #endregion
 
   // #region Mutations & Handlers (moved up for auto-save useEffect)
@@ -579,27 +649,53 @@ export function ProductVariantManager({
 
   // #region Handle variants for product save
   useEffect(() => {
-    // Handle variants for product save (both create and edit modes, but not in view mode)
-    if (!isViewMode && newDraftVariants.length > 0 && canSaveDrafts && form) {
-      // Both CREATE and EDIT modes: Save to form state so they get saved with the product
-      const variantsForForm = newDraftVariants.map((variant) => ({
-        sku: variant.sku,
-        price: variant.price,
-        stockQuantity: variant.stockQuantity,
-        status: 'ACTIVE',
-        selections: variant.selections.map((sel) => ({
+    if (isViewMode || !form) return;
+
+    const variantsForForm: ProductVariantDTO[] = [];
+
+    if (newDraftVariants.length > 0 && canApplySelections) {
+      variantsForForm.push(
+        ...newDraftVariants.map((variant) => ({
+          sku: variant.sku,
+          price: variant.price,
+          stockQuantity: variant.stockQuantity,
+          status: 'ACTIVE',
+          selections: variant.selections.map((sel) => ({
+            status: 'ACTIVE',
+            attribute: { id: sel.attributeId },
+            option: { id: sel.optionId },
+          })),
+        }))
+      );
+    }
+
+    if (upgradeCandidate && canApplySelections) {
+      variantsForForm.push({
+        id: upgradeCandidate.id,
+        sku: upgradeCandidate.sku,
+        price: upgradeCandidate.price,
+        stockQuantity: upgradeCandidate.stockQuantity,
+        status: upgradeCandidate.status,
+        selections: upgradeCandidate.selections.map((sel) => ({
           status: 'ACTIVE',
           attribute: { id: sel.attributeId },
           option: { id: sel.optionId },
         })),
-      }));
-
-      form.setValue('variants', variantsForForm, { shouldValidate: false, shouldDirty: false });
-      toast.success(
-        `${newDraftVariants.length} variant(s) will be created when you save the product`
-      );
+      });
     }
-  }, [isViewMode, newDraftVariants, form, canSaveDrafts]);
+
+    if (variantsForForm.length > 0) {
+      form.setValue('variants', variantsForForm, { shouldValidate: false, shouldDirty: false });
+
+      if (newDraftVariants.length > 0) {
+        toast.success(
+          `${newDraftVariants.length} variant(s) will be created when you save the product`
+        );
+      }
+    } else {
+      form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
+    }
+  }, [isViewMode, newDraftVariants, form, canApplySelections, upgradeCandidate]);
   // #endregion
 
   // #region Mutations & Handlers (continued)

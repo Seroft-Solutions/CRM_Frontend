@@ -274,6 +274,7 @@ export function VariantTableRow({
                   <Button
                     variant="ghost"
                     size="sm"
+                    type="button"
                     onClick={() => onEditRow(row as ExistingVariantRow)}
                     className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
                     title="Edit variant"
@@ -283,6 +284,7 @@ export function VariantTableRow({
                   <Button
                     variant="ghost"
                     size="sm"
+                    type="button"
                     onClick={handleDeleteClick}
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
                     title="Delete variant"
@@ -302,6 +304,7 @@ export function VariantTableRow({
                   <Button
                     variant="ghost"
                     size="sm"
+                    type="button"
                     onClick={onSaveExisting}
                     className="text-muted-foreground hover:text-green-700 hover:bg-green-100 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
                     title="Save changes"
@@ -311,6 +314,7 @@ export function VariantTableRow({
                   <Button
                     variant="ghost"
                     size="sm"
+                    type="button"
                     onClick={onCancelEdit}
                     className="text-muted-foreground hover:text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
                     title="Cancel editing"
@@ -340,11 +344,17 @@ export function VariantTableRow({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="px-4">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setShowDeleteDialog(false)}
+              className="px-4"
+            >
               Cancel
             </Button>
             <Button
               variant="destructive"
+              type="button"
               onClick={handleConfirmDelete}
               className="px-4 bg-red-600 hover:bg-red-700"
             >
