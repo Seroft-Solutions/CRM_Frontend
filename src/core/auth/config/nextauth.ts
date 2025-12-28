@@ -31,129 +31,149 @@ declare module 'next-auth/jwt' {
 const REFRESH_BUFFER_SECONDS = 60;
 const refreshInFlight = new Map<string, Promise<JWT>>();
 
-async function refreshAccessToken(token: JWT): Promise<JWT> {
-  const refreshKey =
-    (typeof token.refresh_token === 'string' && token.refresh_token) || token.sub || 'unknown';
+// Global refresh lock to prevent concurrent refresh attempts
+let refreshPromise: Promise<JWT> | null = null;
+let lastRefreshAttempt = 0;
+const MIN_REFRESH_INTERVAL = 2000; // Minimum 2 seconds between refresh attempts
 
-  const inFlight = refreshInFlight.get(refreshKey);
-  if (inFlight) {
-    return inFlight;
+async function refreshAccessToken(token: JWT): Promise<JWT> {
+  // Early exit conditions
+  if (
+    token.shouldSignOut ||
+    (token.error === 'RefreshAccessTokenError' &&
+      token.refreshAttempts &&
+      token.refreshAttempts >= 3)
+  ) {
+    console.warn('Token already marked for signout or max refresh attempts reached');
+    return token;
   }
 
-  const refreshPromise = (async () => {
-    if (
-      token.shouldSignOut ||
-      (token.error === 'RefreshAccessTokenError' &&
-        token.refreshAttempts &&
-        token.refreshAttempts >= 3)
-    ) {
-      console.warn('Token already marked for signout or max refresh attempts reached');
-      return token;
+  // Prevent concurrent refresh attempts - return existing promise if refresh is in progress
+  const now = Date.now();
+  if (refreshPromise && now - lastRefreshAttempt < MIN_REFRESH_INTERVAL) {
+    console.log('Refresh already in progress, waiting for existing refresh...');
+    return refreshPromise;
+  }
+
+  // Check if token is too old to refresh (more than 24 hours expired)
+  if (token.expires_at && typeof token.expires_at === 'number') {
+    const tokenAge = now / 1000 - token.expires_at;
+    if (tokenAge > 86400) {
+      // More than 24 hours expired
+      console.error(
+        `Token is too old to refresh (expired ${Math.floor(tokenAge / 3600)} hours ago), forcing signout`
+      );
+      refreshPromise = null;
+      return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+    }
+  }
+
+  try {
+    if (!token.refresh_token) {
+      console.warn('No refresh token available for token refresh');
+      refreshPromise = null;
+      return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
     }
 
-    try {
-      if (!token.refresh_token || typeof token.refresh_token !== 'string') {
-        console.warn('No refresh token available for token refresh');
-        return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
-      }
+    lastRefreshAttempt = now;
+    const refreshAttempts = ((token.refreshAttempts as number) || 0) + 1;
 
-      const refreshAttempts = ((token.refreshAttempts as number) || 0) + 1;
-
-    const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        client_id: process.env.AUTH_KEYCLOAK_ID!,
-        client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
-        refresh_token: token.refresh_token as string,
-      }),
-    });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to refresh token:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorText,
-          tokenUrl,
-          attempt: refreshAttempts,
-          timestamp: new Date().toISOString(),
+    // Create and store the refresh promise
+    refreshPromise = (async () => {
+      try {
+        const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
+        const response = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            client_id: process.env.AUTH_KEYCLOAK_ID!,
+            client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
+            refresh_token: token.refresh_token as string,
+          }),
         });
 
-        if (response.status === 400 || response.status === 401) {
-          let errorDetails;
-          try {
-            errorDetails = JSON.parse(errorText);
-          } catch (e) {
-            errorDetails = { error: 'invalid_grant', error_description: errorText };
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Failed to refresh token:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText,
+            tokenUrl,
+            attempt: refreshAttempts,
+            timestamp: new Date().toISOString(),
+          });
+
+          if (response.status === 400 || response.status === 401) {
+            let errorDetails;
+            try {
+              errorDetails = JSON.parse(errorText);
+            } catch (e) {
+              errorDetails = { error: 'invalid_grant', error_description: errorText };
+            }
+
+            console.error('Refresh token expired or invalid:', errorDetails);
+            return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
           }
 
-          console.error('Refresh token expired or invalid:', errorDetails);
+          if (refreshAttempts >= 3) {
+            console.error('Max refresh attempts reached, marking for signout');
+            return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
+          }
+
+          console.warn(
+            `Temporary refresh token error (attempt ${refreshAttempts}/3), will retry:`,
+            response.status
+          );
+          return { ...token, error: 'RefreshAccessTokenError', refreshAttempts };
+        }
+
+        const data = await response.json();
+
+        if (!data.access_token) {
+          console.error('Invalid token response: missing access_token', data);
+          return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
+        }
+
+        console.log('Token refreshed successfully on attempt', refreshAttempts);
+        return {
+          ...token,
+          access_token: data.access_token,
+          refresh_token: data.refresh_token ?? token.refresh_token,
+          id_token: data.id_token ?? token.id_token,
+          expires_at: Math.floor(Date.now() / 1000) + (data.expires_in || 3600),
+          error: undefined,
+          shouldSignOut: undefined,
+          refreshAttempts: 0,
+          lastRefreshAt: Math.floor(Date.now() / 1000),
+        };
+      } catch (error) {
+        console.error('Network or other error refreshing access token:', error);
+        const retryAttempts = ((token.refreshAttempts as number) || 0) + 1;
+
+        if (retryAttempts >= 3) {
+          console.error('Max network error attempts reached, marking for signout');
           return {
             ...token,
             error: 'RefreshAccessTokenError',
             shouldSignOut: true,
-            refreshAttempts,
-            refresh_token: undefined,
+            refreshAttempts: retryAttempts,
           };
         }
 
-        if (refreshAttempts >= 3) {
-          console.error('Max refresh attempts reached, marking for signout');
-          return {
-            ...token,
-            error: 'RefreshAccessTokenError',
-            shouldSignOut: true,
-            refreshAttempts,
-          };
-        }
-
-        console.warn(
-          `Temporary refresh token error (attempt ${refreshAttempts}/3), will retry:`,
-          response.status
-        );
-        return { ...token, error: 'RefreshAccessTokenError', refreshAttempts };
+        return { ...token, error: 'RefreshAccessTokenError', refreshAttempts: retryAttempts };
+      } finally {
+        // Clear the refresh promise after completion (success or error)
+        refreshPromise = null;
       }
+    })();
 
-      const data = await response.json();
-
-      if (!data.access_token) {
-        console.error('Invalid token response: missing access_token', data);
-        return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
-      }
-
-      console.log('Token refreshed successfully on attempt', refreshAttempts);
-      return {
-        ...token,
-        access_token: data.access_token,
-        refresh_token: data.refresh_token ?? token.refresh_token,
-        id_token: data.id_token ?? token.id_token,
-        expires_at: Math.floor(Date.now() / 1000) + (data.expires_in || 3600),
-        lastRefreshAt: Math.floor(Date.now() / 1000),
-        error: undefined,
-        shouldSignOut: undefined,
-        refreshAttempts: 0,
-      };
-    } catch (error) {
-      console.error('Network or other error refreshing access token:', error);
-      const refreshAttempts = ((token.refreshAttempts as number) || 0) + 1;
-
-      if (refreshAttempts >= 3) {
-        console.error('Max network error attempts reached, marking for signout');
-        return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
-      }
-
-      return { ...token, error: 'RefreshAccessTokenError', refreshAttempts };
-    }
-  })();
-
-  refreshInFlight.set(refreshKey, refreshPromise);
-  try {
-    return await refreshPromise;
-  } finally {
-    refreshInFlight.delete(refreshKey);
+    return refreshPromise;
+  } catch (error) {
+    // Outer catch for synchronous errors
+    console.error('Unexpected error in refreshAccessToken:', error);
+    refreshPromise = null;
+    return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
   }
 }
 
@@ -187,8 +207,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, account, trigger }) {
+      // Fresh login from Keycloak
       if (account?.provider === 'keycloak') {
         console.log('Initial Keycloak login, setting up token');
+        // Reset refresh promise on new login
+        refreshPromise = null;
+        lastRefreshAttempt = 0;
+
         token.id_token = account.id_token;
         token.access_token = account.access_token;
         token.refresh_token = account.refresh_token;
@@ -200,42 +225,51 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return token;
       }
 
+      // Check if token is marked for signout - block ALL operations
       if (
         token.shouldSignOut ||
         (token.error === 'RefreshAccessTokenError' &&
           token.refreshAttempts &&
           token.refreshAttempts >= 3)
       ) {
-        console.warn('Token marked for signout or max attempts reached, returning as-is');
+        console.warn('[JWT] Token marked for signout, blocking refresh attempts');
         return token;
       }
 
+      // Handle manual update trigger
       if (trigger === 'update') {
-        console.log('JWT update triggered, checking token validity');
+        console.log('[JWT] Manual update triggered, checking token validity');
         if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
           return token;
         }
       }
 
       const now = Date.now() / 1000;
+      const timeLeft = token.expires_at ? (token.expires_at as number) - now : 0;
       const shouldRefresh =
         token.expires_at &&
         typeof token.expires_at === 'number' &&
         now >= token.expires_at - REFRESH_BUFFER_SECONDS;
 
-      if (shouldRefresh && !token.shouldSignOut) {
-        console.log('Token expires soon, attempting refresh', {
+      if (shouldRefresh && !token.shouldSignOut && !token.error) {
+        console.log('[JWT] Token expires soon, initiating refresh', {
           expiresAt: token.expires_at,
           now: Math.floor(now),
-          timeLeft: Math.floor((token.expires_at as number) - now),
+          timeLeft: Math.floor(timeLeft),
           attempt: ((token.refreshAttempts as number) || 0) + 1,
         });
 
         token = await refreshAccessToken(token);
 
         if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
-          console.error('Token refresh failed permanently, user will need to sign in again');
+          console.error('[JWT] Token refresh failed permanently - user must sign in again');
+        } else if (token.error === 'RefreshAccessTokenError') {
+          console.warn('[JWT] Token refresh failed, will retry on next request');
         }
+      } else if (token.error === 'RefreshAccessTokenError' && !token.shouldSignOut) {
+        // Token has a refresh error but not marked for signout - retry refresh
+        console.log('[JWT] Retrying token refresh after previous failure');
+        token = await refreshAccessToken(token);
       }
 
       return token;
