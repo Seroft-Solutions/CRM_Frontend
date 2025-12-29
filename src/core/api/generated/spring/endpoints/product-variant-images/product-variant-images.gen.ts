@@ -5,12 +5,19 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
-import { useMutation } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
 import type {
   MutationFunction,
   QueryClient,
+  QueryFunction,
+  QueryKey,
   UseMutationOptions,
   UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
@@ -23,6 +30,63 @@ import { springServiceMutator } from '../../../../services/spring-service/servic
 import type { ErrorType } from '../../../../services/spring-service/service-mutator';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * Get all images for a product variant.
+ * @summary Get all product variant images by variant
+ */
+export const getAllProductVariantImagesByVariant = (
+  variantId: number,
+  options?: SecondParameter<typeof springServiceMutator>,
+  signal?: AbortSignal
+) => {
+  return springServiceMutator<ProductVariantImageDTO[]>(
+    { url: `/api/product-variant-images/variant/${variantId}`, method: 'GET', signal },
+    options
+  );
+};
+
+export const getGetAllProductVariantImagesByVariantQueryKey = (variantId: number) => {
+  return [`/api/product-variant-images/variant/${variantId}`] as const;
+};
+
+export const getGetAllProductVariantImagesByVariantQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>,
+  TError = ErrorType<unknown>
+>(
+  variantId: number,
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>, TError, TData>>; request?: SecondParameter<typeof springServiceMutator> }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetAllProductVariantImagesByVariantQueryKey(variantId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>> = ({ signal }) =>
+    getAllProductVariantImagesByVariant(variantId, requestOptions, signal);
+
+  return { queryKey, queryFn, enabled: !!variantId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAllProductVariantImagesByVariantQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>
+>;
+export type GetAllProductVariantImagesByVariantQueryError = ErrorType<unknown>;
+
+export function useGetAllProductVariantImagesByVariant<
+  TData = Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>,
+  TError = ErrorType<unknown>
+>(
+  variantId: number,
+  options?: { query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllProductVariantImagesByVariant>>, TError, TData>>; request?: SecondParameter<typeof springServiceMutator> },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> {
+  const queryOptions = getGetAllProductVariantImagesByVariantQueryOptions(variantId, options);
+
+  return useQuery(queryOptions, queryClient);
+}
 
 /**
  * Upload a single image file (JPEG, PNG, WEBP) for a product variant.

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,18 +20,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
+import { useGetAllProductVariantImagesByVariant, useUploadProductVariantImage } from '@/core/api/generated/spring';
 import { Image, Pencil, Save, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { CombinedVariantRow, DraftVariantRow, ExistingVariantRow } from './types';
-import { VariantImageUploader } from './VariantImageUploader';
 
 /**
  * @interface VariantTableRowProps
@@ -75,7 +69,15 @@ export function VariantTableRow({
   const { row } = item;
   const isEditing = !isDraft && !isDuplicate && editingRowData?.id === row.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadVariantImage = useUploadProductVariantImage();
+  const variantId = !isDraft && !isDuplicate ? (row as ExistingVariantRow).id : undefined;
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variantId ?? 0, {
+    query: { enabled: !!variantId },
+  });
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true);
@@ -128,6 +130,48 @@ export function VariantTableRow({
       onUpdateEditingRow({ isPrimary });
     }
   };
+
+  const handleImageButtonClick = () => {
+    if (isViewMode) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (isDraft || isDuplicate) {
+      const previewUrl = URL.createObjectURL(file);
+      setDraftImageUrl(previewUrl);
+      event.target.value = '';
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const result = await uploadVariantImage.mutateAsync({
+        data: { file },
+        params: { variantId: (row as ExistingVariantRow).id },
+      });
+      setUploadedImageUrl(result.thumbnailUrl ?? result.cdnUrl ?? null);
+      toast.success('Variant image uploaded');
+    } catch (error) {
+      toast.error('Failed to upload variant image');
+    } finally {
+      setIsUploadingImage(false);
+      event.target.value = '';
+    }
+  };
+
+  const existingImageUrl = useMemo(() => {
+    if (!variantImages || variantImages.length === 0) return null;
+    const primaryImage =
+      variantImages.find((img) => img.isPrimary) ||
+      variantImages[0];
+    return primaryImage?.thumbnailUrl || primaryImage?.cdnUrl || null;
+  }, [variantImages]);
+
+  const imageUrl = uploadedImageUrl ?? draftImageUrl ?? existingImageUrl;
 
   return (
     <>
@@ -300,6 +344,21 @@ export function VariantTableRow({
           )}
         </TableCell>
 
+        {/* Image Column */}
+        <TableCell className="py-2">
+          <div className="flex items-center justify-center">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Variant"
+                className="h-10 w-10 rounded-md border object-cover"
+              />
+            ) : (
+              <span className="text-muted-foreground text-xs">—</span>
+            )}
+          </div>
+        </TableCell>
+
         {/* Primary Column */}
         <TableCell className="py-2">
           {isDraft || isEditing ? (
@@ -330,33 +389,27 @@ export function VariantTableRow({
         {!isViewMode && (
           <TableCell className="py-2 text-right">
             <div className="flex items-center justify-end gap-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelected}
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={handleImageButtonClick}
+                disabled={isUploadingImage}
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs disabled:opacity-50"
+                title="Upload image"
+              >
+                <Image className="h-3 w-3" />
+              </Button>
+
               {!isDraft && !isDuplicate && !isEditing && (
                 <>
-                  <Sheet
-                    open={showUploadSheet}
-                    onOpenChange={setShowUploadSheet}
-                  >
-                    <SheetTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        type="button"
-                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
-                        title="Upload image"
-                      >
-                        <Image className="h-3 w-3" />
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent>
-                      <SheetHeader>
-                        <SheetTitle>Upload Image</SheetTitle>
-                      </SheetHeader>
-                      <VariantImageUploader
-                        variant={row as ExistingVariantRow}
-                        onUploadComplete={() => setShowUploadSheet(false)}
-                      />
-                    </SheetContent>
-                  </Sheet>
                   <Button
                     variant="ghost"
                     size="sm"

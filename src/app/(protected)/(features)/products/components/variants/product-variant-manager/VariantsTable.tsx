@@ -71,7 +71,7 @@ export function VariantsTable({
     );
   }
 
-  const totalColumnCount = visibleEnumAttributes.length + (isViewMode ? 5 : 6);
+  const totalColumnCount = visibleEnumAttributes.length + (isViewMode ? 6 : 7);
 
   return (
     <div className="rounded-lg border bg-card">
