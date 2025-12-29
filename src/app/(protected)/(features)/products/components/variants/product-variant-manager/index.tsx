@@ -309,6 +309,7 @@ export function ProductVariantManager({
           price: variant.price,
           stockQuantity: variant.stockQuantity,
           status: variant.status,
+          isPrimary: variant.isPrimary,
           selections: rowSelections,
         };
       });
@@ -464,6 +465,7 @@ export function ProductVariantManager({
           price: undefined,
           stockQuantity: 0,
           status: defaultGeneratedStatus,
+          isPrimary: false,
           selections: current,
         };
 
@@ -660,6 +662,7 @@ export function ProductVariantManager({
           price: variant.price,
           stockQuantity: variant.stockQuantity,
           status: 'ACTIVE',
+          isPrimary: variant.isPrimary ?? false,
           selections: variant.selections.map((sel) => ({
             status: 'ACTIVE',
             attribute: { id: sel.attributeId },
@@ -676,6 +679,7 @@ export function ProductVariantManager({
         price: upgradeCandidate.price,
         stockQuantity: upgradeCandidate.stockQuantity,
         status: upgradeCandidate.status,
+        isPrimary: upgradeCandidate.isPrimary ?? false,
         selections: upgradeCandidate.selections.map((sel) => ({
           status: 'ACTIVE',
           attribute: { id: sel.attributeId },
@@ -722,6 +726,7 @@ export function ProductVariantManager({
       price: editingRowData.price,
       stockQuantity: editingRowData.stockQuantity,
       status: editingRowData.status,
+      isPrimary: editingRowData.isPrimary ?? false,
       product: productId ? { id: productId } : undefined,
     };
 

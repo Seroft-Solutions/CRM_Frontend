@@ -9,7 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -18,10 +20,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
-import { Pencil, Save, Trash2, X } from 'lucide-react';
+import { Image, Pencil, Save, Trash2, X } from 'lucide-react';
 import { CombinedVariantRow, DraftVariantRow, ExistingVariantRow } from './types';
+import { VariantImageUploader } from './VariantImageUploader';
 
 /**
  * @interface VariantTableRowProps
@@ -65,6 +75,7 @@ export function VariantTableRow({
   const { row } = item;
   const isEditing = !isDraft && !isDuplicate && editingRowData?.id === row.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUploadSheet, setShowUploadSheet] = useState(false);
 
   const handleDeleteClick = () => {
     setShowDeleteDialog(true);
@@ -110,19 +121,32 @@ export function VariantTableRow({
     }
   };
 
+  const handlePrimaryChange = (isPrimary: boolean) => {
+    if (isDraft) {
+      onUpdateDraft(row.key, { isPrimary });
+    } else if (isEditing) {
+      onUpdateEditingRow({ isPrimary });
+    }
+  };
+
   return (
     <>
       <TableRow
         key={item.rowKey}
-        className={`group transition-all duration-200 ${
+        className={cn(
+          'group transition-all duration-200',
           isEditing
             ? 'bg-gradient-to-r from-amber-50/60 via-orange-50/40 to-yellow-50/60 border-l-4 border-l-amber-400 shadow-sm'
             : isDuplicate
               ? 'bg-gradient-to-r from-amber-50/40 to-orange-50/30 border-l-4 border-l-amber-400 opacity-75'
               : isDraft
                 ? 'bg-gradient-to-r from-blue-50/40 to-indigo-50/30 hover:from-blue-100/50 hover:to-indigo-100/40 border-l-4 border-l-blue-400 hover:shadow-md'
-                : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm'
-        }`}
+                : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm',
+          {
+            'bg-green-50/50 border-l-4 border-green-400':
+              !isEditing && data.isPrimary,
+          },
+        )}
       >
         {/* Attribute Columns */}
         {visibleEnumAttributes.map((attr) => (
@@ -132,10 +156,15 @@ export function VariantTableRow({
                 variant="secondary"
                 className="bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
               >
-                {row.selections.find((s) => s.attributeId === attr.id)?.optionLabel}
+                {
+                  row.selections.find((s) => s.attributeId === attr.id)
+                    ?.optionLabel
+                }
               </Badge>
             ) : (
-              <span className="text-muted-foreground text-sm font-medium">—</span>
+              <span className="text-muted-foreground text-sm font-medium">
+                —
+              </span>
             )}
           </TableCell>
         ))}
@@ -147,7 +176,9 @@ export function VariantTableRow({
               <Input
                 className="h-8 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
                 value={row.sku}
-                onChange={(e) => onUpdateDraft(row.key, { sku: e.target.value })}
+                onChange={(e) =>
+                  onUpdateDraft(row.key, { sku: e.target.value })
+                }
               />
               {existingSkus.has(row.sku) && (
                 <p className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded border border-red-200">
@@ -257,11 +288,41 @@ export function VariantTableRow({
             >
               <div
                 className={`w-1.5 h-1.5 rounded-full mr-1 inline-block ${
-                  data.status === ProductVariantDTOStatus.ACTIVE ? 'bg-green-500' : 'bg-gray-500'
+                  data.status === ProductVariantDTOStatus.ACTIVE
+                    ? 'bg-green-500'
+                    : 'bg-gray-500'
                 }`}
               ></div>
-              {data.status === ProductVariantDTOStatus.ACTIVE ? 'Active' : 'Inactive'}
+              {data.status === ProductVariantDTOStatus.ACTIVE
+                ? 'Active'
+                : 'Inactive'}
             </Badge>
+          )}
+        </TableCell>
+
+        {/* Primary Column */}
+        <TableCell className="py-2">
+          {isDraft || isEditing ? (
+            <div className="flex items-center justify-center">
+              <Switch
+                checked={!!data.isPrimary}
+                onCheckedChange={handlePrimaryChange}
+                disabled={isViewMode}
+                className={cn({
+                  'opacity-50 cursor-not-allowed': isViewMode,
+                })}
+              />
+            </div>
+          ) : data.isPrimary ? (
+            <div className="flex items-center justify-center">
+              <Badge className="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                Primary
+              </Badge>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <span className="text-muted-foreground text-xs">—</span>
+            </div>
           )}
         </TableCell>
 
@@ -271,6 +332,31 @@ export function VariantTableRow({
             <div className="flex items-center justify-end gap-1">
               {!isDraft && !isDuplicate && !isEditing && (
                 <>
+                  <Sheet
+                    open={showUploadSheet}
+                    onOpenChange={setShowUploadSheet}
+                  >
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs"
+                        title="Upload image"
+                      >
+                        <Image className="h-3 w-3" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                      <SheetHeader>
+                        <SheetTitle>Upload Image</SheetTitle>
+                      </SheetHeader>
+                      <VariantImageUploader
+                        variant={row as ExistingVariantRow}
+                        onUploadComplete={() => setShowUploadSheet(false)}
+                      />
+                    </SheetContent>
+                  </Sheet>
                   <Button
                     variant="ghost"
                     size="sm"

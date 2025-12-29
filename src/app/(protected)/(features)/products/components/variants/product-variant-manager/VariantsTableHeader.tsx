@@ -35,7 +35,10 @@ export function VariantsTableHeader({
         <TableHead className="font-semibold">Price</TableHead>
         <TableHead className="font-semibold">Stock</TableHead>
         <TableHead className="font-semibold">Status</TableHead>
-        {!isViewMode && <TableHead className="font-semibold text-right">Actions</TableHead>}
+        <TableHead className="font-semibold text-center">Primary</TableHead>
+        {!isViewMode && (
+          <TableHead className="font-semibold text-right">Actions</TableHead>
+        )}
       </TableRow>
     </TableHeader>
   );

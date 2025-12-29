@@ -25,6 +25,7 @@ export interface ProductVariantDTO {
   /** @minimum 0 */
   stockQuantity: number;
   status: ProductVariantDTOStatus;
+  isPrimary?: boolean;
   /**
    * @minLength 0
    * @maxLength 50

@@ -27,6 +27,7 @@ export interface VariantSelection {
  * @property {ProductVariantDTOStatus} status - The status of the variant (e.g., ACTIVE, INACTIVE).
  * @property {VariantSelection[]} selections - The array of attribute/option selections that define this variant.
  * @property {boolean} isDuplicate - Whether this variant combination already exists.
+ * @property {boolean} [isPrimary] - Whether this variant should be marked as primary.
  */
 export interface DraftVariantRow {
   key: string;
@@ -36,6 +37,7 @@ export interface DraftVariantRow {
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
   isDuplicate?: boolean;
+  isPrimary?: boolean;
 }
 
 /**
@@ -47,6 +49,7 @@ export interface DraftVariantRow {
  * @property {number} stockQuantity - The available stock for the variant.
  * @property {ProductVariantDTOStatus} status - The status of the variant.
  * @property {VariantSelection[]} selections - The array of attribute/option selections that define this variant.
+ * @property {boolean} [isPrimary] - Whether this variant is marked as primary.
  */
 export interface ExistingVariantRow {
   id: number;
@@ -55,6 +58,7 @@ export interface ExistingVariantRow {
   stockQuantity: number;
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
+  isPrimary?: boolean;
 }
 
 /**

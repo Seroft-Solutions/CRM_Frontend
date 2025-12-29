@@ -48,6 +48,7 @@ export * from './endpoints/product-sub-category-resource/product-sub-category-re
 export * from './endpoints/product-category-resource/product-category-resource.gen';
 export * from './endpoints/import-history-resource/import-history-resource.gen';
 export * from './endpoints/product-images/product-images.gen';
+export * from './endpoints/product-variant-images/product-variant-images.gen';
 export * from './endpoints/master-data-import-controller/master-data-import-controller.gen';
 export * from './endpoints/system-config-resource/system-config-resource.gen';
 export * from './endpoints/system-config-attribute-resource/system-config-attribute-resource.gen';

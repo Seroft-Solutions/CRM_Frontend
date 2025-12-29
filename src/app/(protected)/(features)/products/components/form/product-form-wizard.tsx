@@ -324,6 +324,7 @@ export function ProductForm({ id }: ProductFormProps) {
             price: variantData.price,
             stockQuantity: variantData.stockQuantity,
             status: variantData.status,
+            isPrimary: variantData.isPrimary ?? false,
             product: { id: productId },
           };
 
