@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,13 +136,28 @@ export function VariantTableRow({
     fileInputRef.current?.click();
   };
 
+  useEffect(() => {
+    if (!isDraft && !isDuplicate) {
+      return;
+    }
+
+    if (!row.imageFile) {
+      setDraftImageUrl(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(row.imageFile);
+    setDraftImageUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [isDraft, isDuplicate, row.imageFile]);
+
   const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (isDraft || isDuplicate) {
-      const previewUrl = URL.createObjectURL(file);
-      setDraftImageUrl(previewUrl);
+      onUpdateDraft(row.key, { imageFile: file });
       event.target.value = '';
       return;
     }

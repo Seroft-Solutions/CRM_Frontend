@@ -13,6 +13,7 @@ import {
   useGetProduct,
   useUpdateProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useUploadProductVariantImage } from '@/core/api/generated/spring';
 import { useCreateProductVariant } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { handleProductError, productToast } from '../product-toast';
@@ -277,6 +278,7 @@ export function ProductForm({ id }: ProductFormProps) {
   // Get mutation functions at component level to avoid hook calls in async callbacks
   const createVariantMutation = useCreateProductVariant();
   const createSelectionMutation = useCreateProductVariantSelection();
+  const uploadVariantImageMutation = useUploadProductVariantImage();
 
   const invalidateProductQueries = useCallback(async () => {
     await Promise.all([
@@ -347,6 +349,13 @@ export function ProductForm({ id }: ProductFormProps) {
               });
             }
           }
+
+          if (variantData.imageFile instanceof File && createdVariant?.id) {
+            await uploadVariantImageMutation.mutateAsync({
+              data: { file: variantData.imageFile },
+              params: { variantId: createdVariant.id },
+            });
+          }
         } catch (error) {
           console.error('Failed to create variant:', error);
           toast.error('Failed to create some variants', {
@@ -355,7 +364,7 @@ export function ProductForm({ id }: ProductFormProps) {
         }
       }
     },
-    [createVariantMutation, createSelectionMutation]
+    [createVariantMutation, createSelectionMutation, uploadVariantImageMutation]
   );
 
   const handleImageUploads = useCallback(

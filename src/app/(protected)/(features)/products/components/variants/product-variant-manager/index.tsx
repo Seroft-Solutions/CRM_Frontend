@@ -466,6 +466,7 @@ export function ProductVariantManager({
           stockQuantity: 0,
           status: defaultGeneratedStatus,
           isPrimary: false,
+          imageFile: undefined,
           selections: current,
         };
 
@@ -663,6 +664,7 @@ export function ProductVariantManager({
           stockQuantity: variant.stockQuantity,
           status: 'ACTIVE',
           isPrimary: variant.isPrimary ?? false,
+          imageFile: variant.imageFile,
           selections: variant.selections.map((sel) => ({
             status: 'ACTIVE',
             attribute: { id: sel.attributeId },
