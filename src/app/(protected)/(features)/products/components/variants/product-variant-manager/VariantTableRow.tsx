@@ -394,16 +394,15 @@ export function VariantTableRow({
           <TableCell className="py-2 text-right">
             <div className="flex items-center justify-end gap-1">
               <Button
-                variant="outline"
-                size="sm"
+                variant="ghost"
+                size="icon"
                 type="button"
                 onClick={() => setIsImageSheetOpen(true)}
                 disabled={!canEditImages}
-                className="h-7 px-2 text-xs"
+                className="h-7 w-7"
                 title="Manage images"
               >
-                <Image className="h-3 w-3 mr-1" />
-                Picture
+                <Image className="h-3 w-3" />
               </Button>
 
               {!isDraft && !isDuplicate && !isEditing && (

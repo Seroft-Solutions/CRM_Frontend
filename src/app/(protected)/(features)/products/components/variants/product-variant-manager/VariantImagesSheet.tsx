@@ -86,16 +86,7 @@ export function VariantImagesSheet({
     }
   }, [open, initialSlotState]);
 
-  const hasAllSlots = VARIANT_IMAGE_ORDER.every(
-    (slot) => slotState[slot].file || slotState[slot].existing
-  );
-
   const handleSave = async () => {
-    if (!hasAllSlots) {
-      toast.error('Please add all three images before saving.');
-      return;
-    }
-
     if (!variantId) {
       const filesToSave = VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
         acc[slot] = slotState[slot].file ?? null;
@@ -142,28 +133,16 @@ export function VariantImagesSheet({
         uploadsBySlot[slot] = uploaded;
       }
 
-      const finalImages: VariantImageSlotMap<ProductVariantImageDTO | undefined> = {
-        front: undefined,
-        back: undefined,
-        side: undefined,
-      };
-
-      VARIANT_IMAGE_ORDER.forEach((slot) => {
+      const finalImages = VARIANT_IMAGE_ORDER.map((slot) => {
         const { existing } = slotState[slot];
-        finalImages[slot] = uploadsBySlot[slot] ?? existing ?? undefined;
-      });
+        return uploadsBySlot[slot] ?? existing ?? undefined;
+      }).filter((image): image is ProductVariantImageDTO => Boolean(image));
 
-      const missingSlots = VARIANT_IMAGE_ORDER.filter((slot) => !finalImages[slot]);
-      if (missingSlots.length > 0) {
-        toast.error('All three image slots are required.');
-        return;
-      }
-
-      const reorderIds = VARIANT_IMAGE_ORDER.map((slot) => finalImages[slot]!.id!).filter(
+      const reorderIds = finalImages.map((image) => image.id!).filter(
         (id) => typeof id === 'number'
       );
 
-      if (reorderIds.length === VARIANT_IMAGE_ORDER.length) {
+      if (reorderIds.length > 0) {
         await reorderImagesMutation.mutateAsync({ variantId, imageIds: reorderIds });
       }
 
@@ -224,7 +203,7 @@ export function VariantImagesSheet({
           <div className="rounded-md bg-slate-50 p-3 text-[11px] text-slate-600">
             <p className="font-semibold text-slate-700">Guidelines</p>
             <ul className="mt-1 space-y-1">
-              <li>• Exactly 3 images required (Front, Back, Side)</li>
+              <li>• Front, Back, Side image slots</li>
               <li>• Max 5 MB per image</li>
               <li>• JPG, PNG, WebP</li>
             </ul>
