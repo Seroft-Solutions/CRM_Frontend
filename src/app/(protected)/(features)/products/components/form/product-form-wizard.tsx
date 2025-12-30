@@ -103,6 +103,11 @@ const renameImageFileForOrientation = (
   });
 };
 
+const normalizeSku = (value: string, fallback = 'PROD') => {
+  const sanitized = value.replace(/[^A-Za-z0-9_-]+/g, '');
+  return sanitized.length > 0 ? sanitized : fallback;
+};
+
 function ProductFormContent({
   id,
   onEntityData,
@@ -332,7 +337,7 @@ export function ProductForm({ id }: ProductFormProps) {
         try {
           // Create the variant
           const variantPayload = {
-            sku: variantData.sku,
+            sku: normalizeSku(String(variantData.sku ?? ''), 'PROD'),
             price: variantData.price,
             stockQuantity: variantData.stockQuantity,
             status: variantData.status,

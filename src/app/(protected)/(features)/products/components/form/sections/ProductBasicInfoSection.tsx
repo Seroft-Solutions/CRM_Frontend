@@ -147,7 +147,7 @@ export function ProductBasicInfoSection({
             {/* Description */}
             <div className="space-y-1 md:col-span-4">
               <div className="text-xs font-semibold text-slate-600">Description</div>
-              <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border min-h-[70px]">
+              <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border h-9">
                 {product.description || 'Not specified'}
               </div>
             </div>
@@ -157,7 +157,7 @@ export function ProductBasicInfoSection({
             {/* Remark */}
             <div className="space-y-1 md:col-span-2">
               <div className="text-xs font-semibold text-slate-600">Remark / Notes</div>
-              <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border min-h-[70px]">
+              <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border h-9">
                 {product.remark || 'Not specified'}
               </div>
             </div>
@@ -319,14 +319,14 @@ export function ProductBasicInfoSection({
             control={form.control}
             name="description"
             render={({ field }) => (
-              <FormItem className="space-y-1 md:col-span-4">
+              <FormItem className="space-y-1 md:col-span-1">
                 <FormLabel className="text-xs font-semibold text-slate-600">Description</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     value={field.value || ''}
                     placeholder="Describe the product..."
-                    className="min-h-[70px] resize-none text-sm"
+                    className="h-9 resize-none text-sm"
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       form.trigger('description');
@@ -345,7 +345,7 @@ export function ProductBasicInfoSection({
             control={form.control}
             name="remark"
             render={({ field }) => (
-              <FormItem className="space-y-1 md:col-span-2">
+              <FormItem className="space-y-1 md:col-span-1">
                 <FormLabel className="text-xs font-semibold text-slate-600">
                   Remark / Notes
                 </FormLabel>
@@ -354,7 +354,7 @@ export function ProductBasicInfoSection({
                     {...field}
                     value={field.value || ''}
                     placeholder="Additional notes..."
-                    className="min-h-[70px] resize-none text-sm"
+                    className="h-9 resize-none text-sm"
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       form.trigger('remark');

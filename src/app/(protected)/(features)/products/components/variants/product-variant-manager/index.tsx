@@ -74,6 +74,10 @@ export function ProductVariantManager({
       },
       {} as Record<(typeof VARIANT_IMAGE_ORDER)[number], File | null>
     );
+  const normalizeSku = (value: string, fallback: string) => {
+    const sanitized = value.replace(/[^A-Za-z0-9_-]+/g, '');
+    return sanitized.length > 0 ? sanitized : fallback;
+  };
 
   // Combine pre-selected and user-selected options for visual display
   const selectedOptionIdsByAttributeId = useMemo(() => {
@@ -429,7 +433,8 @@ export function ProductVariantManager({
   const draftCombinations = useMemo(() => {
     if (!variantConfigId || enumAttributeOptions.length === 0 || isLoadingOptions) return [];
 
-    const basePrefix = (productName.substring(0, 4) || 'PROD').toUpperCase();
+    const basePrefixRaw = (productName.substring(0, 4) || 'PROD').toUpperCase();
+    const basePrefix = normalizeSku(basePrefixRaw, 'PROD');
 
     const selectionsForCrossProduct = enumAttributeOptions
       .map(({ attribute, options }) => ({
@@ -463,7 +468,7 @@ export function ProductVariantManager({
           basePrefix,
           ...current.map((sel) => cleanOptionCode(sel.optionCode)).filter(Boolean),
         ];
-        const sku = skuParts.join('-');
+        const sku = normalizeSku(skuParts.join('-'), basePrefix);
         const key = buildCombinationKey(
           current.map((s) => ({ attributeId: s.attributeId, optionId: s.optionId }))
         );
@@ -793,7 +798,7 @@ export function ProductVariantManager({
 
     const payload: ProductVariantDTO = {
       id: editingRowData.id,
-      sku: editingRowData.sku,
+      sku: normalizeSku(editingRowData.sku, 'PROD'),
       price: editingRowData.price,
       stockQuantity: editingRowData.stockQuantity,
       status: editingRowData.status,
