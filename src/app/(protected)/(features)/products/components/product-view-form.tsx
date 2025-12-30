@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { ProductBasicInfoSection } from './form/sections/ProductBasicInfoSection';
 import { ProductClassificationSection } from './form/sections/ProductClassificationSection';
-import { ProductImagesSidebar } from './form/sections/ProductImagesSidebar';
+import Link from 'next/link';
 
 interface ProductViewFormProps {
   id: number;
@@ -16,35 +16,20 @@ interface ProductViewFormProps {
 
 function ProductViewSkeleton() {
   return (
-    <div className="grid lg:grid-cols-[1fr_280px] gap-3">
-      <div className="space-y-3">
-        {[0, 1, 2, 3].map((index) => (
-          <Card key={index} className="border shadow-md">
-            <CardHeader className="pb-2 pt-3 px-4">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="mt-2 h-3 w-56" />
-            </CardHeader>
-            <CardContent className="space-y-2 px-4 pb-3">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-4/5" />
-              <Skeleton className="h-8 w-2/3" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <div className="lg:sticky lg:top-6 lg:self-start space-y-3">
-        <Card className="border shadow-md">
-          <CardHeader className="pb-2 pt-3 px-3">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="mt-2 h-3 w-36" />
+    <div className="space-y-3">
+      {[0, 1, 2].map((index) => (
+        <Card key={index} className="border shadow-md">
+          <CardHeader className="pb-2 pt-3 px-4">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="mt-2 h-3 w-56" />
           </CardHeader>
-          <CardContent className="space-y-2 px-3 pb-3">
-            <Skeleton className="h-24 w-24" />
-            <Skeleton className="h-24 w-24" />
-            <Skeleton className="h-24 w-24" />
+          <CardContent className="space-y-2 px-4 pb-3">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-4/5" />
+            <Skeleton className="h-8 w-2/3" />
           </CardContent>
         </Card>
-      </div>
+      ))}
     </div>
   );
 }
@@ -83,26 +68,25 @@ export function ProductViewForm({ id }: ProductViewFormProps) {
   }
 
   return (
-    <div className="grid lg:grid-cols-[1fr_280px] gap-3">
-      {/* Main Form Area - Left */}
-      <div className="space-y-3">
-        {/* Basic Information Section */}
-        <ProductBasicInfoSection isViewMode={true} product={product} />
+    <div className="space-y-3">
+      {/* Basic Information Section */}
+      <ProductBasicInfoSection isViewMode={true} product={product} />
 
-        {/* Classification Section */}
-        <ProductClassificationSection isViewMode={true} product={product} productId={id} />
-      </div>
+      {/* Classification Section */}
+      <ProductClassificationSection isViewMode={true} product={product} productId={id} />
 
-      {/* Right Sidebar - Images & Actions */}
-      <div className="lg:sticky lg:top-6 lg:self-start space-y-3">
-        <ProductImagesSidebar
-          existingImages={product.images ?? []}
-          onCancel={() => {}}
-          isSubmitting={false}
-          isViewMode={true}
-          productId={id}
-        />
-      </div>
+      <Card className="border shadow-md">
+        <CardContent className="p-3">
+          <div className="flex justify-end">
+            <Button asChild variant="outline" className="h-9 gap-2 text-sm">
+              <Link href={`/products/${id}/edit`}>
+                <Pencil className="h-4 w-4" />
+                Edit Product
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

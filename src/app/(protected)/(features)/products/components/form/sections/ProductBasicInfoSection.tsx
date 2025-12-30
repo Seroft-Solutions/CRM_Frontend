@@ -145,7 +145,7 @@ export function ProductBasicInfoSection({
             </div>
 
             {/* Description */}
-            <div className="space-y-1 md:col-span-4">
+            <div className="space-y-1 md:col-span-1">
               <div className="text-xs font-semibold text-slate-600">Description</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border h-9">
                 {product.description || 'Not specified'}
@@ -155,7 +155,7 @@ export function ProductBasicInfoSection({
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             {/* Remark */}
-            <div className="space-y-1 md:col-span-2">
+            <div className="space-y-1 md:col-span-1">
               <div className="text-xs font-semibold text-slate-600">Remark / Notes</div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border h-9">
                 {product.remark || 'Not specified'}
