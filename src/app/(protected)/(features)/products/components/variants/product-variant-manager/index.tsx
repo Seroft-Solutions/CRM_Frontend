@@ -18,6 +18,7 @@ import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/Pro
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
 
 import { DraftVariantRow, ExistingVariantRow, VariantSelection } from './types';
+import { VARIANT_IMAGE_ORDER } from '@/features/product-variant-images/utils/variant-image-slots';
 import { NoVariantConfigPlaceholder } from './NoVariantConfigPlaceholder';
 import { VariantGenerator } from './VariantGenerator';
 import { VariantsTable } from './VariantsTable';
@@ -65,6 +66,14 @@ export function ProductVariantManager({
   >({});
   const [draftVariantsByKey, setDraftVariantsByKey] = useState<Record<string, DraftVariantRow>>({});
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
+  const createEmptyImageFiles = () =>
+    VARIANT_IMAGE_ORDER.reduce(
+      (acc, slot) => {
+        acc[slot] = null;
+        return acc;
+      },
+      {} as Record<(typeof VARIANT_IMAGE_ORDER)[number], File | null>
+    );
 
   // Combine pre-selected and user-selected options for visual display
   const selectedOptionIdsByAttributeId = useMemo(() => {
@@ -466,7 +475,7 @@ export function ProductVariantManager({
           stockQuantity: 0,
           status: defaultGeneratedStatus,
           isPrimary: false,
-          imageFile: undefined,
+          imageFiles: createEmptyImageFiles(),
           selections: current,
         };
 
@@ -603,12 +612,36 @@ export function ProductVariantManager({
   ]);
 
   // #region Combined Logic & UI State
+  const primarySelection = useMemo(() => {
+    const draftPrimary = newDraftVariants.find((variant) => variant.isPrimary)?.key;
+    if (draftPrimary) {
+      return { kind: 'draft' as const, key: draftPrimary };
+    }
+
+    if (editingRowData?.isPrimary) {
+      return { kind: 'existing' as const, key: String(editingRowData.id) };
+    }
+
+    const existingPrimary = displayExistingVariantRows.find((variant) => variant.isPrimary)?.id;
+    if (existingPrimary) {
+      return { kind: 'existing' as const, key: String(existingPrimary) };
+    }
+
+    return null;
+  }, [newDraftVariants, editingRowData, displayExistingVariantRows]);
+
   const combinedRows = useMemo(() => {
     return [
       ...newDraftVariants.map((d) => ({
         kind: 'draft' as const,
         rowKey: `draft-${d.key}`,
-        row: d,
+        row: {
+          ...d,
+          isPrimary:
+            primarySelection?.kind === 'draft'
+              ? d.key === primarySelection.key
+              : Boolean(d.isPrimary) && !primarySelection,
+        },
       })),
       ...duplicateDraftVariants.map((d) => ({
         kind: 'duplicate' as const,
@@ -618,10 +651,16 @@ export function ProductVariantManager({
       ...displayExistingVariantRows.map((e) => ({
         kind: 'existing' as const,
         rowKey: `existing-${e.id}`,
-        row: e,
+        row: {
+          ...e,
+          isPrimary:
+            primarySelection?.kind === 'existing'
+              ? String(e.id) === primarySelection.key
+              : Boolean(e.isPrimary) && !primarySelection,
+        },
       })),
     ];
-  }, [newDraftVariants, duplicateDraftVariants, displayExistingVariantRows]);
+  }, [newDraftVariants, duplicateDraftVariants, displayExistingVariantRows, primarySelection]);
 
   const visibleEnumAttributes = useMemo(() => {
     return enumAttributes
@@ -664,7 +703,7 @@ export function ProductVariantManager({
           stockQuantity: variant.stockQuantity,
           status: 'ACTIVE',
           isPrimary: variant.isPrimary ?? false,
-          imageFile: variant.imageFile,
+          imageFiles: variant.imageFiles,
           selections: variant.selections.map((sel) => ({
             status: 'ACTIVE',
             attribute: { id: sel.attributeId },
@@ -716,11 +755,41 @@ export function ProductVariantManager({
 
   const handleUpdateEditingRow = (updatedValues: Partial<ExistingVariantRow>) => {
     if (!editingRowData) return;
+    if (updatedValues.isPrimary) {
+      setDraftVariantsByKey((prev) => {
+        const next: Record<string, DraftVariantRow> = {};
+        Object.entries(prev).forEach(([key, value]) => {
+          next[key] = value.isPrimary ? { ...value, isPrimary: false } : value;
+        });
+        return next;
+      });
+    }
     setEditingRowData((prev) => (prev ? { ...prev, ...updatedValues } : null));
   };
 
   const handleSaveExisting = async () => {
     if (!editingRowData) return;
+
+    if (editingRowData.isPrimary) {
+      const otherPrimaries = existingVariantRows.filter(
+        (variant) => variant.isPrimary && variant.id !== editingRowData.id
+      );
+
+      for (const variant of otherPrimaries) {
+        await updateVariantMutation.mutateAsync({
+          id: variant.id,
+          data: {
+            id: variant.id,
+            sku: variant.sku,
+            price: variant.price,
+            stockQuantity: variant.stockQuantity,
+            status: variant.status,
+            isPrimary: false,
+            product: productId ? { id: productId } : undefined,
+          },
+        });
+      }
+    }
 
     const payload: ProductVariantDTO = {
       id: editingRowData.id,
@@ -782,7 +851,12 @@ export function ProductVariantManager({
 
   const updateDraft = (key: string, updatedValues: Partial<DraftVariantRow>) => {
     setDraftVariantsByKey((prev) => ({
-      ...prev,
+      ...Object.fromEntries(
+        Object.entries(prev).map(([rowKey, row]) => [
+          rowKey,
+          updatedValues.isPrimary && rowKey !== key ? { ...row, isPrimary: false } : row,
+        ])
+      ),
       [key]: { ...prev[key], ...updatedValues },
     }));
   };

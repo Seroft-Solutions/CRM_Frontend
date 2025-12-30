@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import {
@@ -22,10 +21,15 @@ import {
 } from '@/components/ui/dialog';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
-import { useGetAllProductVariantImagesByVariant, useUploadProductVariantImage } from '@/core/api/generated/spring';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
 import { Image, Pencil, Save, Trash2, X } from 'lucide-react';
-import { toast } from 'sonner';
 import { CombinedVariantRow, DraftVariantRow, ExistingVariantRow } from './types';
+import { VariantImagesSheet } from './VariantImagesSheet';
+import {
+  mapVariantImagesToSlots,
+  VARIANT_IMAGE_ORDER,
+  type VariantImageSlotMap,
+} from '@/features/product-variant-images/utils/variant-image-slots';
 
 /**
  * @interface VariantTableRowProps
@@ -69,11 +73,8 @@ export function VariantTableRow({
   const { row } = item;
   const isEditing = !isDraft && !isDuplicate && editingRowData?.id === row.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [draftImageUrl, setDraftImageUrl] = useState<string | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const uploadVariantImage = useUploadProductVariantImage();
+  const [draftFrontImageUrl, setDraftFrontImageUrl] = useState<string | null>(null);
+  const [isImageSheetOpen, setIsImageSheetOpen] = useState(false);
   const variantId = !isDraft && !isDuplicate ? (row as ExistingVariantRow).id : undefined;
   const { data: variantImages } = useGetAllProductVariantImagesByVariant(variantId ?? 0, {
     query: { enabled: !!variantId },
@@ -131,62 +132,48 @@ export function VariantTableRow({
     }
   };
 
-  const handleImageButtonClick = () => {
-    if (isViewMode) return;
-    fileInputRef.current?.click();
-  };
-
   useEffect(() => {
     if (!isDraft && !isDuplicate) {
       return;
     }
 
-    if (!row.imageFile) {
-      setDraftImageUrl(null);
+    if (!row.imageFiles?.front) {
+      setDraftFrontImageUrl(null);
       return;
     }
 
-    const previewUrl = URL.createObjectURL(row.imageFile);
-    setDraftImageUrl(previewUrl);
+    const previewUrl = URL.createObjectURL(row.imageFiles.front);
+    setDraftFrontImageUrl(previewUrl);
 
     return () => URL.revokeObjectURL(previewUrl);
-  }, [isDraft, isDuplicate, row.imageFile]);
-
-  const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (isDraft || isDuplicate) {
-      onUpdateDraft(row.key, { imageFile: file });
-      event.target.value = '';
-      return;
-    }
-
-    setIsUploadingImage(true);
-    try {
-      const result = await uploadVariantImage.mutateAsync({
-        data: { file },
-        params: { variantId: (row as ExistingVariantRow).id },
-      });
-      setUploadedImageUrl(result.thumbnailUrl ?? result.cdnUrl ?? null);
-      toast.success('Variant image uploaded');
-    } catch (error) {
-      toast.error('Failed to upload variant image');
-    } finally {
-      setIsUploadingImage(false);
-      event.target.value = '';
-    }
-  };
+  }, [isDraft, isDuplicate, row.imageFiles]);
 
   const existingImageUrl = useMemo(() => {
     if (!variantImages || variantImages.length === 0) return null;
-    const primaryImage =
-      variantImages.find((img) => img.isPrimary) ||
-      variantImages[0];
-    return primaryImage?.thumbnailUrl || primaryImage?.cdnUrl || null;
+    const slots = mapVariantImagesToSlots(variantImages);
+    const frontImage = slots.front ?? variantImages[0];
+    return frontImage?.thumbnailUrl || frontImage?.cdnUrl || null;
   }, [variantImages]);
 
-  const imageUrl = uploadedImageUrl ?? draftImageUrl ?? existingImageUrl;
+  const imageUrl = draftFrontImageUrl ?? existingImageUrl;
+  const draftImageFiles = useMemo<VariantImageSlotMap<File | null>>(() => {
+    if (!isDraft && !isDuplicate) {
+      return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
+        acc[slot] = null;
+        return acc;
+      }, {} as VariantImageSlotMap<File | null>);
+    }
+
+    return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
+      acc[slot] = row.imageFiles?.[slot] ?? null;
+      return acc;
+    }, {} as VariantImageSlotMap<File | null>);
+  }, [isDraft, isDuplicate, row.imageFiles]);
+  const handleDraftImagesSave =
+    isDraft || isDuplicate
+      ? (files: VariantImageSlotMap<File | null>) => onUpdateDraft(row.key, { imageFiles: files })
+      : undefined;
+  const canEditImages = !isViewMode && !isDuplicate;
 
   return (
     <>
@@ -378,13 +365,15 @@ export function VariantTableRow({
         <TableCell className="py-2">
           {isDraft || isEditing ? (
             <div className="flex items-center justify-center">
-              <Switch
+              <input
+                type="radio"
                 checked={!!data.isPrimary}
-                onCheckedChange={handlePrimaryChange}
+                onChange={() => handlePrimaryChange(true)}
                 disabled={isViewMode}
-                className={cn({
-                  'opacity-50 cursor-not-allowed': isViewMode,
-                })}
+                className={cn(
+                  'h-4 w-4 accent-primary',
+                  isViewMode && 'opacity-50 cursor-not-allowed'
+                )}
               />
             </div>
           ) : data.isPrimary ? (
@@ -404,23 +393,17 @@ export function VariantTableRow({
         {!isViewMode && (
           <TableCell className="py-2 text-right">
             <div className="flex items-center justify-end gap-1">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelected}
-                className="hidden"
-              />
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 type="button"
-                onClick={handleImageButtonClick}
-                disabled={isUploadingImage}
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 hover:scale-105 px-2 h-7 text-xs disabled:opacity-50"
-                title="Upload image"
+                onClick={() => setIsImageSheetOpen(true)}
+                disabled={!canEditImages}
+                className="h-7 px-2 text-xs"
+                title="Manage images"
               >
-                <Image className="h-3 w-3" />
+                <Image className="h-3 w-3 mr-1" />
+                Picture
               </Button>
 
               {!isDraft && !isDuplicate && !isEditing && (
@@ -517,6 +500,16 @@ export function VariantTableRow({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <VariantImagesSheet
+        open={isImageSheetOpen}
+        onOpenChange={setIsImageSheetOpen}
+        variantId={variantId}
+        variantLabel={row.sku || 'Variant'}
+        existingImages={variantImages ?? []}
+        initialFiles={draftImageFiles}
+        onSaveDraft={handleDraftImagesSave}
+      />
     </>
   );
 }

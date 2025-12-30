@@ -285,7 +285,7 @@ export const productFormConfig: FormConfig = {
         createPermission: 'systemConfig:create:inline',
       },
       ui: {
-        label: 'Variant Configuration (Optional)',
+        label: 'Variant Configuration',
         placeholder: 'Select if product has variants (e.g., sizes, colors)',
         icon: '⚙️',
         helpText:

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,12 @@ import { ClickableId } from '@/components/clickable-id';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
+import {
+  mapVariantImagesToSlots,
+  VARIANT_IMAGE_ORDER,
+} from '@/features/product-variant-images/utils/variant-image-slots';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -86,6 +93,36 @@ export function ProductTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
+  const shouldFetchVariants = !product.variants?.length && Boolean(product.id);
+  const { data: fetchedVariants = [] } = useGetAllProductVariants(
+    shouldFetchVariants
+      ? {
+          'productId.equals': product.id!,
+          size: 200,
+          sort: ['id,asc'],
+        }
+      : undefined,
+    {
+      query: { enabled: shouldFetchVariants },
+    }
+  );
+  const variants = product.variants?.length ? product.variants : fetchedVariants ?? [];
+  const primaryVariant = variants.find((variant) => variant.isPrimary) ?? variants[0];
+  const primaryVariantId = primaryVariant?.id;
+  const { data: primaryVariantImages = [] } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: { enabled: !!primaryVariantId },
+    }
+  );
+  const primaryVariantImageUrls = useMemo(() => {
+    const slots = mapVariantImagesToSlots(primaryVariantImages);
+    return VARIANT_IMAGE_ORDER.map((slot) => {
+      const image = slots[slot];
+      return image?.thumbnailUrl || image?.cdnUrl || null;
+    });
+  }, [primaryVariantImages]);
+
   const currentStatus = product.status;
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
@@ -113,7 +150,7 @@ export function ProductTableRow({
       {visibleColumns.map((column) => {
         const getColumnClassName = () => {
           if (column.id === 'image') {
-            return 'px-2 sm:px-3 py-2 w-[60px]';
+            return 'px-2 sm:px-3 py-2 w-[140px]';
           }
 
           if (['description', 'remark'].includes(column.id)) {
@@ -206,20 +243,17 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'image') {
-                    const images = product.images as
-                      | Array<{ cdnUrl?: string; isPrimary?: boolean }>
-                      | undefined;
-                    const primaryImageUrl =
-                      images?.find((img) => img.isPrimary === true)?.cdnUrl ||
-                      images?.[0]?.cdnUrl ||
-                      null;
-
                     return (
-                      <ProductImageThumbnail
-                        imageUrl={primaryImageUrl}
-                        productName={product.name || 'Product'}
-                        size={40}
-                      />
+                      <div className="flex items-center gap-1">
+                        {primaryVariantImageUrls.map((url, index) => (
+                          <ProductImageThumbnail
+                            key={`${product.id}-variant-${index}`}
+                            imageUrl={url}
+                            productName={product.name || 'Product'}
+                            size={32}
+                          />
+                        ))}
+                      </div>
                     );
                   }
 

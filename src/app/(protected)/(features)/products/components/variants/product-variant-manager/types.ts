@@ -1,4 +1,5 @@
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
+import type { VariantImageSlotMap } from '@/features/product-variant-images/utils/variant-image-slots';
 
 /**
  * @interface VariantSelection
@@ -28,7 +29,7 @@ export interface VariantSelection {
  * @property {VariantSelection[]} selections - The array of attribute/option selections that define this variant.
  * @property {boolean} isDuplicate - Whether this variant combination already exists.
  * @property {boolean} [isPrimary] - Whether this variant should be marked as primary.
- * @property {File} [imageFile] - Optional image file selected for this variant.
+ * @property {VariantImageSlotMap<File | null>} [imageFiles] - Optional image files for front/back/side slots.
  */
 export interface DraftVariantRow {
   key: string;
@@ -39,7 +40,7 @@ export interface DraftVariantRow {
   selections: VariantSelection[];
   isDuplicate?: boolean;
   isPrimary?: boolean;
-  imageFile?: File;
+  imageFiles?: VariantImageSlotMap<File | null>;
 }
 
 /**

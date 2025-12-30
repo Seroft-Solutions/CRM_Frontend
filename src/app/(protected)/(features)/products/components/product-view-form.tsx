@@ -7,9 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { ProductBasicInfoSection } from './form/sections/ProductBasicInfoSection';
-import { ProductPricingSection } from './form/sections/ProductPricingSection';
 import { ProductClassificationSection } from './form/sections/ProductClassificationSection';
-import { ProductVariantConfigSection } from './form/sections/ProductVariantConfigSection';
 import { ProductImagesSidebar } from './form/sections/ProductImagesSidebar';
 
 interface ProductViewFormProps {
@@ -91,14 +89,8 @@ export function ProductViewForm({ id }: ProductViewFormProps) {
         {/* Basic Information Section */}
         <ProductBasicInfoSection isViewMode={true} product={product} />
 
-        {/* Pricing Section */}
-        <ProductPricingSection isViewMode={true} product={product} />
-
         {/* Classification Section */}
-        <ProductClassificationSection isViewMode={true} product={product} />
-
-        {/* Variant Configuration Section */}
-        <ProductVariantConfigSection productId={id} isViewMode={true} product={product} />
+        <ProductClassificationSection isViewMode={true} product={product} productId={id} />
       </div>
 
       {/* Right Sidebar - Images & Actions */}

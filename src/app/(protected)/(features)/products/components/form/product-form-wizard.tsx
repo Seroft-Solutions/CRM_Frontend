@@ -14,7 +14,11 @@ import {
   useUpdateProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useUploadProductVariantImage } from '@/core/api/generated/spring';
-import { useCreateProductVariant } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import {
+  getAllProductVariants,
+  useCreateProductVariant,
+  useUpdateProductVariant,
+} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { handleProductError, productToast } from '../product-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
@@ -29,6 +33,10 @@ import {
   type OrientationFieldName,
 } from '@/features/product-images/utils/orientation';
 import type { RenamableProductImageFile } from '@/features/product-images/types';
+import {
+  VARIANT_IMAGE_ORDER,
+  type VariantImageSlotMap,
+} from '@/features/product-variant-images/utils/variant-image-slots';
 
 interface ProductFormProps {
   id?: number;
@@ -250,7 +258,6 @@ function ProductFormContent({
             config={config}
             actions={actions}
             entity={entity}
-            existingImages={entity?.images}
             onCancel={handleCancel}
             isSubmitting={state.isSubmitting}
             productId={id}
@@ -277,6 +284,7 @@ export function ProductForm({ id }: ProductFormProps) {
 
   // Get mutation functions at component level to avoid hook calls in async callbacks
   const createVariantMutation = useCreateProductVariant();
+  const updateVariantMutation = useUpdateProductVariant();
   const createSelectionMutation = useCreateProductVariantSelection();
   const uploadVariantImageMutation = useUploadProductVariantImage();
 
@@ -318,6 +326,8 @@ export function ProductForm({ id }: ProductFormProps) {
         return;
       }
 
+      let primaryCreatedId: number | null = null;
+
       for (const variantData of variants) {
         try {
           // Create the variant
@@ -350,11 +360,21 @@ export function ProductForm({ id }: ProductFormProps) {
             }
           }
 
-          if (variantData.imageFile instanceof File && createdVariant?.id) {
-            await uploadVariantImageMutation.mutateAsync({
-              data: { file: variantData.imageFile },
-              params: { variantId: createdVariant.id },
-            });
+          if (variantData.isPrimary && createdVariant?.id) {
+            primaryCreatedId = createdVariant.id;
+          }
+
+          const imageFiles = variantData.imageFiles as VariantImageSlotMap<File | null> | undefined;
+          if (imageFiles && createdVariant?.id) {
+            for (const slot of VARIANT_IMAGE_ORDER) {
+              const file = imageFiles[slot];
+              if (!file) continue;
+
+              await uploadVariantImageMutation.mutateAsync({
+                data: { file },
+                params: { variantId: createdVariant.id },
+              });
+            }
           }
         } catch (error) {
           console.error('Failed to create variant:', error);
@@ -363,8 +383,44 @@ export function ProductForm({ id }: ProductFormProps) {
           });
         }
       }
+
+      if (primaryCreatedId) {
+        try {
+          const existingVariants = await getAllProductVariants({
+            'productId.equals': productId,
+            size: 1000,
+            sort: ['id,asc'],
+          });
+
+          const otherPrimaries = (existingVariants ?? []).filter(
+            (variant) => variant.isPrimary && variant.id !== primaryCreatedId
+          );
+
+          for (const variant of otherPrimaries) {
+            await updateVariantMutation.mutateAsync({
+              id: variant.id!,
+              data: {
+                id: variant.id!,
+                sku: variant.sku,
+                price: variant.price,
+                stockQuantity: variant.stockQuantity,
+                status: variant.status,
+                isPrimary: false,
+                product: { id: productId },
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Failed to normalize primary variant:', error);
+        }
+      }
     },
-    [createVariantMutation, createSelectionMutation, uploadVariantImageMutation]
+    [
+      createVariantMutation,
+      createSelectionMutation,
+      uploadVariantImageMutation,
+      updateVariantMutation,
+    ]
   );
 
   const handleImageUploads = useCallback(

@@ -2,19 +2,16 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import type { ProductImageDTO } from '@/core/api/generated/spring/schemas';
 import type { FormActions, FormConfig } from './form-types';
 import { ProductBasicInfoSection } from './sections/ProductBasicInfoSection';
-import { ProductPricingSection } from './sections/ProductPricingSection';
 import { ProductClassificationSection } from './sections/ProductClassificationSection';
-import { ProductVariantConfigSection } from './sections/ProductVariantConfigSection';
-import { ProductImagesSidebar } from './sections/ProductImagesSidebar';
+import { ProductFormActions } from './sections/ProductFormActions';
 
 interface ProductFormSinglePageProps {
   form: UseFormReturn<Record<string, unknown>>;
   config: FormConfig;
   actions: FormActions;
-  existingImages?: ProductImageDTO[];
+  entity?: unknown;
   onCancel: () => void;
   isSubmitting?: boolean;
   productId?: number;
@@ -24,42 +21,24 @@ export function ProductFormSinglePage({
   form,
   config,
   actions,
-  existingImages,
   onCancel,
   isSubmitting = false,
   productId,
 }: ProductFormSinglePageProps) {
   return (
-    <div className="grid lg:grid-cols-[1fr_280px] gap-3">
-      {/* Main Form Area - Left */}
-      <div className="space-y-3">
-        {/* Basic Information Section */}
-        <ProductBasicInfoSection form={form} />
+    <div className="space-y-3">
+      {/* Basic Information Section */}
+      <ProductBasicInfoSection form={form} />
 
-        {/* Pricing Section */}
-        <ProductPricingSection form={form} />
+      {/* Classification Section */}
+      <ProductClassificationSection
+        form={form}
+        config={config}
+        actions={actions}
+        productId={productId}
+      />
 
-        {/* Classification Section */}
-        <ProductClassificationSection form={form} config={config} actions={actions} />
-
-        {/* Variant Configuration Section */}
-        <ProductVariantConfigSection
-          form={form}
-          config={config}
-          actions={actions}
-          productId={productId}
-        />
-      </div>
-
-      {/* Right Sidebar - Images & Actions */}
-      <div className="lg:sticky lg:top-6 lg:self-start space-y-3">
-        <ProductImagesSidebar
-          form={form}
-          existingImages={existingImages}
-          onCancel={onCancel}
-          isSubmitting={isSubmitting}
-        />
-      </div>
+      <ProductFormActions onCancel={onCancel} isSubmitting={isSubmitting} />
     </div>
   );
 }
