@@ -326,7 +326,7 @@ export function ProductBasicInfoSection({
                     {...field}
                     value={field.value || ''}
                     placeholder="Describe the product..."
-                    className="h-9 resize-none text-sm"
+                    className="h-9 min-h-9 resize-none text-sm overflow-hidden"
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       form.trigger('description');
@@ -354,7 +354,7 @@ export function ProductBasicInfoSection({
                     {...field}
                     value={field.value || ''}
                     placeholder="Additional notes..."
-                    className="h-9 resize-none text-sm"
+                    className="h-9 min-h-9 resize-none text-sm overflow-hidden"
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       form.trigger('remark');
