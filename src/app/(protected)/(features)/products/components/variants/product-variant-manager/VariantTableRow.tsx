@@ -174,6 +174,21 @@ export function VariantTableRow({
       ? (files: VariantImageSlotMap<File | null>) => onUpdateDraft(row.key, { imageFiles: files })
       : undefined;
   const canEditImages = !isViewMode && !isDuplicate;
+  const isColorAttribute = (attr: SystemConfigAttributeDTO) =>
+    attr.name?.toLowerCase() === 'color' || attr.label?.toLowerCase() === 'color';
+  const resolveColorCode = (code?: string) => {
+    const value = code?.trim();
+    if (!value) return undefined;
+    return /^#[0-9a-fA-F]{6}$/.test(value) ? value : undefined;
+  };
+  const resolveReadableTextColor = (hex: string) => {
+    const value = hex.replace('#', '');
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6 ? '#111827' : '#FFFFFF';
+  };
 
   return (
     <>
@@ -195,25 +210,41 @@ export function VariantTableRow({
         )}
       >
         {/* Attribute Columns */}
-        {visibleEnumAttributes.map((attr) => (
-          <TableCell key={`${item.rowKey}-${attr.id}`} className="py-2">
-            {row.selections.find((s) => s.attributeId === attr.id) ? (
-              <Badge
-                variant="secondary"
-                className="bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
-              >
-                {
-                  row.selections.find((s) => s.attributeId === attr.id)
-                    ?.optionLabel
-                }
-              </Badge>
-            ) : (
-              <span className="text-muted-foreground text-sm font-medium">
-                —
-              </span>
-            )}
-          </TableCell>
-        ))}
+        {visibleEnumAttributes.map((attr) => {
+          const selection = row.selections.find((s) => s.attributeId === attr.id);
+          const colorCode = isColorAttribute(attr)
+            ? resolveColorCode(selection?.optionCode)
+            : undefined;
+          const badgeStyle = colorCode
+            ? {
+                backgroundColor: colorCode,
+                borderColor: colorCode,
+                color: resolveReadableTextColor(colorCode),
+              }
+            : undefined;
+
+          return (
+            <TableCell key={`${item.rowKey}-${attr.id}`} className="py-2">
+              {selection ? (
+                <Badge
+                  variant="secondary"
+                  className={`border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 ${
+                    colorCode
+                      ? 'bg-transparent'
+                      : 'bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground'
+                  }`}
+                  style={badgeStyle}
+                >
+                  {selection.optionLabel}
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground text-sm font-medium">
+                  —
+                </span>
+              )}
+            </TableCell>
+          );
+        })}
 
         {/* SKU Column */}
         <TableCell className="py-2">
