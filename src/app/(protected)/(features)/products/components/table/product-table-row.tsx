@@ -115,12 +115,13 @@ export function ProductTableRow({
       query: { enabled: !!primaryVariantId },
     }
   );
-  const primaryVariantImageUrls = useMemo(() => {
+  const primaryVariantImageUrl = useMemo(() => {
     const slots = mapVariantImagesToSlots(primaryVariantImages);
-    return VARIANT_IMAGE_ORDER.map((slot) => {
+    const orderedUrls = VARIANT_IMAGE_ORDER.map((slot) => {
       const image = slots[slot];
       return image?.thumbnailUrl || image?.cdnUrl || null;
     });
+    return orderedUrls.find((url) => url) || null;
   }, [primaryVariantImages]);
 
   const currentStatus = product.status;
@@ -244,16 +245,11 @@ export function ProductTableRow({
 
                   if (column.id === 'image') {
                     return (
-                      <div className="flex items-center gap-1">
-                        {primaryVariantImageUrls.map((url, index) => (
-                          <ProductImageThumbnail
-                            key={`${product.id}-variant-${index}`}
-                            imageUrl={url}
-                            productName={product.name || 'Product'}
-                            size={32}
-                          />
-                        ))}
-                      </div>
+                      <ProductImageThumbnail
+                        imageUrl={primaryVariantImageUrl}
+                        productName={product.name || 'Product'}
+                        size={32}
+                      />
                     );
                   }
 
