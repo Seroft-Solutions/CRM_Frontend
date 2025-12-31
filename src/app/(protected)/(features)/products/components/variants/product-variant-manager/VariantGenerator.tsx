@@ -72,15 +72,6 @@ export function VariantGenerator({
         isCreateMode={isCreateMode}
       />
 
-      {missingRequiredEnumAttributes.length > 0 && (
-        <Alert className="border-amber-200 bg-amber-50 border-l-4 border-l-amber-500 py-2">
-          <AlertDescription className="text-amber-800 text-sm">
-            <span className="font-medium">Required selections missing:</span>{' '}
-            {missingRequiredEnumAttributes.map((a) => a.label ?? a.name).join(', ')}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {isLoadingSelections && (
         <Alert className="border-blue-200 bg-blue-50 border-l-4 border-l-blue-500 py-2">
           <AlertDescription className="text-blue-800 text-sm">
