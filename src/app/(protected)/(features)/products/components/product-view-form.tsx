@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, Pencil } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { ProductBasicInfoSection } from './form/sections/ProductBasicInfoSection';
 import { ProductClassificationSection } from './form/sections/ProductClassificationSection';
-import Link from 'next/link';
 
 interface ProductViewFormProps {
   id: number;
@@ -75,18 +74,6 @@ export function ProductViewForm({ id }: ProductViewFormProps) {
       {/* Classification Section */}
       <ProductClassificationSection isViewMode={true} product={product} productId={id} />
 
-      <Card className="border shadow-md">
-        <CardContent className="p-3">
-          <div className="flex justify-end">
-            <Button asChild variant="outline" className="h-9 gap-2 text-sm">
-              <Link href={`/products/${id}/edit`}>
-                <Pencil className="h-4 w-4" />
-                Edit Product
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

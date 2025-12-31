@@ -1,6 +1,8 @@
 import { ProductViewForm } from '../components/product-view-form';
-import { PermissionGuard } from '@/core/auth';
-import { Eye } from 'lucide-react';
+import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
+import { Button } from '@/components/ui/button';
+import { Eye, Pencil } from 'lucide-react';
+import Link from 'next/link';
 
 interface ProductPageProps {
   params: Promise<{
@@ -37,8 +39,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Center Section: Empty for balance */}
-            <div className="flex-1"></div>
+            {/* Center Section: Prominent Edit Product Button */}
+            <div className="flex-1 flex justify-center">
+              <InlinePermissionGuard requiredPermission="product:update">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-10 gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90 hover:scale-105 text-sm font-semibold px-6 shadow-md transition-all duration-200 border-2 border-sidebar-accent/20"
+                >
+                  <Link href={`/products/${id}/edit`}>
+                    <Pencil className="h-4 w-4" />
+                    <span className="hidden sm:inline">Edit Product</span>
+                  </Link>
+                </Button>
+              </InlinePermissionGuard>
+            </div>
 
             {/* Right Section: Spacer for balance */}
             <div className="flex-1"></div>
