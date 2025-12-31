@@ -81,7 +81,7 @@ export function ProductBasicInfoSection({
     if (!product) {
       return (
         <Card className="border shadow-md">
-          <CardHeader className="pb-2 pt-3 px-4">
+          <CardHeader className="pb-0 pt-0 px-4">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                 <Package className="h-4 w-4 text-primary" />
@@ -92,7 +92,7 @@ export function ProductBasicInfoSection({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
+          <CardContent className="px-4 pb-0">
             <div className="text-sm text-muted-foreground">Product not found</div>
           </CardContent>
         </Card>
@@ -101,7 +101,7 @@ export function ProductBasicInfoSection({
 
     return (
       <Card className="border shadow-md">
-        <CardHeader className="pb-2 pt-3 px-4">
+        <CardHeader className="pb-0 pt-0 px-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <Package className="h-4 w-4 text-primary" />
@@ -112,7 +112,7 @@ export function ProductBasicInfoSection({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 px-4 pb-3">
+        <CardContent className="space-y-3 px-4 pb-0">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             {/* Product Name */}
             <div className="space-y-1">
@@ -211,7 +211,7 @@ export function ProductBasicInfoSection({
 
   return (
     <Card className="border shadow-md">
-      <CardHeader className="pb-2 pt-3 px-4">
+      <CardHeader className="pb-0 pt-0 px-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
             <Package className="h-4 w-4 text-primary" />
@@ -222,7 +222,7 @@ export function ProductBasicInfoSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 px-4 pb-3">
+      <CardContent className="space-y-3 px-4 pb-0">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Product Name */}
           <FormField

@@ -60,7 +60,7 @@ export function ProductClassificationSection({
     if (!product) {
       return (
         <Card className="border shadow-md">
-          <CardHeader className="pb-2 pt-3 px-4">
+          <CardHeader className="pb-0 pt-0 px-4">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                 <FolderTree className="h-4 w-4 text-primary" />
@@ -71,7 +71,7 @@ export function ProductClassificationSection({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pb-3">
+          <CardContent className="px-4 pb-0">
             <div className="text-sm text-muted-foreground">Product not found</div>
           </CardContent>
         </Card>
@@ -80,7 +80,7 @@ export function ProductClassificationSection({
 
     return (
       <Card className="border shadow-md">
-        <CardHeader className="pb-2 pt-3 px-4">
+        <CardHeader className="pb-0 pt-0 px-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <FolderTree className="h-4 w-4 text-primary" />
@@ -91,7 +91,7 @@ export function ProductClassificationSection({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 px-4 pb-3">
+        <CardContent className="space-y-3 px-4 pb-0">
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
             {/* Category */}
             <div className="space-y-1">
@@ -137,7 +137,7 @@ export function ProductClassificationSection({
   if (!isViewMode && !config) {
     return (
       <Card className="border shadow-md">
-        <CardHeader className="pb-2 pt-3 px-4">
+        <CardHeader className="pb-0 pt-0 px-4">
           <div className="flex items-center gap-2">
             <FolderTree className="h-4 w-4 text-primary" />
             <div>
@@ -146,7 +146,7 @@ export function ProductClassificationSection({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-4 pb-3">
+        <CardContent className="px-4 pb-0">
           <div className="text-sm text-muted-foreground">Loading configuration...</div>
         </CardContent>
       </Card>
@@ -155,7 +155,7 @@ export function ProductClassificationSection({
 
   return (
     <Card className="border shadow-md">
-      <CardHeader className="pb-2 pt-3 px-4">
+      <CardHeader className="pb-0 pt-0 px-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
             <FolderTree className="h-4 w-4 text-primary" />
@@ -166,7 +166,7 @@ export function ProductClassificationSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 px-4 pb-3">
+      <CardContent className="space-y-3 px-4 pb-0">
         <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {/* Category */}
           {categoryRelConfig && form && config && actions && (
