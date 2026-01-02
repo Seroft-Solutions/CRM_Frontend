@@ -136,6 +136,9 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         }
 
         console.log('Token refreshed successfully on attempt', refreshAttempts);
+        // Clear lock on successful refresh
+        refreshPromise = null;
+
         return {
           ...token,
           access_token: data.access_token,
@@ -162,9 +165,6 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         }
 
         return { ...token, error: 'RefreshAccessTokenError', refreshAttempts: retryAttempts };
-      } finally {
-        // Clear the refresh promise after completion (success or error)
-        refreshPromise = null;
       }
     })();
 
@@ -251,7 +251,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         typeof token.expires_at === 'number' &&
         now >= token.expires_at - REFRESH_BUFFER_SECONDS;
 
-      if (shouldRefresh && !token.shouldSignOut && !token.error) {
+      if (shouldRefresh && !token.shouldSignOut) {
         console.log('[JWT] Token expires soon, initiating refresh', {
           expiresAt: token.expires_at,
           now: Math.floor(now),
@@ -264,12 +264,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
           console.error('[JWT] Token refresh failed permanently - user must sign in again');
         } else if (token.error === 'RefreshAccessTokenError') {
-          console.warn('[JWT] Token refresh failed, will retry on next request');
+          console.warn('[JWT] Token refresh failed, will retry when token expires again');
         }
-      } else if (token.error === 'RefreshAccessTokenError' && !token.shouldSignOut) {
-        // Token has a refresh error but not marked for signout - retry refresh
-        console.log('[JWT] Retrying token refresh after previous failure');
-        token = await refreshAccessToken(token);
       }
 
       return token;
@@ -338,6 +334,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     async signOut(params) {
+      // Clear refresh promise to allow fresh authentication
+      refreshPromise = null;
+      lastRefreshAttempt = 0;
+
+      console.log('Signing out user...');
       const token = 'token' in params ? params.token : null;
 
       if (token?.id_token && typeof token.id_token === 'string') {
