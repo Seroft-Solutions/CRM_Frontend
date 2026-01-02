@@ -166,9 +166,10 @@ export function SessionExpiredModal({
   const handleContinue = async () => {
     setIsReauthorizing(true);
     try {
+      // Only clear local storage, don't call signOut (which clears CSRF token)
       clearAuthStorage();
-      await signOut({ redirect: false });
 
+      // Directly sign in - NextAuth will handle session replacement
       await signIn('keycloak', {
         callbackUrl: window.location.href,
         redirect: true,
