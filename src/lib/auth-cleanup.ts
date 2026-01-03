@@ -13,7 +13,7 @@
 export function clearAuthStorage() {
   // Set logout flag for middleware
   if (typeof document !== 'undefined') {
-    document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=5; SameSite=Lax';
+    document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=10; SameSite=Lax';
   }
 
   const keysToRemove = [
@@ -94,7 +94,7 @@ export function setLogoutInProgress(value: boolean) {
     if (value) {
       sessionStorage.setItem('LOGOUT_IN_PROGRESS', 'true');
       sessionStorage.setItem('LOGOUT_TIMESTAMP', Date.now().toString());
-      document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=5; SameSite=Lax';
+      document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=10; SameSite=Lax';
     } else {
       sessionStorage.removeItem('LOGOUT_IN_PROGRESS');
       sessionStorage.removeItem('LOGOUT_TIMESTAMP');
@@ -107,7 +107,7 @@ export function setLogoutInProgress(value: boolean) {
 
 /**
  * Check if logout is in progress
- * Auto-expires after 5 seconds to prevent stuck states
+ * Auto-expires after 10 seconds to prevent stuck states
  */
 export function isLogoutInProgress(): boolean {
   if (typeof window === 'undefined') return false;
@@ -119,7 +119,7 @@ export function isLogoutInProgress(): boolean {
     if (!flag || !timestamp) return false;
 
     const elapsed = Date.now() - parseInt(timestamp, 10);
-    if (elapsed > 5000) {
+    if (elapsed > 10000) {
       setLogoutInProgress(false);
       return false;
     }
