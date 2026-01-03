@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { signIn } from 'next-auth/react';
+import { safeSignIn } from '@/core/auth';
 
 interface CtaSectionProps {
   onStartBrewing?: () => void;
@@ -12,7 +12,7 @@ export default function CtaSection({ onStartBrewing }: CtaSectionProps) {
     if (onStartBrewing) {
       onStartBrewing();
     } else {
-      signIn('keycloak', { redirectTo: '/organization' });
+      safeSignIn('keycloak', { redirectTo: '/organization' });
     }
   };
 

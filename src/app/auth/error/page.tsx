@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { safeSignIn } from '@/core/auth';
 
 export default function AuthErrorPage() {
   const searchParams = useSearchParams();
@@ -22,7 +22,7 @@ export default function AuthErrorPage() {
   useEffect(() => {
     if (error === 'RefreshAccessTokenError') {
       const timer = setTimeout(() => {
-        signIn('keycloak');
+        safeSignIn('keycloak');
       }, 10000);
 
       return () => clearTimeout(timer);
@@ -84,7 +84,7 @@ export default function AuthErrorPage() {
     if (error === 'AccessDenied') {
       router.push('/');
     } else {
-      signIn('keycloak');
+      safeSignIn('keycloak');
     }
   };
 
