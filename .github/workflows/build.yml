@@ -26,6 +26,7 @@ jobs:
       - name: Build application
         run: |
           npm ci --prefer-offline
+          npm run clean
           npm run build
 
       - name: Setup Docker Buildx
