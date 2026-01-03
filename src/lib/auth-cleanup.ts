@@ -35,31 +35,29 @@ export function clearAuthStorageOnly() {
     console.error('Failed to clear draft items from localStorage', error);
   }
 
+  // Clear sessionStorage but preserve logout flag if it exists
   try {
+    const logoutFlag = sessionStorage.getItem('LOGOUT_IN_PROGRESS');
+    const logoutTimestamp = sessionStorage.getItem('LOGOUT_TIMESTAMP');
+
     sessionStorage.clear();
+
+    // Restore logout flag if it was set
+    if (logoutFlag) {
+      sessionStorage.setItem('LOGOUT_IN_PROGRESS', logoutFlag);
+    }
+    if (logoutTimestamp) {
+      sessionStorage.setItem('LOGOUT_TIMESTAMP', logoutTimestamp);
+    }
   } catch (error) {
     console.error('Failed to clear sessionStorage', error);
   }
 
+  // Only clear OUR cookies, NOT NextAuth cookies
+  // NextAuth's signOut() will handle clearing its own cookies (session, csrf, etc.)
   const cookiesToClear = [
     'selectedOrganizationId',
     'selectedOrganizationName',
-    'authjs.session-token',
-    'authjs.csrf-token',
-    'authjs.callback-url',
-    'authjs.pkce.code_verifier',
-    'authjs.state',
-    'authjs.nonce',
-    '__Secure-authjs.session-token',
-    '__Host-authjs.csrf-token',
-    '__Secure-authjs.callback-url',
-    '__Host-authjs.callback-url',
-    '__Secure-authjs.pkce.code_verifier',
-    '__Host-authjs.pkce.code_verifier',
-    '__Secure-authjs.state',
-    '__Host-authjs.state',
-    '__Secure-authjs.nonce',
-    '__Host-authjs.nonce',
   ];
 
   cookiesToClear.forEach((cookieName) => {
@@ -76,19 +74,14 @@ export function clearAuthStorageOnly() {
 }
 
 /**
- * Clear all authentication-related storage AND set logout flag
- * Use this for manual logout only
+ * Clear all authentication-related storage
+ * Use this for manual logout (but call setLogoutInProgress first!)
  * This includes:
- * - Cookies (organization, session, auth tokens)
+ * - Cookies (organization cookies only, NOT NextAuth cookies)
  * - LocalStorage (organization data, drafts, cached data)
- * - SessionStorage (temporary auth data)
+ * - SessionStorage (temporary data, but preserves logout flag)
  */
 export function clearAuthStorage() {
-  // Set logout flag for middleware
-  if (typeof document !== 'undefined') {
-    document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=5; SameSite=Lax';
-  }
-
   clearAuthStorageOnly();
 }
 

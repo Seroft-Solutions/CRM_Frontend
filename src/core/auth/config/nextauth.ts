@@ -297,18 +297,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     authorized({ auth, request }) {
       const { nextUrl } = request;
 
-      // CRITICAL: Check if logout is in progress
+      // CRITICAL: Always allow NextAuth API routes (signin, signout, session, etc.)
+      // These must NEVER be blocked, even during logout
+      if (nextUrl.pathname.startsWith('/api/auth')) {
+        return true;
+      }
+
+      // Check if logout is in progress
       const logoutCookie = request.cookies.get('LOGOUT_IN_PROGRESS');
       const isLoggingOut = logoutCookie?.value === 'true';
 
       if (isLoggingOut) {
         console.log('[Middleware] Logout in progress, allowing navigation to:', nextUrl.pathname);
-        // Allow navigation to safe pages and auth API routes during logout
-        if (
-          nextUrl.pathname === '/' ||
-          nextUrl.pathname.startsWith('/auth') ||
-          nextUrl.pathname.startsWith('/api/auth')
-        ) {
+        // Allow navigation to safe pages during logout
+        if (nextUrl.pathname === '/' || nextUrl.pathname.startsWith('/auth')) {
           return true;
         }
         return false;
