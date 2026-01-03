@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, LogOut, RefreshCw } from 'lucide-react';
-import { clearAuthStorage, clearAuthStorageOnly } from '@/lib/auth-cleanup';
+import { clearAuthStorage } from '@/lib/auth-cleanup';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -166,8 +166,8 @@ export function SessionExpiredModal({
   const handleContinue = async () => {
     setIsReauthorizing(true);
     try {
-      // Only clear local storage, don't set logout flag (this is re-auth, not logout)
-      clearAuthStorageOnly();
+      // Only clear local storage, don't call signOut (which clears CSRF token)
+      clearAuthStorage();
 
       // Directly sign in - NextAuth will handle session replacement
       await signIn('keycloak', {
@@ -177,7 +177,7 @@ export function SessionExpiredModal({
     } catch (error) {
       console.error('Re-authentication failed:', error);
 
-      clearAuthStorageOnly();
+      clearAuthStorage();
       onRetryAuth();
     } finally {
       setIsReauthorizing(false);
