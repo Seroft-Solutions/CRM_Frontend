@@ -207,9 +207,6 @@ export function SessionExpiredModal({
   };
 
   const handleLogout = async () => {
-    // This is a real logout from the modal, not re-auth
-    const { setLogoutInProgress } = await import('@/lib/auth-cleanup');
-    setLogoutInProgress(true);
     clearAuthStorage();
 
     if (onLogout) {
