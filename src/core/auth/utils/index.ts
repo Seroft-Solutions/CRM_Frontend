@@ -73,36 +73,31 @@ export async function logout() {
  */
 export async function logoutWithCleanup() {
   try {
-    console.log('[Logout] Starting logout with cleanup');
     const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
 
     // CRITICAL: Set flag BEFORE any other operations
-    console.log('[Logout] Setting logout flag');
     setLogoutInProgress(true);
 
-    console.log('[Logout] Clearing auth storage');
     clearAuthStorage();
 
     // Small delay to ensure flag propagates
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    console.log('[Logout] Calling NextAuth signOut');
     await signOut({
       callbackUrl: '/',
       redirect: true,
     });
   } catch (error) {
-    console.error('[Logout] Logout with cleanup error:', error);
+    console.error('Logout with cleanup error:', error);
 
     try {
       const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
       setLogoutInProgress(true);
       clearAuthStorage();
     } catch (cleanupError) {
-      console.error('[Logout] Failed to cleanup storage on error:', cleanupError);
+      console.error('Failed to cleanup storage on error:', cleanupError);
     }
 
-    console.log('[Logout] Forcing redirect to /');
     window.location.href = '/';
   }
 }
