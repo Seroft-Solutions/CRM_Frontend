@@ -178,6 +178,9 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Ensure correct host handling behind proxies/CDNs in production
+  trustHost: true,
+  basePath: '/api/auth',
   providers: [
     Keycloak({
       clientId: process.env.AUTH_KEYCLOAK_ID!,
