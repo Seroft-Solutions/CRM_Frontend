@@ -66,22 +66,13 @@ export async function logout() {
   }
 }
 
-// Prevent double logout calls
-let isLoggingOut = false;
-
 /**
  * Enhanced logout function that cleans up all auth storage before logging out
  * Use this function when you need to ensure proper cleanup of tenant context,
  * cookies, localStorage, and sessionStorage
  */
 export async function logoutWithCleanup() {
-  if (isLoggingOut) {
-    console.log('[Logout] Already logging out, skipping duplicate call');
-    return;
-  }
-
   try {
-    isLoggingOut = true;
     console.log('[Logout] Starting logout with cleanup');
     const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
 
@@ -113,11 +104,6 @@ export async function logoutWithCleanup() {
 
     console.log('[Logout] Forcing redirect to /');
     window.location.href = '/';
-  } finally {
-    // Reset flag after a delay to allow for page navigation
-    setTimeout(() => {
-      isLoggingOut = false;
-    }, 1000);
   }
 }
 
