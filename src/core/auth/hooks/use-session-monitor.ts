@@ -47,12 +47,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
   const checkSessionValidity = useCallback(async () => {
     if (status === 'loading') return;
 
-    // Stop monitoring if session has permanent error
-    if (session?.error === 'RefreshAccessTokenError') {
-      console.log('[SessionMonitor] Session expired, stopping monitoring');
-      return;
-    }
-
     const hasValidSession = !!session?.user;
     const hadSessionBefore = lastSessionState.current;
 
@@ -87,12 +81,6 @@ export function useSessionMonitor(options: SessionMonitorOptions = {}) {
         const minutesUntilExpiry = Math.floor(timeUntilExpiry / 60000);
 
         if (autoRefreshOnActivity && !isIdle && minutesUntilExpiry <= warningThreshold) {
-          // DON'T refresh if session already has an error
-          if (session?.error) {
-            console.log('[SessionMonitor] Session has error, skipping auto-refresh');
-            return;
-          }
-
           try {
             const refreshSuccess = await refreshSession();
             if (refreshSuccess) {
