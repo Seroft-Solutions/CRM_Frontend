@@ -4,18 +4,10 @@
  */
 
 /**
- * Clear all authentication-related storage
- * This includes:
- * - Cookies (organization, session, auth tokens)
- * - LocalStorage (organization data, drafts, cached data)
- * - SessionStorage (temporary auth data)
+ * Clear all authentication-related storage WITHOUT setting logout flag
+ * Use this for session expiry re-authentication, not for manual logout
  */
-export function clearAuthStorage() {
-  // Set logout flag for middleware
-  if (typeof document !== 'undefined') {
-    document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=5; SameSite=Lax';
-  }
-
+export function clearAuthStorageOnly() {
   const keysToRemove = [
     'selectedOrganizationId',
     'selectedOrganizationName',
@@ -81,6 +73,23 @@ export function clearAuthStorage() {
   });
 
   console.log('Auth storage cleared successfully');
+}
+
+/**
+ * Clear all authentication-related storage AND set logout flag
+ * Use this for manual logout only
+ * This includes:
+ * - Cookies (organization, session, auth tokens)
+ * - LocalStorage (organization data, drafts, cached data)
+ * - SessionStorage (temporary auth data)
+ */
+export function clearAuthStorage() {
+  // Set logout flag for middleware
+  if (typeof document !== 'undefined') {
+    document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=5; SameSite=Lax';
+  }
+
+  clearAuthStorageOnly();
 }
 
 /**

@@ -303,8 +303,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (isLoggingOut) {
         console.log('[Middleware] Logout in progress, allowing navigation to:', nextUrl.pathname);
-        // Only allow navigation to safe pages during logout
-        if (nextUrl.pathname === '/' || nextUrl.pathname.startsWith('/auth')) {
+        // Allow navigation to safe pages and auth API routes during logout
+        if (
+          nextUrl.pathname === '/' ||
+          nextUrl.pathname.startsWith('/auth') ||
+          nextUrl.pathname.startsWith('/api/auth')
+        ) {
           return true;
         }
         return false;
