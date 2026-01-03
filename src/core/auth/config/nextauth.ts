@@ -295,19 +295,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
-      // CRITICAL: Check if logout is in progress
-      const logoutCookie = request.cookies.get('LOGOUT_IN_PROGRESS');
-      const isLoggingOut = logoutCookie?.value === 'true';
-
-      if (isLoggingOut) {
-        console.log('[Middleware] Logout in progress, allowing navigation to:', nextUrl.pathname);
-        // Only allow navigation to safe pages during logout
-        if (nextUrl.pathname === '/' || nextUrl.pathname.startsWith('/auth')) {
-          return true;
-        }
-        return false;
-      }
-
       const isLoggedIn = !!auth?.user;
       const hasValidSession = isLoggedIn && !auth?.error;
       const isProtected =
@@ -339,7 +326,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (hasValidSession) return true;
         return false;
       } else if (hasValidSession && nextUrl.pathname === '/') {
-        console.log('[Middleware] Authenticated user at root, redirecting to /organization');
         return Response.redirect(new URL('/organization', nextUrl));
       }
 
@@ -352,7 +338,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       refreshPromise = null;
       lastRefreshAttempt = 0;
 
-      console.log('[SignOut Event] Starting Keycloak logout');
+      console.log('Signing out user...');
       const token = 'token' in params ? params.token : null;
 
       if (token?.id_token && typeof token.id_token === 'string') {
@@ -361,7 +347,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const authUrl = process.env.AUTH_URL;
 
           if (!keycloakIssuer || !authUrl) {
-            console.error('[SignOut] Missing KEYCLOAK_ISSUER or AUTH_URL');
+            console.warn('Missing KEYCLOAK_ISSUER or AUTH_URL for logout');
             return;
           }
 
@@ -369,43 +355,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           logoutUrl.searchParams.set('id_token_hint', token.id_token as string);
           logoutUrl.searchParams.set('post_logout_redirect_uri', authUrl);
 
-          console.log('[SignOut] Calling Keycloak logout endpoint:', logoutUrl.origin);
-
           const response = await fetch(logoutUrl.toString(), {
             method: 'GET',
             headers: {
               Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(5000), // 5 second timeout
           });
 
           if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[SignOut] Keycloak logout failed:', {
-              status: response.status,
-              statusText: response.statusText,
-              error: errorText,
-            });
-            console.warn('[SignOut] Continuing with logout despite Keycloak error');
-          } else {
-            console.log('[SignOut] Keycloak logout successful');
+            console.warn(`Keycloak logout warning: ${response.status} ${response.statusText}`);
           }
         } catch (error) {
-          if (error instanceof Error) {
-            console.error('[SignOut] Keycloak logout error:', {
-              message: error.message,
-              name: error.name,
-            });
-          } else {
-            console.error('[SignOut] Keycloak logout error:', error);
-          }
-          console.warn('[SignOut] Continuing with NextAuth logout despite error');
+          console.error('Keycloak logout error:', error);
         }
-      } else {
-        console.warn('[SignOut] No id_token available for Keycloak logout');
       }
-
-      console.log('[SignOut] Keycloak logout process completed');
     },
   },
   trustHost: true,

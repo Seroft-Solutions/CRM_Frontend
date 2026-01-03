@@ -11,11 +11,6 @@
  * - SessionStorage (temporary auth data)
  */
 export function clearAuthStorage() {
-  // Set logout flag for middleware
-  if (typeof document !== 'undefined') {
-    document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=10; SameSite=Lax';
-  }
-
   const keysToRemove = [
     'selectedOrganizationId',
     'selectedOrganizationName',
@@ -81,53 +76,6 @@ export function clearAuthStorage() {
   });
 
   console.log('Auth storage cleared successfully');
-}
-
-/**
- * Set logout in progress flag
- * Uses both sessionStorage and cookie for redundancy
- */
-export function setLogoutInProgress(value: boolean) {
-  if (typeof window === 'undefined') return;
-
-  try {
-    if (value) {
-      sessionStorage.setItem('LOGOUT_IN_PROGRESS', 'true');
-      sessionStorage.setItem('LOGOUT_TIMESTAMP', Date.now().toString());
-      document.cookie = 'LOGOUT_IN_PROGRESS=true; path=/; max-age=10; SameSite=Lax';
-    } else {
-      sessionStorage.removeItem('LOGOUT_IN_PROGRESS');
-      sessionStorage.removeItem('LOGOUT_TIMESTAMP');
-      document.cookie = 'LOGOUT_IN_PROGRESS=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    }
-  } catch (error) {
-    console.error('Failed to set logout flag:', error);
-  }
-}
-
-/**
- * Check if logout is in progress
- * Auto-expires after 10 seconds to prevent stuck states
- */
-export function isLogoutInProgress(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  try {
-    const flag = sessionStorage.getItem('LOGOUT_IN_PROGRESS');
-    const timestamp = sessionStorage.getItem('LOGOUT_TIMESTAMP');
-
-    if (!flag || !timestamp) return false;
-
-    const elapsed = Date.now() - parseInt(timestamp, 10);
-    if (elapsed > 10000) {
-      setLogoutInProgress(false);
-      return false;
-    }
-
-    return flag === 'true';
-  } catch (error) {
-    return false;
-  }
 }
 
 /**

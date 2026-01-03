@@ -10,16 +10,10 @@ export function useUserOrganizations() {
   const isAuthenticated = !!session?.user?.id;
   const isLoading = status === 'loading';
 
-  // Check if logout is in progress
-  const isLoggingOut = typeof window !== 'undefined'
-    ? sessionStorage.getItem('LOGOUT_IN_PROGRESS') === 'true'
-    : false;
-
   return useQuery({
     queryKey: ['user-organizations'],
     queryFn: () => organizationApiService.getUserOrganizations(),
-    // CRITICAL: Disable during logout to prevent 403 errors
-    enabled: isAuthenticated && !isLoading && !isLoggingOut && !session?.error,
+    enabled: isAuthenticated && !isLoading,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

@@ -177,12 +177,7 @@ export function SessionManagerProvider({
 
   const handleManualLogout = useCallback(async () => {
     try {
-      const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
-
-      setLogoutInProgress(true);
       clearAuthStorage();
-
-      await new Promise(resolve => setTimeout(resolve, 100));
 
       await signOut({
         callbackUrl: '/',
@@ -191,14 +186,7 @@ export function SessionManagerProvider({
     } catch (error) {
       console.error('Logout failed:', error);
 
-      try {
-        const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
-        setLogoutInProgress(true);
-        clearAuthStorage();
-      } catch (e) {
-        console.error('Cleanup on logout error failed:', e);
-      }
-
+      clearAuthStorage();
       window.location.href = '/';
     }
   }, []);

@@ -45,22 +45,12 @@ export function normalizeAuthority(authority: string): string {
  */
 export async function logout() {
   try {
-    const { setLogoutInProgress } = await import('@/lib/auth-cleanup');
-    setLogoutInProgress(true);
-
     await signOut({
       callbackUrl: '/',
       redirect: true,
     });
   } catch (error) {
     console.error('Logout error:', error);
-
-    try {
-      const { setLogoutInProgress } = await import('@/lib/auth-cleanup');
-      setLogoutInProgress(true);
-    } catch (e) {
-      console.error('Failed to set logout flag:', e);
-    }
 
     window.location.href = '/';
   }
@@ -73,15 +63,9 @@ export async function logout() {
  */
 export async function logoutWithCleanup() {
   try {
-    const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
-
-    // CRITICAL: Set flag BEFORE any other operations
-    setLogoutInProgress(true);
+    const { clearAuthStorage } = await import('@/lib/auth-cleanup');
 
     clearAuthStorage();
-
-    // Small delay to ensure flag propagates
-    await new Promise(resolve => setTimeout(resolve, 100));
 
     await signOut({
       callbackUrl: '/',
@@ -91,8 +75,7 @@ export async function logoutWithCleanup() {
     console.error('Logout with cleanup error:', error);
 
     try {
-      const { clearAuthStorage, setLogoutInProgress } = await import('@/lib/auth-cleanup');
-      setLogoutInProgress(true);
+      const { clearAuthStorage } = await import('@/lib/auth-cleanup');
       clearAuthStorage();
     } catch (cleanupError) {
       console.error('Failed to cleanup storage on error:', cleanupError);
