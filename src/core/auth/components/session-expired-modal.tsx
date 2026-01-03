@@ -6,6 +6,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { signIn, signOut } from 'next-auth/react';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, LogOut, RefreshCw } from 'lucide-react';
 import { clearAuthStorage, clearAuthStorageOnly } from '@/lib/auth-cleanup';
-import { safeSignIn } from '@/core/auth';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -170,7 +170,7 @@ export function SessionExpiredModal({
       clearAuthStorageOnly();
 
       // Directly sign in - NextAuth will handle session replacement
-      await safeSignIn('keycloak', {
+      await signIn('keycloak', {
         callbackUrl: window.location.href,
         redirect: true,
       });

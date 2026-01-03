@@ -3,7 +3,7 @@
 import { AlertCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { safeSignIn } from '@/core/auth';
+import { signIn } from 'next-auth/react';
 
 export default function AuthError() {
   const searchParams = useSearchParams();
@@ -47,7 +47,7 @@ export default function AuthError() {
 
         <div className="mt-8 space-y-6">
           <Button
-            onClick={() => safeSignIn('keycloak', { redirectTo: '/dashboard' })}
+            onClick={() => signIn('keycloak', { redirectTo: '/dashboard' })}
             className="w-full"
           >
             Try Again

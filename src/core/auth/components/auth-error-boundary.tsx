@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,7 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { safeSignIn } from '@/core/auth';
 
 interface Props {
   children: ReactNode;
@@ -63,7 +63,7 @@ export class AuthErrorBoundary extends Component<Props, State> {
   };
 
   handleSignIn = () => {
-    safeSignIn('keycloak');
+    signIn('keycloak');
   };
 
   render() {
@@ -138,7 +138,7 @@ export function useAuthErrorHandler() {
       error.message?.includes('session') ||
       error.message?.includes('token')
     ) {
-      safeSignIn('keycloak');
+      signIn('keycloak');
     }
   };
 

@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import { safeSignIn } from '@/core/auth';
 
 const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false });
 const MotionContainer = dynamic(
@@ -22,7 +22,7 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
     if (onStartBrewing) {
       onStartBrewing();
     } else {
-      safeSignIn('keycloak', { redirectTo: '/organization' });
+      signIn('keycloak', { redirectTo: '/organization' });
     }
   };
 

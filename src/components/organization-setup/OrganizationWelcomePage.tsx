@@ -1,9 +1,9 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { ArrowRight, CheckCircle, Coffee, Sparkles } from 'lucide-react';
-import { safeSignIn } from '@/core/auth';
 
 const MotionContainer = dynamic(
   () => import('@/features/home/components/motion-components').then((mod) => mod.MotionContainer),
@@ -16,7 +16,7 @@ const MotionItem = dynamic(
 
 export function OrganizationWelcomePage() {
   const handleLetsBrew = () => {
-    safeSignIn('keycloak', { redirectTo: '/dashboard' });
+    signIn('keycloak', { redirectTo: '/dashboard' });
   };
 
   return (

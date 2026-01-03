@@ -3,7 +3,7 @@
  * Centralized location for all auth-related utility functions
  */
 
-import { signIn, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import type { KeycloakTokenPayload } from '../types';
 
 export { logoutAction } from './actions';
@@ -48,9 +48,9 @@ export async function logout() {
     const { setLogoutInProgress } = await import('@/lib/auth-cleanup');
     setLogoutInProgress(true);
 
-    await safeSignOut({
+    await signOut({
+      callbackUrl: '/',
       redirect: true,
-      redirectTo: '/',
     });
   } catch (error) {
     console.error('Logout error:', error);
@@ -63,47 +63,6 @@ export async function logout() {
     }
 
     window.location.href = '/';
-  }
-}
-
-function buildAuthUrl(path: string, redirectTo?: string) {
-  const url = new URL(path, window.location.origin);
-  if (redirectTo) {
-    url.searchParams.set('callbackUrl', redirectTo);
-  }
-  return url.toString();
-}
-
-/**
- * Safe sign-in helper that falls back to a direct redirect if NextAuth client APIs fail.
- */
-export async function safeSignIn(
-  provider: string,
-  options?: {
-    redirect?: boolean;
-    redirectTo?: string;
-    callbackUrl?: string;
-  }
-) {
-  try {
-    await signIn(provider, options as Parameters<typeof signIn>[1]);
-  } catch (error) {
-    console.error('[Auth] signIn failed, falling back to redirect:', error);
-    const redirectTo = options?.redirectTo ?? options?.callbackUrl ?? window.location.href;
-    window.location.href = buildAuthUrl(`/api/auth/signin/${provider}`, redirectTo);
-  }
-}
-
-/**
- * Safe sign-out helper that falls back to a direct redirect if NextAuth client APIs fail.
- */
-export async function safeSignOut(options?: { redirect?: boolean; redirectTo?: string }) {
-  try {
-    await signOut(options as Parameters<typeof signOut>[0]);
-  } catch (error) {
-    console.error('[Auth] signOut failed, falling back to redirect:', error);
-    const redirectTo = options?.redirectTo ?? window.location.href;
-    window.location.href = buildAuthUrl('/api/auth/signout', redirectTo);
   }
 }
 
@@ -137,9 +96,9 @@ export async function logoutWithCleanup() {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     console.log('[Logout] Calling NextAuth signOut');
-    await safeSignOut({
+    await signOut({
+      callbackUrl: '/',
       redirect: true,
-      redirectTo: '/',
     });
   } catch (error) {
     console.error('[Logout] Logout with cleanup error:', error);
@@ -152,8 +111,8 @@ export async function logoutWithCleanup() {
       console.error('[Logout] Failed to cleanup storage on error:', cleanupError);
     }
 
-    console.log('[Logout] Forcing redirect to /api/auth/signout');
-    window.location.href = buildAuthUrl('/api/auth/signout', '/');
+    console.log('[Logout] Forcing redirect to /');
+    window.location.href = '/';
   } finally {
     // Reset flag after a delay to allow for page navigation
     setTimeout(() => {

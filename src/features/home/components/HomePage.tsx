@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Coffee } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import HeroSection from '@/features/home/components/HeroSection';
 import FeatureSection from '@/features/home/components/FeatureSection';
 import CtaSection from '@/features/home/components/CtaSection';
 import Footer from '@/features/home/components/Footer';
 import { clearAuthStorage, hasStaleAuthData } from '@/lib/auth-cleanup';
-import { safeSignIn } from '@/core/auth';
 
 export default function HomePage() {
   const router = useRouter();
@@ -38,7 +37,7 @@ export default function HomePage() {
   const handleStartBrewing = () => {
     setIsLoading(true);
     setTimeout(() => {
-      safeSignIn('keycloak', { redirectTo: '/organization' });
+      signIn('keycloak', { redirectTo: '/organization' });
     }, 800);
   };
 

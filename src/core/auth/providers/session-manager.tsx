@@ -14,11 +14,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { SessionExpiredModal } from '@/core/auth/components/session-expired-modal';
 import { useSessionEvents } from '@/core/auth/session/events';
 import { clearAuthStorage } from '@/lib/auth-cleanup';
-import { safeSignOut } from '@/core/auth';
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;
@@ -185,9 +184,9 @@ export function SessionManagerProvider({
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      await safeSignOut({
+      await signOut({
+        callbackUrl: '/',
         redirect: true,
-        redirectTo: '/',
       });
     } catch (error) {
       console.error('Logout failed:', error);
@@ -200,7 +199,7 @@ export function SessionManagerProvider({
         console.error('Cleanup on logout error failed:', e);
       }
 
-      window.location.href = '/api/auth/signout?callbackUrl=/';
+      window.location.href = '/';
     }
   }, []);
 
