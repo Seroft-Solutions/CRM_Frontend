@@ -12,7 +12,7 @@ RUN npm --version && \
 
 
 COPY . .
-RUN npm run clean && npm run build
+RUN npm run build
 
 # Production stage
 FROM node:20.17.0-alpine AS runner
