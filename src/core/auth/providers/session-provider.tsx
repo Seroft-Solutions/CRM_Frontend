@@ -18,6 +18,7 @@ export function AppSessionProvider({ children, session }: SessionProviderProps) 
 
 export function useAuth() {
   const { data: session, status } = useSession();
+
   return {
     session,
     status,

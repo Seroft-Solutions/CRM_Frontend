@@ -1,6 +1,8 @@
 /**
  * Token Refresh State Tracker
  * Manages per-user refresh state to prevent concurrent refreshes
+ *
+ * @module core/auth/config/refresh-tracker
  */
 
 import type { JWT } from 'next-auth/jwt';
@@ -33,7 +35,7 @@ class RefreshTracker {
   /**
    * Get existing refresh promise for a user
    */
-  getRefreshPromise(userId: string): Promise<JWT> | null {
+  getRefreshPromise(userId: string): Promise<JWT | null> | null {
     const entry = this.refreshMap.get(userId);
 
     return entry?.promise || null;
@@ -42,7 +44,7 @@ class RefreshTracker {
   /**
    * Store a refresh promise for a user
    */
-  setRefreshPromise(userId: string, promise: Promise<JWT>): void {
+  setRefreshPromise(userId: string, promise: Promise<JWT | null>): void {
     this.refreshMap.set(userId, {
       promise,
       timestamp: Date.now(),

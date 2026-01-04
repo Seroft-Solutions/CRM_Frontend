@@ -1,6 +1,8 @@
 /**
  * Authentication utility functions
  * Centralized location for all auth-related utility functions
+ *
+ * @module core/auth/utils
  */
 
 import { signOut } from 'next-auth/react';
@@ -9,6 +11,10 @@ import type { KeycloakTokenPayload } from '../types';
 export { logoutAction } from './actions';
 
 export { localStorageCleanup } from './local-storage-cleanup';
+
+export { hardLogout, shouldHardLogout } from './hard-logout';
+
+export { handleAuthError, fetchWithAuthErrorHandler, monitorSigninErrors } from './error-handler';
 
 /**
  * Normalize role name by removing ROLE_ prefix if present
@@ -37,6 +43,7 @@ export function normalizeAuthority(authority: string): string {
   if (authority.startsWith('GROUP_')) {
     return authority.substring(6);
   }
+
   return authority;
 }
 
@@ -76,6 +83,7 @@ export async function logoutWithCleanup() {
 
     try {
       const { clearAuthStorage } = await import('@/lib/auth-cleanup');
+
       clearAuthStorage();
     } catch (cleanupError) {
       console.error('Failed to cleanup storage on error:', cleanupError);
@@ -105,22 +113,28 @@ export async function fetchAccessToken(): Promise<string | null> {
   try {
     if (typeof window !== 'undefined') {
       const response = await fetch('/api/auth/session');
+
       if (response.ok) {
         const session = await response.json();
+
         if (session?.error) {
           return null;
         }
+
         return session?.access_token || null;
       }
 
       const { tokenStorage } = await import('../tokens');
+
       return tokenStorage.getToken() || tokenStorage.getTokenSession();
     }
 
     const { getAccessToken } = await import('@/lib/dal');
+
     return await getAccessToken();
   } catch (error) {
     console.error('Error getting access token:', error);
+
     return null;
   }
 }
@@ -131,6 +145,7 @@ export async function fetchAccessToken(): Promise<string | null> {
 export function isTokenExpired(token: string): boolean {
   try {
     const [, payload] = token.split('.');
+
     if (!payload) return true;
 
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload));
@@ -140,6 +155,7 @@ export function isTokenExpired(token: string): boolean {
     return currentTime >= expiryTime;
   } catch (error) {
     console.error('Error checking token expiry:', error);
+
     return true;
   }
 }
@@ -150,6 +166,7 @@ export function isTokenExpired(token: string): boolean {
 export function getTokenExpiryMinutes(token: string): number {
   try {
     const [, payload] = token.split('.');
+
     if (!payload) return 0;
 
     const decoded: KeycloakTokenPayload = JSON.parse(atob(payload));
@@ -160,6 +177,7 @@ export function getTokenExpiryMinutes(token: string): number {
     return Math.floor(timeUntilExpiry / 60000);
   } catch (error) {
     console.error('Error getting token expiry:', error);
+
     return 0;
   }
 }
