@@ -13,6 +13,7 @@ class SimpleTokenCache {
 
   async getToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
     const now = Date.now();
+
     if (this.token && now < this.expiry) {
       return this.token;
     }
@@ -21,7 +22,9 @@ class SimpleTokenCache {
     }
     this.refreshPromise = this.refreshToken(refreshFn);
     const newToken = await this.refreshPromise;
+
     this.refreshPromise = null;
+
     return newToken;
   }
 
@@ -34,15 +37,18 @@ class SimpleTokenCache {
   private async refreshToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
     try {
       const newToken = await refreshFn();
+
       if (newToken) {
         this.token = newToken;
         this.expiry = Date.now() + 5 * 60 * 1000;
       }
+
       return newToken;
     } catch (error) {
       console.error('Error refreshing token:', error);
       this.token = null;
       this.expiry = 0;
+
       return null;
     }
   }
@@ -52,14 +58,18 @@ async function fetchAccessTokenStandalone(): Promise<string | null> {
   try {
     if (typeof window !== 'undefined') {
       const response = await fetch('/api/auth/session');
+
       if (response.ok) {
         const session = await response.json();
+
         return session?.access_token || null;
       }
     }
+
     return null;
   } catch (error) {
     console.error('Error getting access token:', error);
+
     return null;
   }
 }
@@ -96,6 +106,7 @@ export const springServiceMutator = async <T>(
 
     Object.keys(params).forEach((key) => {
       const value = params[key];
+
       if (Array.isArray(value)) {
         value.forEach((item) => {
           searchParams.append(key, item);
@@ -110,11 +121,13 @@ export const springServiceMutator = async <T>(
 
   instance.interceptors.request.use(async (requestConfig) => {
     const token = await tokenCache.getToken(fetchAccessTokenStandalone);
+
     if (token) {
       requestConfig.headers.Authorization = `Bearer ${token}`;
     }
 
     const tenantHeader = getTenantHeader();
+
     if (tenantHeader) {
       requestConfig.headers['X-Tenant-Name'] = tenantHeader;
     }
@@ -125,6 +138,13 @@ export const springServiceMutator = async <T>(
   instance.interceptors.response.use(
     (response) => response,
     async (error) => {
+      // Handle 403 Forbidden errors separately - these are authorization errors, not authentication errors
+      if (error.response?.status === 403) {
+        console.warn('Authorization error (403 Forbidden):', error.config?.url);
+
+        return Promise.reject(error);
+      }
+
       if (error.response?.status === 401) {
         tokenCache.invalidate();
 
@@ -137,12 +157,14 @@ export const springServiceMutator = async <T>(
 
             if (response.ok) {
               const session = await response.json();
+
               if (session?.access_token && !session.error) {
                 tokenCache.invalidate();
 
                 error.config._retry = true;
                 error.config.headers = error.config.headers || {};
                 error.config.headers.Authorization = `Bearer ${session.access_token}`;
+
                 return instance.request(error.config);
               } else if (session?.error) {
                 console.error('Session has error:', session.error);
