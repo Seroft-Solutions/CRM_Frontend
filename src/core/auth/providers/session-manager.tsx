@@ -214,22 +214,13 @@ export function SessionManagerProvider({
 
   useEffect(() => {
     if (session?.error === 'RefreshAccessTokenError') {
-      console.log('[SessionManager] Session refresh error detected from NextAuth');
+      console.log('Session refresh error detected from NextAuth');
 
       if (!modalState.isOpen) {
-        console.log('[SessionManager] Displaying session expired modal');
         showSessionExpiredModal();
-
-        // Auto-logout after 30 seconds if user doesn't take action
-        const autoLogoutTimer = setTimeout(() => {
-          console.warn('[SessionManager] Auto-logout triggered after session expiry timeout');
-          handleManualLogout();
-        }, 30000);
-
-        return () => clearTimeout(autoLogoutTimer);
       }
     }
-  }, [session?.error, showSessionExpiredModal, modalState.isOpen, handleManualLogout]);
+  }, [session?.error, showSessionExpiredModal, modalState.isOpen]);
 
   useEffect(() => {
     const unsubscribe = onSessionExpired((event) => {
