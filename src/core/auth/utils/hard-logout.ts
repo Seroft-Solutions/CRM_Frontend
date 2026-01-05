@@ -19,33 +19,15 @@ export async function hardLogout(reason?: string): Promise<never> {
     // Clear all auth-related storage
     clearAuthStorage();
 
-    // Try to call the signout API with a CSRF token to clear server-side session
+    // Try to call the signout API to clear server-side session
     try {
-      const csrfResponse = await fetch('/api/auth/csrf', { credentials: 'include' });
-      if (csrfResponse.ok) {
-        const csrfData = await csrfResponse.json().catch(() => null);
-        const csrfToken = csrfData?.csrfToken;
-
-        if (csrfToken) {
-          const body = new URLSearchParams({
-            csrfToken,
-            callbackUrl: '/',
-          });
-
-          await fetch('/api/auth/signout', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body,
-            credentials: 'include',
-          });
-        } else {
-          console.warn('[HardLogout] Missing CSRF token for signout');
-        }
-      } else {
-        console.warn('[HardLogout] Failed to fetch CSRF token for signout');
-      }
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
     } catch (error) {
       console.warn('[HardLogout] Failed to call signout API:', error);
     }
