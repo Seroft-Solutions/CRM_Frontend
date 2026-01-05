@@ -10,8 +10,6 @@ declare module 'next-auth' {
     access_token?: string;
     refresh_token?: string;
     error?: string;
-    refreshAttempts?: number;
-    shouldSignOut?: boolean;
   }
 }
 

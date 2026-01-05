@@ -21,7 +21,6 @@ import { SessionExpiredModal } from '@/core/auth/components/session-expired-moda
 import { useSessionEvents } from '@/core/auth/session/events';
 import { clearAuthStorage } from '@/lib/auth-cleanup';
 import { hardLogout } from '@/core/auth/utils/hard-logout';
-import { MAX_REFRESH_ATTEMPTS } from '@/core/auth/config/constants';
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;
@@ -227,41 +226,23 @@ export function SessionManagerProvider({
   }, [lastActivity]);
 
   useEffect(() => {
-    if (session?.error !== 'RefreshAccessTokenError') {
-      return;
+    if (session?.error === 'RefreshAccessTokenError') {
+      console.error('[SessionManager] Token refresh error detected - triggering hard logout');
+
+      if (!modalState.isOpen) {
+        // Show modal briefly before logout
+        showSessionExpiredModal();
+
+        // Trigger hard logout after 3 seconds
+        const autoLogoutTimer = setTimeout(() => {
+          console.warn('[SessionManager] Auto-logout triggered due to refresh error');
+          hardLogout('Token refresh error');
+        }, 3000);
+
+        return () => clearTimeout(autoLogoutTimer);
+      }
     }
-
-    const attempts = session.refreshAttempts ?? 0;
-    const shouldForceLogout = session.shouldSignOut || attempts >= MAX_REFRESH_ATTEMPTS;
-
-    if (!shouldForceLogout) {
-      console.warn('[SessionManager] Temporary token refresh error - waiting for retry', {
-        attempts,
-      });
-      return;
-    }
-
-    console.error('[SessionManager] Token refresh failed permanently - triggering hard logout');
-
-    if (!modalState.isOpen) {
-      // Show modal briefly before logout
-      showSessionExpiredModal();
-
-      // Trigger hard logout after 3 seconds
-      const autoLogoutTimer = setTimeout(() => {
-        console.warn('[SessionManager] Auto-logout triggered due to refresh failure');
-        hardLogout('Token refresh failed');
-      }, 3000);
-
-      return () => clearTimeout(autoLogoutTimer);
-    }
-  }, [
-    session?.error,
-    session?.refreshAttempts,
-    session?.shouldSignOut,
-    showSessionExpiredModal,
-    modalState.isOpen,
-  ]);
+  }, [session?.error, showSessionExpiredModal, modalState.isOpen]);
 
   useEffect(() => {
     const unsubscribe = onSessionExpired((event) => {
