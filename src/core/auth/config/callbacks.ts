@@ -175,6 +175,14 @@ export async function sessionCallback({
     session.error = token.error;
   }
 
+  if (typeof token.refreshAttempts === 'number') {
+    session.refreshAttempts = token.refreshAttempts;
+  }
+
+  if (typeof token.shouldSignOut === 'boolean') {
+    session.shouldSignOut = token.shouldSignOut;
+  }
+
   return session;
 }
 
