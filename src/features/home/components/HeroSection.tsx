@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { signIn } from 'next-auth/react';
+import { startKeycloakSignIn } from '@/core/auth/utils/signin';
 import dynamic from 'next/dynamic';
 
 const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false });
@@ -22,7 +22,7 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
     if (onStartBrewing) {
       onStartBrewing();
     } else {
-      signIn('keycloak', { redirectTo: '/organization' });
+      startKeycloakSignIn('/organization');
     }
   };
 
