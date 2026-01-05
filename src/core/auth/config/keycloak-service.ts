@@ -29,21 +29,16 @@ export async function refreshTokenWithKeycloak(
   refreshToken: string
 ): Promise<KeycloakTokenResponse> {
   const tokenUrl = `${process.env.AUTH_KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
-  const clientSecret = process.env.AUTH_KEYCLOAK_SECRET;
-  const body = new URLSearchParams({
-    grant_type: 'refresh_token',
-    client_id: process.env.AUTH_KEYCLOAK_ID!,
-    refresh_token: refreshToken,
-  });
-
-  if (clientSecret) {
-    body.set('client_secret', clientSecret);
-  }
 
   const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: process.env.AUTH_KEYCLOAK_ID!,
+      client_secret: process.env.AUTH_KEYCLOAK_SECRET!,
+      refresh_token: refreshToken,
+    }),
   });
 
   if (!response.ok) {

@@ -24,17 +24,12 @@ import {
 function handleKeycloakLogin(token: JWT, account: Account): JWT {
   console.log('[JWT] New Keycloak login - initializing token');
 
-  const expiresAt =
-    typeof account.expires_at === 'number'
-      ? account.expires_at
-      : Math.floor(Date.now() / 1000) + (account.expires_in ?? DEFAULT_TOKEN_EXPIRY);
-
   return {
     ...token,
     id_token: account.id_token,
     access_token: account.access_token,
-    refresh_token: account.refresh_token ?? token.refresh_token,
-    expires_at: expiresAt,
+    refresh_token: account.refresh_token,
+    expires_at: Math.floor(Date.now() / 1000) + (account.expires_in ?? DEFAULT_TOKEN_EXPIRY),
     error: undefined,
     shouldSignOut: undefined,
     refreshAttempts: 0,
