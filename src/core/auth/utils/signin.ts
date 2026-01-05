@@ -5,6 +5,8 @@
 
 'use client';
 
+import { signIn } from 'next-auth/react';
+
 export async function startKeycloakSignIn(redirectTo?: string): Promise<void> {
   if (typeof window === 'undefined') return;
 
@@ -26,6 +28,13 @@ export async function startKeycloakSignIn(redirectTo?: string): Promise<void> {
     console.warn('[Auth] session check failed before sign-in:', error);
   }
 
+  try {
+    await signIn('keycloak', { redirectTo: resolvedRedirect });
+    return;
+  } catch (error) {
+    console.warn('[Auth] signIn failed, falling back to default sign-in page:', error);
+  }
+
   const callbackUrl = encodeURIComponent(resolvedRedirect);
-  window.location.href = `/api/auth/signin/keycloak?callbackUrl=${callbackUrl}`;
+  window.location.href = `/api/auth/signin?callbackUrl=${callbackUrl}`;
 }
