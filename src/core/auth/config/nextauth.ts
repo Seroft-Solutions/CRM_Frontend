@@ -37,9 +37,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // Logging configuration
   logger: authLogger,
 
-  // Enable debug logs when requested
-  debug: process.env.AUTH_DEBUG === 'true',
-
   // Callback handlers
   callbacks: {
     jwt: jwtCallback,
