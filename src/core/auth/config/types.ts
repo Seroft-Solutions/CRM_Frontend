@@ -47,6 +47,6 @@ export interface TokenValidation {
  * Refresh tracking entry
  */
 export interface RefreshEntry {
-  promise: Promise<JWT | null>;
+  promise: Promise<JWT>;
   timestamp: number;
 }

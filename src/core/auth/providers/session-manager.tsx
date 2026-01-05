@@ -1,8 +1,6 @@
 /**
  * Session Manager Provider
- * Session management with idle timeout and proper error handling
- *
- * @module core/auth/providers
+ * Session management with idle timeout feature
  */
 
 'use client';
@@ -20,7 +18,6 @@ import { signOut, useSession } from 'next-auth/react';
 import { SessionExpiredModal } from '@/core/auth/components/session-expired-modal';
 import { useSessionEvents } from '@/core/auth/session/events';
 import { clearAuthStorage } from '@/lib/auth-cleanup';
-import { hardLogout } from '@/core/auth/utils/hard-logout';
 
 interface SessionManagerContextType {
   showSessionExpiredModal: () => void;
@@ -68,7 +65,6 @@ export function SessionManagerProvider({
 
   const { onSessionExpired } = useSessionEvents();
 
-  // Define activity events as a constant to avoid dependency issues
   const activityEvents = [
     'mousedown',
     'mousemove',
@@ -78,7 +74,7 @@ export function SessionManagerProvider({
     'click',
     'keydown',
     'resize',
-  ] as const;
+  ];
 
   const showSessionExpiredModal = useCallback(() => {
     setModalState({
@@ -107,14 +103,12 @@ export function SessionManagerProvider({
       if (prev.type === 'warning') {
         return { isOpen: false, type: 'expired' };
       }
-
       return prev;
     });
   }, []);
 
   const resetIdleTimer = useCallback(() => {
     const now = Date.now();
-
     setLastActivity(now);
     setIsIdle(false);
     setMinutesIdle(0);
@@ -123,7 +117,6 @@ export function SessionManagerProvider({
       if (prev.isOpen && prev.type === 'warning') {
         return { isOpen: false, type: 'expired' };
       }
-
       return prev;
     });
 
@@ -132,14 +125,12 @@ export function SessionManagerProvider({
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
 
     const warningTime = (idleTimeoutMinutes - warningBeforeLogoutMinutes) * 60 * 1000;
-
     warningTimerRef.current = setTimeout(() => {
       setIsIdle(true);
       showSessionWarningModal(warningBeforeLogoutMinutes);
     }, warningTime);
 
     const logoutTime = idleTimeoutMinutes * 60 * 1000;
-
     logoutTimerRef.current = setTimeout(() => {
       showIdleTimeoutModal();
     }, logoutTime);
@@ -162,7 +153,6 @@ export function SessionManagerProvider({
 
       if (response.ok) {
         const session = await response.json();
-
         if (session?.user && !session.error) {
           resetIdleTimer();
           hideSessionModal();
@@ -177,19 +167,15 @@ export function SessionManagerProvider({
 
       console.error('Session refresh failed - invalid session');
       showSessionExpiredModal();
-
       return false;
     } catch (error) {
       console.error('Session refresh failed:', error);
       showSessionExpiredModal();
-
       return false;
     }
   }, [resetIdleTimer, hideSessionModal, showSessionExpiredModal]);
 
   const handleManualLogout = useCallback(async () => {
-    console.log('[SessionManager] Manual logout initiated');
-
     try {
       clearAuthStorage();
 
@@ -198,8 +184,10 @@ export function SessionManagerProvider({
         redirect: true,
       });
     } catch (error) {
-      console.error('[SessionManager] Logout failed, using hard logout:', error);
-      await hardLogout('Manual logout failed');
+      console.error('Logout failed:', error);
+
+      clearAuthStorage();
+      window.location.href = '/';
     }
   }, []);
 
@@ -212,7 +200,6 @@ export function SessionManagerProvider({
       activityCheckIntervalRef.current = setInterval(() => {
         const now = Date.now();
         const minutesSinceActivity = Math.floor((now - lastActivity) / 60000);
-
         setMinutesIdle(minutesSinceActivity);
       }, 30000);
     }
@@ -227,22 +214,22 @@ export function SessionManagerProvider({
 
   useEffect(() => {
     if (session?.error === 'RefreshAccessTokenError') {
-      console.error('[SessionManager] Token refresh error detected - triggering hard logout');
+      console.log('[SessionManager] Session refresh error detected from NextAuth');
 
       if (!modalState.isOpen) {
-        // Show modal briefly before logout
+        console.log('[SessionManager] Displaying session expired modal');
         showSessionExpiredModal();
 
-        // Trigger hard logout after 3 seconds
+        // Auto-logout after 30 seconds if user doesn't take action
         const autoLogoutTimer = setTimeout(() => {
-          console.warn('[SessionManager] Auto-logout triggered due to refresh error');
-          hardLogout('Token refresh error');
-        }, 3000);
+          console.warn('[SessionManager] Auto-logout triggered after session expiry timeout');
+          handleManualLogout();
+        }, 30000);
 
         return () => clearTimeout(autoLogoutTimer);
       }
     }
-  }, [session?.error, showSessionExpiredModal, modalState.isOpen]);
+  }, [session?.error, showSessionExpiredModal, modalState.isOpen, handleManualLogout]);
 
   useEffect(() => {
     const unsubscribe = onSessionExpired((event) => {
@@ -261,23 +248,15 @@ export function SessionManagerProvider({
     });
 
     return () => {
-      // Capture timer refs for cleanup
-      const idleTimer = idleTimerRef.current;
-      const warningTimer = warningTimerRef.current;
-      const logoutTimer = logoutTimerRef.current;
-      const activityCheckInterval = activityCheckIntervalRef.current;
-
-      if (idleTimer) clearTimeout(idleTimer);
-      if (warningTimer) clearTimeout(warningTimer);
-      if (logoutTimer) clearTimeout(logoutTimer);
-      if (activityCheckInterval) clearInterval(activityCheckInterval);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+      if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+      if (activityCheckIntervalRef.current) clearInterval(activityCheckIntervalRef.current);
 
       activityEvents.forEach((event) => {
         document.removeEventListener(event, handleActivity, true);
       });
     };
-    // activityEvents is a constant array, safe to exclude from dependencies
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleActivity, resetIdleTimer]);
 
   const contextValue: SessionManagerContextType = {
@@ -311,10 +290,8 @@ export function SessionManagerProvider({
 
 export function useSessionManager() {
   const context = useContext(SessionManagerContext);
-
   if (context === undefined) {
     throw new Error('useSessionManager must be used within a SessionManagerProvider');
   }
-
   return context;
 }

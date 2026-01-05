@@ -1,8 +1,6 @@
 /**
  * NextAuth Callback Handlers
- * Clean, maintainable callback logic with proper error handling
- *
- * @module core/auth/config/callbacks
+ * Separated callback logic for better maintainability
  */
 
 import type { JWT } from 'next-auth/jwt';
@@ -19,10 +17,10 @@ import {
 } from './protected-routes';
 
 /**
- * Create a clean token for new login
+ * Handle initial Keycloak login
  */
 function handleKeycloakLogin(token: JWT, account: Account): JWT {
-  console.log('[JWT] New Keycloak login - initializing token');
+  console.log('[JWT Callback] Initial Keycloak login, setting up token');
 
   return {
     ...token,
@@ -37,54 +35,60 @@ function handleKeycloakLogin(token: JWT, account: Account): JWT {
 }
 
 /**
- * Handle token that should be signed out
- * Returns null to force NextAuth to clear the session
+ * Handle token marked for signout
  */
-function handleSignoutToken(): null {
-  console.error('[JWT] Token marked for signout - forcing session cleanup');
+function handleSignoutToken(token: JWT): JWT {
+  console.warn('[JWT Callback] Token marked for signout, blocking operations');
 
-  return null;
+  return token;
 }
 
 /**
- * Handle token refresh when it's about to expire
+ * Handle manual update trigger
  */
-async function handleTokenRefresh(token: JWT): Promise<JWT | null> {
+function handleManualUpdate(token: JWT): JWT {
+  console.log('[JWT Callback] Manual update triggered, checking token validity');
+
+  return token;
+}
+
+/**
+ * Handle token refresh logic
+ */
+async function handleTokenRefresh(token: JWT): Promise<JWT> {
   const now = Date.now() / 1000;
   const timeLeft = token.expires_at ? token.expires_at - now : 0;
 
-  console.log('[JWT] Token refresh needed', {
+  console.log('[JWT Callback] Token expires soon, initiating refresh', {
+    expiresAt: token.expires_at,
+    now: Math.floor(now),
     timeLeft: Math.floor(timeLeft),
     attempt: ((token.refreshAttempts as number) || 0) + 1,
   });
 
   const refreshedToken = await refreshAccessToken(token);
 
-  // If refresh failed permanently, return null to clear session
-  if (refreshedToken === null) {
-    console.error('[JWT] Token refresh failed permanently - clearing session');
-
-    return null;
-  }
-
   if (refreshedToken.error === 'RefreshAccessTokenError' && refreshedToken.shouldSignOut) {
-    console.error('[JWT] Token refresh failed with shouldSignOut - clearing session');
-
-    return null;
-  }
-
-  if (refreshedToken.error === 'RefreshAccessTokenError') {
-    console.warn('[JWT] Token refresh failed, will retry on next request');
+    console.error('[JWT Callback] Token refresh failed permanently - user must sign in again');
+  } else if (refreshedToken.error === 'RefreshAccessTokenError') {
+    console.warn('[JWT Callback] Token refresh failed, will retry on next request');
   }
 
   return refreshedToken;
 }
 
 /**
+ * Handle token refresh retry
+ */
+async function handleRefreshRetry(token: JWT): Promise<JWT> {
+  console.log('[JWT Callback] Retrying token refresh after previous failure');
+
+  return refreshAccessToken(token);
+}
+
+/**
  * JWT Callback
- * Handles token lifecycle with proper cleanup on errors
- *
- * Key: Returning null forces NextAuth to clear the session completely
+ * Handles token management and refresh
  */
 export async function jwtCallback({
   token,
@@ -94,26 +98,20 @@ export async function jwtCallback({
   token: JWT;
   account?: Account | null;
   trigger?: 'signIn' | 'signUp' | 'update';
-}): Promise<JWT | null> {
-  // 1. Handle new Keycloak login - always create fresh token
+}): Promise<JWT> {
+  // 1. Handle initial Keycloak login
   if (account?.provider === 'keycloak') {
     return handleKeycloakLogin(token, account);
   }
 
-  // 2. Handle token marked for signout - clear session
+  // 2. Handle token marked for signout
   if (isMarkedForSignout(token)) {
-    return handleSignoutToken();
+    return handleSignoutToken(token);
   }
 
-  // 3. Handle manual update trigger - validate current token
+  // 3. Handle manual update trigger
   if (trigger === 'update') {
-    // Check if token is still valid
-    if (isMarkedForSignout(token)) {
-      return handleSignoutToken();
-    }
-    console.log('[JWT] Manual session update');
-
-    return token;
+    return handleManualUpdate(token);
   }
 
   // 4. Check if token needs refresh
@@ -123,9 +121,7 @@ export async function jwtCallback({
 
   // 5. Retry failed refresh (if error exists but not marked for signout)
   if (token.error === 'RefreshAccessTokenError' && !token.shouldSignOut) {
-    console.log('[JWT] Retrying failed token refresh');
-
-    return handleTokenRefresh(token);
+    return handleRefreshRetry(token);
   }
 
   // 6. Token is valid, return as-is
@@ -143,9 +139,8 @@ export async function sessionCallback({
   session: Session;
   token: JWT;
 }): Promise<Session> {
-  // Handle refresh error that requires signout
+  // Handle refresh error
   if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
-    console.error('[Session] Refresh error detected, session will be invalid');
     session.error = 'RefreshAccessTokenError';
 
     return session;
@@ -165,7 +160,7 @@ export async function sessionCallback({
     session.refresh_token = token.refresh_token;
   }
 
-  // Add error state if present (for client-side handling)
+  // Add error state if present
   if (token.error) {
     session.error = token.error;
   }

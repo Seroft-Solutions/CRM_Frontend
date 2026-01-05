@@ -37,15 +37,12 @@ function getKeysByPrefix(prefix: string): string[] {
   if (typeof window === 'undefined') return [];
 
   const keys: string[] = [];
-
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-
     if (key && key.startsWith(prefix)) {
       keys.push(key);
     }
   }
-
   return keys;
 }
 
@@ -104,7 +101,6 @@ export function cleanupFormData(): void {
   });
 
   const crossEntityKeys = getKeysByPrefix('cross_entity_');
-
   crossEntityKeys.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage cross-entity key: ${key}`);
@@ -121,7 +117,6 @@ export function cleanupTablePreferences(): void {
   console.log('Cleaning up table preferences from localStorage');
 
   const columnVisibilityKeys = getKeysByPrefix('columnVisibility_');
-
   columnVisibilityKeys.forEach((key) => {
     localStorage.removeItem(key);
     console.log(`Removed localStorage column visibility key: ${key}`);

@@ -1,8 +1,6 @@
 /**
  * Token Refresh Logic
- * Core functionality for refreshing access tokens with proper error handling
- *
- * @module core/auth/config/token-refresh
+ * Core functionality for refreshing access tokens
  */
 
 import type { JWT } from 'next-auth/jwt';
@@ -17,7 +15,6 @@ import { MAX_REFRESH_ATTEMPTS, DEFAULT_TOKEN_EXPIRY } from './constants';
 
 /**
  * Create a failed token with error state
- * If shouldSignOut is true, caller should return null to clear session
  */
 function createFailedToken(token: JWT, shouldSignOut: boolean, refreshAttempts: number): JWT {
   return {
@@ -55,29 +52,28 @@ function createSuccessfulToken(
 
 /**
  * Refresh access token
- * Returns null for permanent failures (forces session clear)
- * Returns JWT with error for temporary failures (allows retry)
+ * Handles all token refresh logic with proper error handling and retry
  */
-export async function refreshAccessToken(token: JWT): Promise<JWT | null> {
+export async function refreshAccessToken(token: JWT): Promise<JWT> {
   // Early exit: Token already marked for signout
   if (isMarkedForSignout(token)) {
-    console.error('[Refresh] Token marked for signout - cannot refresh');
+    console.warn('[Refresh] Token already marked for signout, skipping refresh');
 
-    return null;
+    return token;
   }
 
   // Get user ID
   const userId = getUserId(token);
 
   if (!userId) {
-    console.error('[Refresh] No user ID in token');
+    console.error('[Refresh] No user ID in token, cannot refresh');
 
-    return null;
+    return createFailedToken(token, true, 0);
   }
 
   // Check for concurrent refresh
   if (refreshTracker.isRefreshInProgress(userId)) {
-    console.log(`[Refresh] Waiting for existing refresh operation (user: ${userId})`);
+    console.log(`[Refresh] Refresh already in progress for user ${userId}, waiting...`);
     const existingPromise = refreshTracker.getRefreshPromise(userId);
 
     return existingPromise || token;
@@ -87,59 +83,61 @@ export async function refreshAccessToken(token: JWT): Promise<JWT | null> {
   if (isTokenTooOld(token)) {
     const age = getTokenAge(token);
 
-    console.error(`[Refresh] Token too old to refresh: ${age}`);
+    console.error(`[Refresh] Token is too old to refresh (${age}), forcing signout`);
     refreshTracker.clearRefresh(userId);
 
-    return null;
+    return createFailedToken(token, true, 0);
   }
 
   // Check for refresh token
   if (!token.refresh_token) {
-    console.error('[Refresh] No refresh token available');
+    console.warn('[Refresh] No refresh token available');
     refreshTracker.clearRefresh(userId);
 
-    return null;
+    return createFailedToken(token, true, 0);
   }
 
   // Track refresh attempts
   const refreshAttempts = ((token.refreshAttempts as number) || 0) + 1;
 
   // Create refresh promise
-  const refreshPromise = (async (): Promise<JWT | null> => {
+  const refreshPromise = (async (): Promise<JWT> => {
     try {
-      console.log(`[Refresh] Attempting refresh (${refreshAttempts}/${MAX_REFRESH_ATTEMPTS})`);
+      console.log(
+        `[Refresh] Attempting token refresh (attempt ${refreshAttempts}/${MAX_REFRESH_ATTEMPTS})`
+      );
 
       // Call Keycloak
       const data = await refreshTokenWithKeycloak(token.refresh_token as string);
 
-      console.log('[Refresh] ✓ Token refreshed successfully');
+      console.log('[Refresh] Token refreshed successfully');
 
       return createSuccessfulToken(token, data);
     } catch (error) {
-      console.error('[Refresh] ✗ Token refresh failed:', error);
+      console.error('[Refresh] Token refresh error:', error);
 
       // Check error type
       if (isTokenExpiredError(error)) {
-        console.error('[Refresh] Refresh token expired - forcing logout');
+        console.error('[Refresh] Refresh token expired or invalid, forcing signout');
 
-        return null;
+        return createFailedToken(token, true, refreshAttempts);
       }
 
       // Check if max attempts reached
       if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
-        console.error('[Refresh] Max attempts reached - forcing logout');
+        console.error('[Refresh] Max refresh attempts reached, forcing signout');
 
-        return null;
+        return createFailedToken(token, true, refreshAttempts);
       }
 
-      // Temporary error - return token with error for retry
+      // Temporary error - retry later
       if (isTemporaryError(error)) {
         console.warn(
-          `[Refresh] Temporary error - will retry (${refreshAttempts}/${MAX_REFRESH_ATTEMPTS})`
+          `[Refresh] Temporary error (attempt ${refreshAttempts}/${MAX_REFRESH_ATTEMPTS}), will retry`
         );
       } else {
         console.warn(
-          `[Refresh] Unknown error - will retry (${refreshAttempts}/${MAX_REFRESH_ATTEMPTS})`
+          `[Refresh] Unknown error (attempt ${refreshAttempts}/${MAX_REFRESH_ATTEMPTS}), will retry`
         );
       }
 
