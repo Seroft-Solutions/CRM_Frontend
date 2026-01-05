@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { startKeycloakSignIn } from '@/core/auth/utils/signin';
+import { signIn } from 'next-auth/react';
 
 interface CtaSectionProps {
   onStartBrewing?: () => void;
@@ -12,7 +12,7 @@ export default function CtaSection({ onStartBrewing }: CtaSectionProps) {
     if (onStartBrewing) {
       onStartBrewing();
     } else {
-      startKeycloakSignIn('/organization');
+      signIn('keycloak', { redirectTo: '/organization' });
     }
   };
 

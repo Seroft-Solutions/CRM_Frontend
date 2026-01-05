@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { startKeycloakSignIn } from '@/core/auth/utils/signin';
+import { signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { ArrowRight, CheckCircle, Coffee, Sparkles } from 'lucide-react';
 
@@ -16,7 +16,7 @@ const MotionItem = dynamic(
 
 export function OrganizationWelcomePage() {
   const handleLetsBrew = () => {
-    startKeycloakSignIn('/dashboard');
+    signIn('keycloak', { redirectTo: '/dashboard' });
   };
 
   return (

@@ -6,7 +6,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { signOut } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, LogOut, RefreshCw } from 'lucide-react';
 import { clearAuthStorage } from '@/lib/auth-cleanup';
-import { startKeycloakSignIn } from '@/core/auth/utils/signin';
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -170,7 +169,10 @@ export function SessionExpiredModal({
       clearAuthStorage();
       await signOut({ redirect: false });
 
-      startKeycloakSignIn(window.location.href);
+      await signIn('keycloak', {
+        callbackUrl: window.location.href,
+        redirect: true,
+      });
     } catch (error) {
       console.error('Re-authentication failed:', error);
 
