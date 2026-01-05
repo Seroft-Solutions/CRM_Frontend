@@ -7,6 +7,8 @@
 
 import { hardLogout, shouldHardLogout } from './hard-logout';
 
+let isHandlingSignin403 = false;
+
 /**
  * Handle authentication errors globally
  */
@@ -71,12 +73,36 @@ export function monitorSigninErrors(): void {
     const url = args[0]?.toString() || '';
 
     if (url.includes('/api/auth/signin') && response.status === 403) {
-      console.error('[SigninMonitor] Detected 403 on signin - triggering hard logout');
+      if (!isHandlingSignin403) {
+        isHandlingSignin403 = true;
 
-      // Use setTimeout to avoid blocking the current call
-      setTimeout(() => {
-        hardLogout('403 Forbidden on signin endpoint');
-      }, 100);
+        try {
+          let shouldForceLogout = false;
+
+          const sessionResponse = await originalFetch('/api/auth/session', {
+            credentials: 'include',
+          });
+
+          if (sessionResponse.ok) {
+            const sessionData = await sessionResponse.json().catch(() => null);
+            shouldForceLogout =
+              sessionData?.error === 'RefreshAccessTokenError' || sessionData?.shouldSignOut === true;
+          }
+
+          if (shouldForceLogout) {
+            console.error('[SigninMonitor] 403 on signin with invalid session - hard logout');
+
+            // Use setTimeout to avoid blocking the current call
+            setTimeout(() => {
+              hardLogout('403 Forbidden on signin endpoint');
+            }, 100);
+          } else {
+            console.warn('[SigninMonitor] 403 on signin without invalid session - skipping hard logout');
+          }
+        } finally {
+          isHandlingSignin403 = false;
+        }
+      }
     }
 
     return response;
