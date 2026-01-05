@@ -17,7 +17,6 @@ export function clearAuthStorage() {
     'userAuthorities',
     'userRoles',
     'userGroups',
-    'access_token',
   ];
 
   keysToRemove.forEach((key) => {
@@ -50,19 +49,8 @@ export function clearAuthStorage() {
     'authjs.session-token',
     'authjs.csrf-token',
     'authjs.callback-url',
-    'authjs.pkce.code_verifier',
-    'authjs.state',
-    'authjs.nonce',
     '__Secure-authjs.session-token',
     '__Host-authjs.csrf-token',
-    '__Secure-authjs.callback-url',
-    '__Host-authjs.callback-url',
-    '__Secure-authjs.pkce.code_verifier',
-    '__Host-authjs.pkce.code_verifier',
-    '__Secure-authjs.state',
-    '__Host-authjs.state',
-    '__Secure-authjs.nonce',
-    '__Host-authjs.nonce',
   ];
 
   cookiesToClear.forEach((cookieName) => {

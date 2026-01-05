@@ -216,8 +216,5 @@ export const hasRoleInOrganization = async (
  */
 export const getAccessToken = cache(async (): Promise<string | null> => {
   const session = await getAuthSession();
-  if (session?.error) {
-    return null;
-  }
   return session?.access_token ?? null;
 });

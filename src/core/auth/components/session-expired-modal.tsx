@@ -6,7 +6,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { signIn, signOut } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import {
   Dialog,
   DialogContent,
@@ -167,7 +167,6 @@ export function SessionExpiredModal({
     setIsReauthorizing(true);
     try {
       clearAuthStorage();
-      await signOut({ redirect: false });
 
       await signIn('keycloak', {
         callbackUrl: window.location.href,

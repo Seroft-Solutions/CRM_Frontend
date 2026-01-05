@@ -107,9 +107,6 @@ export async function fetchAccessToken(): Promise<string | null> {
       const response = await fetch('/api/auth/session');
       if (response.ok) {
         const session = await response.json();
-        if (session?.error) {
-          return null;
-        }
         return session?.access_token || null;
       }
 
