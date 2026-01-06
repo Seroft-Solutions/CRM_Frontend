@@ -6,7 +6,7 @@ import { callToast, handleCallError } from './call-toast';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
 import type { GetAllCallRemarksParams } from '@/core/api/generated/spring/schemas/GetAllCallRemarksParams';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAccount, useUserAuthorities, InlinePermissionGuard } from '@/core/auth';
+import { useAccount, useUserAuthorities } from '@/core/auth';
 import {
   AlertTriangle,
   Archive,
@@ -727,7 +727,7 @@ export function CallTable() {
   const getStatusFilter = () => {
     switch (activeStatusTab) {
       case 'crm-leads':
-        return { 'status.equals': CallDTOStatus.ACTIVE, 'externalId.specified': false };
+        return { 'externalId.specified': false };
       case 'business-partners':
         return { 'status.equals': CallDTOStatus.ACTIVE, 'externalId.specified': false };
       case 'draft':
@@ -739,9 +739,9 @@ export function CallTable() {
       case 'archived':
         return { 'status.equals': CallDTOStatus.ARCHIVED };
       case 'external':
-        return { 'status.notEquals': CallDTOStatus.INACTIVE };
+        return {};
       case 'all':
-        return { 'status.notEquals': CallDTOStatus.INACTIVE };
+        return {};
       default:
         return { 'status.equals': CallDTOStatus.ACTIVE };
     }
@@ -889,21 +889,38 @@ export function CallTable() {
 
   const filterParams = buildFilterParams();
 
-  const { data, isLoading, refetch } = useGetAllCalls(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: [`${sort},${order}`],
-      ...filterParams,
-    },
-    {
-      query: {
-        enabled: true,
-        staleTime: 0,
-        refetchOnWindowFocus: true,
-      },
-    }
-  );
+  const { data, isLoading, refetch } = searchTerm
+    ? useSearchCalls(
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+          },
+        }
+      )
+    : useGetAllCalls(
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
+        },
+        {
+          query: {
+            enabled: true,
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+          },
+        }
+      );
 
   const handleRefresh = useCallback(async () => {
     try {
@@ -2004,15 +2021,6 @@ export function CallTable() {
               <div className="w-2 h-2 bg-red-500 data-[state=active]:bg-white rounded-full"></div>
               Archive
             </TabsTrigger>
-            <InlinePermissionGuard requiredPermission="manage:users">
-              <TabsTrigger
-                value="inactive"
-                className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
-              >
-                <div className="w-2 h-2 bg-orange-500 data-[state=active]:bg-white rounded-full"></div>
-                Inactive
-              </TabsTrigger>
-            </InlinePermissionGuard>
           </TabsList>
         </Tabs>
 

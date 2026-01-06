@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import { FormField } from '@/components/ui/form';
 import { RelationshipRenderer } from '../relationship-renderer';
-import { EnhancedUserProfileRelationshipField } from '@/app/(protected)/(features)/user-profiles/components/enhanced-user-profile-relationship-field';
 import { getAllCallStatuses, getAllPriorities } from '@/core/api/generated/spring';
 import { useUserAuthorities } from '@/core/auth';
 
@@ -23,12 +22,6 @@ export function CallClassificationStep({
   const { hasGroup } = useUserAuthorities();
 
   const isBusinessPartner = hasGroup('Business Partners');
-
-  // Filters for assigned to field
-  const assignedToFilters = {
-    'channelTypeId.specified': false,
-    'email.notEquals': 'admin@gmail.com',
-  };
 
   useEffect(() => {
     const setDefaultCallStatus = async () => {
@@ -206,20 +199,43 @@ export function CallClassificationStep({
           />
 
           {/* Assigned To Relationship */}
+
           {!isBusinessPartner && (
             <FormField
               control={form.control}
               name="assignedTo"
               render={({ field }) => (
-                <div>
-                  <label className="text-sm font-medium">Assigned To</label>
-                  <EnhancedUserProfileRelationshipField
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    placeholder="Select assigned to"
-                    customFilters={assignedToFilters}
-                  />
-                </div>
+                <RelationshipRenderer
+                  relConfig={{
+                    name: 'assignedTo',
+                    type: 'many-to-one',
+                    targetEntity: 'userProfile',
+                    displayField: 'email',
+                    primaryKey: 'id',
+                    required: false,
+                    multiple: false,
+                    customFilters: {
+                      'channelTypeId.specified': false,
+                      'email.notEquals': 'admin@gmail.com',
+                    },
+                    api: {
+                      useGetAllHook: 'useGetAllUserProfiles',
+                      useSearchHook: 'useSearchUserProfiles',
+                      useCountHook: 'useCountUserProfiles',
+                      entityName: 'UserProfiles',
+                    },
+                    creation: {
+                      canCreate: true,
+                      createPath: '/user-profiles/new',
+                      createPermission: 'userProfile:create:inline',
+                    },
+                    ui: { label: 'Assigned To', placeholder: 'Select assigned to', icon: '👤' },
+                  }}
+                  field={field}
+                  form={form}
+                  actions={actions}
+                  config={config}
+                />
               )}
             />
           )}

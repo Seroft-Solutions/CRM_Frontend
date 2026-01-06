@@ -24,7 +24,7 @@ export const HEADERS = [
   'Customer Phone Number',
   'Zip Code',
   'Product Name',
-  'Barcode Text',
+  'Product Code',
   'External Id',
   'Call Type',
   'Sub Call Type',

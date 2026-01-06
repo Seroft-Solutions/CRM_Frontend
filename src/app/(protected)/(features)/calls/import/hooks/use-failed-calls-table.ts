@@ -58,26 +58,7 @@ export function useFailedCallsTable() {
 
   useEffect(() => {
     if (importHistoryData) {
-      const failedRows = importHistoryData.filter((item) => {
-        const hasIssue = Boolean(item.issue && item.issue.trim() !== '');
-        if (!hasIssue) return false;
-
-        const entityName = item.entityName;
-        if (entityName) {
-          return entityName.toUpperCase() === 'CALL';
-        }
-
-        // Backward compatibility: older rows have no entityName.
-        return Boolean(
-          (item.callType && item.callType.trim() !== '') ||
-            (item.subCallType && item.subCallType.trim() !== '') ||
-            (item.priority && item.priority.trim() !== '') ||
-            (item.callStatus && item.callStatus.trim() !== '') ||
-            (item.externalId && item.externalId.trim() !== '') ||
-            (item.productName && item.productName.trim() !== '') ||
-            (item.productCode && item.productCode.trim() !== '')
-        );
-      });
+      const failedRows = importHistoryData.filter((item) => item.issue && item.issue.trim() !== '');
 
       setEditableData(failedRows);
       originalRowsRef.current = failedRows.map((row) => ({ ...row }));
@@ -162,7 +143,7 @@ export function useFailedCallsTable() {
 
   const handleClearAllFailedEntries = useCallback(async () => {
     try {
-      const response = await deleteAllCallImportHistoriesAsync({ params: { entityName: 'CALL' } });
+      const response = await deleteAllCallImportHistoriesAsync();
       const deletedCount = Number((response['deletedCount'] as number | undefined) ?? 0);
       const rawMessage = response['message'];
       const message = typeof rawMessage === 'string' ? rawMessage : undefined;

@@ -72,8 +72,7 @@ export function EnhancedCustomerRelationshipField({
     ...customFilters,
   });
 
-  // Server-side search by customer business name
-  const { data: searchResponseByName, isLoading: isSearchingByName } = useGetAllCustomers(
+  const { data: searchResponse, isLoading: isSearching } = useGetAllCustomers(
     {
       'customerBusinessName.contains': deferredSearchQuery,
       page: 0,
@@ -82,115 +81,15 @@ export function EnhancedCustomerRelationshipField({
     },
     {
       query: {
-        enabled: deferredSearchQuery.length > 0,
-        queryKey: ['search-customers-by-name', deferredSearchQuery, customFilters],
+        enabled: deferredSearchQuery.length > 1,
+        queryKey: ['search-customers-enhanced', deferredSearchQuery, customFilters],
       },
     }
   );
-
-  // Server-side search by mobile number
-  const { data: searchResponseByMobile, isLoading: isSearchingByMobile } = useGetAllCustomers(
-    {
-      'mobile.contains': deferredSearchQuery,
-      page: 0,
-      size: 50,
-      ...customFilters,
-    },
-    {
-      query: {
-        enabled: deferredSearchQuery.length > 0,
-        queryKey: ['search-customers-by-mobile', deferredSearchQuery, customFilters],
-      },
-    }
-  );
-
-  // Server-side search by email
-  const { data: searchResponseByEmail, isLoading: isSearchingByEmail } = useGetAllCustomers(
-    {
-      'email.contains': deferredSearchQuery,
-      page: 0,
-      size: 50,
-      ...customFilters,
-    },
-    {
-      query: {
-        enabled: deferredSearchQuery.length > 0,
-        queryKey: ['search-customers-by-email', deferredSearchQuery, customFilters],
-      },
-    }
-  );
-
-  // Server-side search by contact person
-  const { data: searchResponseByContact, isLoading: isSearchingByContact } = useGetAllCustomers(
-    {
-      'contactPerson.contains': deferredSearchQuery,
-      page: 0,
-      size: 50,
-      ...customFilters,
-    },
-    {
-      query: {
-        enabled: deferredSearchQuery.length > 0,
-        queryKey: ['search-customers-by-contact', deferredSearchQuery, customFilters],
-      },
-    }
-  );
-
-  // Combine search results from all fields and remove duplicates
-  const searchResponse = React.useMemo(() => {
-    if (!searchResponseByName && !searchResponseByMobile && !searchResponseByEmail && !searchResponseByContact) return undefined;
-
-    const combinedResults: CustomerDTO[] = [];
-    const seenIds = new Set<number>();
-
-    // Add results from name search
-    if (searchResponseByName) {
-      searchResponseByName.forEach(customer => {
-        if (customer.id && !seenIds.has(customer.id)) {
-          combinedResults.push(customer);
-          seenIds.add(customer.id);
-        }
-      });
-    }
-
-    // Add results from mobile search
-    if (searchResponseByMobile) {
-      searchResponseByMobile.forEach(customer => {
-        if (customer.id && !seenIds.has(customer.id)) {
-          combinedResults.push(customer);
-          seenIds.add(customer.id);
-        }
-      });
-    }
-
-    // Add results from email search
-    if (searchResponseByEmail) {
-      searchResponseByEmail.forEach(customer => {
-        if (customer.id && !seenIds.has(customer.id)) {
-          combinedResults.push(customer);
-          seenIds.add(customer.id);
-        }
-      });
-    }
-
-    // Add results from contact person search
-    if (searchResponseByContact) {
-      searchResponseByContact.forEach(customer => {
-        if (customer.id && !seenIds.has(customer.id)) {
-          combinedResults.push(customer);
-          seenIds.add(customer.id);
-        }
-      });
-    }
-
-    return combinedResults;
-  }, [searchResponseByName, searchResponseByMobile, searchResponseByEmail, searchResponseByContact]);
-
-  const isSearching = isSearchingByName || isSearchingByMobile || isSearchingByEmail || isSearchingByContact;
 
   const availableOptions: CustomerDTO[] = React.useMemo(() => {
     const baseOptions =
-      deferredSearchQuery.length > 0 && searchResponse ? searchResponse : customersResponse || [];
+      deferredSearchQuery.length > 1 && searchResponse ? searchResponse : customersResponse || [];
 
     const merged = [...createdCustomers];
 
@@ -310,17 +209,13 @@ export function EnhancedCustomerRelationshipField({
       if (selected.length === 0) return placeholder;
       if (selected.length === 1) {
         const customer = selected[0];
-        const businessName = customer.customerBusinessName || `Customer #${customer.id}`;
-        const phone = customer.mobile ? ` (${customer.mobile})` : '';
-        return `${businessName}${phone}`;
+        return customer.customerBusinessName || `Customer #${customer.id}`;
       }
       return `${selected.length} customers selected`;
     } else {
       const selected = getSelectedOption();
       if (selected) {
-        const businessName = selected.customerBusinessName || `Customer #${selected.id}`;
-        const phone = selected.mobile ? ` (${selected.mobile})` : '';
-        return `${businessName}${phone}`;
+        return selected.customerBusinessName || `Customer #${selected.id}`;
       }
       return placeholder;
     }
@@ -375,7 +270,7 @@ export function EnhancedCustomerRelationshipField({
           <PopoverContent className="w-[400px] p-0" align="start">
             <Command shouldFilter={false}>
               <CommandInput
-                placeholder="Search by customer name or mobile number..."
+                placeholder="Search customers..."
                 value={searchQuery}
                 onValueChange={setSearchQuery}
                 className="h-9"
@@ -390,7 +285,7 @@ export function EnhancedCustomerRelationshipField({
                   ) : (
                     <div className="text-center p-4">
                       <p className="text-sm text-muted-foreground">No customers found</p>
-                      {deferredSearchQuery.length > 0 && (
+                      {deferredSearchQuery.length > 1 && (
                         <p className="text-xs text-muted-foreground mt-1">
                           Try a different search term
                         </p>
@@ -413,7 +308,6 @@ export function EnhancedCustomerRelationshipField({
                       >
                         <div className="flex-1">
                           <div className="font-medium">{option.customerBusinessName}</div>
-                          <div className="text-sm text-muted-foreground">{option.mobile}</div>
                         </div>
                         {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </CommandItem>
