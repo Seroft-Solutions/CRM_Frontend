@@ -135,20 +135,6 @@ export function OrderFormFields({
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Base Amount</Label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={formState.orderBaseAmount}
-              onChange={(event) => onChange('orderBaseAmount', event.target.value)}
-              className="border-slate-300"
-            />
-            <FieldError message={errors.orderBaseAmount} />
-          </div>
-
-          <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Discount Amount</Label>
             <Input
               type="number"
