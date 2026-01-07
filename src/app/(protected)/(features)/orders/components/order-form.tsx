@@ -349,6 +349,11 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
         nextErrors.email = 'Enter a valid email address.';
       }
     }
+    if (formState.notificationType === 'Email' && !formState.email.trim()) {
+      if (!nextErrors.email) {
+        nextErrors.email = 'Email is required for email notifications.';
+      }
+    }
 
     if (formState.discountCode && formState.discountCode.length > 20) {
       nextErrors.discountCode = 'Max 20 characters.';
