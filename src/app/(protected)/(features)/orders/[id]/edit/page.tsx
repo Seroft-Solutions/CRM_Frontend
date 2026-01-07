@@ -3,17 +3,17 @@ import { OrderEditForm } from '@/app/(protected)/(features)/orders/components/or
 import { Edit } from 'lucide-react';
 
 interface EditOrderPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export const metadata = {
   title: 'Edit Order',
 };
 
-export default function EditOrderPage({ params }: EditOrderPageProps) {
-  const { id: idParam } = params;
+export default async function EditOrderPage({ params }: EditOrderPageProps) {
+  const { id: idParam } = await params;
   const id = parseInt(idParam, 10);
 
   return (

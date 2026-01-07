@@ -144,8 +144,8 @@ export function OrderDetail({ order }: OrderDetailProps) {
               <span className="font-semibold text-slate-800">{order.shippingId || '—'}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-600">Voucher</span>
-              <span className="font-semibold text-slate-800">{order.busyVoucherId || '—'}</span>
+              <span className="text-slate-600">Discount Type</span>
+              <span className="font-semibold text-slate-800">{order.discountType || '—'}</span>
             </div>
             <div className="rounded-md bg-slate-50 p-2">
               <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-600">Audit Trail</div>
