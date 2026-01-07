@@ -109,18 +109,18 @@ export function OrderFormFields({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Shipping Method</Label>
+            <Label className="text-xs font-semibold text-slate-600">Notification Type</Label>
             <Select
-              value={formState.shippingMethod}
-              onValueChange={(value) => onChange('shippingMethod', value)}
+              value={formState.notificationType || ''}
+              onValueChange={(value) => onChange('notificationType', value)}
             >
               <SelectTrigger className="border-slate-300">
-                <SelectValue placeholder="Pick a method" />
+                <SelectValue placeholder="Select notification type" />
               </SelectTrigger>
               <SelectContent>
-                {shippingMethodOptions.map((method) => (
-                  <SelectItem key={method} value={method}>
-                    {method}
+                {notificationTypeOptions.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -131,24 +131,9 @@ export function OrderFormFields({
 
       <div className="rounded-lg bg-white/60 p-4">
         <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Pricing & Discounts
+          Discount & Shipping
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Discount Percentage</Label>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              step="0.01"
-              placeholder="0"
-              value={formState.discountAmount}
-              onChange={(event) => onChange('discountAmount', event.target.value)}
-              className="border-slate-300"
-            />
-            <FieldError message={errors.discountAmount} />
-          </div>
-
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
             <Select
@@ -180,7 +165,48 @@ export function OrderFormFields({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Shipping Amount</Label>
+            <Label className="text-xs font-semibold text-slate-600">Discount Percentage</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              placeholder="0"
+              value={formState.discountAmount}
+              onChange={(event) => onChange('discountAmount', event.target.value)}
+              className="border-slate-300"
+            />
+            <FieldError message={errors.discountAmount} />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-lg bg-white/60 p-4">
+        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
+          Shipping
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Shipping Method</Label>
+            <Select
+              value={formState.shippingMethod}
+              onValueChange={(value) => onChange('shippingMethod', value)}
+            >
+              <SelectTrigger className="border-slate-300">
+                <SelectValue placeholder="Pick a method" />
+              </SelectTrigger>
+              <SelectContent>
+                {shippingMethodOptions.map((method) => (
+                  <SelectItem key={method} value={method}>
+                    {method}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Shipping Price</Label>
             <Input
               type="number"
               min={0}
@@ -232,43 +258,6 @@ export function OrderFormFields({
               className="border-slate-300"
             />
             <FieldError message={errors.email} />
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-lg bg-white/60 p-4">
-        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Additional Options
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Notification Type</Label>
-            <Select
-              value={formState.notificationType || ''}
-              onValueChange={(value) => onChange('notificationType', value)}
-            >
-              <SelectTrigger className="border-slate-300">
-                <SelectValue placeholder="Select notification type" />
-              </SelectTrigger>
-              <SelectContent>
-                {notificationTypeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Busy Voucher Id</Label>
-            <Input
-              placeholder="Voucher id"
-              value={formState.busyVoucherId}
-              onChange={(event) => onChange('busyVoucherId', event.target.value)}
-              className="border-slate-300"
-            />
-            <FieldError message={errors.busyVoucherId} />
           </div>
 
           <div className="space-y-1.5 md:col-span-2">

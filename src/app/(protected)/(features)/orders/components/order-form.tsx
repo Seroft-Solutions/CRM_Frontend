@@ -737,12 +737,6 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
 
               <div className="space-y-3">
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">Base Amount</span>
-                  <span className="font-semibold text-slate-800">
-                    ₹{baseAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
                   <span className="font-semibold text-red-600">
                     -₹{discountAmount.toFixed(2)}
