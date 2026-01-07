@@ -680,7 +680,6 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
           <OrderFormItems
             items={items}
             itemErrors={errors.items}
-            discountTypeOptions={discountTypeSelectOptions}
             onAddItem={addItem}
             onRemoveItem={removeItem}
             onItemChange={handleItemChange}

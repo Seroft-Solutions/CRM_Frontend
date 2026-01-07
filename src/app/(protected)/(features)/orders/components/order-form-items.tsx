@@ -3,14 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
   Command,
@@ -31,14 +23,12 @@ import { useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import type { ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
-import type { DiscountType } from '../data/order-data';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
   itemErrors?: ItemErrors[];
-  discountTypeOptions: (DiscountType | 'Unknown')[];
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
   onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
@@ -240,23 +230,10 @@ function ProductVariantSelector({
 export function OrderFormItems({
   items,
   itemErrors,
-  discountTypeOptions,
   onAddItem,
   onRemoveItem,
   onItemChange,
 }: OrderFormItemsProps) {
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
-
-  const toggleExpanded = (index: number) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
-    } else {
-      newExpanded.add(index);
-    }
-    setExpandedItems(newExpanded);
-  };
-
   const calculateItemTotal = (item: OrderItemForm) => {
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
@@ -311,7 +288,6 @@ export function OrderFormItems({
           <div className="divide-y divide-slate-200">
             {items.map((item, index) => {
               const itemTotal = calculateItemTotal(item);
-              const isExpanded = expandedItems.has(index);
 
               return (
                 <div key={`item-${index}`} className="hover:bg-slate-50/50 transition-colors">
@@ -369,8 +345,8 @@ export function OrderFormItems({
                         step="0.01"
                         placeholder="0.00"
                         value={item.itemPrice}
-                        onChange={(event) => onItemChange(index, 'itemPrice', event.target.value)}
-                        className="h-9 border-slate-300"
+                        readOnly
+                        className="h-9 border-slate-300 bg-slate-100 text-slate-700"
                       />
                       <FieldError message={itemErrors?.[index]?.itemPrice} />
                     </div>
@@ -382,22 +358,6 @@ export function OrderFormItems({
                         <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
                       </div>
                       <div className="flex gap-1 justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleExpanded(index)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <svg
-                            className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -428,35 +388,17 @@ export function OrderFormItems({
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleExpanded(index)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <svg
-                            className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onRemoveItem(index)}
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </Button>
-                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onRemoveItem(index)}
+                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </Button>
                     </div>
 
                     {/* Product Selector */}
@@ -503,97 +445,14 @@ export function OrderFormItems({
                           step="0.01"
                           placeholder="0.00"
                           value={item.itemPrice}
-                          onChange={(event) => onItemChange(index, 'itemPrice', event.target.value)}
-                          className="h-9 border-slate-300"
+                          readOnly
+                          className="h-9 border-slate-300 bg-slate-100 text-slate-700"
                         />
                         <FieldError message={itemErrors?.[index]?.itemPrice} />
                       </div>
                     </div>
                   </div>
 
-                  {/* Expanded Details */}
-                  {isExpanded && (
-                    <div className="bg-slate-50 px-4 py-3 border-t border-slate-200">
-                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">Tax Amount</Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            placeholder="0.00"
-                            value={item.itemTaxAmount}
-                            onChange={(event) => onItemChange(index, 'itemTaxAmount', event.target.value)}
-                            className="h-9 border-slate-300"
-                          />
-                          <FieldError message={itemErrors?.[index]?.itemTaxAmount} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">Discount Amount</Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            placeholder="0.00"
-                            value={item.discountAmount}
-                            onChange={(event) => onItemChange(index, 'discountAmount', event.target.value)}
-                            className="h-9 border-slate-300"
-                          />
-                          <FieldError message={itemErrors?.[index]?.discountAmount} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
-                          <Select
-                            value={item.discountType || ''}
-                            onValueChange={(value) => onItemChange(index, 'discountType', value)}
-                          >
-                            <SelectTrigger className="h-9 border-slate-300">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {discountTypeOptions.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">Discount Code</Label>
-                          <Input
-                            placeholder="PROMO2024"
-                            value={item.discountCode}
-                            onChange={(event) => onItemChange(index, 'discountCode', event.target.value)}
-                            className="h-9 border-slate-300"
-                          />
-                          <FieldError message={itemErrors?.[index]?.discountCode} />
-                        </div>
-                      </div>
-                      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">Item Status</Label>
-                          <Input
-                            placeholder="Status code"
-                            value={item.itemStatus}
-                            onChange={(event) => onItemChange(index, 'itemStatus', event.target.value)}
-                            className="h-9 border-slate-300"
-                          />
-                          <FieldError message={itemErrors?.[index]?.itemStatus} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold text-slate-600">Item Notes</Label>
-                          <Textarea
-                            placeholder="Add notes or special instructions..."
-                            value={item.itemComment}
-                            onChange={(event) => onItemChange(index, 'itemComment', event.target.value)}
-                            className="min-h-[36px] resize-none border-slate-300"
-                            rows={1}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })}
