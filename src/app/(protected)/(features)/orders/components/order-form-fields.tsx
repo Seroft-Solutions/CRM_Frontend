@@ -135,12 +135,13 @@ export function OrderFormFields({
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Discount Amount</Label>
+            <Label className="text-xs font-semibold text-slate-600">Discount Percentage</Label>
             <Input
               type="number"
               min={0}
+              max={100}
               step="0.01"
-              placeholder="0.00"
+              placeholder="0"
               value={formState.discountAmount}
               onChange={(event) => onChange('discountAmount', event.target.value)}
               className="border-slate-300"

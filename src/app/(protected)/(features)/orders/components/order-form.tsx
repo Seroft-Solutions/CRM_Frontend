@@ -63,6 +63,15 @@ const emptyOrderItem = (): OrderItemForm => ({
   itemComment: '',
 });
 
+const calculateItemsTotal = (items: OrderItemForm[]) =>
+  items.reduce((sum, item) => {
+    const qty = Number.parseInt(item.quantity, 10) || 0;
+    const price = Number.parseFloat(item.itemPrice) || 0;
+    const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+    const discount = Number.parseFloat(item.discountAmount) || 0;
+    return sum + Math.max(qty * price + tax - discount, 0);
+  }, 0);
+
 const parseItemStatusValue = (value?: string) => {
   if (!value) return '';
   const match = value.match(/\d+/);
@@ -85,13 +94,18 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
   const { mutateAsync: updateOrderAddressDetail } = useUpdateOrderAddressDetail();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
-  const defaultState: OrderFormState = useMemo(
-    () => ({
+  const defaultState: OrderFormState = useMemo(() => {
+    const baseAmount = initialOrder?.orderBaseAmount ?? 0;
+    const discountAmountValue = initialOrder?.discountAmount ?? 0;
+    const discountPercent =
+      baseAmount > 0 ? Math.min((discountAmountValue / baseAmount) * 100, 100) : 0;
+
+    return {
       orderStatus: initialOrder?.orderStatus || 'Pending',
       paymentStatus: initialOrder?.paymentStatus || 'Pending',
       userType: initialOrder?.userType || 'B2C',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
-      discountAmount: initialOrder ? initialOrder.discountAmount.toString() : '',
+      discountAmount: initialOrder ? discountPercent.toFixed(2) : '',
       shippingAmount: initialOrder ? initialOrder.shippingAmount.toString() : '',
       phone: initialOrder?.phone || '',
       email: initialOrder?.email || '',
@@ -103,9 +117,8 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       busyFlag: Boolean(initialOrder?.busyFlag),
       busyVoucherId: initialOrder?.busyVoucherId || '',
       orderComment: '',
-    }),
-    [initialOrder]
-  );
+    };
+  }, [initialOrder]);
 
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
   const [items, setItems] = useState<OrderItemForm[]>(() => {
@@ -273,8 +286,22 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       }
     };
 
+    const validatePercentage = (value: string, key: 'discountAmount') => {
+      if (!value.trim()) {
+        return;
+      }
+      if (!numberPattern.test(value.trim())) {
+        nextErrors[key] = 'Enter a valid percentage.';
+        return;
+      }
+      const parsed = Number.parseFloat(value);
+      if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+        nextErrors[key] = 'Percentage must be between 0 and 100.';
+      }
+    };
+
     validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
-    validateAmount(formState.discountAmount, 'discountAmount');
+    validatePercentage(formState.discountAmount, 'discountAmount');
     validateAmount(formState.shippingAmount, 'shippingAmount');
 
     if (formState.phone.trim()) {
@@ -455,8 +482,12 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       };
     };
 
-    const baseAmount = parseAmount(formState.orderBaseAmount || '0');
-    const discountAmount = parseAmount(formState.discountAmount || '0');
+    const itemsTotal = calculateItemsTotal(items);
+    const baseAmount = formState.orderBaseAmount.trim()
+      ? parseAmount(formState.orderBaseAmount)
+      : itemsTotal;
+    const discountPercent = parseAmount(formState.discountAmount || '0');
+    const discountAmount = (Math.min(Math.max(discountPercent, 0), 100) / 100) * baseAmount;
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const orderTotalAmount = Math.max(baseAmount - discountAmount + shippingAmount, 0);
 
@@ -633,18 +664,17 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
     }
   };
 
-  const baseAmount = Number.parseFloat(formState.orderBaseAmount) || 0;
-  const discountAmount = Number.parseFloat(formState.discountAmount) || 0;
+  const itemsTotal = calculateItemsTotal(items);
+  const baseAmount = formState.orderBaseAmount.trim()
+    ? Number.parseFloat(formState.orderBaseAmount) || 0
+    : itemsTotal;
+  const discountPercent = Number.parseFloat(formState.discountAmount) || 0;
+  const safeDiscountPercent = Math.min(Math.max(discountPercent, 0), 100);
+  const discountAmount = (safeDiscountPercent / 100) * baseAmount;
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const orderTotal = Math.max(baseAmount - discountAmount + shippingAmount, 0);
-
-  const itemsTotal = items.reduce((sum, item) => {
-    const qty = Number.parseInt(item.quantity, 10) || 0;
-    const price = Number.parseFloat(item.itemPrice) || 0;
-    const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-    const discount = Number.parseFloat(item.discountAmount) || 0;
-    return sum + Math.max(qty * price + tax - discount, 0);
-  }, 0);
+  const discountLabel =
+    safeDiscountPercent > 0 ? `Discount (${safeDiscountPercent.toFixed(2)}%)` : 'Discount';
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
@@ -713,7 +743,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">Discount</span>
+                  <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
                   <span className="font-semibold text-red-600">
                     -₹{discountAmount.toFixed(2)}
                   </span>
