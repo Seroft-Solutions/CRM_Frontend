@@ -20,6 +20,15 @@ import {
   userTypeOptions,
 } from '../data/order-data';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   useCreateOrder,
   useUpdateOrder,
 } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
@@ -72,6 +81,20 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     return sum + Math.max(qty * price + tax - discount, 0);
   }, 0);
 
+const hasItemData = (item: OrderItemForm) => {
+  const hasText = (value?: string) => Boolean(value && value.trim() !== '');
+  return Boolean(
+    item.productId ||
+      item.variantId ||
+      hasText(item.quantity) ||
+      hasText(item.itemPrice) ||
+      hasText(item.itemTaxAmount) ||
+      hasText(item.discountAmount) ||
+      hasText(item.discountCode) ||
+      hasText(item.itemComment)
+  );
+};
+
 const parseItemStatusValue = (value?: string) => {
   if (!value) return '';
   const match = value.match(/\d+/);
@@ -83,6 +106,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
   const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<OrderFormErrors>({});
+  const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
   const isEditing = Boolean(initialOrder?.orderId);
 
   const { mutateAsync: createOrder } = useCreateOrder();
@@ -427,6 +451,10 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!items.some(hasItemData)) {
+      setShowEmptyCartDialog(true);
+      return;
+    }
     const validationErrors = validateForm();
     const hasErrors = Object.values(validationErrors).some((value) => {
       if (Array.isArray(value)) {
@@ -540,16 +568,17 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
         throw new Error('Order ID missing after save.');
       }
 
-      const hasText = (value?: string) => Boolean(value && value.trim() !== '');
       const itemTasks = items
         .filter((item) => {
           const hasData =
-            hasText(item.quantity) ||
-            hasText(item.itemPrice) ||
-            hasText(item.itemTaxAmount) ||
-            hasText(item.discountAmount) ||
-            hasText(item.discountCode) ||
-            hasText(item.itemComment);
+            item.productId ||
+            item.variantId ||
+            item.quantity?.trim() ||
+            item.itemPrice?.trim() ||
+            item.itemTaxAmount?.trim() ||
+            item.discountAmount?.trim() ||
+            item.discountCode?.trim() ||
+            item.itemComment?.trim();
           return hasData;
         })
         .map((item) => {
@@ -677,10 +706,11 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
     safeDiscountPercent > 0 ? `Discount (${safeDiscountPercent.toFixed(2)}%)` : 'Discount';
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <div className="space-y-6">
-          <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
+    <>
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+          <div className="space-y-6">
+            <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                 <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -793,8 +823,24 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
               onBusyFlagChange={(checked) => handleChange('busyFlag', checked)}
             />
           </div>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+      <AlertDialog open={showEmptyCartDialog} onOpenChange={setShowEmptyCartDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cart is empty</AlertDialogTitle>
+            <AlertDialogDescription>
+              At least one item should be available in the cart.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowEmptyCartDialog(false)}>
+              Ok
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

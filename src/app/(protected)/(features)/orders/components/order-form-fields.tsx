@@ -46,8 +46,8 @@ export function OrderFormFields({
 }: OrderFormFieldsProps) {
   return (
     <div className="space-y-5">
-      <div className="rounded-lg bg-white/60 p-4">
-        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
+      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
           Status & Type
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -57,7 +57,7 @@ export function OrderFormFields({
               value={formState.orderStatus}
               onValueChange={(value) => onChange('orderStatus', value as OrderStatus)}
             >
-              <SelectTrigger className="border-slate-300">
+              <SelectTrigger className="h-10 w-full border-slate-300">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
@@ -76,7 +76,7 @@ export function OrderFormFields({
               value={formState.paymentStatus}
               onValueChange={(value) => onChange('paymentStatus', value as PaymentStatus)}
             >
-              <SelectTrigger className="border-slate-300">
+              <SelectTrigger className="h-10 w-full border-slate-300">
                 <SelectValue placeholder="Select payment status" />
               </SelectTrigger>
               <SelectContent>
@@ -95,7 +95,7 @@ export function OrderFormFields({
               value={formState.userType}
               onValueChange={(value) => onChange('userType', value as UserType)}
             >
-              <SelectTrigger className="border-slate-300">
+              <SelectTrigger className="h-10 w-full border-slate-300">
                 <SelectValue placeholder="Select user type" />
               </SelectTrigger>
               <SelectContent>
@@ -114,7 +114,7 @@ export function OrderFormFields({
               value={formState.notificationType || ''}
               onValueChange={(value) => onChange('notificationType', value)}
             >
-              <SelectTrigger className="border-slate-300">
+              <SelectTrigger className="h-10 w-full border-slate-300">
                 <SelectValue placeholder="Select notification type" />
               </SelectTrigger>
               <SelectContent>
@@ -129,18 +129,18 @@ export function OrderFormFields({
         </div>
       </div>
 
-      <div className="rounded-lg bg-white/60 p-4">
-        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Discount & Shipping
+      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
+          Dsicount
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
             <Select
               value={formState.discountType || ''}
               onValueChange={(value) => onChange('discountType', value)}
             >
-              <SelectTrigger className="border-slate-300">
+              <SelectTrigger className="h-10 w-full border-slate-300">
                 <SelectValue placeholder="Select discount type" />
               </SelectTrigger>
               <SelectContent>
@@ -181,18 +181,18 @@ export function OrderFormFields({
         </div>
       </div>
 
-      <div className="rounded-lg bg-white/60 p-4">
-        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
+      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
           Shipping
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Shipping Method</Label>
             <Select
               value={formState.shippingMethod}
               onValueChange={(value) => onChange('shippingMethod', value)}
             >
-              <SelectTrigger className="border-slate-300">
+              <SelectTrigger className="h-10 w-full border-slate-300">
                 <SelectValue placeholder="Pick a method" />
               </SelectTrigger>
               <SelectContent>
@@ -232,11 +232,11 @@ export function OrderFormFields({
         </div>
       </div>
 
-      <div className="rounded-lg bg-white/60 p-4">
-        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">
+      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
+        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
           Customer Contact
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Phone</Label>
             <Input
@@ -260,13 +260,13 @@ export function OrderFormFields({
             <FieldError message={errors.email} />
           </div>
 
-          <div className="space-y-1.5 md:col-span-2">
+          <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Order Note</Label>
             <Textarea
               placeholder="Internal note for this order..."
               value={formState.orderComment}
               onChange={(event) => onChange('orderComment', event.target.value)}
-              className="min-h-[80px] resize-none border-slate-300"
+              className="h-10 min-h-[40px] resize-none overflow-hidden border-slate-300"
             />
           </div>
         </div>
