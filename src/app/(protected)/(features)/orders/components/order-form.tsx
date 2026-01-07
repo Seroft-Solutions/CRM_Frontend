@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { ChevronDown } from 'lucide-react';
 import {
   OrderRecord,
   discountTypeOptions,
@@ -81,6 +82,14 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     return sum + Math.max(qty * price + tax - discount, 0);
   }, 0);
 
+const calculateItemTotal = (item: OrderItemForm) => {
+  const qty = Number.parseInt(item.quantity, 10) || 0;
+  const price = Number.parseFloat(item.itemPrice) || 0;
+  const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+  const discount = Number.parseFloat(item.discountAmount) || 0;
+  return Math.max(qty * price + tax - discount, 0);
+};
+
 const hasItemData = (item: OrderItemForm) => {
   const hasText = (value?: string) => Boolean(value && value.trim() !== '');
   return Boolean(
@@ -107,6 +116,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<OrderFormErrors>({});
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
+  const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
   const isEditing = Boolean(initialOrder?.orderId);
 
   const { mutateAsync: createOrder } = useCreateOrder();
@@ -704,54 +714,63 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
   const orderTotal = Math.max(baseAmount - discountAmount + shippingAmount, 0);
   const discountLabel =
     safeDiscountPercent > 0 ? `Discount (${safeDiscountPercent.toFixed(2)}%)` : 'Discount';
+  const itemSummaries = items
+    .filter(hasItemData)
+    .map((item, index) => ({
+      key: item.id ?? `${item.productId ?? 'item'}-${index}`,
+      name: item.productName || item.sku || `Item ${index + 1}`,
+      quantity: Number.parseInt(item.quantity, 10) || 0,
+      total: calculateItemTotal(item),
+    }));
+  const hasItemSummaries = itemSummaries.length > 0;
 
   return (
     <>
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           <div className="space-y-6">
+            <OrderFormItems
+              items={items}
+              itemErrors={errors.items}
+              onAddItem={addItem}
+              onRemoveItem={removeItem}
+              onItemChange={handleItemChange}
+            />
+
             <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                  <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Order Details</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Set status, pricing, and customer information
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">Order Details</h3>
-                <p className="text-sm text-muted-foreground">
-                  Set status, pricing, and customer information
-                </p>
-              </div>
+              <OrderFormFields
+                formState={formState}
+                errors={errors}
+                orderStatusOptions={orderStatusSelectOptions}
+                paymentStatusOptions={paymentStatusSelectOptions}
+                userTypeOptions={userTypeSelectOptions}
+                shippingMethodOptions={shippingMethodSelectOptions}
+                discountTypeOptions={discountTypeSelectOptions}
+                notificationTypeOptions={notificationTypeSelectOptions}
+                onChange={handleChange}
+              />
             </div>
-            <OrderFormFields
-              formState={formState}
+
+            <OrderFormAddress
+              address={address}
               errors={errors}
-              orderStatusOptions={orderStatusSelectOptions}
-              paymentStatusOptions={paymentStatusSelectOptions}
-              userTypeOptions={userTypeSelectOptions}
-              shippingMethodOptions={shippingMethodSelectOptions}
-              discountTypeOptions={discountTypeSelectOptions}
-              notificationTypeOptions={notificationTypeSelectOptions}
-              onChange={handleChange}
+              onAddressChange={handleAddressChange}
+              onToggleBillToSame={toggleBillToSame}
             />
           </div>
-
-          <OrderFormItems
-            items={items}
-            itemErrors={errors.items}
-            onAddItem={addItem}
-            onRemoveItem={removeItem}
-            onItemChange={handleItemChange}
-          />
-
-          <OrderFormAddress
-            address={address}
-            errors={errors}
-            onAddressChange={handleAddressChange}
-            onToggleBillToSame={toggleBillToSame}
-          />
-        </div>
 
         <div className="space-y-6">
           <div className="sticky top-6 space-y-6">
@@ -767,11 +786,41 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
 
               <div className="space-y-3">
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
-                  <span className="font-semibold text-red-600">
-                    -₹{discountAmount.toFixed(2)}
-                  </span>
+                  <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-800">
+                      ₹{itemsTotal.toFixed(2)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowItemsBreakdown((prev) => !prev)}
+                      disabled={!hasItemSummaries}
+                      aria-expanded={showItemsBreakdown}
+                      aria-controls="order-items-breakdown"
+                      className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${
+                          showItemsBreakdown ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
+                {showItemsBreakdown && hasItemSummaries && (
+                  <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
+                    <div className="space-y-1 text-xs">
+                      {itemSummaries.map((item) => (
+                        <div key={item.key} className="flex items-center justify-between text-slate-700">
+                          <span className="truncate">{item.name}</span>
+                          <span className="font-semibold text-slate-800">
+                            Qty {item.quantity} • ₹{item.total.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">Shipping</span>
                   <span className="font-semibold text-slate-800">
@@ -779,9 +828,9 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
-                  <span className="font-semibold text-slate-800">
-                    ₹{itemsTotal.toFixed(2)}
+                  <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
+                  <span className="font-semibold text-red-600">
+                    -₹{discountAmount.toFixed(2)}
                   </span>
                 </div>
                 <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
@@ -820,7 +869,6 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
             <OrderFormFooter
               formState={formState}
               submitting={submitting}
-              onBusyFlagChange={(checked) => handleChange('busyFlag', checked)}
             />
           </div>
           </div>

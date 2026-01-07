@@ -5,13 +5,13 @@ import { OrderDetailContainer } from '@/app/(protected)/(features)/orders/compon
 import { Eye, ArrowLeft, Edit } from 'lucide-react';
 
 interface OrderPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-export default function OrderDetailPage({ params }: OrderPageProps) {
-  const { id: idParam } = params;
+export default async function OrderDetailPage({ params }: OrderPageProps) {
+  const { id: idParam } = await params;
   const id = parseInt(idParam, 10);
 
   return (
