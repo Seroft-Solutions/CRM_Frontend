@@ -154,7 +154,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
 
   {
     id: 'articalNumber',
-    label: 'Artical Number',
+    label: 'Article Number',
     accessor: 'articalNumber',
     type: 'field',
     visible: true,

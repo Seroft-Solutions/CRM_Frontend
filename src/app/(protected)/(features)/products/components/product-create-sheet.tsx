@@ -318,11 +318,11 @@ export function ProductCreateSheet({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Artical Number
+                        Article Number
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter artical number"
+                          placeholder="Enter article number"
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                           {...field}
                         />

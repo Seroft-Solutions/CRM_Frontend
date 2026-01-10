@@ -84,8 +84,8 @@ export const productFormConfig: FormConfig = {
     {
       name: 'articalNumber',
       type: 'text',
-      label: 'Artical Number',
-      placeholder: 'Enter artical number',
+      label: 'Article Number',
+      placeholder: 'Enter article number',
       required: false,
       validation: {
         required: false,
