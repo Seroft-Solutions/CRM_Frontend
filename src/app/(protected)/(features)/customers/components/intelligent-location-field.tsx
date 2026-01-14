@@ -56,7 +56,7 @@ export function IntelligentLocationField({
   const [allAreas, setAllAreas] = useState<AreaDTO[]>([]);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedSearchQuery = useDebounce(searchQuery, 100);
 
   const {
     data: searchResults,
@@ -73,6 +73,7 @@ export function IntelligentLocationField({
         enabled: isOpen && debouncedSearchQuery.length >= 2,
         queryKey: ['searchGeography', debouncedSearchQuery, page],
         staleTime: 0,
+        gcTime: 0,
       },
     }
   );
