@@ -15,6 +15,7 @@ export const channelTypeFormSchemaFields = {
     .optional(),
   commissionRate: z
     .string()
+    .refine((val) => !val || val.length <= 3, { message: 'Please enter no more than 3 digits' })
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 100, { message: 'Please enter a number 100 or lower' })
     .optional(),
@@ -37,10 +38,15 @@ export const channelTypeFieldSchemas = {
     .optional(),
   commissionRate: z
     .string()
+    .refine((val) => !val || val.length <= 3, { message: 'Please enter no more than 3 digits' })
     .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
     .refine((val) => !val || Number(val) <= 100, { message: 'Please enter a number 100 or lower' })
     .optional(),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  createdBy: z.string().optional(),
+  createdDate: z.string().optional(),
+  lastModifiedBy: z.string().optional(),
+  lastModifiedDate: z.string().optional(),
 };
 
 export const channelTypeStepSchemas = {

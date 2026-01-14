@@ -205,7 +205,14 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                   placeholder={fieldConfig.placeholder}
                   {...field}
                   onChange={(e) => {
-                    field.onChange(e.target.value);
+                    let value = e.target.value;
+                    if (
+                      fieldConfig.validation?.maxLength &&
+                      value.length > fieldConfig.validation.maxLength
+                    ) {
+                      value = value.slice(0, fieldConfig.validation.maxLength);
+                    }
+                    field.onChange(value);
                     form.trigger(fieldConfig.name);
                   }}
                 />

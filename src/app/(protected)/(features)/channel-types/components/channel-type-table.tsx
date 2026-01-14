@@ -141,7 +141,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
 
   {
     id: 'commissionRate',
-    label: 'Commission Rate',
+    label: 'Commission Rate in %',
     accessor: 'commissionRate',
     type: 'field',
     visible: true,
@@ -488,36 +488,36 @@ export function ChannelTypeTable() {
 
   const { data, isLoading, refetch } = searchTerm
     ? useSearchChannelTypes(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
+      {
+        query: searchTerm,
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+      {
+        query: {
+          enabled: true,
+          staleTime: 0,
+          refetchOnWindowFocus: true,
         },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
+      }
+    )
     : useGetAllChannelTypes(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
+      {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+      {
+        query: {
+          enabled: true,
+          staleTime: 0,
+          refetchOnWindowFocus: true,
         },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+      }
+    );
 
   const { data: countData } = useCountChannelTypes(filterParams, {
     query: {
