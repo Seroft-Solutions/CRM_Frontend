@@ -56,7 +56,7 @@ export function IntelligentLocationField({
   const [allAreas, setAllAreas] = useState<AreaDTO[]>([]);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const {
     data: searchResults,
@@ -72,21 +72,24 @@ export function IntelligentLocationField({
       query: {
         enabled: isOpen && debouncedSearchQuery.length >= 2,
         queryKey: ['searchGeography', debouncedSearchQuery, page],
-        staleTime: 5 * 60 * 1000,
-        keepPreviousData: true,
+        staleTime: 0,
       },
     }
   );
 
   useEffect(() => {
-    if (searchResults) {
+    if (searchResults && !isFetching) {
       if (page === 0) {
         setAllAreas(searchResults);
       } else {
-        setAllAreas((prev) => [...prev, ...searchResults]);
+        setAllAreas((prev) => {
+          const existingIds = new Set(prev.map((a) => a.id));
+          const uniqueNew = searchResults.filter((a) => !existingIds.has(a.id));
+          return [...prev, ...uniqueNew];
+        });
       }
     }
-  }, [searchResults, page]);
+  }, [searchResults, page, isFetching, debouncedSearchQuery]);
 
   useEffect(() => {
     setPage(0);
