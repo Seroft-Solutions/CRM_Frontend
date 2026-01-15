@@ -4,6 +4,7 @@ import type {
   OrderDetailDTO,
   OrderHistoryDTO,
 } from '@/core/api/generated/spring/schemas';
+import type { OrderShippingDetailDTO } from '@/core/api/order-shipping-detail';
 
 const UNKNOWN_LABEL = 'Unknown';
 
@@ -94,6 +95,18 @@ export interface OrderAddressDetail {
   lastUpdated?: string;
 }
 
+export interface OrderShippingDetail {
+  orderId: number;
+  shippingAmount: number;
+  shippingMethod?: ShippingMethod;
+  shippingMethodCode?: number;
+  shippingId?: string;
+  createdBy: string;
+  createdDate: string;
+  lastModifiedBy?: string;
+  lastModifiedDate?: string;
+}
+
 export interface OrderRecord {
   orderId: number;
   orderStatus: OrderStatus;
@@ -101,7 +114,6 @@ export interface OrderRecord {
   orderTotalAmount: number;
   orderBaseAmount: number;
   discountAmount: number;
-  shippingAmount: number;
   userType: UserType;
   userTypeCode?: number;
   phone: string;
@@ -115,9 +127,6 @@ export interface OrderRecord {
   busyVoucherId?: string;
   notificationType?: NotificationType;
   notificationTypeCode?: number;
-  shippingMethod?: ShippingMethod;
-  shippingMethodCode?: number;
-  shippingId?: string;
   createdBy: string;
   createdDate: string;
   updatedBy?: string;
@@ -125,6 +134,7 @@ export interface OrderRecord {
   items: OrderDetailItem[];
   history: OrderHistoryEntry[];
   address: OrderAddressDetail;
+  shipping: OrderShippingDetail;
 }
 
 const getLabelFromCode = (options: readonly string[], code?: number) => {
@@ -180,8 +190,7 @@ const resolveOrderTotal = (order: OrderDTO) => {
 
   const base = order.orderBaseAmount ?? 0;
   const discount = order.discountAmount ?? 0;
-  const shipping = order.shippingAmount ?? 0;
-  return Math.max(base - discount + shipping, 0);
+  return Math.max(base - discount, 0);
 };
 
 const toStringValue = (value?: string | number | null) => {
@@ -195,7 +204,6 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
   const userTypeCode = order.userType ?? undefined;
   const discountTypeCode = order.discountType ?? undefined;
   const notificationTypeCode = order.notificationType ?? undefined;
-  const shippingMethodCode = order.shippingMethod ?? undefined;
 
   return {
     orderId: order.id ?? 0,
@@ -204,7 +212,6 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
     orderTotalAmount: resolveOrderTotal(order),
     orderBaseAmount: order.orderBaseAmount ?? 0,
     discountAmount: order.discountAmount ?? 0,
-    shippingAmount: order.shippingAmount ?? 0,
     userType: getUserTypeLabel(userTypeCode),
     userTypeCode,
     phone: order.phone ?? '',
@@ -222,12 +229,6 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
         ? getNotificationTypeLabel(notificationTypeCode)
         : undefined,
     notificationTypeCode,
-    shippingMethod:
-      typeof order.shippingMethod === 'number'
-        ? getShippingMethodLabel(shippingMethodCode)
-        : undefined,
-    shippingMethodCode,
-    shippingId: order.shippingId ?? undefined,
     createdBy: order.createdBy ?? 'System',
     createdDate: order.createdDate ?? '',
     updatedBy: toStringValue(order.updatedBy) || undefined,
@@ -244,6 +245,7 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
       updatedBy: toStringValue(order.updatedBy) || undefined,
       lastUpdated: order.lastUpdated ?? undefined,
     },
+    shipping: mapOrderShippingDetail(undefined, order),
   };
 };
 
@@ -326,6 +328,28 @@ export const mapOrderAddressDetail = (
   updatedBy: address?.updatedBy ?? (toStringValue(order?.updatedBy) || undefined),
   lastUpdated: address?.lastUpdated ?? order?.lastUpdated ?? undefined,
 });
+
+export const mapOrderShippingDetail = (
+  shipping: OrderShippingDetailDTO | undefined,
+  order?: OrderDTO
+): OrderShippingDetail => {
+  const shippingMethodCode = shipping?.shippingMethod ?? undefined;
+
+  return {
+    orderId: shipping?.orderId ?? order?.id ?? 0,
+    shippingAmount: shipping?.shippingAmount ?? 0,
+    shippingMethod:
+      typeof shipping?.shippingMethod === 'number'
+        ? getShippingMethodLabel(shippingMethodCode)
+        : undefined,
+    shippingMethodCode,
+    shippingId: shipping?.shippingId ?? undefined,
+    createdBy: shipping?.createdBy ?? order?.createdBy ?? 'System',
+    createdDate: shipping?.createdDate ?? order?.createdDate ?? '',
+    lastModifiedBy: shipping?.lastModifiedBy ?? order?.lastModifiedBy ?? undefined,
+    lastModifiedDate: shipping?.lastModifiedDate ?? order?.lastModifiedDate ?? undefined,
+  };
+};
 
 export const mapOrderDetails = (details?: OrderDetailDTO[]) =>
   details ? details.map(mapOrderDetailDto) : [];

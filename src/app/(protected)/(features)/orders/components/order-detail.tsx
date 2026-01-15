@@ -62,7 +62,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Shipping</span>
-              <span className="font-semibold text-slate-800">{formatCurrency(order.shippingAmount)}</span>
+              <span className="font-semibold text-slate-800">
+                {formatCurrency(order.shipping.shippingAmount)}
+              </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border-2 border-yellow-500/30 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2.5">
               <span className="font-bold text-slate-900">Total</span>
@@ -137,11 +139,11 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Shipping</span>
-              <span className="font-semibold text-slate-800">{order.shippingMethod || 'Pending'}</span>
+              <span className="font-semibold text-slate-800">{order.shipping.shippingMethod || 'Pending'}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Tracking ID</span>
-              <span className="font-semibold text-slate-800">{order.shippingId || '—'}</span>
+              <span className="font-semibold text-slate-800">{order.shipping.shippingId || '—'}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Discount Type</span>
@@ -353,7 +355,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                   <h3 className="font-bold text-slate-800">Ship To</h3>
                 </div>
                 <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-900">
-                  {order.shippingMethod || 'Pending'}
+                  {order.shipping.shippingMethod || 'Pending'}
                 </Badge>
               </div>
               <AddressBlock {...order.address.shipTo} />

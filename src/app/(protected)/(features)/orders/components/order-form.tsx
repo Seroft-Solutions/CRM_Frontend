@@ -43,10 +43,15 @@ import {
   useUpdateOrderAddressDetail,
 } from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+import {
+  useCreateOrderShippingDetail,
+  useUpdateOrderShippingDetail,
+} from '@/core/api/order-shipping-detail';
 import type { OrderDTO } from '@/core/api/generated/spring/schemas';
 interface OrderFormProps {
   initialOrder?: OrderRecord;
   addressExists?: boolean;
+  shippingExists?: boolean;
   onSubmitSuccess?: () => void;
 }
 
@@ -110,7 +115,7 @@ const parseItemStatusValue = (value?: string) => {
   return match ? match[0] : '';
 };
 
-export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: OrderFormProps) {
+export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmitSuccess }: OrderFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
@@ -126,6 +131,8 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
   const { mutateAsync: deleteOrderDetail } = useDeleteOrderDetail();
   const { mutateAsync: createOrderAddressDetail } = useCreateOrderAddressDetail();
   const { mutateAsync: updateOrderAddressDetail } = useUpdateOrderAddressDetail();
+  const { mutateAsync: createOrderShippingDetail } = useCreateOrderShippingDetail();
+  const { mutateAsync: updateOrderShippingDetail } = useUpdateOrderShippingDetail();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
   const defaultState: OrderFormState = useMemo(() => {
@@ -140,11 +147,11 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       userType: initialOrder?.userType || 'B2C',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
       discountAmount: initialOrder ? discountPercent.toFixed(2) : '',
-      shippingAmount: initialOrder ? initialOrder.shippingAmount.toString() : '',
+      shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       phone: initialOrder?.phone || '',
       email: initialOrder?.email || '',
-      shippingMethod: initialOrder?.shippingMethod || '',
-      shippingId: initialOrder?.shippingId || '',
+      shippingMethod: initialOrder?.shipping.shippingMethod || '',
+      shippingId: initialOrder?.shipping.shippingId || '',
       discountType: initialOrder?.discountType || '',
       discountCode: initialOrder?.discountCode || '',
       notificationType: initialOrder?.notificationType || '',
@@ -550,7 +557,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       undefined;
     const shippingMethodCode =
       getShippingMethodCode(formState.shippingMethod || undefined) ??
-      initialOrder?.shippingMethodCode ??
+      initialOrder?.shipping.shippingMethodCode ??
       undefined;
 
     const payload: OrderDTO = {
@@ -559,7 +566,6 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       orderTotalAmount,
       orderBaseAmount: baseAmount,
       discountAmount,
-      shippingAmount,
       userType: userTypeCode,
       phone: formState.phone || undefined,
       email: formState.email || undefined,
@@ -569,8 +575,6 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       busyFlag: formState.busyFlag ? 1 : 0,
       busyVoucherId: formState.busyVoucherId || undefined,
       notificationType: notificationTypeCode,
-      shippingMethod: shippingMethodCode,
-      shippingId: formState.shippingId || undefined,
     };
 
     try {
@@ -644,6 +648,29 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
         }
       }
 
+      const shippingTasks: Promise<unknown>[] = [];
+      const shouldSaveShipping =
+        Boolean(shippingExists) ||
+        Boolean(formState.shippingId?.trim()) ||
+        typeof shippingMethodCode === 'number' ||
+        shippingAmount > 0;
+
+      if (shouldSaveShipping) {
+        const shippingPayload = {
+          id: shippingExists ? orderId : undefined,
+          orderId,
+          shippingAmount,
+          shippingMethod: shippingMethodCode,
+          shippingId: formState.shippingId || undefined,
+        };
+
+        if (shippingExists) {
+          shippingTasks.push(updateOrderShippingDetail({ id: orderId, data: shippingPayload }));
+        } else {
+          shippingTasks.push(createOrderShippingDetail({ data: shippingPayload }));
+        }
+      }
+
       const statusChanged =
         initialOrder?.orderStatus && initialOrder.orderStatus !== formState.orderStatus;
       const historyStatus = isEditing
@@ -663,6 +690,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
         ...itemTasks,
         ...deleteTasks,
         ...addressTasks,
+        ...shippingTasks,
         historyTask,
       ]);
 
@@ -682,6 +710,7 @@ export function OrderForm({ initialOrder, addressExists, onSubmitSuccess }: Orde
       }
       await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
 
       toast.success(isEditing ? 'Order updated' : 'Order created', {

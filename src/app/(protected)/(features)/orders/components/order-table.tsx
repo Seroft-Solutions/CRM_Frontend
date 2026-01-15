@@ -9,7 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import type { CountOrdersParams } from '@/core/api/generated/spring/schemas';
-import { getOrderStatusCode, mapOrderDtoToRecord, OrderStatus, orderStatusOptions } from '../data/order-data';
+import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
+import {
+  getOrderStatusCode,
+  mapOrderDtoToRecord,
+  mapOrderShippingDetail,
+  OrderStatus,
+  orderStatusOptions,
+} from '../data/order-data';
 
 const statusColors: Record<OrderStatus, string> = {
   Pending: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -90,12 +97,47 @@ export function OrderTable() {
   });
 
   const orders = useMemo(() => (data ?? []).map(mapOrderDtoToRecord), [data]);
+  const orderIds = useMemo(
+    () => orders.map((order) => order.orderId).filter((id) => id > 0),
+    [orders]
+  );
+  const orderById = useMemo(
+    () => new Map((data ?? []).map((order) => [order.id ?? 0, order])),
+    [data]
+  );
+
+  const { data: shippingData } = useGetAllOrderShippingDetails(
+    orderIds.length ? { 'orderId.in': orderIds } : undefined,
+    {
+      query: {
+        enabled: orderIds.length > 0,
+        refetchOnWindowFocus: false,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const shippingByOrderId = useMemo(() => {
+    return new Map((shippingData ?? []).map((shipping) => [shipping.orderId ?? 0, shipping]));
+  }, [shippingData]);
+
+  const ordersWithShipping = useMemo(() => {
+    return orders.map((order) => {
+      const shipping = shippingByOrderId.get(order.orderId);
+      if (!shipping) return order;
+      const orderDto = orderById.get(order.orderId);
+      return {
+        ...order,
+        shipping: mapOrderShippingDetail(shipping, orderDto),
+      };
+    });
+  }, [orders, orderById, shippingByOrderId]);
 
   const totalCount = countData ?? orders.length;
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endIndex = totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
-  const paginatedOrders = orders;
+  const paginatedOrders = ordersWithShipping;
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilter: OrderStatus | 'All') => {
@@ -252,13 +294,17 @@ export function OrderTable() {
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="font-semibold text-slate-700">{order.shippingMethod || 'Not set'}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {order.shippingAmount ? formatCurrency(order.shippingAmount) : 'Included'}
+                    <div className="font-semibold text-slate-700">
+                      {order.shipping.shippingMethod || 'Not set'}
                     </div>
-                    {order.shippingId ? (
+                    <div className="text-xs text-muted-foreground">
+                      {order.shipping.shippingAmount
+                        ? formatCurrency(order.shipping.shippingAmount)
+                        : 'Included'}
+                    </div>
+                    {order.shipping.shippingId ? (
                       <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900">
-                        #{order.shippingId}
+                        #{order.shipping.shippingId}
                       </Badge>
                     ) : null}
                   </div>
