@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -43,6 +43,8 @@ import {
   useCreateOrder,
   useUpdateOrder,
 } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
+import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import type { CustomerDTO, OrderDTO } from '@/core/api/generated/spring/schemas';
 import {
   useCreateOrderDetail,
   useDeleteOrderDetail,
@@ -61,7 +63,20 @@ import {
   useCreateOrderShippingDetail,
   useUpdateOrderShippingDetail,
 } from '@/core/api/order-shipping-detail';
-import type { OrderDTO } from '@/core/api/generated/spring/schemas';
+import type {
+  AddressFieldsForm,
+  ItemErrors,
+  OrderAddressForm,
+  OrderFormErrors,
+  OrderFormState,
+  OrderItemForm,
+} from './order-form-types';
+import { OrderFormAddress } from './order-form-address';
+import { OrderFormFooter } from './order-form-footer';
+import { OrderFormFields } from './order-form-fields';
+import { OrderFormItems } from './order-form-items';
+import { FieldError } from './order-form-field-error';
+
 interface OrderFormProps {
   initialOrder?: OrderRecord;
   addressExists?: boolean;
@@ -69,19 +84,6 @@ interface OrderFormProps {
   discountExists?: boolean;
   onSubmitSuccess?: () => void;
 }
-
-import { OrderFormAddress } from './order-form-address';
-import { OrderFormFooter } from './order-form-footer';
-import { OrderFormFields } from './order-form-fields';
-import { OrderFormItems } from './order-form-items';
-import { FieldError } from './order-form-field-error';
-import type {
-  ItemErrors,
-  OrderAddressForm,
-  OrderFormErrors,
-  OrderFormState,
-  OrderItemForm,
-} from './order-form-types';
 
 const taxRateOptions = ['6', '12', '18'] as const;
 
@@ -179,8 +181,7 @@ export function OrderForm({
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       orderTaxRate:
         typeof initialOrder?.orderTaxRate === 'number' ? initialOrder.orderTaxRate.toString() : '',
-      phone: initialOrder?.phone || '',
-      email: initialOrder?.email || '',
+      customerId: initialOrder?.customer?.id ? String(initialOrder.customer.id) : '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
       discountType: discountDetail?.discountType || '',
@@ -197,6 +198,7 @@ export function OrderForm({
     const rate = defaultState.orderTaxRate.trim();
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
   });
+  const [billingEditable, setBillingEditable] = useState(false);
   const [items, setItems] = useState<OrderItemForm[]>(() => {
     if (!initialOrder?.items?.length) return [];
     return initialOrder.items.map((item) => ({
@@ -247,6 +249,84 @@ export function OrderForm({
       billToSameFlag: Boolean(initial?.billToSameAsShip),
     };
   });
+  const hasAddressValues = (fields: AddressFieldsForm) =>
+    Object.values(fields).some((value) => value.trim() !== '');
+  const hasInitialBillToRef = useRef(
+    hasAddressValues(address.billTo) ||
+      (address.billToSameFlag && hasAddressValues(address.shipTo))
+  );
+  const lastCustomerIdRef = useRef<number | null>(null);
+
+  const selectedCustomerId = formState.customerId.trim()
+    ? Number.parseInt(formState.customerId, 10)
+    : undefined;
+  const { data: customerData } = useGetCustomer(selectedCustomerId || 0, {
+    query: { enabled: Boolean(selectedCustomerId) },
+  });
+  const initialCustomer = initialOrder?.customer;
+  const selectedCustomerEmail =
+    customerData?.email ??
+    (initialCustomer?.id === selectedCustomerId ? initialOrder?.email : undefined);
+  const selectedCustomerPhone =
+    customerData?.mobile ??
+    (initialCustomer?.id === selectedCustomerId ? initialOrder?.phone : undefined);
+
+  const splitContactPerson = (contactPerson?: string) => {
+    if (!contactPerson?.trim()) {
+      return { firstName: '', middleName: '', lastName: '' };
+    }
+    const parts = contactPerson.trim().split(/\s+/);
+    if (parts.length === 1) {
+      return { firstName: parts[0], middleName: '', lastName: '' };
+    }
+    if (parts.length === 2) {
+      return { firstName: parts[0], middleName: '', lastName: parts[1] };
+    }
+    return {
+      firstName: parts[0],
+      middleName: parts.slice(1, -1).join(' '),
+      lastName: parts[parts.length - 1],
+    };
+  };
+
+  const buildBillingAddressFromCustomer = (customer: CustomerDTO): AddressFieldsForm => {
+    const { firstName, middleName, lastName } = splitContactPerson(customer.contactPerson);
+    return {
+      firstName,
+      middleName,
+      lastName,
+      addrLine1: customer.area?.name ?? '',
+      addrLine2: '',
+      city: customer.area?.city?.name ?? '',
+      state: customer.area?.city?.district?.state?.name ?? '',
+      zipcode: customer.area?.pincode ?? '',
+      country: customer.area?.city?.district?.state?.country ?? '',
+      contact: customer.mobile ?? '',
+    };
+  };
+
+  useEffect(() => {
+    if (!customerData) return;
+    const currentId = customerData.id ?? null;
+    const previousId = lastCustomerIdRef.current;
+    const shouldAutoFill =
+      previousId === null
+        ? !addressExists || !hasInitialBillToRef.current
+        : previousId !== currentId;
+
+    if (!shouldAutoFill) {
+      lastCustomerIdRef.current = currentId;
+      return;
+    }
+
+    setAddress((prev) => ({
+      ...prev,
+      billToSameFlag: false,
+      billTo: buildBillingAddressFromCustomer(customerData),
+    }));
+    setBillingEditable(false);
+    lastCustomerIdRef.current = currentId;
+  }, [addressExists, customerData?.id]);
 
   const handleChange = (key: keyof OrderFormState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
@@ -259,11 +339,10 @@ export function OrderForm({
       key === 'discountEndDate' ||
       key === 'shippingAmount' ||
       key === 'orderTaxRate' ||
-      key === 'phone' ||
-      key === 'email' ||
       key === 'shippingId' ||
       key === 'discountCode' ||
-      key === 'busyVoucherId'
+      key === 'busyVoucherId' ||
+      key === 'customerId'
     ) {
       setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
     }
@@ -362,8 +441,6 @@ export function OrderForm({
   const validateForm = (): OrderFormErrors => {
     const nextErrors: OrderFormErrors = {};
     const numberPattern = /^-?\d+(\.\d+)?$/;
-    const phonePattern = /^[+]?[0-9\s\-()]{10,20}$/;
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     const validateAmount = (
       value: string,
@@ -417,20 +494,10 @@ export function OrderForm({
       }
     }
 
-    if (formState.phone.trim()) {
-      if (formState.phone.length > 20 || !phonePattern.test(formState.phone.trim())) {
-        nextErrors.phone = 'Enter a valid phone number (10-20 digits).';
-      }
-    }
-
-    if (formState.email.trim()) {
-      if (formState.email.length > 50 || !emailPattern.test(formState.email.trim())) {
-        nextErrors.email = 'Enter a valid email address.';
-      }
-    }
-    if (formState.notificationType === 'Email' && !formState.email.trim()) {
-      if (!nextErrors.email) {
-        nextErrors.email = 'Email is required for email notifications.';
+    if (formState.notificationType === 'Email') {
+      const customerEmail = selectedCustomerEmail?.trim() || '';
+      if (!customerEmail) {
+        nextErrors.customerId = 'Select a customer with an email address.';
       }
     }
 
@@ -667,15 +734,20 @@ export function OrderForm({
       initialOrder?.shipping.shippingMethodCode ??
       undefined;
 
+    const customerPayload = selectedCustomerId
+      ? ({ id: selectedCustomerId } as CustomerDTO)
+      : undefined;
+
     const payload: OrderDTO = {
       id: initialOrder?.orderId,
       orderStatus: orderStatusCode,
       orderTotalAmount,
       orderTaxRate: taxRate,
+      customer: customerPayload,
       orderBaseAmount: baseAmount,
       userType: userTypeCode,
-      phone: formState.phone || undefined,
-      email: formState.email || undefined,
+      phone: selectedCustomerPhone || undefined,
+      email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
       busyFlag: formState.busyFlag ? 1 : 0,
       busyVoucherId: formState.busyVoucherId || undefined,
@@ -969,6 +1041,8 @@ export function OrderForm({
               errors={errors}
               onAddressChange={handleAddressChange}
               onToggleBillToSame={toggleBillToSame}
+              billingEditable={billingEditable}
+              onToggleBillingEditable={setBillingEditable}
             />
           </div>
 

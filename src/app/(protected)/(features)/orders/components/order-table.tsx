@@ -274,7 +274,11 @@ export function OrderTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedOrders.map((order, index) => (
+            {paginatedOrders.map((order, index) => {
+              const customerName = order.customer?.customerBusinessName || order.email || '—';
+              const customerContact = order.customer?.mobile || order.phone || '—';
+
+              return (
               <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -329,8 +333,8 @@ export function OrderTable() {
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <div className="font-semibold text-slate-800">{order.email || '—'}</div>
-                    <div className="text-xs text-muted-foreground">{order.phone || '—'}</div>
+                    <div className="font-semibold text-slate-800">{customerName}</div>
+                    <div className="text-xs text-muted-foreground">{customerContact}</div>
                     <Badge variant="outline" className="border-blue-300 bg-blue-50 text-xs text-blue-900">
                       {order.userType}
                     </Badge>
@@ -370,7 +374,8 @@ export function OrderTable() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
 
             {paginatedOrders.length === 0 ? (
               <TableRow>

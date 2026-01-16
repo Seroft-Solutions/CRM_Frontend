@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { EnhancedCustomerRelationshipField } from '@/app/(protected)/(features)/customers/components/enhanced-customer-relationship-field';
 import {
   DiscountMode,
   DiscountType,
@@ -296,30 +297,19 @@ export function OrderFormFields({
 
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
         <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Customer Contact
+          Customer
         </div>
-        <div className="grid gap-4 grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Phone</Label>
-            <Input
-              placeholder="+1 555 123 4567"
-              value={formState.phone}
-              onChange={(event) => onChange('phone', event.target.value)}
-              className="border-slate-300"
+            <Label className="text-xs font-semibold text-slate-600">Customer</Label>
+            <EnhancedCustomerRelationshipField
+              value={formState.customerId ? Number(formState.customerId) : undefined}
+              onValueChange={(value) => onChange('customerId', value ? String(value) : '')}
+              placeholder="Select customer"
+              canCreate={true}
+              createPermission="customer:create:inline"
             />
-            <FieldError message={errors.phone} />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Email</Label>
-            <Input
-              type="email"
-              placeholder="customer@email.com"
-              value={formState.email}
-              onChange={(event) => onChange('email', event.target.value)}
-              className="border-slate-300"
-            />
-            <FieldError message={errors.email} />
+            <FieldError message={errors.customerId} />
           </div>
 
           <div className="space-y-1.5">

@@ -3,6 +3,7 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { FieldError } from './order-form-field-error';
 import type { OrderAddressForm, OrderFormErrors } from './order-form-types';
 
@@ -15,6 +16,8 @@ type OrderFormAddressProps = {
     value: string
   ) => void;
   onToggleBillToSame: (checked: boolean) => void;
+  billingEditable: boolean;
+  onToggleBillingEditable: (editable: boolean) => void;
 };
 
 export function OrderFormAddress({
@@ -22,7 +25,11 @@ export function OrderFormAddress({
   errors,
   onAddressChange,
   onToggleBillToSame,
+  billingEditable,
+  onToggleBillingEditable,
 }: OrderFormAddressProps) {
+  const billToLocked = !billingEditable || address.billToSameFlag;
+
   return (
     <div className="space-y-4 rounded-lg border-2 border-emerald-200 bg-gradient-to-br from-white to-emerald-50/30 p-6 shadow-lg">
       <div className="flex items-center gap-3">
@@ -124,23 +131,35 @@ export function OrderFormAddress({
         </div>
 
         <div className="space-y-4 rounded-xl border-2 border-emerald-300/50 bg-white p-5 shadow-md">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
               <h4 className="text-base font-bold text-slate-800">Bill To</h4>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
-              <Checkbox
-                id="billToSame"
-                checked={address.billToSameFlag}
-                onCheckedChange={(checked) => onToggleBillToSame(Boolean(checked))}
-                className="border-emerald-500"
-              />
-              <Label htmlFor="billToSame" className="cursor-pointer text-xs font-semibold text-slate-700">
-                Same as shipping
-              </Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onToggleBillingEditable(!billingEditable)}
+                className="border-emerald-300 text-xs"
+              >
+                {billingEditable ? 'Lock billing address' : 'Edit billing address'}
+              </Button>
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
+                <Checkbox
+                  id="billToSame"
+                  checked={address.billToSameFlag}
+                  onCheckedChange={(checked) => onToggleBillToSame(Boolean(checked))}
+                  className="border-emerald-500"
+                  disabled={!billingEditable}
+                />
+                <Label htmlFor="billToSame" className="cursor-pointer text-xs font-semibold text-slate-700">
+                  Same as shipping
+                </Label>
+              </div>
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-4">
@@ -149,7 +168,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.firstName}
                 onChange={(event) => onAddressChange('billTo', 'firstName', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2">
@@ -157,7 +176,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.middleName}
                 onChange={(event) => onAddressChange('billTo', 'middleName', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2">
@@ -165,7 +184,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.lastName}
                 onChange={(event) => onAddressChange('billTo', 'lastName', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2">
@@ -173,7 +192,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.contact}
                 onChange={(event) => onAddressChange('billTo', 'contact', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
               <FieldError message={errors.billToContact} />
             </div>
@@ -182,7 +201,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.addrLine1}
                 onChange={(event) => onAddressChange('billTo', 'addrLine1', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2 md:col-span-4">
@@ -190,7 +209,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.addrLine2}
                 onChange={(event) => onAddressChange('billTo', 'addrLine2', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2">
@@ -198,7 +217,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.city}
                 onChange={(event) => onAddressChange('billTo', 'city', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2">
@@ -206,7 +225,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.state}
                 onChange={(event) => onAddressChange('billTo', 'state', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
             <div className="space-y-2">
@@ -214,7 +233,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.zipcode}
                 onChange={(event) => onAddressChange('billTo', 'zipcode', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
                 maxLength={10}
               />
               <FieldError message={errors.billToZipcode} />
@@ -224,7 +243,7 @@ export function OrderFormAddress({
               <Input
                 value={address.billTo.country}
                 onChange={(event) => onAddressChange('billTo', 'country', event.target.value)}
-                disabled={address.billToSameFlag}
+                disabled={billToLocked}
               />
             </div>
           </div>

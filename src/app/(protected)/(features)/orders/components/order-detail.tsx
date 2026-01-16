@@ -32,6 +32,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
   const taxRate = order.orderTaxRate ?? 0;
   const taxableAmount = Math.max(order.orderBaseAmount - order.discount.discountAmount, 0);
   const taxAmount = (taxRate / 100) * taxableAmount;
+  const customerName = order.customer?.customerBusinessName || order.email || '—';
+  const customerPhone = order.customer?.mobile || order.phone || '—';
+  const customerEmail = order.customer?.email || order.email || '—';
 
   return (
     <div className="space-y-6">
@@ -134,12 +137,16 @@ export function OrderDetail({ order }: OrderDetailProps) {
               <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-900">{order.userType}</Badge>
             </div>
             <div className="flex items-center justify-between">
+              <span className="text-slate-600">Customer</span>
+              <span className="truncate font-semibold text-slate-800">{customerName}</span>
+            </div>
+            <div className="flex items-center justify-between">
               <span className="text-slate-600">Phone</span>
-              <span className="font-semibold text-slate-800">{order.phone || '—'}</span>
+              <span className="font-semibold text-slate-800">{customerPhone}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Email</span>
-              <span className="truncate font-semibold text-slate-800">{order.email || '—'}</span>
+              <span className="truncate font-semibold text-slate-800">{customerEmail}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Notification</span>

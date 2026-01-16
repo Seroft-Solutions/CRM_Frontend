@@ -5,6 +5,7 @@
  * Crm Backend API documentation
  * OpenAPI spec version: 0.0.1
  */
+import type { CustomerDTO } from './CustomerDTO';
 
 export interface OrderDTO {
   id?: number;
@@ -13,6 +14,7 @@ export interface OrderDTO {
   orderTotalAmount?: number;
   /** @minimum 0 */
   orderTaxRate?: number;
+  customer?: CustomerDTO;
   /** @minimum 0 */
   orderBaseAmount?: number;
   /** @minimum 0 */

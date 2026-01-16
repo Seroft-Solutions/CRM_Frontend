@@ -22,8 +22,7 @@ export type OrderFormState = {
   discountEndDate: string;
   shippingAmount: string;
   orderTaxRate: string;
-  phone: string;
-  email: string;
+  customerId: string;
   shippingMethod: OptionalSelectValue<ShippingMethod>;
   shippingId?: string;
   discountType?: OptionalSelectValue<DiscountType>;
@@ -81,8 +80,7 @@ export type OrderFormErrors = {
   discountEndDate?: string;
   shippingAmount?: string;
   orderTaxRate?: string;
-  phone?: string;
-  email?: string;
+  customerId?: string;
   shippingId?: string;
   discountCode?: string;
   busyVoucherId?: string;

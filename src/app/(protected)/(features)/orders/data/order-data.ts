@@ -135,6 +135,7 @@ export interface OrderRecord {
   orderTotalAmount: number;
   orderTaxRate: number;
   orderBaseAmount: number;
+  customer?: OrderDTO['customer'];
   userType: UserType;
   userTypeCode?: number;
   phone: string;
@@ -240,6 +241,7 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
     orderTotalAmount: resolveOrderTotal(order),
     orderTaxRate: order.orderTaxRate ?? 0,
     orderBaseAmount: order.orderBaseAmount ?? 0,
+    customer: order.customer ?? undefined,
     userType: getUserTypeLabel(userTypeCode),
     userTypeCode,
     phone: order.phone ?? '',
