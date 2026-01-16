@@ -119,13 +119,13 @@ const hasItemData = (item: OrderItemForm) => {
   const hasText = (value?: string) => Boolean(value && value.trim() !== '');
   return Boolean(
     item.productId ||
-      item.variantId ||
-      hasText(item.quantity) ||
-      hasText(item.itemPrice) ||
-      hasText(item.itemTaxAmount) ||
-      hasText(item.discountAmount) ||
-      hasText(item.discountCode) ||
-      hasText(item.itemComment)
+    item.variantId ||
+    hasText(item.quantity) ||
+    hasText(item.itemPrice) ||
+    hasText(item.itemTaxAmount) ||
+    hasText(item.discountAmount) ||
+    hasText(item.discountCode) ||
+    hasText(item.itemComment)
   );
 };
 
@@ -198,7 +198,7 @@ export function OrderForm({
     const rate = defaultState.orderTaxRate.trim();
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
   });
-  const [billingEditable, setBillingEditable] = useState(false);
+  const [shippingEditable, setShippingEditable] = useState(false);
   const [items, setItems] = useState<OrderItemForm[]>(() => {
     if (!initialOrder?.items?.length) return [];
     return initialOrder.items.map((item) => ({
@@ -253,8 +253,9 @@ export function OrderForm({
     Object.values(fields).some((value) => value.trim() !== '');
   const hasInitialBillToRef = useRef(
     hasAddressValues(address.billTo) ||
-      (address.billToSameFlag && hasAddressValues(address.shipTo))
+    (address.billToSameFlag && hasAddressValues(address.shipTo))
   );
+  const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
 
   const selectedCustomerId = formState.customerId.trim()
@@ -289,7 +290,7 @@ export function OrderForm({
     };
   };
 
-  const buildBillingAddressFromCustomer = (customer: CustomerDTO): AddressFieldsForm => {
+  const buildAddressFromCustomer = (customer: CustomerDTO): AddressFieldsForm => {
     const { firstName, middleName, lastName } = splitContactPerson(customer.contactPerson);
     return {
       firstName,
@@ -311,7 +312,7 @@ export function OrderForm({
     const previousId = lastCustomerIdRef.current;
     const shouldAutoFill =
       previousId === null
-        ? !addressExists || !hasInitialBillToRef.current
+        ? !addressExists || !hasInitialShipToRef.current
         : previousId !== currentId;
 
     if (!shouldAutoFill) {
@@ -321,10 +322,9 @@ export function OrderForm({
 
     setAddress((prev) => ({
       ...prev,
-      billToSameFlag: false,
-      billTo: buildBillingAddressFromCustomer(customerData),
+      shipTo: buildAddressFromCustomer(customerData),
     }));
-    setBillingEditable(false);
+    setShippingEditable(false);
     lastCustomerIdRef.current = currentId;
   }, [addressExists, customerData?.id]);
 
@@ -1041,151 +1041,150 @@ export function OrderForm({
               errors={errors}
               onAddressChange={handleAddressChange}
               onToggleBillToSame={toggleBillToSame}
-              billingEditable={billingEditable}
-              onToggleBillingEditable={setBillingEditable}
+              shippingEditable={shippingEditable}
+              onToggleShippingEditable={setShippingEditable}
             />
           </div>
 
-        <div className="space-y-6">
-          <div className="sticky top-6 space-y-6">
-            <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
-                  <svg className="h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
+          <div className="space-y-6">
+            <div className="sticky top-6 space-y-6">
+              <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
+                    <svg className="h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
                 </div>
-                <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
-              </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-800">
-                      ₹{itemsTotal.toFixed(2)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowItemsBreakdown((prev) => !prev)}
-                      disabled={!hasItemSummaries}
-                      aria-expanded={showItemsBreakdown}
-                      aria-controls="order-items-breakdown"
-                      className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${
-                          showItemsBreakdown ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-                {showItemsBreakdown && hasItemSummaries && (
-                  <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
-                    <div className="space-y-1 text-xs">
-                      {itemSummaries.map((item) => (
-                        <div key={item.key} className="flex items-center justify-between text-slate-700">
-                          <span className="truncate">{item.name}</span>
-                          <span className="font-semibold text-slate-800">
-                            Qty {item.quantity} • ₹{item.total.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-start justify-between gap-3 border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">Tax</span>
-                  <div className="flex flex-1 flex-col items-end gap-2">
+                <div className="space-y-3">
+                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                    <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
                     <div className="flex items-center gap-2">
-                      <Select value={taxRateSelectValue} onValueChange={handleTaxRateSelect}>
-                        <SelectTrigger className="h-8 w-[120px] border-yellow-500/30 bg-white text-xs">
-                          <SelectValue placeholder="Select %" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {taxRateOptions.map((rate) => (
-                            <SelectItem key={rate} value={rate}>
-                              {rate}%
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
                       <span className="font-semibold text-slate-800">
-                        ₹{taxAmount.toFixed(2)}
+                        ₹{itemsTotal.toFixed(2)}
                       </span>
-                    </div>
-                    {useCustomTaxRate && (
-                      <div className="w-[120px]">
-                        <Input
-                          type="number"
-                          min={0}
-                          max={100}
-                          step="0.01"
-                          placeholder="Custom %"
-                          value={formState.orderTaxRate}
-                          onChange={(event) => {
-                            setUseCustomTaxRate(true);
-                            handleChange('orderTaxRate', event.target.value);
-                          }}
-                          className="h-8 border-yellow-500/30 bg-white text-xs"
+                      <button
+                        type="button"
+                        onClick={() => setShowItemsBreakdown((prev) => !prev)}
+                        disabled={!hasItemSummaries}
+                        aria-expanded={showItemsBreakdown}
+                        aria-controls="order-items-breakdown"
+                        className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform ${showItemsBreakdown ? 'rotate-180' : ''
+                            }`}
                         />
-                        <FieldError message={errors.orderTaxRate} />
+                      </button>
+                    </div>
+                  </div>
+                  {showItemsBreakdown && hasItemSummaries && (
+                    <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
+                      <div className="space-y-1 text-xs">
+                        {itemSummaries.map((item) => (
+                          <div key={item.key} className="flex items-center justify-between text-slate-700">
+                            <span className="truncate">{item.name}</span>
+                            <span className="font-semibold text-slate-800">
+                              Qty {item.quantity} • ₹{item.total.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between gap-3 border-b border-yellow-500/20 pb-2">
+                    <span className="text-sm font-medium text-slate-600">Tax</span>
+                    <div className="flex flex-1 flex-col items-end gap-2">
+                      <div className="flex items-center gap-2">
+                        <Select value={taxRateSelectValue} onValueChange={handleTaxRateSelect}>
+                          <SelectTrigger className="h-8 w-[120px] border-yellow-500/30 bg-white text-xs">
+                            <SelectValue placeholder="Select %" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {taxRateOptions.map((rate) => (
+                              <SelectItem key={rate} value={rate}>
+                                {rate}%
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="custom">Custom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <span className="font-semibold text-slate-800">
+                          ₹{taxAmount.toFixed(2)}
+                        </span>
+                      </div>
+                      {useCustomTaxRate && (
+                        <div className="w-[120px]">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            step="0.01"
+                            placeholder="Custom %"
+                            value={formState.orderTaxRate}
+                            onChange={(event) => {
+                              setUseCustomTaxRate(true);
+                              handleChange('orderTaxRate', event.target.value);
+                            }}
+                            className="h-8 border-yellow-500/30 bg-white text-xs"
+                          />
+                          <FieldError message={errors.orderTaxRate} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                    <span className="text-sm font-medium text-slate-600">Shipping</span>
+                    <span className="font-semibold text-slate-800">
+                      ₹{shippingAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
+                    <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
+                    <span className="font-semibold text-red-600">
+                      -₹{discountAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
+                    <span className="font-bold text-slate-900">Order Total</span>
+                    <span className="text-lg font-bold text-slate-900">
+                      ₹{orderTotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">Shipping</span>
-                  <span className="font-semibold text-slate-800">
-                    ₹{shippingAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                  <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
-                  <span className="font-semibold text-red-600">
-                    -₹{discountAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
-                  <span className="font-bold text-slate-900">Order Total</span>
-                  <span className="text-lg font-bold text-slate-900">
-                    ₹{orderTotal.toFixed(2)}
-                  </span>
+
+                <div className="mt-4 rounded-md bg-white/60 p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    Quick Stats
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <div className="text-muted-foreground">Status</div>
+                      <div className="font-semibold text-slate-800">{formState.orderStatus}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Payment</div>
+                      <div className="font-semibold text-slate-800">{formState.paymentStatus}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Items</div>
+                      <div className="font-semibold text-slate-800">{items.length}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Type</div>
+                      <div className="font-semibold text-slate-800">{formState.userType}</div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-md bg-white/60 p-3">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  Quick Stats
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <div className="text-muted-foreground">Status</div>
-                    <div className="font-semibold text-slate-800">{formState.orderStatus}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Payment</div>
-                    <div className="font-semibold text-slate-800">{formState.paymentStatus}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Items</div>
-                    <div className="font-semibold text-slate-800">{items.length}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Type</div>
-                    <div className="font-semibold text-slate-800">{formState.userType}</div>
-                  </div>
-                </div>
-              </div>
+              <OrderFormFooter
+                formState={formState}
+                submitting={submitting}
+              />
             </div>
-
-            <OrderFormFooter
-              formState={formState}
-              submitting={submitting}
-            />
-          </div>
           </div>
         </div>
       </form>
