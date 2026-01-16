@@ -29,6 +29,10 @@ interface OrderDetailProps {
 }
 
 export function OrderDetail({ order }: OrderDetailProps) {
+  const taxRate = order.orderTaxRate ?? 0;
+  const taxableAmount = Math.max(order.orderBaseAmount - order.discount.discountAmount, 0);
+  const taxAmount = (taxRate / 100) * taxableAmount;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-5 md:grid-cols-3">
@@ -66,6 +70,14 @@ export function OrderDetail({ order }: OrderDetailProps) {
               <span className="text-slate-600">Shipping</span>
               <span className="font-semibold text-slate-800">
                 {formatCurrency(order.shipping.shippingAmount)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">
+                Tax{taxRate ? ` (${taxRate.toFixed(2)}%)` : ''}
+              </span>
+              <span className="font-semibold text-slate-800">
+                {formatCurrency(taxAmount)}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border-2 border-yellow-500/30 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2.5">

@@ -21,6 +21,7 @@ export type OrderFormState = {
   discountStartDate: string;
   discountEndDate: string;
   shippingAmount: string;
+  orderTaxRate: string;
   phone: string;
   email: string;
   shippingMethod: OptionalSelectValue<ShippingMethod>;
@@ -79,6 +80,7 @@ export type OrderFormErrors = {
   discountStartDate?: string;
   discountEndDate?: string;
   shippingAmount?: string;
+  orderTaxRate?: string;
   phone?: string;
   email?: string;
   shippingId?: string;

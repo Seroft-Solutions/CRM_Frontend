@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ChevronDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   OrderRecord,
   discountModeOptions,
@@ -66,6 +74,7 @@ import { OrderFormAddress } from './order-form-address';
 import { OrderFormFooter } from './order-form-footer';
 import { OrderFormFields } from './order-form-fields';
 import { OrderFormItems } from './order-form-items';
+import { FieldError } from './order-form-field-error';
 import type {
   ItemErrors,
   OrderAddressForm,
@@ -73,6 +82,8 @@ import type {
   OrderFormState,
   OrderItemForm,
 } from './order-form-types';
+
+const taxRateOptions = ['6', '12', '18'] as const;
 
 const emptyOrderItem = (): OrderItemForm => ({
   itemStatus: '',
@@ -166,6 +177,8 @@ export function OrderForm({
       discountStartDate: discountDetail?.startDate || '',
       discountEndDate: discountDetail?.endDate || '',
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
+      orderTaxRate:
+        typeof initialOrder?.orderTaxRate === 'number' ? initialOrder.orderTaxRate.toString() : '',
       phone: initialOrder?.phone || '',
       email: initialOrder?.email || '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
@@ -180,6 +193,10 @@ export function OrderForm({
   }, [initialOrder]);
 
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
+  const [useCustomTaxRate, setUseCustomTaxRate] = useState(() => {
+    const rate = defaultState.orderTaxRate.trim();
+    return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
+  });
   const [items, setItems] = useState<OrderItemForm[]>(() => {
     if (!initialOrder?.items?.length) return [];
     return initialOrder.items.map((item) => ({
@@ -241,6 +258,7 @@ export function OrderForm({
       key === 'discountStartDate' ||
       key === 'discountEndDate' ||
       key === 'shippingAmount' ||
+      key === 'orderTaxRate' ||
       key === 'phone' ||
       key === 'email' ||
       key === 'shippingId' ||
@@ -249,6 +267,18 @@ export function OrderForm({
     ) {
       setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
     }
+  };
+
+  const handleTaxRateSelect = (value: string) => {
+    if (value === 'custom') {
+      setUseCustomTaxRate(true);
+      if (taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])) {
+        handleChange('orderTaxRate', '');
+      }
+      return;
+    }
+    setUseCustomTaxRate(false);
+    handleChange('orderTaxRate', value);
   };
 
   const handleItemChange = (index: number, key: keyof OrderItemForm, value: string | number | undefined) => {
@@ -352,7 +382,7 @@ export function OrderForm({
       }
     };
 
-    const validatePercentage = (value: string, key: 'discountValue') => {
+    const validatePercentage = (value: string, key: 'discountValue' | 'orderTaxRate') => {
       if (!value.trim()) {
         return;
       }
@@ -369,6 +399,7 @@ export function OrderForm({
     validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validateAmount(formState.maxDiscountValue, 'maxDiscountValue');
+    validatePercentage(formState.orderTaxRate, 'orderTaxRate');
 
     const hasDiscountValue = Boolean(formState.discountValue.trim());
     const hasDiscountMode = Boolean(formState.discountMode);
@@ -612,7 +643,10 @@ export function OrderForm({
       discountAmount = Math.min(discountAmount, maxDiscountValue);
     }
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
-    const orderTotalAmount = Math.max(baseAmount - discountAmount + shippingAmount, 0);
+    const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
+    const taxableAmount = Math.max(baseAmount - discountAmount, 0);
+    const taxAmount = (taxRate / 100) * taxableAmount;
+    const orderTotalAmount = Math.max(taxableAmount + shippingAmount + taxAmount, 0);
 
     const orderStatusCode =
       getOrderStatusCode(formState.orderStatus) ?? initialOrder?.orderStatusCode ?? 0;
@@ -637,6 +671,7 @@ export function OrderForm({
       id: initialOrder?.orderId,
       orderStatus: orderStatusCode,
       orderTotalAmount,
+      orderTaxRate: taxRate,
       orderBaseAmount: baseAmount,
       userType: userTypeCode,
       phone: formState.phone || undefined,
@@ -869,7 +904,15 @@ export function OrderForm({
     discountAmount = Math.min(discountAmount, maxDiscountValue);
   }
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
-  const orderTotal = Math.max(baseAmount - discountAmount + shippingAmount, 0);
+  const taxRateValue = Math.min(Math.max(Number.parseFloat(formState.orderTaxRate) || 0, 0), 100);
+  const taxableAmount = Math.max(baseAmount - discountAmount, 0);
+  const taxAmount = (taxRateValue / 100) * taxableAmount;
+  const orderTotal = Math.max(taxableAmount + shippingAmount + taxAmount, 0);
+  const taxRateSelectValue = useCustomTaxRate
+    ? 'custom'
+    : taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])
+      ? formState.orderTaxRate
+      : '';
   const itemSummaries = items
     .filter(hasItemData)
     .map((item, index) => ({
@@ -978,6 +1021,47 @@ export function OrderForm({
                     </div>
                   </div>
                 )}
+                <div className="flex items-start justify-between gap-3 border-b border-yellow-500/20 pb-2">
+                  <span className="text-sm font-medium text-slate-600">Tax</span>
+                  <div className="flex flex-1 flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <Select value={taxRateSelectValue} onValueChange={handleTaxRateSelect}>
+                        <SelectTrigger className="h-8 w-[120px] border-yellow-500/30 bg-white text-xs">
+                          <SelectValue placeholder="Select %" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {taxRateOptions.map((rate) => (
+                            <SelectItem key={rate} value={rate}>
+                              {rate}%
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span className="font-semibold text-slate-800">
+                        ₹{taxAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    {useCustomTaxRate && (
+                      <div className="w-[120px]">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          placeholder="Custom %"
+                          value={formState.orderTaxRate}
+                          onChange={(event) => {
+                            setUseCustomTaxRate(true);
+                            handleChange('orderTaxRate', event.target.value);
+                          }}
+                          className="h-8 border-yellow-500/30 bg-white text-xs"
+                        />
+                        <FieldError message={errors.orderTaxRate} />
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                   <span className="text-sm font-medium text-slate-600">Shipping</span>
                   <span className="font-semibold text-slate-800">

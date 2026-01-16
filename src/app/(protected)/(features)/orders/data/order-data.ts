@@ -133,6 +133,7 @@ export interface OrderRecord {
   orderStatus: OrderStatus;
   orderStatusCode?: number;
   orderTotalAmount: number;
+  orderTaxRate: number;
   orderBaseAmount: number;
   userType: UserType;
   userTypeCode?: number;
@@ -214,7 +215,11 @@ const resolveOrderTotal = (order: OrderDTO) => {
 
   const base = order.orderBaseAmount ?? 0;
   const discount = order.discountAmount ?? 0;
-  return Math.max(base - discount, 0);
+  const shipping = order.shippingAmount ?? 0;
+  const taxRate = order.orderTaxRate ?? 0;
+  const taxableAmount = Math.max(base - discount, 0);
+  const taxAmount = (taxRate / 100) * taxableAmount;
+  return Math.max(taxableAmount + shipping + taxAmount, 0);
 };
 
 const toStringValue = (value?: string | number | null) => {
@@ -233,6 +238,7 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
     orderStatus: getOrderStatusLabel(orderStatusCode),
     orderStatusCode,
     orderTotalAmount: resolveOrderTotal(order),
+    orderTaxRate: order.orderTaxRate ?? 0,
     orderBaseAmount: order.orderBaseAmount ?? 0,
     userType: getUserTypeLabel(userTypeCode),
     userTypeCode,

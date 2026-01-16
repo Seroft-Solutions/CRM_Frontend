@@ -12,6 +12,8 @@ export interface OrderDTO {
   /** @minimum 0 */
   orderTotalAmount?: number;
   /** @minimum 0 */
+  orderTaxRate?: number;
+  /** @minimum 0 */
   orderBaseAmount?: number;
   /** @minimum 0 */
   discountAmount?: number;
