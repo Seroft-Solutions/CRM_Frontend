@@ -70,6 +70,14 @@ function ProductVariantSelector({
   const products = productsData || [];
   const variants = variantsData || [];
 
+  const getProductQuantity = (product: ProductDTO) => {
+    if (!product.variants?.length) return 0;
+    return product.variants.reduce(
+      (total, variant) => total + (variant.stockQuantity ?? 0),
+      0
+    );
+  };
+
   // Handle product selection
   const handleProductSelect = (productId: number) => {
     const product = products.find((p) => p.id === productId);
@@ -152,7 +160,8 @@ function ProductVariantSelector({
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium text-sm">{product.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          {product.barcodeText} • ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                          SKU: {product.barcodeText} • QTY: {getProductQuantity(product)} • ₹
+                          {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
                         </span>
                       </div>
                       <Check
