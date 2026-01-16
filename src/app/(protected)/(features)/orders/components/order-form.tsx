@@ -7,7 +7,9 @@ import { toast } from 'sonner';
 import { ChevronDown } from 'lucide-react';
 import {
   OrderRecord,
+  discountModeOptions,
   discountTypeOptions,
+  getDiscountModeCode,
   getDiscountTypeCode,
   getNotificationTypeCode,
   getOrderStatusCode,
@@ -44,6 +46,10 @@ import {
 } from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import {
+  useCreateOrderDiscountDetail,
+  useUpdateOrderDiscountDetail,
+} from '@/core/api/order-discount-detail';
+import {
   useCreateOrderShippingDetail,
   useUpdateOrderShippingDetail,
 } from '@/core/api/order-shipping-detail';
@@ -52,6 +58,7 @@ interface OrderFormProps {
   initialOrder?: OrderRecord;
   addressExists?: boolean;
   shippingExists?: boolean;
+  discountExists?: boolean;
   onSubmitSuccess?: () => void;
 }
 
@@ -115,7 +122,13 @@ const parseItemStatusValue = (value?: string) => {
   return match ? match[0] : '';
 };
 
-export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmitSuccess }: OrderFormProps) {
+export function OrderForm({
+  initialOrder,
+  addressExists,
+  shippingExists,
+  discountExists,
+  onSubmitSuccess,
+}: OrderFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
@@ -131,29 +144,34 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
   const { mutateAsync: deleteOrderDetail } = useDeleteOrderDetail();
   const { mutateAsync: createOrderAddressDetail } = useCreateOrderAddressDetail();
   const { mutateAsync: updateOrderAddressDetail } = useUpdateOrderAddressDetail();
+  const { mutateAsync: createOrderDiscountDetail } = useCreateOrderDiscountDetail();
+  const { mutateAsync: updateOrderDiscountDetail } = useUpdateOrderDiscountDetail();
   const { mutateAsync: createOrderShippingDetail } = useCreateOrderShippingDetail();
   const { mutateAsync: updateOrderShippingDetail } = useUpdateOrderShippingDetail();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
   const defaultState: OrderFormState = useMemo(() => {
-    const baseAmount = initialOrder?.orderBaseAmount ?? 0;
-    const discountAmountValue = initialOrder?.discountAmount ?? 0;
-    const discountPercent =
-      baseAmount > 0 ? Math.min((discountAmountValue / baseAmount) * 100, 100) : 0;
+    const discountDetail = initialOrder?.discount;
 
     return {
       orderStatus: initialOrder?.orderStatus || 'Pending',
       paymentStatus: initialOrder?.paymentStatus || 'Pending',
       userType: initialOrder?.userType || 'B2C',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
-      discountAmount: initialOrder ? discountPercent.toFixed(2) : '',
+      discountMode: discountDetail?.discountMode || '',
+      discountValue:
+        discountDetail?.discountValue !== undefined ? discountDetail.discountValue.toString() : '',
+      maxDiscountValue:
+        discountDetail?.maxDiscountValue !== undefined ? discountDetail.maxDiscountValue.toString() : '',
+      discountStartDate: discountDetail?.startDate || '',
+      discountEndDate: discountDetail?.endDate || '',
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       phone: initialOrder?.phone || '',
       email: initialOrder?.email || '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
-      discountType: initialOrder?.discountType || '',
-      discountCode: initialOrder?.discountCode || '',
+      discountType: discountDetail?.discountType || '',
+      discountCode: discountDetail?.discountCode || '',
       notificationType: initialOrder?.notificationType || '',
       busyFlag: Boolean(initialOrder?.busyFlag),
       busyVoucherId: initialOrder?.busyVoucherId || '',
@@ -217,7 +235,11 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
     setFormState((prev) => ({ ...prev, [key]: value }));
     if (
       key === 'orderBaseAmount' ||
-      key === 'discountAmount' ||
+      key === 'discountValue' ||
+      key === 'discountMode' ||
+      key === 'maxDiscountValue' ||
+      key === 'discountStartDate' ||
+      key === 'discountEndDate' ||
       key === 'shippingAmount' ||
       key === 'phone' ||
       key === 'email' ||
@@ -313,7 +335,10 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
     const phonePattern = /^[+]?[0-9\s\-()]{10,20}$/;
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    const validateAmount = (value: string, key: 'orderBaseAmount' | 'discountAmount' | 'shippingAmount') => {
+    const validateAmount = (
+      value: string,
+      key: 'orderBaseAmount' | 'shippingAmount' | 'discountValue' | 'maxDiscountValue'
+    ) => {
       if (!value.trim()) {
         return;
       }
@@ -327,7 +352,7 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
       }
     };
 
-    const validatePercentage = (value: string, key: 'discountAmount') => {
+    const validatePercentage = (value: string, key: 'discountValue') => {
       if (!value.trim()) {
         return;
       }
@@ -342,8 +367,24 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
     };
 
     validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
-    validatePercentage(formState.discountAmount, 'discountAmount');
     validateAmount(formState.shippingAmount, 'shippingAmount');
+    validateAmount(formState.maxDiscountValue, 'maxDiscountValue');
+
+    const hasDiscountValue = Boolean(formState.discountValue.trim());
+    const hasDiscountMode = Boolean(formState.discountMode);
+    if (hasDiscountValue && !hasDiscountMode) {
+      nextErrors.discountMode = 'Select a discount mode.';
+    }
+    if (hasDiscountMode && !hasDiscountValue) {
+      nextErrors.discountValue = 'Enter a discount value.';
+    }
+    if (hasDiscountValue) {
+      if (formState.discountMode === 'Percentage') {
+        validatePercentage(formState.discountValue, 'discountValue');
+      } else {
+        validateAmount(formState.discountValue, 'discountValue');
+      }
+    }
 
     if (formState.phone.trim()) {
       if (formState.phone.length > 20 || !phonePattern.test(formState.phone.trim())) {
@@ -372,6 +413,14 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
 
     if (formState.busyVoucherId && formState.busyVoucherId.length > 50) {
       nextErrors.busyVoucherId = 'Max 50 characters.';
+    }
+
+    if (formState.discountStartDate && formState.discountEndDate) {
+      const start = new Date(formState.discountStartDate);
+      const end = new Date(formState.discountEndDate);
+      if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start > end) {
+        nextErrors.discountEndDate = 'End date must be on or after start date.';
+      }
     }
 
     if (shouldSaveAddress(address)) {
@@ -466,6 +515,10 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
     formState.discountType === 'Unknown'
       ? [...discountTypeOptions, 'Unknown']
       : discountTypeOptions;
+  const discountModeSelectOptions =
+    formState.discountMode === 'Unknown'
+      ? [...discountModeOptions, 'Unknown']
+      : discountModeOptions;
   const notificationTypeSelectOptions =
     formState.notificationType === 'Unknown'
       ? [...notificationTypeOptions, 'Unknown']
@@ -536,8 +589,28 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
     const baseAmount = formState.orderBaseAmount.trim()
       ? parseAmount(formState.orderBaseAmount)
       : itemsTotal;
-    const discountPercent = parseAmount(formState.discountAmount || '0');
-    const discountAmount = (Math.min(Math.max(discountPercent, 0), 100) / 100) * baseAmount;
+    const discountModeCode =
+      getDiscountModeCode(formState.discountMode || undefined) ??
+      initialOrder?.discount.discountModeCode ??
+      undefined;
+    const discountValue = parseAmount(formState.discountValue || '0');
+    const maxDiscountValue = formState.maxDiscountValue.trim()
+      ? parseAmount(formState.maxDiscountValue)
+      : undefined;
+    const percentageModeCode = getDiscountModeCode('Percentage');
+    const amountModeCode = getDiscountModeCode('Amount');
+
+    let discountAmount = 0;
+    if (discountModeCode === percentageModeCode) {
+      const safePercent = Math.min(Math.max(discountValue, 0), 100);
+      discountAmount = (safePercent / 100) * baseAmount;
+    } else if (discountModeCode === amountModeCode) {
+      discountAmount = Math.max(discountValue, 0);
+    }
+
+    if (typeof maxDiscountValue === 'number' && maxDiscountValue > 0) {
+      discountAmount = Math.min(discountAmount, maxDiscountValue);
+    }
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const orderTotalAmount = Math.max(baseAmount - discountAmount + shippingAmount, 0);
 
@@ -549,7 +622,7 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
       getUserTypeCode(formState.userType) ?? initialOrder?.userTypeCode ?? 0;
     const discountTypeCode =
       getDiscountTypeCode(formState.discountType || undefined) ??
-      initialOrder?.discountTypeCode ??
+      initialOrder?.discount.discountTypeCode ??
       undefined;
     const notificationTypeCode =
       getNotificationTypeCode(formState.notificationType || undefined) ??
@@ -565,13 +638,10 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
       orderStatus: orderStatusCode,
       orderTotalAmount,
       orderBaseAmount: baseAmount,
-      discountAmount,
       userType: userTypeCode,
       phone: formState.phone || undefined,
       email: formState.email || undefined,
       paymentStatus: paymentStatusCode,
-      discountType: discountTypeCode,
-      discountCode: formState.discountCode || undefined,
       busyFlag: formState.busyFlag ? 1 : 0,
       busyVoucherId: formState.busyVoucherId || undefined,
       notificationType: notificationTypeCode,
@@ -671,6 +741,38 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
         }
       }
 
+      const discountTasks: Promise<unknown>[] = [];
+      const hasDiscountFields =
+        Boolean(discountExists) ||
+        Boolean(formState.discountMode) ||
+        Boolean(formState.discountValue.trim()) ||
+        Boolean(formState.discountType) ||
+        Boolean(formState.discountCode?.trim()) ||
+        Boolean(formState.maxDiscountValue.trim()) ||
+        Boolean(formState.discountStartDate) ||
+        Boolean(formState.discountEndDate);
+
+      if (hasDiscountFields) {
+        const discountPayload = {
+          id: discountExists ? orderId : undefined,
+          orderId,
+          discountAmount,
+          discountType: discountTypeCode,
+          discountCode: formState.discountCode || undefined,
+          discountMode: discountModeCode,
+          discountValue: formState.discountValue.trim() ? discountValue : undefined,
+          maxDiscountValue,
+          startDate: formState.discountStartDate || undefined,
+          endDate: formState.discountEndDate || undefined,
+        };
+
+        if (discountExists) {
+          discountTasks.push(updateOrderDiscountDetail({ id: orderId, data: discountPayload }));
+        } else {
+          discountTasks.push(createOrderDiscountDetail({ data: discountPayload }));
+        }
+      }
+
       const statusChanged =
         initialOrder?.orderStatus && initialOrder.orderStatus !== formState.orderStatus;
       const historyStatus = isEditing
@@ -691,6 +793,7 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
         ...deleteTasks,
         ...addressTasks,
         ...shippingTasks,
+        ...discountTasks,
         historyTask,
       ]);
 
@@ -711,6 +814,7 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
       await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/order-discount-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
 
       toast.success(isEditing ? 'Order updated' : 'Order created', {
@@ -741,13 +845,31 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
   const baseAmount = formState.orderBaseAmount.trim()
     ? Number.parseFloat(formState.orderBaseAmount) || 0
     : itemsTotal;
-  const discountPercent = Number.parseFloat(formState.discountAmount) || 0;
-  const safeDiscountPercent = Math.min(Math.max(discountPercent, 0), 100);
-  const discountAmount = (safeDiscountPercent / 100) * baseAmount;
+  const discountModeCode = getDiscountModeCode(formState.discountMode || undefined);
+  const discountValue = Number.parseFloat(formState.discountValue) || 0;
+  const maxDiscountValue = formState.maxDiscountValue.trim()
+    ? Number.parseFloat(formState.maxDiscountValue) || 0
+    : undefined;
+  const percentageModeCode = getDiscountModeCode('Percentage');
+  const amountModeCode = getDiscountModeCode('Amount');
+
+  let discountAmount = 0;
+  let discountLabel = 'Discount';
+
+  if (discountModeCode === percentageModeCode) {
+    const safeDiscountPercent = Math.min(Math.max(discountValue, 0), 100);
+    discountAmount = (safeDiscountPercent / 100) * baseAmount;
+    discountLabel = `Discount (${safeDiscountPercent.toFixed(2)}%)`;
+  } else if (discountModeCode === amountModeCode) {
+    discountAmount = Math.max(discountValue, 0);
+    discountLabel = `Discount (₹${discountValue.toFixed(2)})`;
+  }
+
+  if (typeof maxDiscountValue === 'number' && maxDiscountValue > 0) {
+    discountAmount = Math.min(discountAmount, maxDiscountValue);
+  }
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const orderTotal = Math.max(baseAmount - discountAmount + shippingAmount, 0);
-  const discountLabel =
-    safeDiscountPercent > 0 ? `Discount (${safeDiscountPercent.toFixed(2)}%)` : 'Discount';
   const itemSummaries = items
     .filter(hasItemData)
     .map((item, index) => ({
@@ -793,6 +915,7 @@ export function OrderForm({ initialOrder, addressExists, shippingExists, onSubmi
                 userTypeOptions={userTypeSelectOptions}
                 shippingMethodOptions={shippingMethodSelectOptions}
                 discountTypeOptions={discountTypeSelectOptions}
+                discountModeOptions={discountModeSelectOptions}
                 notificationTypeOptions={notificationTypeSelectOptions}
                 onChange={handleChange}
               />

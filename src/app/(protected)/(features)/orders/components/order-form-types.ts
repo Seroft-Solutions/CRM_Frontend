@@ -1,4 +1,5 @@
 import type {
+  DiscountMode,
   DiscountType,
   NotificationType,
   OrderStatus,
@@ -14,7 +15,11 @@ export type OrderFormState = {
   paymentStatus: PaymentStatus;
   userType: UserType;
   orderBaseAmount: string;
-  discountAmount: string;
+  discountMode: OptionalSelectValue<DiscountMode>;
+  discountValue: string;
+  maxDiscountValue: string;
+  discountStartDate: string;
+  discountEndDate: string;
   shippingAmount: string;
   phone: string;
   email: string;
@@ -68,7 +73,11 @@ export type ItemErrors = Partial<Record<keyof OrderItemForm, string>>;
 
 export type OrderFormErrors = {
   orderBaseAmount?: string;
-  discountAmount?: string;
+  discountMode?: string;
+  discountValue?: string;
+  maxDiscountValue?: string;
+  discountStartDate?: string;
+  discountEndDate?: string;
   shippingAmount?: string;
   phone?: string;
   email?: string;

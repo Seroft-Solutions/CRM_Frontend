@@ -9,9 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import type { CountOrdersParams } from '@/core/api/generated/spring/schemas';
+import { useGetAllOrderDiscountDetails } from '@/core/api/order-discount-detail';
 import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
 import {
   getOrderStatusCode,
+  mapOrderDiscountDetail,
   mapOrderDtoToRecord,
   mapOrderShippingDetail,
   OrderStatus,
@@ -117,21 +119,37 @@ export function OrderTable() {
     }
   );
 
+  const { data: discountData } = useGetAllOrderDiscountDetails(
+    orderIds.length ? { 'orderId.in': orderIds } : undefined,
+    {
+      query: {
+        enabled: orderIds.length > 0,
+        refetchOnWindowFocus: false,
+        staleTime: 30_000,
+      },
+    }
+  );
+
   const shippingByOrderId = useMemo(() => {
     return new Map((shippingData ?? []).map((shipping) => [shipping.orderId ?? 0, shipping]));
   }, [shippingData]);
 
+  const discountByOrderId = useMemo(() => {
+    return new Map((discountData ?? []).map((discount) => [discount.orderId ?? 0, discount]));
+  }, [discountData]);
+
   const ordersWithShipping = useMemo(() => {
     return orders.map((order) => {
       const shipping = shippingByOrderId.get(order.orderId);
-      if (!shipping) return order;
       const orderDto = orderById.get(order.orderId);
+      const discount = discountByOrderId.get(order.orderId);
       return {
         ...order,
         shipping: mapOrderShippingDetail(shipping, orderDto),
+        discount: mapOrderDiscountDetail(discount, orderDto),
       };
     });
-  }, [orders, orderById, shippingByOrderId]);
+  }, [orders, orderById, shippingByOrderId, discountByOrderId]);
 
   const totalCount = countData ?? orders.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -285,9 +303,9 @@ export function OrderTable() {
                     <div className="text-xs text-muted-foreground">
                       Base {formatCurrency(order.orderBaseAmount)}
                     </div>
-                    {order.discountAmount > 0 && (
+                    {order.discount.discountAmount > 0 && (
                       <div className="text-xs font-semibold text-red-600">
-                        -{formatCurrency(order.discountAmount)}
+                        -{formatCurrency(order.discount.discountAmount)}
                       </div>
                     )}
                   </div>
@@ -323,9 +341,9 @@ export function OrderTable() {
                     <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
                       {order.paymentStatus}
                     </Badge>
-                    {order.discountCode ? (
+                    {order.discount.discountCode ? (
                       <div className="mt-1 text-xs font-semibold text-amber-700">
-                        {order.discountCode}
+                        {order.discount.discountCode}
                       </div>
                     ) : null}
                   </div>

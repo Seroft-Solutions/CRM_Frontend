@@ -58,7 +58,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </div>
             <div className="flex items-center justify-between text-red-600">
               <span>Discount</span>
-              <span className="font-semibold">- {formatCurrency(order.discountAmount)}</span>
+              <span className="font-semibold">
+                - {formatCurrency(order.discount.discountAmount)}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Shipping</span>
@@ -72,9 +74,32 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 {formatCurrency(order.orderTotalAmount)}
               </span>
             </div>
-            {order.discountCode ? (
+            {order.discount.discountCode ? (
               <div className="rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
-                <span className="font-semibold">Code:</span> {order.discountCode} · {order.discountType || 'N/A'}
+                <span className="font-semibold">Code:</span> {order.discount.discountCode} ·{' '}
+                {order.discount.discountType || 'N/A'}
+              </div>
+            ) : null}
+            {order.discount.discountMode ? (
+              <div className="text-xs text-amber-900">
+                <span className="font-semibold">Mode:</span> {order.discount.discountMode}{' '}
+                {order.discount.discountValue
+                  ? order.discount.discountMode === 'Percentage'
+                    ? `· ${order.discount.discountValue}%`
+                    : `· ${formatCurrency(order.discount.discountValue)}`
+                  : ''}
+              </div>
+            ) : null}
+            {order.discount.maxDiscountValue ? (
+              <div className="text-xs text-slate-600">
+                <span className="font-semibold">Cap:</span>{' '}
+                {formatCurrency(order.discount.maxDiscountValue)}
+              </div>
+            ) : null}
+            {order.discount.startDate || order.discount.endDate ? (
+              <div className="text-xs text-slate-600">
+                <span className="font-semibold">Validity:</span>{' '}
+                {order.discount.startDate || '—'} → {order.discount.endDate || '—'}
               </div>
             ) : null}
           </CardContent>
@@ -147,7 +172,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Discount Type</span>
-              <span className="font-semibold text-slate-800">{order.discountType || '—'}</span>
+              <span className="font-semibold text-slate-800">
+                {order.discount.discountType || '—'}
+              </span>
             </div>
             <div className="rounded-md bg-slate-50 p-2">
               <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-600">Audit Trail</div>

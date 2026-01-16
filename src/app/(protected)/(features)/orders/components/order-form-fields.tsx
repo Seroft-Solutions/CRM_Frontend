@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  DiscountMode,
   DiscountType,
   NotificationType,
   OrderStatus,
@@ -29,6 +30,7 @@ type OrderFormFieldsProps = {
   userTypeOptions: UserType[];
   shippingMethodOptions: (ShippingMethod | 'Unknown')[];
   discountTypeOptions: (DiscountType | 'Unknown')[];
+  discountModeOptions: (DiscountMode | 'Unknown')[];
   notificationTypeOptions: (NotificationType | 'Unknown')[];
   onChange: (key: keyof OrderFormState, value: string | boolean) => void;
 };
@@ -41,9 +43,13 @@ export function OrderFormFields({
   userTypeOptions,
   shippingMethodOptions,
   discountTypeOptions,
+  discountModeOptions,
   notificationTypeOptions,
   onChange,
 }: OrderFormFieldsProps) {
+  const isPercentMode = formState.discountMode === 'Percentage';
+  const discountValueLabel = isPercentMode ? 'Discount Percentage' : 'Discount Amount';
+  const discountValuePlaceholder = isPercentMode ? '0' : '0.00';
   return (
     <div className="space-y-5">
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
@@ -131,9 +137,9 @@ export function OrderFormFields({
 
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
         <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Dsicount
+          Discount
         </div>
-        <div className="grid gap-4 grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Discount Type</Label>
             <Select
@@ -165,18 +171,74 @@ export function OrderFormFields({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Discount Percentage</Label>
+            <Label className="text-xs font-semibold text-slate-600">Discount Mode</Label>
+            <Select
+              value={formState.discountMode}
+              onValueChange={(value) => onChange('discountMode', value)}
+            >
+              <SelectTrigger className="h-10 w-full border-slate-300">
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent>
+                {discountModeOptions.map((mode) => (
+                  <SelectItem key={mode} value={mode}>
+                    {mode}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError message={errors.discountMode} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">{discountValueLabel}</Label>
             <Input
               type="number"
               min={0}
-              max={100}
+              max={isPercentMode ? 100 : undefined}
               step="0.01"
-              placeholder="0"
-              value={formState.discountAmount}
-              onChange={(event) => onChange('discountAmount', event.target.value)}
+              placeholder={discountValuePlaceholder}
+              value={formState.discountValue}
+              onChange={(event) => onChange('discountValue', event.target.value)}
               className="border-slate-300"
             />
-            <FieldError message={errors.discountAmount} />
+            <FieldError message={errors.discountValue} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Max Discount Value</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="0.00"
+              value={formState.maxDiscountValue}
+              onChange={(event) => onChange('maxDiscountValue', event.target.value)}
+              className="border-slate-300"
+            />
+            <FieldError message={errors.maxDiscountValue} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Start Date</Label>
+            <Input
+              type="date"
+              value={formState.discountStartDate}
+              onChange={(event) => onChange('discountStartDate', event.target.value)}
+              className="border-slate-300"
+            />
+            <FieldError message={errors.discountStartDate} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">End Date</Label>
+            <Input
+              type="date"
+              value={formState.discountEndDate}
+              onChange={(event) => onChange('discountEndDate', event.target.value)}
+              className="border-slate-300"
+            />
+            <FieldError message={errors.discountEndDate} />
           </div>
         </div>
       </div>
