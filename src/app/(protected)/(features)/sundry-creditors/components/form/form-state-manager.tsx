@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useEntityForm } from './customer-form-provider';
+import { useEntityForm } from './sundry-creditor-form-provider';
 
 interface FormStateManagerProps {
   entity?: any;

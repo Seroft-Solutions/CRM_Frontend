@@ -207,6 +207,33 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
+    key: 'SundryCreditorManagement',
+    label: 'Sundry Creditors',
+    icon: Users,
+    expandable: false,
+    requiredPermission: 'sundryCreditor:sidebar',
+    children: [
+      {
+        key: 'viewSundryCreditors',
+        label: 'View Creditors',
+        path: '/sundry-creditors',
+        requiredPermission: 'sundryCreditor:sidebar',
+      },
+      {
+        key: 'importSundryCreditors',
+        label: 'Import Creditors',
+        path: '/sundry-creditors/import',
+        requiredPermission: 'sundryCreditor:sidebar',
+      },
+      {
+        key: 'importSundryCreditorHistory',
+        label: 'Import History',
+        path: '/sundry-creditors/import/results',
+        requiredPermission: 'sundryCreditor:sidebar',
+      },
+    ],
+  },
+  {
     key: 'productManagement',
     label: 'Product Management',
     icon: Box,

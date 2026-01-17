@@ -7,7 +7,7 @@ import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/distri
 import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 
-interface CustomerReviewStepProps {
+interface SundryCreditorReviewStepProps {
   form: any;
   config: any;
   actions: any;
@@ -169,7 +169,7 @@ function RelationshipDisplayValue({
   }
 }
 
-export function CustomerReviewStep({ form, config, actions, entity }: CustomerReviewStepProps) {
+export function SundryCreditorReviewStep({ form, config, actions, entity }: SundryCreditorReviewStepProps) {
   return (
     <div className="space-y-6">
       {/* Review all previous steps */}

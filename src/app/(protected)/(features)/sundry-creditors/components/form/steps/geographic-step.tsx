@@ -4,24 +4,24 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 
-interface CustomerGeographicStepProps {
+interface SundryCreditorGeographicStepProps {
   form: any;
   config: any;
   actions: any;
   entity?: any;
 }
 
-export function CustomerGeographicStep({
+export function SundryCreditorGeographicStep({
   form,
   config,
   actions,
   entity,
-}: CustomerGeographicStepProps) {
+}: SundryCreditorGeographicStepProps) {
   return (
     <div className="space-y-6">
       <div className="border-b pb-2 mb-4">
         <h3 className="text-sm font-medium text-gray-900">Location Information</h3>
-        <p className="text-xs text-gray-500 mt-1">Search and select customer location</p>
+        <p className="text-xs text-gray-500 mt-1">Search and select sundry creditor location</p>
       </div>
 
       <FormField

@@ -2,7 +2,7 @@
  * Sundry Creditor form validation schema with user-friendly messages
  */
 import { z } from 'zod';
-import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
+import type { AreaDTO } from '@/core/api/generated/spring/schemas';
 
 export const sundryCreditorFormSchemaFields = {
   creditorName: z
@@ -27,38 +27,25 @@ export const sundryCreditorFormSchemaFields = {
     .regex(/^[\+]?[0-9\s\-\(\)]{10,15}$/, {
       message:
         'Please enter a valid phone number (10-15 digits only). Example: 03001234567 or +923001234567',
-    })
-    .optional(), // Mobile is optional in my DTO but required in schema? Let's check DTO. DTO has optional mobile? 
-                 // Wait, database constraint says mobile is NOT NULL based on customer. 
-                 // But Sundry Creditor usage might be different. Let's stick to Customer logic for now.
-                 // In Customer.java: @NotNull mobile.
-                 // In SundryCreditor.java: copied from Customer, so likely NotNull. 
-                 // Wait, I should check my liquidbase/Entity.
-                 // Liquibase 2026...SundryCreditor.xml: mobile nullable=true (Step 171)
-                 // Wait, customer had nullable=false (Step 169).
-                 // In Step 171 I made mobile nullable=true for Sundry Creditor?
-                 // "column name="mobile" ... constraints nullable="true"".
-                 // So mobile IS optional for Sundry Creditor.
-                 // So I remove .min(1) and make it optional in schema.
-                 ,
+    }),
   whatsApp: z
     .string()
-      .regex(/^[+]?[0-9]{10,15}$/, { message: 'Please enter valid whatsapp' })
-      .optional(),
-      contactPerson: z
-        .string()
-        .min(2, { message: 'Please enter at least 2 characters' })
-        .max(100, { message: 'Please enter no more than 100 characters' })
-        .optional(),
-        status: z.string().optional(),
-          area: z.custom<AreaDTO>(
-            (val) => {
-              return val && typeof val === 'object' && 'id' in val && 'name' in val;
-            },
-            {
-              message: 'Please select a location',
-            }
-          ),
+    .regex(/^[+]?[0-9]{10,15}$/, { message: 'Please enter valid whatsapp' })
+    .optional(),
+  contactPerson: z
+    .string()
+    .min(2, { message: 'Please enter at least 2 characters' })
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional(),
+  status: z.string().optional(),
+  area: z.custom<AreaDTO>(
+    (val) => {
+      return val && typeof val === 'object' && 'id' in val && 'name' in val;
+    },
+    {
+      message: 'Please select a location',
+    }
+  ),
 };
 
 export const sundryCreditorFormSchema = z.object(sundryCreditorFormSchemaFields);

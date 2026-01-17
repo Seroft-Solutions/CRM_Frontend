@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useEntityForm } from './customer-form-provider';
+import { useEntityForm } from './sundry-creditor-form-provider';
 
 interface FormNavigationProps {
   onCancel: () => void;
@@ -72,7 +72,7 @@ export function FormNavigation({ onCancel, onSubmit, isSubmitting, isNew }: Form
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 justify-center"
           >
             <Save className="h-4 w-4" />
-            {isSubmitting ? 'Submitting...' : `${isNew ? 'Create' : 'Update'} Customer`}
+            {isSubmitting ? 'Submitting...' : `${isNew ? 'Create' : 'Update'} Sundry Creditor`}
           </Button>
         ) : (
           <Button

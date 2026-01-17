@@ -17,6 +17,8 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        {/* Generated Form Fields */}
+
         {/* Creditor Name Field */}
         <FormField
           control={form.control}
@@ -74,7 +76,7 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 Mobile
-                {/* Mobile is optional in my schema/config now, so no red asterisk */}
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <PhoneInput
@@ -101,7 +103,7 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 WhatsApp
-                {/* Optional */}
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <PhoneInput
@@ -126,7 +128,7 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
             <FormItem>
               <FormLabel className="text-sm font-medium">
                 Contact Person
-                {/* Optional */}
+                <span className="text-red-500 ml-1">*</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -144,49 +146,13 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
           )}
         />
 
-        {/* Status Field - Keeping it as input for now based on config, or should validation logic handle it?
-            Config says required.
-        */}
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">
-                Status
-                <span className="text-red-500 ml-1">*</span>
-              </FormLabel>
-              <FormControl>
-                {/* Status likely needs a select. reusing input for simple fix as duplicated from customer where it might have been missing in basic step? 
-                            Wait, customer basic step code I read lines 19-148, status was NOT there? 
-                            It was in config fields though.
-                            Check lines 14-106 of customer basic step again.
-                            Ah, I missed it? 
-                            Lines 19-32: CustomerBusinessName
-                            Lines 49-69: Email
-                            Lines 72-96: Mobile
-                            Lines 99-120: WhatsApp
-                            Lines 124-147: Contact Person
-                            Location after that.
-                            Status is missing in CustomerBasicStep UI!
-                            I should add it or maybe it's auto-handled or hidden?
-                            In CustomerForm, line 295: status: 'ACTIVE' (hardcoded on create).
-                            So status is hidden during creation probably. Makes sense.
-                        */}
-              </FormControl>
-              {/* Im NOT rendering status field if it's auto-handled */}
-              <input type="hidden" {...field} />
-            </FormItem>
-          )}
-        />
-
       </div>
 
       {/* Location Field - Full Width */}
       <div className="border-t pt-6">
         <div className="border-b pb-2 mb-4">
           <h3 className="text-sm font-medium text-gray-900">Location Information</h3>
-          <p className="text-xs text-gray-500 mt-1">Search and select location</p>
+          <p className="text-xs text-gray-500 mt-1">Search and select sundry creditor location</p>
         </div>
 
         <FormField

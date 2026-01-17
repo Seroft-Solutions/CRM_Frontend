@@ -4,7 +4,7 @@ import React from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { useEntityForm } from './customer-form-provider';
+import { useEntityForm } from './sundry-creditor-form-provider';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function FormProgressIndicator() {
@@ -52,7 +52,7 @@ export function FormProgressIndicator() {
                           ? 'border-primary text-primary bg-primary/10'
                           : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        'cursor-pointer hover:border-primary'
+                      'cursor-pointer hover:border-primary'
                     )}
                     onClick={() => handleStepClick(index)}
                   >
@@ -119,7 +119,7 @@ export function FormProgressIndicator() {
                           ? 'border-primary text-primary bg-primary/10'
                           : 'border-muted-foreground/30 text-muted-foreground',
                       config.behavior.navigation.allowStepSkipping &&
-                        'cursor-pointer hover:border-primary'
+                      'cursor-pointer hover:border-primary'
                     )}
                     onClick={() => handleStepClick(index)}
                   >

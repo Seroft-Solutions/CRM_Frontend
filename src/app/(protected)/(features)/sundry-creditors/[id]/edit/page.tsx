@@ -1,19 +1,28 @@
-import { SundryCreditorForm } from '../components/sundry-creditor-form';
+import { SundryCreditorForm } from '../../components/sundry-creditor-form';
 import { PermissionGuard } from '@/core/auth';
 
+interface EditSundryCreditorPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
 export const metadata = {
-  title: 'Create Sundry Creditor',
+  title: 'Edit Sundry Creditor',
 };
 
-export default function CreateSundryCreditorPage() {
+export default async function EditSundryCreditorPage({ params }: EditSundryCreditorPageProps) {
+  const { id: idParam } = await params;
+  const id = parseInt(idParam, 10);
+
   return (
     <PermissionGuard
-      requiredPermission="sundryCreditor:create"
-      unauthorizedTitle="Access Denied to Create Sundry Creditor"
-      unauthorizedDescription="You don't have permission to create new sundry creditor records."
+      requiredPermission="sundryCreditor:update"
+      unauthorizedTitle="Access Denied to Edit Sundry Creditor"
+      unauthorizedDescription="You don't have permission to edit sundry creditor records."
     >
       <div className="space-y-6">
-        {/* Modern Centered Header for Create Page */}
+        {/* Modern Centered Header for Edit Page */}
         <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
           <div className="flex items-center justify-center">
             {/* Left Section: Icon and Title */}
@@ -26,13 +35,17 @@ export default function CreateSundryCreditorPage() {
                   viewBox="0 0 24 24"
                   strokeWidth="2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Create New Sundry Creditor</h1>
+                <h1 className="text-xl font-semibold text-sidebar-foreground">Edit Sundry Creditor</h1>
                 <p className="text-sm text-sidebar-foreground/80">
-                  Add a new sundry creditor to your database
+                  Update sundry creditor information and details
                 </p>
               </div>
             </div>
@@ -46,7 +59,7 @@ export default function CreateSundryCreditorPage() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <SundryCreditorForm />
+          <SundryCreditorForm id={id} />
         </div>
       </div>
     </PermissionGuard>

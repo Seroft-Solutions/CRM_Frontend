@@ -1,15 +1,15 @@
-export { CustomerBasicStep } from './basic-step';
-export { CustomerGeographicStep } from './geographic-step';
-export { CustomerReviewStep } from './review-step';
+export { SundryCreditorBasicStep } from './basic-step';
+export { SundryCreditorGeographicStep } from './geographic-step';
+export { SundryCreditorReviewStep } from './review-step';
 
-import { CustomerBasicStep } from '@/app/(protected)/(features)/customers/components/form/steps/basic-step';
-import { CustomerGeographicStep } from '@/app/(protected)/(features)/customers/components/form/steps/geographic-step';
-import { CustomerReviewStep } from '@/app/(protected)/(features)/customers/components/form/steps/review-step';
+import { SundryCreditorBasicStep } from './basic-step';
+import { SundryCreditorGeographicStep } from './geographic-step';
+import { SundryCreditorReviewStep } from './review-step';
 
 export const stepComponents = {
-  basic: CustomerBasicStep,
-  geographic: CustomerGeographicStep,
-  review: CustomerReviewStep,
+  basic: SundryCreditorBasicStep,
+  geographic: SundryCreditorGeographicStep,
+  review: SundryCreditorReviewStep,
 } as const;
 
 export type StepId = keyof typeof stepComponents;

@@ -2,7 +2,16 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
 import { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas/CustomerDTOStatus';
-import { PaginatedResponse } from '@/core/api/services/base/types';
+import type { CustomerImportJobDTO } from '@/core/api/generated/spring/schemas/CustomerImportJobDTO';
+const resolveQueryOptions = (options?: any) => {
+  if (!options) return {};
+  return options.query ?? options;
+};
+
+const resolveMutationOptions = (options?: any) => {
+  if (!options) return {};
+  return options.mutation ?? options;
+};
 
 // Reusing Status enum from Customer since it is identical
 export type SundryCreditorStatus = CustomerDTOStatus;
@@ -23,6 +32,11 @@ export interface SundryCreditorDTO {
 }
 
 export type SundryCreditorBody = SundryCreditorDTO;
+
+export interface SundryCreditorImportJobResponse {
+    jobId?: string;
+    message?: string;
+}
 
 // Using simple 'any' for params for now to avoid creating many types, 
 // but in real app we should use proper criteria types.
@@ -80,57 +94,160 @@ export const searchSundryCreditors = (params?: any) => {
     });
 };
 
+export const importSundryCreditorsFromExcel = (data: { file: File }) => {
+    const formData = new FormData();
+    formData.append('file', data.file);
+
+    return springServiceMutator<SundryCreditorImportJobResponse>(
+        {
+            url: '/api/sundry-creditors-bulk-import',
+            method: 'POST',
+            data: formData,
+        },
+        {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        }
+    );
+};
+
+export const getSundryCreditorImportProgress = (jobId: string) => {
+    return springServiceMutator<CustomerImportJobDTO>({
+        url: `/api/sundry-creditors-bulk-import/progress/${jobId}`,
+        method: 'GET',
+    });
+};
+
+export const dismissSundryCreditorImportJob = (jobId: string) => {
+    return springServiceMutator<void>({
+        url: `/api/sundry-creditors-bulk-import/${jobId}`,
+        method: 'DELETE',
+    });
+};
+
+export const getActiveSundryCreditorImportJobs = () => {
+    return springServiceMutator<CustomerImportJobDTO[]>({
+        url: '/api/sundry-creditors-bulk-import/active',
+        method: 'GET',
+    });
+};
+
+export const downloadSundryCreditorImportTemplate = () => {
+    return springServiceMutator<Blob>(
+        {
+            url: '/api/sundry-creditors-bulk-import/import-template/download',
+            method: 'GET',
+        },
+        {
+            responseType: 'blob',
+        }
+    );
+};
+
 // React Query Hooks
 
 export const useGetAllSundryCreditors = (params?: any, options?: any) => {
-    return useQuery({
-        queryKey: ['getAllSundryCreditors', params],
-        queryFn: () => getAllSundryCreditors(params),
-        ...options,
-    });
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['getAllSundryCreditors', params],
+    queryFn: () => getAllSundryCreditors(params),
+    ...queryOptions,
+  });
 };
 
 export const useGetSundryCreditor = (id: number, options?: any) => {
-    return useQuery({
-        queryKey: ['getSundryCreditor', id],
-        queryFn: () => getSundryCreditor(id),
-        ...options,
-    });
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['getSundryCreditor', id],
+    queryFn: () => getSundryCreditor(id),
+    enabled: !!id,
+    ...queryOptions,
+  });
 };
 
 export const useCountSundryCreditors = (params?: any, options?: any) => {
-    return useQuery({
-        queryKey: ['countSundryCreditors', params],
-        queryFn: () => getSundryCreditorCount(params),
-        ...options,
-    });
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['countSundryCreditors', params],
+    queryFn: () => getSundryCreditorCount(params),
+    ...queryOptions,
+  });
 };
 
 export const useSearchSundryCreditors = (params?: any, options?: any) => {
-    return useQuery({
-        queryKey: ['searchSundryCreditors', params],
-        queryFn: () => searchSundryCreditors(params),
-        ...options,
-    });
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['searchSundryCreditors', params],
+    queryFn: () => searchSundryCreditors(params),
+    ...queryOptions,
+  });
+};
+
+export const useImportSundryCreditorsFromExcel = (options?: any) => {
+  const mutationOptions = resolveMutationOptions(options);
+  return useMutation({
+    mutationFn: importSundryCreditorsFromExcel,
+    ...mutationOptions,
+  });
+};
+
+export const useGetSundryCreditorImportProgress = (jobId: string, options?: any) => {
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['getSundryCreditorImportProgress', jobId],
+    queryFn: () => getSundryCreditorImportProgress(jobId),
+    ...queryOptions,
+  });
+};
+
+export const useDismissSundryCreditorImportJob = (options?: any) => {
+  const mutationOptions = resolveMutationOptions(options);
+  return useMutation({
+    mutationFn: (jobId: string) => dismissSundryCreditorImportJob(jobId),
+    ...mutationOptions,
+  });
+};
+
+export const useGetActiveSundryCreditorImportJobs = (options?: any) => {
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['getActiveSundryCreditorImportJobs'],
+    queryFn: () => getActiveSundryCreditorImportJobs(),
+    ...queryOptions,
+  });
+};
+
+export const useDownloadSundryCreditorImportTemplate = (options?: any) => {
+  const queryOptions = resolveQueryOptions(options);
+  return useQuery({
+    queryKey: ['downloadSundryCreditorImportTemplate'],
+    queryFn: () => downloadSundryCreditorImportTemplate(),
+    ...queryOptions,
+  });
 };
 
 export const useCreateSundryCreditor = (options?: any) => {
-    return useMutation({
-        mutationFn: createSundryCreditor,
-        ...options,
-    });
+  const mutationOptions = resolveMutationOptions(options);
+  return useMutation({
+    mutationFn: createSundryCreditor,
+    ...mutationOptions,
+  });
 };
 
 export const useUpdateSundryCreditor = (options?: any) => {
-    return useMutation({
-        mutationFn: ({ id, data }: { id: number; data: SundryCreditorBody }) => updateSundryCreditor(id, data),
-        ...options,
-    });
+  const mutationOptions = resolveMutationOptions(options);
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: SundryCreditorBody }) =>
+      updateSundryCreditor(id, data),
+    ...mutationOptions,
+  });
 };
 
 export const useDeleteSundryCreditor = (options?: any) => {
-    return useMutation({
-        mutationFn: deleteSundryCreditor,
-        ...options,
-    });
+  const mutationOptions = resolveMutationOptions(options);
+  return useMutation({
+    mutationFn: deleteSundryCreditor,
+    ...mutationOptions,
+  });
 };

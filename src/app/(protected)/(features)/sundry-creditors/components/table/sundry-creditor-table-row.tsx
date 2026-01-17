@@ -1,8 +1,7 @@
 'use client';
 
-import { AlertTriangle, Archive, MoreVertical, RefreshCw, RotateCcw } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import Link from 'next/link';
+import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -16,23 +15,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { UserDraftDTO } from '@/core/api/generated/spring/schemas/UserDraftDTO';
-import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraftDTOStatus';
-
-const ENTITY_ROUTES: Record<string, string> = {
-  Call: '/calls/new',
-  Customer: '/customers/new',
-  SundryCreditor: '/sundry-creditors/new',
-  Meeting: '/meetings/new',
-  Source: '/sources/new',
-  Priority: '/priorities/new',
-  CallType: '/call-types/new',
-  SubCallType: '/sub-call-types/new',
-  CallCategory: '/call-categories/new',
-  CallStatus: '/call-statuses/new',
-  ChannelType: '/channel-types/new',
-  UserProfile: '/user-profiles/new',
-};
+import { RelationshipCell } from './relationship-cell';
+import { ClickableId } from '@/components/clickable-id';
+import type { SundryCreditorDTO } from '../../api/sundry-creditor';
+import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas/CustomerDTOStatus';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -58,8 +44,8 @@ interface StatusOption {
   color: string;
 }
 
-interface UserDraftTableRowProps {
-  userDraft: UserDraftDTO;
+interface SundryCreditorTableRowProps {
+  customer: SundryCreditorDTO;
   onArchive: (id: number) => void;
   onStatusChange: (id: number, status: string) => void;
   isUpdatingStatus: boolean;
@@ -84,8 +70,8 @@ interface UserDraftTableRowProps {
   }>;
 }
 
-export function UserDraftTableRow({
-  userDraft,
+export function SundryCreditorTableRow({
+  customer,
   onArchive,
   onStatusChange,
   isUpdatingStatus,
@@ -96,46 +82,11 @@ export function UserDraftTableRow({
   onRelationshipUpdate,
   updatingCells = new Set(),
   visibleColumns,
-}: UserDraftTableRowProps) {
-  const router = useRouter();
-
-  const currentStatus = userDraft.status;
+}: SundryCreditorTableRowProps) {
+  const currentStatus = customer.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
   );
-
-  const handleRestoreDraft = () => {
-    if (!userDraft.type) {
-      toast.error('Cannot restore draft: Entity type not found');
-      return;
-    }
-
-    const route = ENTITY_ROUTES[userDraft.type];
-    if (!route) {
-      toast.error(`No route found for entity type: ${userDraft.type}`);
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(userDraft.jsonPayload || '{}');
-
-      const restorationData = {
-        draftId: userDraft.id,
-        entityType: userDraft.type,
-        formData: payload.formData || {},
-        currentStep: payload.currentStep || 0,
-        timestamp: Date.now(),
-      };
-
-      sessionStorage.setItem('draftToRestore', JSON.stringify(restorationData));
-
-      router.push(route);
-      toast.success(`Navigating to restore ${userDraft.type} draft...`);
-    } catch (error) {
-      console.error('Error parsing draft data:', error);
-      toast.error('Error parsing draft data. Cannot restore this draft.');
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
@@ -154,7 +105,7 @@ export function UserDraftTableRow({
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
         <Checkbox
           checked={isSelected}
-          onCheckedChange={() => userDraft.id && onSelect(userDraft.id)}
+          onCheckedChange={() => customer.id && onSelect(customer.id)}
         />
       </TableCell>
       {visibleColumns.map((column, index) => (
@@ -168,17 +119,25 @@ export function UserDraftTableRow({
         >
           {column.type === 'field'
             ? (() => {
-                const field = userDraft[column.accessor as keyof typeof userDraft];
+                const field = customer[column.accessor as keyof typeof customer];
 
-                if (column.id === 'keycloakUserId') {
+                if (column.id === 'creditorName') {
                   return field?.toString() || '';
                 }
 
-                if (column.id === 'type') {
+                if (column.id === 'email') {
                   return field?.toString() || '';
                 }
 
-                if (column.id === 'jsonPayload') {
+                if (column.id === 'mobile') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'whatsApp') {
+                  return field?.toString() || '';
+                }
+
+                if (column.id === 'contactPerson') {
                   return field?.toString() || '';
                 }
 
@@ -202,60 +161,71 @@ export function UserDraftTableRow({
                   return field ? format(new Date(field as string), 'PPP') : '';
                 }
 
-                if (column.id === 'leadNo') {
-                  try {
-                    const payload = JSON.parse(userDraft.jsonPayload || '{}');
-                    const leadNo = payload.formData?.leadNo;
-                    if (leadNo && typeof leadNo === 'string') {
-                      if (leadNo.length === 8 && /^[A-Z]{3}\d{5}$/.test(leadNo)) {
-                        return `${leadNo.substring(0, 3)}-${leadNo.substring(3)}`;
-                      }
-                      return leadNo;
-                    }
-                    return userDraft.type === 'Call' ? '-' : 'N/A';
-                  } catch {
-                    return userDraft.type === 'Call' ? '-' : 'N/A';
-                  }
-                }
-
-                if (column.id === 'currentStep') {
-                  try {
-                    const payload = JSON.parse(userDraft.jsonPayload || '{}');
-                    const currentStep = payload.currentStep;
-                    if (typeof currentStep === 'number') {
-                      return `Step ${currentStep + 1}`;
-                    }
-                    return 'Step 1';
-                  } catch {
-                    return 'Step 1';
-                  }
+                if (column.id === 'id') {
+                  return (
+                    <ClickableId
+                      id={field as string | number}
+                      entityType="sundry-creditors"
+                    />
+                  );
                 }
 
                 return field?.toString() || '';
               })()
             : (() => {
+                if (column.id === 'area') {
+                  const cellKey = `${customer.id}-area`;
+                  return (
+                    <RelationshipCell
+                      entityId={customer.id || 0}
+                      relationshipName="area"
+                      currentValue={customer.area}
+                      options={
+                        relationshipConfigs.find((config) => config.name === 'area')?.options || []
+                      }
+                      displayField="name"
+                      onUpdate={(entityId, relationshipName, newValue) =>
+                        onRelationshipUpdate
+                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                          : Promise.resolve()
+                      }
+                      isEditable={
+                        relationshipConfigs.find((config) => config.name === 'area')?.isEditable ||
+                        false
+                      }
+                      isLoading={updatingCells.has(cellKey)}
+                      className="min-w-[150px]"
+                      relatedEntityRoute="areas"
+                      showNavigationIcon={true}
+                    />
+                  );
+                }
+
                 return null;
               })()}
         </TableCell>
       ))}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-          {/* Restore Draft Button - Only show for active drafts */}
-          {currentStatus === UserDraftDTOStatus.ACTIVE && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRestoreDraft}
-              className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-blue-600 hover:text-blue-700"
-              title="Restore Draft"
-            >
-              <RefreshCw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-              <span className="sr-only">Restore Draft</span>
+          <InlinePermissionGuard requiredPermission="sundryCreditor:read">
+            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
+              <Link href={`/sundry-creditors/${customer.id}`}>
+                <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <span className="sr-only">View</span>
+              </Link>
             </Button>
-          )}
+          </InlinePermissionGuard>
+          <InlinePermissionGuard requiredPermission="sundryCreditor:update">
+            <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
+              <Link href={`/sundry-creditors/${customer.id}/edit`}>
+                <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <span className="sr-only">Edit</span>
+              </Link>
+            </Button>
+          </InlinePermissionGuard>
 
           {/* Status Management Dropdown */}
-          <InlinePermissionGuard requiredPermission="userDraft:update">
+          <InlinePermissionGuard requiredPermission="sundryCreditor:update">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -269,38 +239,38 @@ export function UserDraftTableRow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {currentStatus !== UserDraftDTOStatus.ACTIVE && (
+                {currentStatus !== CustomerDTOStatus.ACTIVE && (
                   <DropdownMenuItem
-                    onClick={() => userDraft.id && onStatusChange(userDraft.id, 'ACTIVE')}
+                    onClick={() => customer.id && onStatusChange(customer.id, 'ACTIVE')}
                     className="text-green-700"
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
                     Set Active
                   </DropdownMenuItem>
                 )}
-                {currentStatus !== UserDraftDTOStatus.INACTIVE && (
+                {currentStatus !== CustomerDTOStatus.INACTIVE && (
                   <DropdownMenuItem
-                    onClick={() => userDraft.id && onStatusChange(userDraft.id, 'INACTIVE')}
+                    onClick={() => customer.id && onStatusChange(customer.id, 'INACTIVE')}
                     className="text-yellow-700"
                   >
                     <AlertTriangle className="w-4 h-4 mr-2" />
                     Set Inactive
                   </DropdownMenuItem>
                 )}
-                {currentStatus !== UserDraftDTOStatus.DRAFT && (
+                {currentStatus !== CustomerDTOStatus.DRAFT && (
                   <DropdownMenuItem
-                    onClick={() => userDraft.id && onStatusChange(userDraft.id, 'DRAFT')}
+                    onClick={() => customer.id && onStatusChange(customer.id, 'DRAFT')}
                     className="text-gray-700"
                   >
                     <div className="w-4 h-4 mr-2 border border-current rounded" />
                     Set Draft
                   </DropdownMenuItem>
                 )}
-                {currentStatus !== UserDraftDTOStatus.ARCHIVED && (
+                {currentStatus !== CustomerDTOStatus.ARCHIVED && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => userDraft.id && onArchive(userDraft.id)}
+                      onClick={() => customer.id && onArchive(customer.id)}
                       className="text-red-700"
                     >
                       <Archive className="w-4 h-4 mr-2" />

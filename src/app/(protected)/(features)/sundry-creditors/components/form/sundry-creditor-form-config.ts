@@ -63,9 +63,9 @@ export const sundryCreditorFormConfig: FormConfig = {
       type: 'text',
       label: 'Mobile',
       placeholder: 'Enter phone number (example: 03001234567)',
-      required: false, // Changed to false based on schema decision
+      required: true,
       validation: {
-        required: false,
+        required: true,
         pattern: /^[+]?[0-9]{10,15}$/,
       },
       ui: {},
@@ -95,19 +95,6 @@ export const sundryCreditorFormConfig: FormConfig = {
       },
       ui: {},
     },
-    {
-      name: 'status',
-      type: 'text', // In reality this should be a select, but Customer config had it as text field implicitly or handled elsewhere? 
-      // Actually CustomerConfig didn't specify type 'select' but it might be handled by field renderer default or custom.
-      // Given 'status' field exists in 'fields', let's keep it.
-      label: 'Status',
-      placeholder: 'Enter status',
-      required: true,
-      validation: {
-        required: true,
-      },
-      ui: {}
-    }
   ],
 
   relationships: [

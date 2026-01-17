@@ -111,6 +111,11 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
         <p className="text-muted-foreground">
           Generated step components for "{currentStepConfig.id}" step would render here.
         </p>
+        <p className="text-sm text-muted-foreground mt-2">
+          1. Run: <code>node src/core/step-generator.js SundryCreditor</code>
+          <br />
+          2. Uncomment the import and usage above
+        </p>
       </div>
     );
   };
@@ -260,17 +265,16 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         const { ...sundryCreditorData } = transformedData as any;
-        // Default status if not provided, though config makes it required.
         const dataWithStatus = {
           ...sundryCreditorData,
-          status: sundryCreditorData.status || 'ACTIVE',
+          status: 'ACTIVE',
         };
 
         if (isNew) {
           createEntity(dataWithStatus);
         } else if (id) {
           // Note: useUpdateSundryCreditor expects {id, data}
-          updateEntity({ id, data: dataWithStatus });
+          updateEntity({ id, data: { ...dataWithStatus, id } });
         }
       }}
       onError={(error) => {

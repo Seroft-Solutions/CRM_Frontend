@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useEntityForm } from './customer-form-provider';
+import { useEntityForm } from './sundry-creditor-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
 import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
 import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
