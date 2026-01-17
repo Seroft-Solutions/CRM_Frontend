@@ -12,7 +12,7 @@ export const sundryCreditorFormConfig: FormConfig = {
       title: 'Basic Information',
       description: 'Enter essential details',
       fields: ['creditorName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
-      relationships: ['area'],
+      relationships: ['products', 'area'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -98,6 +98,32 @@ export const sundryCreditorFormConfig: FormConfig = {
   ],
 
   relationships: [
+    {
+      name: 'products',
+      type: 'many-to-many',
+      targetEntity: 'product',
+      displayField: 'name',
+      primaryKey: 'id',
+      required: false,
+      multiple: true,
+      category: 'business',
+      api: {
+        useGetAllHook: 'useGetAllProducts',
+        useSearchHook: 'useSearchProducts',
+        useCountHook: 'useCountProducts',
+        entityName: 'Products',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/products/new',
+        createPermission: 'product:create:inline',
+      },
+      ui: {
+        label: 'Products',
+        placeholder: 'Select products',
+        icon: '📦',
+      },
+    },
     {
       name: 'area',
       type: 'many-to-one',

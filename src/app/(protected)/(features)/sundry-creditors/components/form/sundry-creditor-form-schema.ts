@@ -38,6 +38,7 @@ export const sundryCreditorFormSchemaFields = {
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
   status: z.string().optional(),
+  products: z.array(z.number()).optional(),
   area: z.custom<AreaDTO>(
     (val) => {
       return val && typeof val === 'object' && 'id' in val && 'name' in val;
@@ -59,6 +60,7 @@ export const sundryCreditorFieldSchemas = {
   whatsApp: sundryCreditorFormSchemaFields.whatsApp,
   contactPerson: sundryCreditorFormSchemaFields.contactPerson,
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
+  products: sundryCreditorFormSchemaFields.products,
   area: sundryCreditorFormSchemaFields.area,
 };
 
@@ -70,6 +72,7 @@ export const sundryCreditorStepSchemas = {
     whatsApp: sundryCreditorFieldSchemas.whatsApp,
     contactPerson: sundryCreditorFieldSchemas.contactPerson,
     status: sundryCreditorFieldSchemas.status.optional(),
+    products: sundryCreditorFieldSchemas.products.optional(),
   }),
   geographic: z.object({
     area: sundryCreditorFieldSchemas.area,

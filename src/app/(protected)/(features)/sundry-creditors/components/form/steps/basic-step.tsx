@@ -5,6 +5,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
+import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
 
 interface SundryCreditorBasicStepProps {
   form: any;
@@ -146,6 +147,40 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
           )}
         />
 
+      </div>
+
+      {/* Products Section */}
+      <div className="border-t pt-6">
+        <div className="border-b pb-2 mb-4">
+          <h3 className="text-sm font-medium text-gray-900">Products</h3>
+          <p className="text-xs text-gray-500 mt-1">
+            Select products supplied by this creditor or create a new one.
+          </p>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="products"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Products</FormLabel>
+              <FormControl>
+                <EnhancedProductRelationshipField
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Select products"
+                  multiple={true}
+                  canCreate={true}
+                  createPermission="product:create:inline"
+                  onProductCreated={(productId) => {
+                    console.log('New product created:', productId);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
       {/* Location Field - Full Width */}

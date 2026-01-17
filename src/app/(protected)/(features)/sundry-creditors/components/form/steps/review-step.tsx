@@ -6,6 +6,7 @@ import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-res
 import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
 import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
 import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
 interface SundryCreditorReviewStepProps {
   form: any;
@@ -62,6 +63,18 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
             primaryKey="id"
             multiple={false}
             label="Areas"
+          />
+        );
+
+      case 'products':
+        return (
+          <RelationshipDisplayValue
+            value={value}
+            useGetAllHook={useGetAllProducts}
+            displayField="name"
+            primaryKey="id"
+            multiple={true}
+            label="Products"
           />
         );
 
