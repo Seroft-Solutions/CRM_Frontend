@@ -46,6 +46,12 @@ export const productFormSchemaFields = {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
+  saveAsCatalog: z.boolean().optional(),
+  productCatalogName: z
+    .string()
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional(),
+  productCatalogPrice: z.string().optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
@@ -58,22 +64,70 @@ export const productFormSchemaFields = {
 
 export const productFormSchemaBase = z.object(productFormSchemaFields);
 
-export const productFormSchema = productFormSchemaBase.refine(
-  (data) => {
-    const discountedPrice = data.discountedPrice ? Number(data.discountedPrice) : null;
-    const salePrice = data.salePrice ? Number(data.salePrice) : null;
+export const productFormSchema = productFormSchemaBase.superRefine((data, ctx) => {
+  const discountedPrice = data.discountedPrice ? Number(data.discountedPrice) : null;
+  const salePrice = data.salePrice ? Number(data.salePrice) : null;
 
-    if (discountedPrice !== null && salePrice !== null) {
-      return salePrice > discountedPrice;
+  if (discountedPrice !== null && salePrice !== null && salePrice <= discountedPrice) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Sale price must be greater than discounted price',
+      path: ['salePrice'],
+    });
+  }
+
+  if (data.saveAsCatalog) {
+    const catalogName = data.productCatalogName?.trim() ?? '';
+    const rawCatalogPrice = data.productCatalogPrice;
+    const hasCatalogPrice =
+      rawCatalogPrice !== undefined &&
+      rawCatalogPrice !== null &&
+      String(rawCatalogPrice).trim() !== '';
+
+    if (!catalogName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please enter product catalog name',
+        path: ['productCatalogName'],
+      });
+    } else if (catalogName.length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please enter at least 2 characters',
+        path: ['productCatalogName'],
+      });
     }
 
-    return true;
-  },
-  {
-    message: 'Sale price must be greater than discounted price',
-    path: ['salePrice'],
+    if (!hasCatalogPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please enter catalog price',
+        path: ['productCatalogPrice'],
+      });
+    } else {
+      const catalogPrice = Number(rawCatalogPrice);
+      if (Number.isNaN(catalogPrice)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Please enter a valid catalog price',
+          path: ['productCatalogPrice'],
+        });
+      } else if (catalogPrice < 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Please enter a number 0 or higher',
+          path: ['productCatalogPrice'],
+        });
+      } else if (catalogPrice > 999999) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Please enter a number 999999 or lower',
+          path: ['productCatalogPrice'],
+        });
+      }
+    }
   }
-);
+});
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;
 
@@ -118,6 +172,12 @@ export const productFieldSchemas = {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
+  saveAsCatalog: z.boolean().optional(),
+  productCatalogName: z
+    .string()
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional(),
+  productCatalogPrice: z.string().optional(),
   remark: z.string().max(1000, { message: 'Please enter no more than 1000 characters' }).optional(),
   category: z.number().optional(),
   subCategory: z.number().optional(),
@@ -143,6 +203,9 @@ export const productStepSchemas = {
       basePrice: productFieldSchemas.basePrice,
       discountedPrice: productFieldSchemas.discountedPrice,
       salePrice: productFieldSchemas.salePrice,
+      saveAsCatalog: productFieldSchemas.saveAsCatalog,
+      productCatalogName: productFieldSchemas.productCatalogName,
+      productCatalogPrice: productFieldSchemas.productCatalogPrice,
       remark: productFieldSchemas.remark,
       category: productFieldSchemas.category,
       subCategory: productFieldSchemas.subCategory,

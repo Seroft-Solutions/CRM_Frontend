@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle2, Package } from 'lucide-react';
@@ -22,6 +23,7 @@ export function ProductBasicInfoSection({
   product,
 }: ProductBasicInfoSectionProps) {
   const errors = form?.formState?.errors;
+  const saveAsCatalog = Boolean(form?.watch?.('saveAsCatalog'));
   const discountedPrice = parseFloat(form?.watch?.('discountedPrice')) || 0;
   const salePrice = parseFloat(form?.watch?.('salePrice')) || 0;
 
@@ -483,6 +485,106 @@ export function ProductBasicInfoSection({
             )}
           />
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <FormField
+            control={form.control}
+            name="saveAsCatalog"
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-2 md:col-span-4">
+                <FormControl>
+                  <Checkbox
+                    checked={!!field.value}
+                    onCheckedChange={(value) => field.onChange(!!value)}
+                  />
+                </FormControl>
+                <FormLabel className="text-xs font-semibold text-slate-600">
+                  Save as Catalog
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {saveAsCatalog && (
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+            <FormField
+              control={form.control}
+              name="productCatalogName"
+              render={({ field }) => (
+                <FormItem className="space-y-1 md:col-span-2">
+                  <FormLabel className="text-xs font-semibold text-slate-600">
+                    Product Catalog Name
+                    <span className="ml-1 text-rose-600">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value || ''}
+                      placeholder="Enter catalog name"
+                      className={cn(
+                        'h-9',
+                        errors.productCatalogName &&
+                          'border-rose-500 focus-visible:ring-rose-500'
+                      )}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        form.trigger('productCatalogName');
+                      }}
+                    />
+                  </FormControl>
+                  {errors.productCatalogName && (
+                    <p className="text-xs text-rose-600">
+                      {String(errors.productCatalogName.message)}
+                    </p>
+                  )}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="productCatalogPrice"
+              render={({ field }) => (
+                <FormItem className="space-y-1 md:col-span-2">
+                  <FormLabel className="text-xs font-semibold text-slate-600">
+                    Catalog Price
+                    <span className="ml-1 text-rose-600">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        ₹
+                      </span>
+                      <Input
+                        {...field}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={field.value || ''}
+                        placeholder="0.00"
+                        className={cn(
+                          'h-9 pl-8',
+                          errors.productCatalogPrice &&
+                            'border-rose-500 focus-visible:ring-rose-500'
+                        )}
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          form.trigger('productCatalogPrice');
+                        }}
+                      />
+                    </div>
+                  </FormControl>
+                  {errors.productCatalogPrice && (
+                    <p className="text-xs text-rose-600">
+                      {String(errors.productCatalogPrice.message)}
+                    </p>
+                  )}
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         {priceValidation && (
           <div

@@ -13,6 +13,7 @@ import {
   useGetProduct,
   useUpdateProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { createProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useUploadProductVariantImage } from '@/core/api/generated/spring';
 import {
   getAllProductVariants,
@@ -21,6 +22,7 @@ import {
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { handleProductError, productToast } from '../product-toast';
+import { handleProductCatalogError, productCatalogToast } from '@/app/(protected)/(features)/product-catalogs/components/product-catalog-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUploadImages, useHardDeleteImage, useReorderImages } from '@/features/product-images';
@@ -159,6 +161,8 @@ function ProductFormContent({
           }
         } else if (fieldConfig.type === 'number') {
           formValues[fieldConfig.name] = value != null ? String(value) : '';
+        } else if (fieldConfig.type === 'boolean') {
+          formValues[fieldConfig.name] = Boolean(value);
         } else {
           formValues[fieldConfig.name] = value || '';
         }
@@ -304,6 +308,66 @@ export function ProductForm({ id }: ProductFormProps) {
         : []),
     ]);
   }, [queryClient, id]);
+
+  const createCatalogForProduct = useCallback(
+    async (
+      productId: number | undefined,
+      catalogName: unknown,
+      catalogPrice: unknown
+    ) => {
+      if (!productId) {
+        return;
+      }
+
+      const resolvedName = typeof catalogName === 'string' ? catalogName.trim() : '';
+      const resolvedPrice = typeof catalogPrice === 'number' ? catalogPrice : Number(catalogPrice);
+
+      if (!resolvedName || Number.isNaN(resolvedPrice)) {
+        productCatalogToast.validationError(['productCatalogName', 'productCatalogPrice']);
+        return;
+      }
+
+      try {
+        const variantsResponse = await getAllProductVariants({
+          'productId.equals': productId,
+          size: 1000,
+          sort: ['id,asc'],
+        });
+
+        const variants = Array.isArray(variantsResponse) ? variantsResponse : [];
+        const variantIds = variants
+          .map((variant) => variant.id)
+          .filter((variantId): variantId is number => typeof variantId === 'number');
+
+        await createProductCatalog({
+          productCatalogName: resolvedName,
+          price: resolvedPrice,
+          product: { id: productId },
+          variants: variantIds.map((variantId) => ({ id: variantId })),
+        });
+
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ['getAllProductCatalogs'],
+            refetchType: 'active',
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ['countProductCatalogs'],
+            refetchType: 'active',
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ['searchProductCatalogs'],
+            refetchType: 'active',
+          }),
+        ]);
+
+        productCatalogToast.created();
+      } catch (error) {
+        handleProductCatalogError(error);
+      }
+    },
+    [queryClient]
+  );
 
   const handlePostCreateNavigation = useCallback(
     (entityId?: number) => {
@@ -611,8 +675,15 @@ export function ProductForm({ id }: ProductFormProps) {
       onSuccess={async ({ entity, attachments }) => {
         const productData = entity as Record<string, unknown>;
 
-        // Extract variants from product data before sending to create/update
-        const { variants: productVariants, ...productDataWithoutVariants } = productData;
+        // Extract variants and catalog fields before sending to create/update
+        const {
+          variants: productVariants,
+          saveAsCatalog,
+          productCatalogName,
+          productCatalogPrice,
+          ...productDataWithoutVariants
+        } = productData;
+        const shouldCreateCatalog = Boolean(saveAsCatalog);
 
         const productDataWithStatus = {
           ...productDataWithoutVariants,
@@ -634,6 +705,13 @@ export function ProductForm({ id }: ProductFormProps) {
             // Handle variants creation after product is created
             if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
               await handleVariantsCreation(createdProduct?.id, productVariants);
+            }
+            if (shouldCreateCatalog) {
+              await createCatalogForProduct(
+                createdProduct?.id,
+                productCatalogName,
+                productCatalogPrice
+              );
             }
             await invalidateProductQueries();
             // Invalidate variant queries
@@ -659,6 +737,9 @@ export function ProductForm({ id }: ProductFormProps) {
             // Handle variants creation for edit mode (newly generated variants)
             if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
               await handleVariantsCreation(id, productVariants);
+            }
+            if (shouldCreateCatalog) {
+              await createCatalogForProduct(id, productCatalogName, productCatalogPrice);
             }
             await invalidateProductQueries();
             // Invalidate variant queries
