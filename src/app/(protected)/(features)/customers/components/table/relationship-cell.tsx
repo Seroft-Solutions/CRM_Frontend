@@ -21,7 +21,7 @@ interface RelationshipCellProps {
   entityId: number;
   relationshipName: string;
   currentValue?: any;
-  options: Array<{ id: number; [key: string]: any }>;
+  options: Array<{ id: number;[key: string]: any }>;
   displayField: string;
   onUpdate: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
   isEditable?: boolean;
@@ -62,9 +62,7 @@ export function RelationshipCell({
     if (relationshipName === 'area' && typeof valueToUse === 'object') {
       const parts = [];
       if (valueToUse.city?.district?.state?.name) parts.push(valueToUse.city.district.state.name);
-      if (valueToUse.city?.district?.name) parts.push(valueToUse.city.district.name);
       if (valueToUse.city?.name) parts.push(valueToUse.city.name);
-      if (valueToUse.name) parts.push(valueToUse.name);
       if (valueToUse.pincode) parts.push(valueToUse.pincode);
 
       return parts.length > 0 ? parts.join(', ') : '';
