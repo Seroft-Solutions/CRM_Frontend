@@ -3,6 +3,7 @@
 import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 
@@ -145,37 +146,65 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
             </FormItem>
           )}
         />
+
+
       </div>
 
       {/* Location Field - Full Width */}
       <div className="border-t pt-6">
         <div className="border-b pb-2 mb-4">
-          <h3 className="text-sm font-medium text-gray-900">Location Information</h3>
-          <p className="text-xs text-gray-500 mt-1">Search and select customer location</p>
+          <h3 className="text-sm font-medium text-gray-900">Customer Address</h3>
         </div>
 
-        <FormField
-          control={form.control}
-          name="area"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">
-                Address
-                <span className="text-red-500 ml-1">*</span>
-              </FormLabel>
-              <FormControl>
-                <IntelligentLocationField
-                  value={field.value}
-                  onChange={field.onChange}
-                  onError={(error) => {
-                    form.setError('area', { message: error });
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-6">
+          <FormField
+            control={form.control}
+            name="area"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  City and Zipcode
+                  <span className="text-red-500 ml-1">*</span>
+                </FormLabel>
+                <FormControl>
+                  <IntelligentLocationField
+                    value={field.value}
+                    onChange={field.onChange}
+                    onError={(error) => {
+                      form.setError('area', { message: error });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="completeAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  Address
+                  <span className="text-red-500 ml-1">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter address"
+                    className="resize-none h-10 min-h-[40px] py-2"
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      form.trigger('completeAddress');
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
     </div>
   );

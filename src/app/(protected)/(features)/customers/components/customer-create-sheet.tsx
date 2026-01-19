@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
@@ -59,6 +60,10 @@ const customerCreationSchema = z.object({
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional()
     .or(z.literal('')),
+  completeAddress: z
+    .string({ message: 'Address is required' })
+    .min(1, { message: 'Address is required' })
+    .max(255, { message: 'Please enter no more than 255 characters' }),
   area: z.custom<AreaDTO>(
     (val) => {
       return val && typeof val === 'object' && 'id' in val && 'name' in val;
@@ -94,6 +99,7 @@ export function CustomerCreateSheet({
       mobile: '',
       whatsApp: '',
       contactPerson: '',
+      completeAddress: '',
       area: undefined,
     },
   });
@@ -135,10 +141,11 @@ export function CustomerCreateSheet({
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile,
       contactPerson: data.contactPerson || undefined,
+      completeAddress: data.completeAddress || undefined,
 
       area: data.area,
       status: CustomerDTOStatus.ACTIVE,
-    };
+    } as any;
 
     createCustomer({ data: customerData });
   };
@@ -168,24 +175,21 @@ export function CustomerCreateSheet({
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50">
         <div
-          className={`sticky top-0 z-10 text-white shadow-sm ${
-            isBusinessPartner
-              ? 'bg-bp-primary'
-              : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
-          }`}
+          className={`sticky top-0 z-10 text-white shadow-sm ${isBusinessPartner
+            ? 'bg-bp-primary'
+            : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
+            }`}
         >
           <SheetHeader className="px-6 py-5 space-y-1">
             <SheetTitle
-              className={`text-lg font-semibold leading-tight ${
-                isBusinessPartner ? 'text-bp-foreground' : 'text-white'
-              }`}
+              className={`text-lg font-semibold leading-tight ${isBusinessPartner ? 'text-bp-foreground' : 'text-white'
+                }`}
             >
               Create New Customer
             </SheetTitle>
             <SheetDescription
-              className={`text-sm ${
-                isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'
-              }`}
+              className={`text-sm ${isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'
+                }`}
             >
               Capture core customer details and select their location hierarchy.
             </SheetDescription>
@@ -353,7 +357,7 @@ export function CustomerCreateSheet({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Address
+                        City and Zipcode
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
                       <FormControl>
@@ -363,6 +367,27 @@ export function CustomerCreateSheet({
                           onError={(error) => {
                             form.setError('area', { message: error });
                           }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="completeAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-slate-700">
+                        Address
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter address"
+                          {...field}
+                          className="resize-none min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                         />
                       </FormControl>
                       <FormMessage />
@@ -388,11 +413,10 @@ export function CustomerCreateSheet({
               type="submit"
               form="customer-creation-form"
               disabled={isPending}
-              className={`min-w-[160px] ${
-                isBusinessPartner
-                  ? 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
-                  : ''
-              }`}
+              className={`min-w-[160px] ${isBusinessPartner
+                ? 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
+                : ''
+                }`}
             >
               {isPending ? (
                 <>

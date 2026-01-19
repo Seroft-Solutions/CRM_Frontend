@@ -11,7 +11,7 @@ export const customerFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
+      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'completeAddress', 'status'],
       relationships: ['area'],
       validation: {
         mode: 'onBlur',
@@ -95,6 +95,18 @@ export const customerFormConfig: FormConfig = {
       },
       ui: {},
     },
+    {
+      name: 'completeAddress',
+      type: 'textarea',
+      label: 'Address',
+      placeholder: 'Enter address',
+      required: true,
+      validation: {
+        required: true,
+        maxLength: 255,
+      },
+      ui: {},
+    },
   ],
 
   relationships: [
@@ -119,7 +131,7 @@ export const customerFormConfig: FormConfig = {
         createPermission: 'area:create:inline',
       },
       ui: {
-        label: 'Area',
+        label: 'City and Zipcode',
         placeholder: 'Search for location...',
         icon: '📍',
       },

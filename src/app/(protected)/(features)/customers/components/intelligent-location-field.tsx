@@ -152,14 +152,8 @@ export function IntelligentLocationField({
     if (area.city?.district?.state?.name) {
       parts.push(area.city.district.state.name);
     }
-    if (area.city?.district?.name) {
-      parts.push(area.city.district.name);
-    }
     if (area.city?.name) {
       parts.push(area.city.name);
-    }
-    if (area.name) {
-      parts.push(area.name);
     }
     if (area.pincode) {
       parts.push(`(${area.pincode})`);
@@ -210,7 +204,7 @@ export function IntelligentLocationField({
         <PopoverContent className="w-[500px] p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput
-              placeholder="Type to search by state, district, city, area or pincode... (min 2 chars)"
+              placeholder="Type to search by state, city or zipcode... (min 2 chars)"
               value={searchQuery}
               onValueChange={setSearchQuery}
               className="border-0"
@@ -273,9 +267,11 @@ export function IntelligentLocationField({
                           />
                           <div className="flex-1 space-y-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="outline" className="text-xs font-medium">
-                                {area.name}
-                              </Badge>
+                              {area.city?.name && (
+                                <Badge variant="outline" className="text-xs font-medium">
+                                  {area.city.name}
+                                </Badge>
+                              )}
                               {area.pincode && (
                                 <Badge variant="secondary" className="text-xs">
                                   {area.pincode}
@@ -283,7 +279,7 @@ export function IntelligentLocationField({
                               )}
                             </div>
                             <div className="text-xs text-muted-foreground truncate">
-                              {getDisplayText(area)}
+                              {area.city?.district?.state?.name}
                             </div>
                           </div>
                         </CommandItem>
@@ -305,7 +301,7 @@ export function IntelligentLocationField({
       </Popover>
 
       {/* Validation Message */}
-      {!value && <p className="text-sm text-red-500">Please select a location</p>}
+      {/*{!value && <p className="text-sm text-red-500">Please select a location</p>}*/}
 
       {/* Area Create Sheet */}
       <AreaCreateSheet
