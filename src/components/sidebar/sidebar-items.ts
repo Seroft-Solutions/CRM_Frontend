@@ -252,6 +252,12 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'productSubCategory:sidebar',
       },
       {
+        key: 'productCatalog',
+        label: 'Manage Product Catalog',
+        path: '/product-catalogs',
+        requiredPermission: 'productCatalog:sidebar',
+      },
+      {
         key: 'product',
         label: 'Add/View Products',
         path: '/products',

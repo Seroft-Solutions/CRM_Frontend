@@ -46,6 +46,7 @@ export * from './endpoints/call-type-bulk-import-controller/call-type-bulk-impor
 export * from './endpoints/call-status-bulk-import-controller/call-status-bulk-import-controller.gen';
 export * from './endpoints/product-sub-category-resource/product-sub-category-resource.gen';
 export * from './endpoints/product-category-resource/product-category-resource.gen';
+export * from './endpoints/product-catalog-resource/product-catalog-resource.gen';
 export * from './endpoints/import-history-resource/import-history-resource.gen';
 export * from './endpoints/product-images/product-images.gen';
 export * from './endpoints/product-variant-images/product-variant-images.gen';
