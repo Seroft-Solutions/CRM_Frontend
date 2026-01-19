@@ -37,7 +37,7 @@ export const customerFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
-  completeAddress: z.string().optional(),
+  completeAddress: z.string().min(1, { message: 'Address is required' }),
   status: z.string().optional(),
   area: z.custom<AreaDTO>(
     (val) => {
@@ -86,7 +86,7 @@ export const customerFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
-  completeAddress: z.string().optional(),
+  completeAddress: z.string().min(1, { message: 'Address is required' }),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   area: z.custom<AreaDTO>(
     (val) => {
