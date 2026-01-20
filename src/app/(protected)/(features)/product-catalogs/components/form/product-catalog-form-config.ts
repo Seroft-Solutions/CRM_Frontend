@@ -10,20 +10,9 @@ export const productCatalogFormConfig: FormConfig = {
   steps: [
     {
       id: 'basic',
-      title: 'Catalog Details',
-      description: 'Enter catalog information',
+      title: 'Catalog & Product',
+      description: 'Enter catalog information and select product variants',
       fields: ['productCatalogName', 'price', 'description'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'product',
-      title: 'Product & Variants',
-      description: 'Select a product and its variants',
-      fields: [],
       relationships: ['product', 'variants'],
       validation: {
         mode: 'onBlur',
@@ -72,17 +61,15 @@ export const productCatalogFormConfig: FormConfig = {
     },
     {
       name: 'description',
-      type: 'textarea',
+      type: 'text',
       label: 'Description',
       placeholder: 'Enter description',
       required: false,
       validation: {
         required: false,
-        maxLength: 500,
+        maxLength: 100,
       },
-      ui: {
-        rows: 4,
-      },
+      ui: {},
     },
   ],
 
