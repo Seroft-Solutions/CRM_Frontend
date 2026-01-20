@@ -34,6 +34,25 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+const buildLocationKey = (area: AreaDTO): string => {
+  const city = area.city?.name ?? '';
+  const state = area.city?.district?.state?.name ?? '';
+  const zipCode = area.pincode ?? '';
+  return `${city}|${state}|${zipCode}`;
+};
+
+const dedupeAreasByLocation = (areas: AreaDTO[]): AreaDTO[] => {
+  const seen = new Set<string>();
+  return areas.filter((area) => {
+    const key = buildLocationKey(area);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
 interface IntelligentLocationFieldProps {
   value?: AreaDTO | null;
   onChange: (value: AreaDTO | null) => void;
@@ -80,13 +99,12 @@ export function IntelligentLocationField({
 
   useEffect(() => {
     if (searchResults && !isFetching) {
+      const uniqueResults = dedupeAreasByLocation(searchResults);
       if (page === 0) {
-        setAllAreas(searchResults);
+        setAllAreas(uniqueResults);
       } else {
         setAllAreas((prev) => {
-          const existingIds = new Set(prev.map((a) => a.id));
-          const uniqueNew = searchResults.filter((a) => !existingIds.has(a.id));
-          return [...prev, ...uniqueNew];
+          return dedupeAreasByLocation([...prev, ...uniqueResults]);
         });
       }
     }
