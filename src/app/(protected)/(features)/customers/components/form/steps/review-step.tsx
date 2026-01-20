@@ -153,9 +153,7 @@ function RelationshipDisplayValue({
 
       if (selectedItem.city?.district?.state?.name)
         parts.push(selectedItem.city.district.state.name);
-      if (selectedItem.city?.district?.name) parts.push(selectedItem.city.district.name);
       if (selectedItem.city?.name) parts.push(selectedItem.city.name);
-      if (selectedItem.name) parts.push(selectedItem.name);
       if (selectedItem.pincode) parts.push(selectedItem.pincode);
 
       return parts.length > 0 ? (
