@@ -63,6 +63,7 @@ import {
   useCreateOrderShippingDetail,
   useUpdateOrderShippingDetail,
 } from '@/core/api/order-shipping-detail';
+import { getDiscountByCode } from '../../discounts/actions/discount-api';
 import type {
   AddressFieldsForm,
   ItemErrors,
@@ -103,7 +104,7 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-    const discount = Number.parseFloat(item.discountAmount) || 0;
+    const discount = Number.parseFloat(item.discountAmount || '0') || 0;
     return sum + Math.max(qty * price + tax - discount, 0);
   }, 0);
 
@@ -111,7 +112,7 @@ const calculateItemTotal = (item: OrderItemForm) => {
   const qty = Number.parseInt(item.quantity, 10) || 0;
   const price = Number.parseFloat(item.itemPrice) || 0;
   const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-  const discount = Number.parseFloat(item.discountAmount) || 0;
+  const discount = Number.parseFloat(item.discountAmount || '0') || 0;
   return Math.max(qty * price + tax - discount, 0);
 };
 
@@ -429,6 +430,33 @@ export function OrderForm({
         billToZipcode: undefined,
         billToContact: undefined,
       }));
+    }
+  };
+
+  const handleVerifyDiscount = async () => {
+    if (!formState.discountCode?.trim()) {
+      toast.error('Please enter a discount code.');
+      return;
+    }
+
+    try {
+      const discount = await getDiscountByCode(formState.discountCode.trim());
+      if (discount && discount.active) {
+        setFormState((prev) => ({
+          ...prev,
+          discountMode: discount.discountMode === 1 ? 'Percentage' : 'Amount',
+          discountValue: discount.discountValue?.toString() || '0',
+          maxDiscountValue: discount.maxDiscountValue?.toString() || '0',
+          discountStartDate: discount.startDate || '',
+          discountEndDate: discount.endDate || '',
+        }));
+        toast.success(`Discount code "${discount.discountCode}" applied!`);
+      } else {
+        toast.error('This discount code is inactive.');
+      }
+    } catch (error) {
+      console.error('Failed to verify discount code:', error);
+      toast.error('Invalid discount code.');
     }
   };
 
@@ -1025,14 +1053,15 @@ export function OrderForm({
               <OrderFormFields
                 formState={formState}
                 errors={errors}
-                orderStatusOptions={orderStatusSelectOptions}
-                paymentStatusOptions={paymentStatusSelectOptions}
-                userTypeOptions={userTypeSelectOptions}
-                shippingMethodOptions={shippingMethodSelectOptions}
-                discountTypeOptions={discountTypeSelectOptions}
-                discountModeOptions={discountModeSelectOptions}
-                notificationTypeOptions={notificationTypeSelectOptions}
+                orderStatusOptions={orderStatusSelectOptions as any}
+                paymentStatusOptions={paymentStatusSelectOptions as any}
+                userTypeOptions={userTypeSelectOptions as any}
+                shippingMethodOptions={shippingMethodSelectOptions as any}
+                discountTypeOptions={discountTypeSelectOptions as any}
+                discountModeOptions={discountModeSelectOptions as any}
+                notificationTypeOptions={notificationTypeSelectOptions as any}
                 onChange={handleChange}
+                onVerifyDiscount={handleVerifyDiscount}
               />
             </div>
 

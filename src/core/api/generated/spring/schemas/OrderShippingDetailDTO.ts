@@ -6,37 +6,17 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export interface OrderDetailDTO {
+export interface OrderShippingDetailDTO {
   id?: number;
   orderId?: number;
-  productId?: number;
-  variantId?: number;
-  /**
-   * @minLength 0
-   * @maxLength 200
-   */
-  productName?: string;
-  /**
-   * @minLength 0
-   * @maxLength 100
-   */
-  sku?: string;
-  /**
-   * @minLength 0
-   * @maxLength 500
-   */
-  variantAttributes?: string;
   /** @minimum 0 */
-  itemTotalAmount?: number;
-  quantity?: number;
-  /** @minimum 0 */
-  itemPrice?: number;
+  shippingAmount?: number;
+  shippingMethod?: number;
   /**
    * @minLength 0
    * @maxLength 50
    */
-  updatedBy?: string;
-  lastUpdated?: string;
+  shippingId?: string;
   /**
    * @minLength 0
    * @maxLength 50

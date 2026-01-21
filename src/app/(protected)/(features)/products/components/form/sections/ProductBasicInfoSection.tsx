@@ -404,7 +404,43 @@ export function ProductBasicInfoSection({
               </FormItem>
             )}
           />
-
+            {/* Sale Price */}
+            <FormField
+                control={form.control}
+                name="salePrice"
+                render={({ field }) => (
+                    <FormItem className="space-y-1">
+                        <FormLabel className="text-xs font-semibold text-slate-600">Sale Price</FormLabel>
+                        <FormControl>
+                            <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      ₹
+                    </span>
+                                <Input
+                                    {...field}
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={field.value || ''}
+                                    placeholder="0.00"
+                                    className={cn(
+                                        'h-9 pl-8',
+                                        errors.salePrice && 'border-rose-500 focus-visible:ring-rose-500'
+                                    )}
+                                    onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        form.trigger('salePrice');
+                                        form.trigger('discountedPrice');
+                                    }}
+                                />
+                            </div>
+                        </FormControl>
+                        {errors.salePrice && (
+                            <p className="text-xs text-rose-600">{String(errors.salePrice.message)}</p>
+                        )}
+                    </FormItem>
+                )}
+            />
           {/* Discounted Price */}
           <FormField
             control={form.control}
@@ -447,43 +483,7 @@ export function ProductBasicInfoSection({
             )}
           />
 
-          {/* Sale Price */}
-          <FormField
-            control={form.control}
-            name="salePrice"
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold text-slate-600">Sale Price</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      ₹
-                    </span>
-                    <Input
-                      {...field}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={field.value || ''}
-                      placeholder="0.00"
-                      className={cn(
-                        'h-9 pl-8',
-                        errors.salePrice && 'border-rose-500 focus-visible:ring-rose-500'
-                      )}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        form.trigger('salePrice');
-                        form.trigger('discountedPrice');
-                      }}
-                    />
-                  </div>
-                </FormControl>
-                {errors.salePrice && (
-                  <p className="text-xs text-rose-600">{String(errors.salePrice.message)}</p>
-                )}
-              </FormItem>
-            )}
-          />
+
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">

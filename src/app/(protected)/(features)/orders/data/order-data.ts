@@ -23,8 +23,8 @@ export const userTypeOptions = ['B2C', 'B2B', 'Guest'] as const;
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
-export const discountTypeOptions = ['Promo', 'Seasonal', 'Bundle', 'Voucher'] as const;
-export const discountModeOptions = ['Percentage', 'Amount'] as const;
+export const discountTypeOptions = ['Percentage', 'Amount'] as const;
+export const discountCategoryOptions = ['Promo', 'Voucher', 'Seasonal', 'Bundle'] as const;
 
 export const notificationTypeOptions = ['Email', 'SMS', 'Push'] as const;
 
@@ -33,7 +33,7 @@ export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNO
 export type UserType = (typeof userTypeOptions)[number] | typeof UNKNOWN_LABEL;
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
 export type DiscountType = (typeof discountTypeOptions)[number] | typeof UNKNOWN_LABEL;
-export type DiscountMode = (typeof discountModeOptions)[number] | typeof UNKNOWN_LABEL;
+export type DiscountCategory = (typeof discountCategoryOptions)[number] | typeof UNKNOWN_LABEL;
 export type NotificationType = (typeof notificationTypeOptions)[number] | typeof UNKNOWN_LABEL;
 
 export interface OrderDetailItem {
@@ -116,8 +116,8 @@ export interface OrderDiscountDetail {
   discountType?: DiscountType;
   discountTypeCode?: number;
   discountCode?: string;
-  discountMode?: DiscountMode;
-  discountModeCode?: number;
+  discountCategory?: DiscountCategory;
+  discountCategoryCode?: number;
   discountValue: number;
   maxDiscountValue?: number;
   startDate?: string;
@@ -197,11 +197,11 @@ export const getDiscountTypeLabel = (code?: number): DiscountType =>
 export const getDiscountTypeCode = (status?: DiscountType) =>
   getCodeFromLabel(discountTypeOptions, status);
 
-export const getDiscountModeLabel = (code?: number): DiscountMode =>
-  getLabelFromCode(discountModeOptions, code) as DiscountMode;
+export const getDiscountCategoryLabel = (label?: string): DiscountCategory =>
+  (label as DiscountCategory) || UNKNOWN_LABEL;
 
-export const getDiscountModeCode = (status?: DiscountMode) =>
-  getCodeFromLabel(discountModeOptions, status);
+export const getDiscountCategoryCode = (status?: DiscountCategory) =>
+  getCodeFromLabel(discountCategoryOptions, status);
 
 export const getNotificationTypeLabel = (code?: number): NotificationType =>
   getLabelFromCode(notificationTypeOptions, code) as NotificationType;
@@ -383,21 +383,14 @@ export const mapOrderDiscountDetail = (
   order?: OrderDTO
 ): OrderDiscountDetail => {
   const fallbackAmount = order?.discountAmount ?? 0;
-  const discountTypeCode =
-    discount?.discountType ?? (typeof order?.discountType === 'number' ? order.discountType : undefined);
-  const discountModeCode =
-    discount?.discountMode ?? (fallbackAmount ? getDiscountModeCode('Amount') : undefined);
-
   return {
     orderId: discount?.orderId ?? order?.id ?? 0,
     discountAmount: discount?.discountAmount ?? fallbackAmount ?? 0,
-    discountType:
-      typeof discountTypeCode === 'number' ? getDiscountTypeLabel(discountTypeCode) : undefined,
-    discountTypeCode,
+    discountType: (discount?.discountType as unknown as DiscountType) ?? undefined,
+    discountTypeCode: undefined,
     discountCode: discount?.discountCode ?? order?.discountCode ?? undefined,
-    discountMode:
-      typeof discountModeCode === 'number' ? getDiscountModeLabel(discountModeCode) : undefined,
-    discountModeCode,
+    discountCategory: (discount?.discountCategory as unknown as DiscountCategory) ?? undefined,
+    discountCategoryCode: undefined,
     discountValue: discount?.discountValue ?? (fallbackAmount || 0),
     maxDiscountValue: discount?.maxDiscountValue ?? undefined,
     startDate: discount?.startDate ?? undefined,

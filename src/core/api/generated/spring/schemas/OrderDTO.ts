@@ -12,13 +12,13 @@ export interface OrderDTO {
   orderStatus?: number;
   /** @minimum 0 */
   orderTotalAmount?: number;
-  /** @minimum 0 */
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
   orderTaxRate?: number;
-  customer?: CustomerDTO;
   /** @minimum 0 */
   orderBaseAmount?: number;
-  /** @minimum 0 */
-  discountAmount?: number;
   /** @minimum 0 */
   shippingAmount?: number;
   userType?: number;
@@ -35,25 +35,15 @@ export interface OrderDTO {
    */
   email?: string;
   paymentStatus?: number;
-  discountType?: number;
+  notificationType?: number;
+  customer?: CustomerDTO;
+  /** @minimum 0 */
+  discountAmount?: number;
   /**
    * @minLength 0
    * @maxLength 20
    */
   discountCode?: string;
-  busyFlag?: number;
-  /**
-   * @minLength 0
-   * @maxLength 50
-   */
-  busyVoucherId?: string;
-  notificationType?: number;
-  shippingMethod?: number;
-  /**
-   * @minLength 0
-   * @maxLength 50
-   */
-  shippingId?: string;
   updatedBy?: number;
   lastUpdated?: string;
   /**

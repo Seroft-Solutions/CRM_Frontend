@@ -60,3 +60,7 @@ export * from './endpoints/order-resource/order-resource.gen';
 export * from './endpoints/order-history-resource/order-history-resource.gen';
 export * from './endpoints/order-detail-resource/order-detail-resource.gen';
 export * from './endpoints/order-address-detail-resource/order-address-detail-resource.gen';
+export * from './endpoints/sundry-creditor-resource/sundry-creditor-resource.gen';
+export * from './endpoints/order-shipping-detail-resource/order-shipping-detail-resource.gen';
+export * from './endpoints/discount-resource/discount-resource.gen';
+export * from './endpoints/sundry-creditor-bulk-import-controller/sundry-creditor-bulk-import-controller.gen';

@@ -1,6 +1,7 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -34,6 +35,7 @@ type OrderFormFieldsProps = {
   discountModeOptions: (DiscountMode | 'Unknown')[];
   notificationTypeOptions: (NotificationType | 'Unknown')[];
   onChange: (key: keyof OrderFormState, value: string | boolean) => void;
+  onVerifyDiscount: () => void;
 };
 
 export function OrderFormFields({
@@ -47,6 +49,7 @@ export function OrderFormFields({
   discountModeOptions,
   notificationTypeOptions,
   onChange,
+  onVerifyDiscount,
 }: OrderFormFieldsProps) {
   const isPercentMode = formState.discountMode === 'Percentage';
   const discountValueLabel = isPercentMode ? 'Discount Percentage' : 'Discount Amount';
@@ -162,12 +165,23 @@ export function OrderFormFields({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Discount Code</Label>
-            <Input
-              placeholder="PROMO2024"
-              value={formState.discountCode}
-              onChange={(event) => onChange('discountCode', event.target.value)}
-              className="border-slate-300"
-            />
+            <div className="flex gap-2">
+              <Input
+                placeholder="PROMO2024"
+                value={formState.discountCode}
+                onChange={(event) => onChange('discountCode', event.target.value)}
+                className="border-slate-300"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-10 px-3 bg-slate-50 border-slate-300 hover:bg-slate-100"
+                onClick={onVerifyDiscount}
+              >
+                Verify
+              </Button>
+            </div>
             <FieldError message={errors.discountCode} />
           </div>
 
