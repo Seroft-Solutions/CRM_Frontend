@@ -41,9 +41,7 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     const parts = [];
 
     if (value.city?.district?.state?.name) parts.push(value.city.district.state.name);
-    if (value.city?.district?.name) parts.push(value.city.district.name);
     if (value.city?.name) parts.push(value.city.name);
-    if (value.name) parts.push(value.name);
     if (value.pincode) parts.push(value.pincode);
 
     return parts.length > 0 ? (

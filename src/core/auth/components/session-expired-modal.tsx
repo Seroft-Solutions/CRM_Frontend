@@ -6,7 +6,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import {
   Dialog,
   DialogContent,
@@ -166,8 +166,10 @@ export function SessionExpiredModal({
   const handleContinue = async () => {
     setIsReauthorizing(true);
     try {
+      // Only clear local storage, don't call signOut (which clears CSRF token)
       clearAuthStorage();
 
+      // Directly sign in - NextAuth will handle session replacement
       await signIn('keycloak', {
         callbackUrl: window.location.href,
         redirect: true,

@@ -20,8 +20,7 @@ export function CustomerGeographicStep({
   return (
     <div className="space-y-6">
       <div className="border-b pb-2 mb-4">
-        <h3 className="text-sm font-medium text-gray-900">Location Information</h3>
-        <p className="text-xs text-gray-500 mt-1">Search and select customer location</p>
+        <h3 className="text-sm font-medium text-gray-900">Customer Address</h3>
       </div>
 
       <FormField

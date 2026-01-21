@@ -214,7 +214,7 @@ export function ChannelTypeSearchAndFilters({
 
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      commissionRate
+                      Commission Rate in %
                     </label>
                     <Input
                       placeholder="Filter by commissionRate..."

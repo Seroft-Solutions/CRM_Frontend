@@ -129,29 +129,7 @@ export const springServiceMutator = async <T>(
         tokenCache.invalidate();
 
         if (typeof window !== 'undefined' && !error.config?._retry) {
-          try {
-            const response = await fetch('/api/auth/session', {
-              method: 'GET',
-              credentials: 'include',
-            });
-
-            if (response.ok) {
-              const session = await response.json();
-              if (session?.access_token && !session.error) {
-                tokenCache.invalidate();
-
-                error.config._retry = true;
-                error.config.headers = error.config.headers || {};
-                error.config.headers.Authorization = `Bearer ${session.access_token}`;
-                return instance.request(error.config);
-              } else if (session?.error) {
-                console.error('Session has error:', session.error);
-              }
-            }
-          } catch (refreshError) {
-            console.error('Auto refresh failed:', refreshError);
-          }
-
+          // Don't try to refresh - just emit event and let SessionManager handle it
           sessionEventEmitter.emit('session-expired', {
             message: 'Your session has expired',
             statusCode: 401,

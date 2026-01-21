@@ -179,8 +179,17 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
+    id: 'completeAddress',
+    label: 'Address',
+    accessor: 'completeAddress',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
     id: 'area',
-    label: 'Location',
+    label: 'City and Zipcode',
     accessor: 'area',
     type: 'relationship',
     visible: true,
@@ -461,10 +470,10 @@ export function CustomerTable() {
       ...getStatusFilter(),
     };
 
-    const relationshipMappings = {
+    const relationshipMappings: Record<string, { apiParam: string; options: any[]; displayField: string }> = {
       'area.name': {
         apiParam: 'areaId.equals',
-        options: areaOptions,
+        options: areaOptions as any[],
         displayField: 'name',
       },
     };
@@ -558,36 +567,36 @@ export function CustomerTable() {
 
   const { data, isLoading, refetch } = searchTerm
     ? useSearchCustomers(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
+      {
+        query: searchTerm,
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+      {
+        query: {
+          enabled: true,
+          staleTime: 0,
+          refetchOnWindowFocus: true,
         },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
+      }
+    )
     : useGetAllCustomers(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
+      {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+      {
+        query: {
+          enabled: true,
+          staleTime: 0,
+          refetchOnWindowFocus: true,
         },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+      }
+    );
 
   const { data: countData } = useCountCustomers(filterParams, {
     query: {
@@ -1474,7 +1483,7 @@ export function CustomerTable() {
                 getSortIcon={getSortIcon}
                 filters={filters}
                 onFilterChange={handleFilterChange}
-                isAllSelected={isAllSelected}
+                isAllSelected={isAllSelected || false}
                 isIndeterminate={isIndeterminate}
                 onSelectAll={handleSelectAll}
                 visibleColumns={visibleColumns}
@@ -1497,7 +1506,7 @@ export function CustomerTable() {
                       statusOptions={statusOptions}
                       isSelected={selectedRows.has(customer.id || 0)}
                       onSelect={handleSelectRow}
-                      relationshipConfigs={relationshipConfigs}
+                      relationshipConfigs={relationshipConfigs as any}
                       onRelationshipUpdate={handleRelationshipUpdate}
                       updatingCells={updatingCells}
                       visibleColumns={visibleColumns}
@@ -1641,7 +1650,7 @@ export function CustomerTable() {
           open={showBulkRelationshipDialog}
           onOpenChange={setShowBulkRelationshipDialog}
           selectedEntityIds={Array.from(selectedRows)}
-          relationshipConfigs={relationshipConfigs}
+          relationshipConfigs={relationshipConfigs as any}
           onBulkUpdate={handleBulkRelationshipUpdate}
         />
       </div>
