@@ -67,6 +67,15 @@ export const productFormSchemaBase = z.object(productFormSchemaFields);
 export const productFormSchema = productFormSchemaBase.superRefine((data, ctx) => {
   const discountedPrice = data.discountedPrice ? Number(data.discountedPrice) : null;
   const salePrice = data.salePrice ? Number(data.salePrice) : null;
+  const basePrice = data.basePrice ? Number(data.basePrice) : null;
+
+  if (discountedPrice !== null && basePrice !== null && discountedPrice < basePrice) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Discounted price must be greater than or equal to base price',
+      path: ['discountedPrice'],
+    });
+  }
 
   if (discountedPrice !== null && salePrice !== null && salePrice <= discountedPrice) {
     ctx.addIssue({
