@@ -150,6 +150,11 @@ export function RelationshipRenderer({
               }
             }}
             displayField={relConfig.displayField}
+            getOptionLabel={(option) => {
+              const name = option?.[relConfig.displayField] ?? '';
+              const barcode = option?.barcodeText ?? '';
+              return barcode ? `${name} (${barcode})` : name;
+            }}
             placeholder={relConfig.ui.placeholder}
             multiple={relConfig.multiple}
             useGetAllHook={useGetAllProducts}

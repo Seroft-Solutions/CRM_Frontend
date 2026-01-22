@@ -25,6 +25,7 @@ interface PaginatedRelationshipComboboxProps {
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
+  getOptionLabel?: (option: any) => string;
   useGetAllHook: (params: any, options?: any) => any;
   useSearchHook?: (params: any, options?: any) => any;
   useCountHook?: (params: any, options?: any) => any;
@@ -52,6 +53,7 @@ export function PaginatedRelationshipCombobox({
   multiple = false,
   disabled = false,
   className,
+  getOptionLabel,
   useGetAllHook,
   useSearchHook,
   useCountHook,
@@ -218,7 +220,10 @@ export function PaginatedRelationshipCombobox({
         return placeholder;
       }
       const selectedOption = allLoadedData.find((option: any) => option.id === value);
-      return selectedOption ? selectedOption[displayField] : placeholder;
+      if (!selectedOption) {
+        return placeholder;
+      }
+      return getOptionLabel ? getOptionLabel(selectedOption) : selectedOption[displayField];
     }
   };
 
@@ -394,7 +399,13 @@ export function PaginatedRelationshipCombobox({
                   {isQueryEnabled && allLoadedData.length > 0 && (
                     <CommandGroup>
                       {allLoadedData.map((option: any, index: number) => {
-                        if (!option || !option.id || !option[displayField]) {
+                        const optionLabel = option
+                          ? getOptionLabel
+                            ? getOptionLabel(option)
+                            : option[displayField]
+                          : '';
+
+                        if (!option || !option.id || !optionLabel) {
                           return null;
                         }
 
@@ -423,7 +434,7 @@ export function PaginatedRelationshipCombobox({
                                 isSelected ? 'opacity-100' : 'opacity-0'
                               )}
                             />
-                            {option[displayField]}
+                            {optionLabel}
                           </CommandItem>
                         );
                       })}
@@ -475,7 +486,7 @@ export function PaginatedRelationshipCombobox({
         <div className="mt-2 flex flex-wrap gap-1">
           {getSelectedOptions().map((option: any) => (
             <Badge key={option.id} variant="secondary" className="gap-1">
-              {option[displayField]}
+              {getOptionLabel ? getOptionLabel(option) : option[displayField]}
               <Button
                 variant="ghost"
                 size="sm"
