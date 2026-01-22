@@ -8,8 +8,6 @@ export interface IDiscount {
     startDate?: string;
     endDate?: string;
     maxDiscountValue?: number;
-    description?: string;
-    active?: boolean;
     createdBy?: string;
     createdDate?: string;
     lastModifiedBy?: string;

@@ -22,8 +22,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateDiscountMutation, useUpdateDiscountMutation, useDiscountQuery } from '../actions/discount-hooks';
 import { IDiscount } from '../types/discount';
@@ -33,14 +31,12 @@ import Link from 'next/link';
 
 const discountFormSchema = z.object({
     discountCode: z.string().min(2, 'Code must be at least 2 characters').max(20),
-    description: z.string().max(255).optional(),
     discountType: z.enum(['PERCENTAGE', 'AMOUNT']),
-    discountCategory: z.enum(['PROMO', 'VOUCHER', 'SEASONAL', 'BUNDLE']),
+    discountCategory: z.enum(['PROMO', 'SEASONAL', 'BUNDLE', 'VOUCHER']),
     discountValue: z.number().min(0),
     maxDiscountValue: z.number().min(0),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
-    active: z.boolean(),
 });
 type DiscountFormValues = z.infer<typeof discountFormSchema>;
 
@@ -58,12 +54,12 @@ export function DiscountForm({ id }: DiscountFormProps) {
         resolver: zodResolver(discountFormSchema) as any,
         defaultValues: {
             discountCode: '',
-            description: '',
             discountType: 'PERCENTAGE',
             discountCategory: 'PROMO',
             discountValue: 0,
             maxDiscountValue: 0,
-            active: true,
+            startDate: '',
+            endDate: '',
         },
     });
 
@@ -71,26 +67,32 @@ export function DiscountForm({ id }: DiscountFormProps) {
         if (existingDiscount) {
             form.reset({
                 discountCode: existingDiscount.discountCode || '',
-                description: existingDiscount.description || '',
                 discountType: (existingDiscount.discountType as any) || 'PERCENTAGE',
                 discountCategory: (existingDiscount.discountCategory as any) || 'PROMO',
                 discountValue: existingDiscount.discountValue || 0,
                 maxDiscountValue: existingDiscount.maxDiscountValue || 0,
-                active: existingDiscount.active ?? true,
+                startDate: existingDiscount.startDate || '',
+                endDate: existingDiscount.endDate || '',
             });
         }
     }, [existingDiscount, form]);
 
     function onSubmit(values: DiscountFormValues) {
+        const payload: IDiscount = {
+            ...values,
+            startDate: values.startDate || undefined,
+            endDate: values.endDate || undefined,
+        };
+
         if (id) {
             updateDiscount(
-                { id, discount: values as IDiscount },
+                { id, discount: payload },
                 {
                     onSuccess: () => router.push('/discounts'),
                 }
             );
         } else {
-            createDiscount(values as IDiscount, {
+            createDiscount(payload, {
                 onSuccess: () => router.push('/discounts'),
             });
         }
@@ -132,20 +134,6 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                             <Input placeholder="E.g. SUMMER2024" {...field} />
                                         </FormControl>
                                         <FormDescription>The code users will enter to apply the discount.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <TypedFormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }: any) => (
-                                    <FormItem>
-                                        <FormLabel>Description</FormLabel>
-                                        <FormControl>
-                                            <Textarea placeholder="Describe the discount..." {...field} />
-                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -194,9 +182,9 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                                 </FormControl>
                                                 <SelectContent>
                                                     <SelectItem value="PROMO">Promo</SelectItem>
-                                                    <SelectItem value="VOUCHER">Voucher</SelectItem>
                                                     <SelectItem value="SEASONAL">Seasonal</SelectItem>
                                                     <SelectItem value="BUNDLE">Bundle</SelectItem>
+                                                    <SelectItem value="VOUCHER">Voucher</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -278,22 +266,6 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                     )}
                                 />
                             </div>
-
-                            <TypedFormField
-                                control={form.control}
-                                name="active"
-                                render={({ field }: any) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>Active Status</FormLabel>
-                                            <FormDescription>Enable or disable this discount code.</FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
                         </CardContent>
                         <CardFooter className="flex justify-end gap-2 border-t pt-6">
                             <Button type="button" variant="outline" asChild>

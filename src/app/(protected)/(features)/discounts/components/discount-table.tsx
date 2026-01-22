@@ -24,8 +24,6 @@ import {
     Pencil,
     Trash2,
     Search,
-    CheckCircle2,
-    XCircle,
 } from 'lucide-react';
 import { useDiscountsQuery, useDeleteDiscountMutation } from '../actions/discount-hooks';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +64,6 @@ export function DiscountTable() {
                             <TableHead>Category</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Value</TableHead>
-                            <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -91,19 +88,6 @@ export function DiscountTable() {
                                         {discount.discountType === 'AMOUNT'
                                             ? `₹${discount.discountValue?.toLocaleString()}`
                                             : `${discount.discountValue}%`}
-                                    </TableCell>
-                                    <TableCell>
-                                        {discount.active ? (
-                                            <Badge variant="secondary" className="gap-1 px-2 py-0.5 font-medium bg-green-100 text-green-800 border-green-200">
-                                                <CheckCircle2 className="h-3 w-3" />
-                                                Active
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="destructive" className="gap-1 px-2 py-0.5 font-medium">
-                                                <XCircle className="h-3 w-3" />
-                                                Inactive
-                                            </Badge>
-                                        )}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>
@@ -139,7 +123,7 @@ export function DiscountTable() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
+                                <TableCell colSpan={5} className="h-24 text-center">
                                     No discounts found.
                                 </TableCell>
                             </TableRow>
