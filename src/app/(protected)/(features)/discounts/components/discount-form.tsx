@@ -22,11 +22,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateDiscountMutation, useUpdateDiscountMutation, useDiscountQuery } from '../actions/discount-hooks';
 import { IDiscount } from '../types/discount';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const discountFormSchema = z.object({
@@ -80,6 +79,8 @@ export function DiscountForm({ id }: DiscountFormProps) {
     function onSubmit(values: DiscountFormValues) {
         const payload: IDiscount = {
             ...values,
+            ...(id ? { id } : {}),
+            status: existingDiscount?.status || 'ACTIVE',
             startDate: values.startDate || undefined,
             endDate: values.endDate || undefined,
         };
@@ -107,182 +108,169 @@ export function DiscountForm({ id }: DiscountFormProps) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-4">
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild>
-                    <Link href="/discounts" className="flex items-center gap-2">
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to Discounts
-                    </Link>
-                </Button>
-            </div>
+        <div className="space-y-6">
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6">
+                    <div className="space-y-4">
+                        <TypedFormField
+                            control={form.control}
+                            name="discountCode"
+                            render={({ field }: any) => (
+                                <FormItem>
+                                    <FormLabel>Discount Code</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="E.g. SUMMER2024" {...field} />
+                                    </FormControl>
+                                    <FormDescription>The code users will enter to apply the discount.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{id ? 'Edit Discount' : 'Create New Discount'}</CardTitle>
-                </CardHeader>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit as any)}>
-                        <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <TypedFormField
                                 control={form.control}
-                                name="discountCode"
+                                name="discountType"
                                 render={({ field }: any) => (
                                     <FormItem>
-                                        <FormLabel>Discount Code</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="E.g. SUMMER2024" {...field} />
-                                        </FormControl>
-                                        <FormDescription>The code users will enter to apply the discount.</FormDescription>
+                                        <FormLabel>Discount Type</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select type" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
+                                                <SelectItem value="AMOUNT">Fixed Amount (₹)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <TypedFormField
-                                    control={form.control}
-                                    name="discountType"
-                                    render={({ field }: any) => (
-                                        <FormItem>
-                                            <FormLabel>Discount Type</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select type" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="PERCENTAGE">Percentage (%)</SelectItem>
-                                                    <SelectItem value="AMOUNT">Fixed Amount (₹)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <TypedFormField
-                                    control={form.control}
-                                    name="discountCategory"
-                                    render={({ field }: any) => (
-                                        <FormItem>
-                                            <FormLabel>Discount Category</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select category" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="PROMO">Promo</SelectItem>
-                                                    <SelectItem value="SEASONAL">Seasonal</SelectItem>
-                                                    <SelectItem value="BUNDLE">Bundle</SelectItem>
-                                                    <SelectItem value="VOUCHER">Voucher</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <TypedFormField
-                                    control={form.control}
-                                    name="discountValue"
-                                    render={({ field }: any) => (
-                                        <FormItem>
-                                            <FormLabel>Discount Value</FormLabel>
+                            <TypedFormField
+                                control={form.control}
+                                name="discountCategory"
+                                render={({ field }: any) => (
+                                    <FormItem>
+                                        <FormLabel>Discount Category</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                        >
                                             <FormControl>
-                                                <div className="relative">
-                                                    <Input
-                                                        type="number"
-                                                        {...field}
-                                                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                                    />
-                                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
-                                                        {form.watch('discountType') === 'PERCENTAGE' ? '%' : '₹'}
-                                                    </div>
-                                                </div>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select category" />
+                                                </SelectTrigger>
                                             </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                            <SelectContent>
+                                                <SelectItem value="PROMO">Promo</SelectItem>
+                                                <SelectItem value="SEASONAL">Seasonal</SelectItem>
+                                                <SelectItem value="BUNDLE">Bundle</SelectItem>
+                                                <SelectItem value="VOUCHER">Voucher</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
-                                <TypedFormField
-                                    control={form.control}
-                                    name="maxDiscountValue"
-                                    render={({ field }: any) => (
-                                        <FormItem>
-                                            <FormLabel>Max Discount Value (₹)</FormLabel>
-                                            <FormControl>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <TypedFormField
+                                control={form.control}
+                                name="discountValue"
+                                render={({ field }: any) => (
+                                    <FormItem>
+                                        <FormLabel>Discount Value</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
                                                 <Input
                                                     type="number"
                                                     {...field}
                                                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                                    placeholder="E.g. 500"
                                                 />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="startDate"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Start Date</FormLabel>
-                                            <FormControl>
-                                                <Input type="date" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="endDate"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>End Date</FormLabel>
-                                            <FormControl>
-                                                <Input type="date" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-end gap-2 border-t pt-6">
-                            <Button type="button" variant="outline" asChild>
-                                <Link href="/discounts">Cancel</Link>
-                            </Button>
-                            <Button type="submit" disabled={isCreating || isUpdating} className="gap-2">
-                                {isCreating || isUpdating ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Save className="h-4 w-4" />
+                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
+                                                    {form.watch('discountType') === 'PERCENTAGE' ? '%' : '₹'}
+                                                </div>
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
-                                {id ? 'Update Discount' : 'Create Discount'}
-                            </Button>
-                        </CardFooter>
-                    </form>
-                </Form>
-            </Card>
+                            />
+
+                            <TypedFormField
+                                control={form.control}
+                                name="maxDiscountValue"
+                                render={({ field }: any) => (
+                                    <FormItem>
+                                        <FormLabel>Max Discount Value (₹)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                {...field}
+                                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                                placeholder="E.g. 500"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <FormField
+                                control={form.control}
+                                name="startDate"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Start Date</FormLabel>
+                                        <FormControl>
+                                            <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="endDate"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>End Date</FormLabel>
+                                        <FormControl>
+                                            <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 border-t pt-6">
+                        <Button type="button" variant="outline" asChild>
+                            <Link href="/discounts">Cancel</Link>
+                        </Button>
+                        <Button type="submit" disabled={isCreating || isUpdating} className="gap-2">
+                            {isCreating || isUpdating ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Save className="h-4 w-4" />
+                            )}
+                            {id ? 'Update Discount' : 'Create Discount'}
+                        </Button>
+                    </div>
+                </form>
+            </Form>
         </div>
     );
 }

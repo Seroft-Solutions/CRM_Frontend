@@ -81,6 +81,12 @@ export const sidebarItems: SidebarItem[] = [
         path: '/orders',
       },
       {
+        key: 'discount',
+        label: 'Discount',
+        path: '/discounts',
+        requiredPermission: 'discount:sidebar',
+      },
+      {
         key: 'orderHistory',
         label: 'Order History',
         path: '/orders/history',
@@ -176,12 +182,7 @@ export const sidebarItems: SidebarItem[] = [
         path: '/channel-types',
         requiredPermission: 'channelType:sidebar',
       },
-      {
-        key: 'discount',
-        label: 'Discount',
-        path: '/discounts',
-        requiredPermission: 'discount:sidebar',
-      },
+
       { key: 'areas', label: 'Areas Master', path: '/areas', requiredPermission: 'area:sidebar' },
     ],
   },
