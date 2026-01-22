@@ -20,6 +20,17 @@ export const productCatalogFormConfig: FormConfig = {
       },
     },
     {
+      id: 'variant-images',
+      title: 'Variant Images',
+      description: 'Select a catalog image from the chosen variants',
+      fields: ['image'],
+      relationships: [],
+      validation: {
+        mode: 'onBlur',
+        validateOnNext: true,
+      },
+    },
+    {
       id: 'review',
       title: 'Review',
       description: 'Confirm your details',
@@ -68,6 +79,18 @@ export const productCatalogFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 100,
+      },
+      ui: {},
+    },
+    {
+      name: 'image',
+      type: 'text',
+      label: 'Catalog Image',
+      placeholder: 'Select a variant image',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 500,
       },
       ui: {},
     },

@@ -17,7 +17,12 @@ import { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
 
-import { DraftVariantRow, ExistingVariantRow, VariantSelection } from './types';
+import {
+  DraftVariantRow,
+  ExistingVariantRow,
+  VariantSelection,
+  VariantTableSelection,
+} from './types';
 import { VARIANT_IMAGE_ORDER } from '@/features/product-variant-images/utils/variant-image-slots';
 import { NoVariantConfigPlaceholder } from './NoVariantConfigPlaceholder';
 import { VariantGenerator } from './VariantGenerator';
@@ -31,6 +36,7 @@ import { VariantsTable } from './VariantsTable';
  * @property {number} [variantConfigId] - The ID of the system configuration for variants.
  * @property {UseFormReturn<Record<string, unknown>>} [form] - React Hook Form instance for create mode.
  * @property {boolean} [isViewMode] - Whether the component is in view-only mode.
+ * @property {VariantTableSelection} [selection] - Optional selection controls for read-only tables.
  */
 interface ProductVariantManagerProps {
   productId?: number;
@@ -38,6 +44,7 @@ interface ProductVariantManagerProps {
   variantConfigId?: number;
   form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
+  selection?: VariantTableSelection;
 }
 
 /**
@@ -54,6 +61,7 @@ export function ProductVariantManager({
   variantConfigId,
   form,
   isViewMode = false,
+  selection,
 }: ProductVariantManagerProps) {
   const queryClient = useQueryClient();
 
@@ -906,6 +914,7 @@ export function ProductVariantManager({
         onDeleteRow={handleDeleteRow}
         isLoading={isLoadingVariants || isLoadingSelections}
         isViewMode={isViewMode}
+        selection={selection}
       />
     </div>
   );

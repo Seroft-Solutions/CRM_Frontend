@@ -72,3 +72,10 @@ export type CombinedVariantRow =
   | { kind: 'draft'; rowKey: string; row: DraftVariantRow }
   | { kind: 'duplicate'; rowKey: string; row: DraftVariantRow }
   | { kind: 'existing'; rowKey: string; row: ExistingVariantRow };
+
+export interface VariantTableSelection {
+  isRowSelected: (row: CombinedVariantRow) => boolean;
+  onRowToggle: (row: CombinedVariantRow, checked: boolean) => void;
+  isAllSelected?: boolean;
+  onToggleAll?: (checked: boolean) => void;
+}

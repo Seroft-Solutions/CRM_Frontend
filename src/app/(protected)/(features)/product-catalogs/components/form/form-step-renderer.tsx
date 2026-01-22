@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './product-catalog-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
+import { VariantImagesStep } from './variant-images-step';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 
@@ -317,26 +318,37 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
     const relConfig = config.relationships.find((r) => r.name === relationshipName);
     if (!relConfig) return null;
 
+    const wrapperClassName = relConfig.name === 'variants' ? 'col-span-full' : undefined;
+
     return (
-      <FormField
-        key={relConfig.name}
-        control={form.control}
-        name={relConfig.name}
-        render={({ field }) => (
-          <RelationshipRenderer
-            relConfig={relConfig}
-            field={field}
-            form={form}
-            actions={actions}
-            config={config}
-          />
-        )}
-      />
+      <div key={relConfig.name} className={wrapperClassName}>
+        <FormField
+          control={form.control}
+          name={relConfig.name}
+          render={({ field }) => (
+            <RelationshipRenderer
+              relConfig={relConfig}
+              field={field}
+              form={form}
+              actions={actions}
+              config={config}
+            />
+          )}
+        />
+      </div>
     );
   };
 
   const renderCurrentStep = () => {
     if (!currentStepConfig) return null;
+
+    if (currentStepConfig.id === 'variant-images') {
+      return (
+        <div className="space-y-6">
+          <VariantImagesStep />
+        </div>
+      );
+    }
 
     if (currentStepConfig.id === 'review') {
       return (
@@ -368,8 +380,27 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     const value = form.getValues(fieldName);
 
                     const displayValue = (() => {
-                      if (!value)
+                      if (fieldConfig.name === 'image') {
+                        if (!value) {
+                          return <span className="text-muted-foreground italic">Not set</span>;
+                        }
+
+                        return (
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={String(value)}
+                              alt="Catalog image"
+                              className="h-10 w-10 rounded border object-cover"
+                              loading="lazy"
+                            />
+                            <span className="text-xs text-muted-foreground">Selected image</span>
+                          </div>
+                        );
+                      }
+
+                      if (!value) {
                         return <span className="text-muted-foreground italic">Not set</span>;
+                      }
 
                       if (fieldConfig.type === 'date') {
                         try {

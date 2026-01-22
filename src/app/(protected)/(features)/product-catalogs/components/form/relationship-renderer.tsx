@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useWatch } from 'react-hook-form';
 import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
 import { PaginatedRelationshipCombobox } from './paginated-relationship-combobox';
 import {
   useCountProducts,
   useGetAllProducts,
+  useGetProduct,
   useSearchProducts,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   useGetAllProductVariants,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { ProductVariantManagerWrapper } from '@/app/(protected)/(features)/products/components/variants/ProductVariantManagerWrapper';
 
 import type { RelationshipConfig } from './form-types';
 
@@ -31,15 +32,25 @@ export function RelationshipRenderer({
   actions,
   config,
 }: RelationshipRendererProps) {
+  const isVariantsField = relConfig.name === 'variants';
   const productId = useWatch({ control: form.control, name: 'product' });
   const previousProductId = useRef<number | undefined>();
+  const autoSelectedProductId = useRef<number | null>(null);
 
   useEffect(() => {
     if (previousProductId.current !== undefined && previousProductId.current !== productId) {
       form.setValue('variants', []);
+      form.setValue('image', '');
+      autoSelectedProductId.current = null;
     }
     previousProductId.current = productId;
   }, [productId, form]);
+
+  const { data: productData } = useGetProduct(productId ?? 0, {
+    query: {
+      enabled: !!productId,
+    },
+  });
 
   const { data: variantsData, isLoading: isLoadingVariants } = useGetAllProductVariants(
     productId
@@ -67,10 +78,13 @@ export function RelationshipRenderer({
           : [];
   }, [variantsData]);
 
-  const selectedVariantIds = Array.isArray(field.value) ? field.value : [];
+  const selectedVariantIds = isVariantsField && Array.isArray(field.value) ? field.value : [];
   const allSelected = variants.length > 0 && selectedVariantIds.length === variants.length;
 
   const handleVariantToggle = (variantId: number, checked: boolean) => {
+    if (!isVariantsField) {
+      return;
+    }
     const updated = checked
       ? [...selectedVariantIds, variantId]
       : selectedVariantIds.filter((id: number) => id !== variantId);
@@ -78,6 +92,9 @@ export function RelationshipRenderer({
   };
 
   const handleSelectAll = (checked: boolean) => {
+    if (!isVariantsField) {
+      return;
+    }
     if (!checked) {
       field.onChange([]);
       return;
@@ -87,6 +104,33 @@ export function RelationshipRenderer({
       .filter((id: number | undefined) => typeof id === 'number');
     field.onChange(variantIds);
   };
+
+  useEffect(() => {
+    if (!isVariantsField) {
+      return;
+    }
+
+    if (!productId) {
+      autoSelectedProductId.current = null;
+      return;
+    }
+
+    if (autoSelectedProductId.current === productId) {
+      return;
+    }
+
+    if (variants.length === 0) {
+      return;
+    }
+
+    if (selectedVariantIds.length > 0) {
+      autoSelectedProductId.current = productId;
+      return;
+    }
+
+    handleSelectAll(true);
+    autoSelectedProductId.current = productId;
+  }, [productId, variants, selectedVariantIds]);
 
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
@@ -146,30 +190,39 @@ export function RelationshipRenderer({
           );
         }
 
-        if (variants.length === 0) {
-          return (
-            <div className="text-sm text-muted-foreground border border-dashed rounded-md p-3">
-              No variants available for the selected product.
-            </div>
-          );
-        }
-
         return (
-          <div className="space-y-3">
-            <label className="flex items-center gap-2 text-sm font-medium">
-              <Checkbox checked={allSelected} onCheckedChange={(value) => handleSelectAll(!!value)} />
-              Select all variants
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {variants.map((variant: any) => (
-                <label key={variant.id} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={selectedVariantIds.includes(variant.id)}
-                    onCheckedChange={(value) => handleVariantToggle(variant.id, !!value)}
-                  />
-                  <span>{variant.sku || `Variant ${variant.id}`}</span>
-                </label>
-              ))}
+          <div className="space-y-4">
+            {variants.length === 0 ? (
+              <div className="text-sm text-muted-foreground border border-dashed rounded-md p-3">
+                No variants available for the selected product.
+              </div>
+            ) : null}
+
+            <div className="pt-2">
+              {productData?.variantConfig?.id ? (
+                <ProductVariantManagerWrapper
+                  productId={productId}
+                  productName={productData?.name || 'Product'}
+                  variantConfigId={productData?.variantConfig?.id}
+                  isViewMode={true}
+                  selection={{
+                    isRowSelected: (item) => {
+                      if (item.kind !== 'existing') return false;
+                      return selectedVariantIds.includes(item.row.id);
+                    },
+                    onRowToggle: (item, checked) => {
+                      if (item.kind !== 'existing') return;
+                      handleVariantToggle(item.row.id, checked);
+                    },
+                    isAllSelected: allSelected,
+                    onToggleAll: handleSelectAll,
+                  }}
+                />
+              ) : (
+                <div className="text-sm text-muted-foreground border border-dashed rounded-md p-3">
+                  Variant table is unavailable for this product.
+                </div>
+              )}
             </div>
           </div>
         );

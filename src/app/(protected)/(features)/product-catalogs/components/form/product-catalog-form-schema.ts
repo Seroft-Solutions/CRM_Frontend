@@ -20,6 +20,10 @@ export const productCatalogFormSchemaFields = {
     .string()
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
+  image: z
+    .string()
+    .max(500, { message: 'Please enter no more than 500 characters' })
+    .optional(),
   product: z.number({ message: 'Please select product from the dropdown' }),
   variants: z.array(z.number()).optional(),
 };
@@ -45,6 +49,10 @@ export const productCatalogFieldSchemas = {
     .string()
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
+  image: z
+    .string()
+    .max(500, { message: 'Please enter no more than 500 characters' })
+    .optional(),
   product: z.number({ message: 'Please select product from the dropdown' }),
   variants: z.array(z.number()).optional(),
 };
@@ -56,6 +64,9 @@ export const productCatalogStepSchemas = {
     description: productCatalogFieldSchemas.description,
     product: productCatalogFieldSchemas.product,
     variants: productCatalogFieldSchemas.variants,
+  }),
+  'variant-images': z.object({
+    image: productCatalogFieldSchemas.image,
   }),
   review: productCatalogFormSchema,
 };

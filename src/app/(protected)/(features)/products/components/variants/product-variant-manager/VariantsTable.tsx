@@ -1,7 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
-import { CombinedVariantRow, DraftVariantRow, ExistingVariantRow } from './types';
+import {
+  CombinedVariantRow,
+  DraftVariantRow,
+  ExistingVariantRow,
+  VariantTableSelection,
+} from './types';
 import { VariantsTableHeader } from './VariantsTableHeader';
 import { VariantTableRow } from './VariantTableRow';
 
@@ -26,6 +31,7 @@ interface VariantsTableProps {
   onDeleteRow: (row: ExistingVariantRow) => void;
   isLoading?: boolean;
   isViewMode?: boolean;
+  selection?: VariantTableSelection;
 }
 
 /**
@@ -50,6 +56,7 @@ export function VariantsTable({
   onDeleteRow,
   isLoading,
   isViewMode = false,
+  selection,
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
@@ -71,7 +78,8 @@ export function VariantsTable({
     );
   }
 
-  const totalColumnCount = visibleEnumAttributes.length + (isViewMode ? 6 : 7);
+  const totalColumnCount =
+    visibleEnumAttributes.length + (isViewMode ? 6 : 7) + (selection ? 1 : 0);
 
   return (
     <div className="rounded-lg border bg-card">
@@ -97,6 +105,7 @@ export function VariantsTable({
           <VariantsTableHeader
             visibleEnumAttributes={visibleEnumAttributes}
             isViewMode={isViewMode}
+            selection={selection}
           />
           <TableBody>
             {isLoading ? (
@@ -123,6 +132,7 @@ export function VariantsTable({
                   onCancelEdit={onCancelEdit}
                   onDeleteRow={onDeleteRow}
                   isViewMode={isViewMode}
+                  selection={selection}
                 />
               ))
             ) : (

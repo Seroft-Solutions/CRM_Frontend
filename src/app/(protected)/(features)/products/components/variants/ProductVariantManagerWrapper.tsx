@@ -2,6 +2,7 @@
 
 import { ProductVariantManager } from './ProductVariantManager';
 import { UseFormReturn } from 'react-hook-form';
+import { VariantTableSelection } from './product-variant-manager/types';
 
 interface ProductVariantManagerWrapperProps {
   productId?: number;
@@ -10,6 +11,7 @@ interface ProductVariantManagerWrapperProps {
   variantConfigId?: number;
   form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
+  selection?: VariantTableSelection;
 }
 
 export function ProductVariantManagerWrapper({
@@ -18,6 +20,7 @@ export function ProductVariantManagerWrapper({
   variantConfigId: providedVariantConfigId,
   form,
   isViewMode = false,
+  selection,
 }: ProductVariantManagerWrapperProps) {
   const productName = providedProductName ?? 'Product';
   const variantConfigId = providedVariantConfigId;
@@ -33,6 +36,7 @@ export function ProductVariantManagerWrapper({
       variantConfigId={variantConfigId}
       form={form}
       isViewMode={isViewMode}
+      selection={selection}
     />
   );
 }

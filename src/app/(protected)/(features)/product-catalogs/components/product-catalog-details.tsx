@@ -122,6 +122,19 @@ export function ProductCatalogDetails({ id }: ProductCatalogDetailsProps) {
   };
 
   const renderFieldValue = (fieldConfig: any, value: any) => {
+    if (fieldConfig.name === 'image') {
+      return value ? (
+        <img
+          src={String(value)}
+          alt="Catalog image"
+          className="h-16 w-16 rounded border object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <span className="text-muted-foreground italic">Not set</span>
+      );
+    }
+
     if (fieldConfig.type === 'boolean') {
       return value ? 'Yes' : 'No';
     }

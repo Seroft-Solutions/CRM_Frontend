@@ -1,5 +1,7 @@
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
+import { VariantTableSelection } from './types';
 
 /**
  * @interface VariantsTableHeaderProps
@@ -10,6 +12,7 @@ import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/Sy
 interface VariantsTableHeaderProps {
   visibleEnumAttributes: SystemConfigAttributeDTO[];
   isViewMode?: boolean;
+  selection?: VariantTableSelection;
 }
 
 /**
@@ -22,10 +25,25 @@ interface VariantsTableHeaderProps {
 export function VariantsTableHeader({
   visibleEnumAttributes,
   isViewMode = false,
+  selection,
 }: VariantsTableHeaderProps) {
   return (
     <TableHeader>
       <TableRow className="bg-muted/50">
+        {selection && (
+          <TableHead className="font-semibold w-10">
+            {selection.onToggleAll ? (
+              <div className="flex items-center justify-center">
+                <Checkbox
+                  checked={selection.isAllSelected}
+                  onCheckedChange={(value) => selection.onToggleAll?.(!!value)}
+                />
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground">Select</span>
+            )}
+          </TableHead>
+        )}
         {visibleEnumAttributes.map((attr) => (
           <TableHead key={`attr-header-${attr.id}`} className="font-semibold">
             {attr.label ?? attr.name}

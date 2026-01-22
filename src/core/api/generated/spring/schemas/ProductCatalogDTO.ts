@@ -23,6 +23,11 @@ export interface ProductCatalogDTO {
   description?: string;
   /**
    * @minLength 0
+   * @maxLength 500
+   */
+  image?: string;
+  /**
+   * @minLength 0
    * @maxLength 50
    */
   createdBy?: string;

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -23,7 +24,12 @@ import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/Pro
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
 import { Image, Pencil, Save, Trash2, X } from 'lucide-react';
-import { CombinedVariantRow, DraftVariantRow, ExistingVariantRow } from './types';
+import {
+  CombinedVariantRow,
+  DraftVariantRow,
+  ExistingVariantRow,
+  VariantTableSelection,
+} from './types';
 import { VariantImagesSheet } from './VariantImagesSheet';
 import {
   mapVariantImagesToSlots,
@@ -47,6 +53,7 @@ interface VariantTableRowProps {
   onCancelEdit: () => void;
   onDeleteRow: (row: ExistingVariantRow) => void;
   isViewMode?: boolean;
+  selection?: VariantTableSelection;
 }
 
 /**
@@ -67,6 +74,7 @@ export function VariantTableRow({
   onCancelEdit,
   onDeleteRow,
   isViewMode = false,
+  selection,
 }: VariantTableRowProps) {
   const isDraft = item.kind === 'draft';
   const isDuplicate = item.kind === 'duplicate';
@@ -189,6 +197,8 @@ export function VariantTableRow({
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.6 ? '#111827' : '#FFFFFF';
   };
+  const isSelectableRow = item.kind === 'existing' && typeof row.id === 'number';
+  const isSelected = selection ? (isSelectableRow ? selection.isRowSelected(item) : false) : false;
 
   return (
     <>
@@ -209,6 +219,20 @@ export function VariantTableRow({
           },
         )}
       >
+        {selection && (
+          <TableCell className="py-2">
+            <div className="flex items-center justify-center">
+              <Checkbox
+                checked={isSelected}
+                disabled={!isSelectableRow}
+                onCheckedChange={(value) => {
+                  if (!isSelectableRow) return;
+                  selection.onRowToggle(item, !!value);
+                }}
+              />
+            </div>
+          </TableCell>
+        )}
         {/* Attribute Columns */}
         {visibleEnumAttributes.map((attr) => {
           const selection = row.selections.find((s) => s.attributeId === attr.id);
