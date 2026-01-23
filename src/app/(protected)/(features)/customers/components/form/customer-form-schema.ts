@@ -4,6 +4,14 @@
 import { z } from 'zod';
 import type { AreaDTO } from '@/core/api/generated/spring/schemas';
 
+const addressSchema = z.object({
+  id: z.number().optional(),
+  completeAddress: z.string().min(1, { message: 'Address is required' }).max(255, {
+    message: 'Please enter no more than 255 characters',
+  }),
+  isDefault: z.boolean(),
+});
+
 export const customerFormSchemaFields = {
   customerBusinessName: z
     .string({ message: 'Please enter customerbusinessname' })
@@ -37,7 +45,15 @@ export const customerFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
-  completeAddress: z.string().min(1, { message: 'Address is required' }),
+  addresses: z
+    .array(addressSchema)
+    .min(1, { message: 'At least one address is required' })
+    .refine((addresses) => addresses.some((address) => address.isDefault), {
+      message: 'Select a default address',
+    })
+    .refine((addresses) => addresses.filter((address) => address.isDefault).length === 1, {
+      message: 'Select only one default address',
+    }),
   status: z.string().optional(),
   area: z.custom<AreaDTO>(
     (val) => {
@@ -86,7 +102,7 @@ export const customerFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
-  completeAddress: z.string().min(1, { message: 'Address is required' }),
+  addresses: customerFormSchemaFields.addresses,
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   area: z.custom<AreaDTO>(
     (val) => {
@@ -105,7 +121,7 @@ export const customerStepSchemas = {
     mobile: customerFieldSchemas.mobile,
     whatsApp: customerFieldSchemas.whatsApp,
     contactPerson: customerFieldSchemas.contactPerson,
-    completeAddress: customerFieldSchemas.completeAddress,
+    addresses: customerFieldSchemas.addresses,
     status: customerFieldSchemas.status.optional(),
   }),
   geographic: z.object({

@@ -23,6 +23,7 @@ export interface SundryCreditorDTO {
     mobile?: string;
     whatsApp?: string;
     contactPerson?: string;
+    completeAddress?: string;
     status: SundryCreditorStatus;
     createdBy?: string;
     createdDate?: string;

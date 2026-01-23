@@ -4,6 +4,14 @@
 import { z } from 'zod';
 import type { AreaDTO } from '@/core/api/generated/spring/schemas';
 
+const addressSchema = z.object({
+  id: z.number().optional(),
+  completeAddress: z.string().min(1, { message: 'Address is required' }).max(255, {
+    message: 'Please enter no more than 255 characters',
+  }),
+  isDefault: z.boolean(),
+});
+
 export const sundryCreditorFormSchemaFields = {
   creditorName: z
     .string({ message: 'Please enter creditor name' })
@@ -37,6 +45,15 @@ export const sundryCreditorFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional(),
+  addresses: z
+    .array(addressSchema)
+    .min(1, { message: 'At least one address is required' })
+    .refine((addresses) => addresses.some((address) => address.isDefault), {
+      message: 'Select a default address',
+    })
+    .refine((addresses) => addresses.filter((address) => address.isDefault).length === 1, {
+      message: 'Select only one default address',
+    }),
   status: z.string().optional(),
   products: z.array(z.number()).optional(),
   area: z.custom<AreaDTO>(
@@ -59,6 +76,7 @@ export const sundryCreditorFieldSchemas = {
   mobile: sundryCreditorFormSchemaFields.mobile,
   whatsApp: sundryCreditorFormSchemaFields.whatsApp,
   contactPerson: sundryCreditorFormSchemaFields.contactPerson,
+  addresses: sundryCreditorFormSchemaFields.addresses,
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   products: sundryCreditorFormSchemaFields.products,
   area: sundryCreditorFormSchemaFields.area,
@@ -71,6 +89,7 @@ export const sundryCreditorStepSchemas = {
     mobile: sundryCreditorFieldSchemas.mobile,
     whatsApp: sundryCreditorFieldSchemas.whatsApp,
     contactPerson: sundryCreditorFieldSchemas.contactPerson,
+    addresses: sundryCreditorFieldSchemas.addresses,
     status: sundryCreditorFieldSchemas.status.optional(),
     products: sundryCreditorFieldSchemas.products.optional(),
   }),

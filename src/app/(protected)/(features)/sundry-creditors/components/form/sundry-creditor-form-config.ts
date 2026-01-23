@@ -95,6 +95,17 @@ export const sundryCreditorFormConfig: FormConfig = {
       },
       ui: {},
     },
+    {
+      name: 'addresses',
+      type: 'custom',
+      label: 'Addresses',
+      placeholder: 'Enter address',
+      required: true,
+      validation: {
+        required: true,
+      },
+      ui: {},
+    },
   ],
 
   relationships: [

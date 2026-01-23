@@ -16,6 +16,13 @@ import {
   useGetSundryCreditor,
   useUpdateSundryCreditor,
 } from '../../api/sundry-creditor';
+import {
+  createSundryCreditorAddress,
+  deleteSundryCreditorAddress,
+  getAllSundryCreditorAddresses,
+  updateSundryCreditorAddress,
+  useGetAllSundryCreditorAddresses,
+} from '../../api/sundry-creditor-address';
 import { sundryCreditorToast, handleSundryCreditorError } from '../sundry-creditor-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,12 +42,25 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
     queryKey: ['getSundryCreditor', id],
   });
 
+  const { data: addressData } = useGetAllSundryCreditorAddresses(
+    { page: 0, size: 1000, 'sundryCreditorId.equals': id },
+    {
+      query: {
+        enabled: !!id,
+      },
+    }
+  );
+
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
 
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name as keyof typeof entity];
+
+        if (fieldConfig.type === 'custom') {
+          return;
+        }
 
         if (fieldConfig.type === 'date') {
           if (value) {
@@ -85,6 +105,35 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
       form.reset(formValues);
     }
   }, [entity, config, form, state.isLoading]);
+
+  React.useEffect(() => {
+    if (!id) return;
+    const dataArray = Array.isArray(addressData)
+      ? addressData
+      : addressData?.content
+        ? addressData.content
+        : addressData?.data
+          ? addressData.data
+          : [];
+
+    if (dataArray.length > 0) {
+      form.setValue(
+        'addresses',
+        dataArray.map((address: any) => ({
+          id: address.id,
+          completeAddress: address.completeAddress ?? '',
+          isDefault: Boolean(address.isDefault),
+        })),
+        { shouldDirty: false }
+      );
+    } else if (entity?.completeAddress) {
+      form.setValue(
+        'addresses',
+        [{ completeAddress: entity.completeAddress, isDefault: true }],
+        { shouldDirty: false }
+      );
+    }
+  }, [addressData, entity?.completeAddress, form, id]);
 
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
@@ -194,60 +243,78 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const { mutate: createEntity, isPending: isCreating } = useCreateSundryCreditor({
-    onSuccess: (data: any) => {
-      const entityId = data?.id;
+  const { mutateAsync: createEntity, isPending: isCreating } = useCreateSundryCreditor();
+  const { mutateAsync: updateEntity, isPending: isUpdating } = useUpdateSundryCreditor();
 
-      queryClient.invalidateQueries({
-        queryKey: ['getAllSundryCreditors'],
-        refetchType: 'active',
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['countSundryCreditors'],
-        refetchType: 'active',
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['searchSundryCreditors'],
-        refetchType: 'active',
-      });
+  const normalizeAddressList = (data: any) => {
+    if (Array.isArray(data)) return data;
+    if (data?.content) return data.content;
+    if (data?.data) return data.data;
+    return [];
+  };
 
-      if (hasReferrer() && entityId) {
-        setIsRedirecting(true);
-        navigateBackToReferrer(entityId, 'SundryCreditor');
-      } else {
-        setIsRedirecting(true);
-        sundryCreditorToast.created();
-        router.push('/sundry-creditors');
-      }
-    },
-    onError: (error: any) => {
-      handleSundryCreditorError(error);
-    },
-  });
+  const syncSundryCreditorAddresses = async (sundryCreditorId: number, addresses: any[], skipFetch = false) => {
+    const trimmedAddresses = (addresses || [])
+      .filter((address) => address?.completeAddress?.trim?.())
+      .map((address) => ({
+        id: address.id,
+        completeAddress: address.completeAddress.trim(),
+        isDefault: Boolean(address.isDefault),
+      }));
 
-  const { mutate: updateEntity, isPending: isUpdating } = useUpdateSundryCreditor({
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['getAllSundryCreditors'],
-        refetchType: 'active',
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['countSundryCreditors'],
-        refetchType: 'active',
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['searchSundryCreditors'],
-        refetchType: 'active',
-      });
+    if (trimmedAddresses.length === 0) {
+      return;
+    }
 
-      setIsRedirecting(true);
-      sundryCreditorToast.updated();
-      router.push('/sundry-creditors');
-    },
-    onError: (error: any) => {
-      handleSundryCreditorError(error);
-    },
-  });
+    if (skipFetch) {
+      await Promise.all(
+        trimmedAddresses.map((address) =>
+          createSundryCreditorAddress({
+            completeAddress: address.completeAddress,
+            isDefault: address.isDefault,
+            sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
+          })
+        )
+      );
+      return;
+    }
+
+    const existingResponse = await getAllSundryCreditorAddresses({
+      page: 0,
+      size: 1000,
+      'sundryCreditorId.equals': sundryCreditorId,
+    });
+    const existingAddresses = normalizeAddressList(existingResponse);
+    const existingIds = new Set(existingAddresses.map((address: any) => address.id));
+    const incomingIds = new Set(trimmedAddresses.filter((address) => address.id).map((address) => address.id));
+
+    const updates = trimmedAddresses
+      .filter((address) => address.id && existingIds.has(address.id))
+      .map((address) =>
+        updateSundryCreditorAddress(address.id, {
+          id: address.id,
+          completeAddress: address.completeAddress,
+          isDefault: address.isDefault,
+          sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
+        })
+      );
+
+    const creates = trimmedAddresses
+      .filter((address) => !address.id)
+      .map((address) =>
+        createSundryCreditorAddress({
+          completeAddress: address.completeAddress,
+          isDefault: address.isDefault,
+          sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
+        })
+      );
+
+    const deletions = existingAddresses
+      .filter((address: any) => address.id && !incomingIds.has(address.id))
+      .map((address: any) => deleteSundryCreditorAddress(address.id));
+
+    await Promise.all([...updates, ...creates, ...deletions]);
+  };
 
   if (isRedirecting) {
     return (
@@ -264,17 +331,66 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
     <SundryCreditorFormProvider
       id={id}
       onSuccess={async (transformedData) => {
-        const { ...sundryCreditorData } = transformedData as any;
+        const { addresses, ...sundryCreditorData } = transformedData as any;
+        const defaultAddress =
+          addresses?.find((address: any) => address.isDefault)?.completeAddress ??
+          addresses?.[0]?.completeAddress;
         const dataWithStatus = {
           ...sundryCreditorData,
+          completeAddress: defaultAddress || undefined,
           status: 'ACTIVE',
         };
 
         if (isNew) {
-          createEntity(dataWithStatus);
+          const created = await createEntity(dataWithStatus);
+          const createdId = created?.id;
+
+          if (createdId) {
+            await syncSundryCreditorAddresses(createdId, addresses, true);
+          }
+
+          queryClient.invalidateQueries({
+            queryKey: ['getAllSundryCreditors'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['countSundryCreditors'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['searchSundryCreditors'],
+            refetchType: 'active',
+          });
+
+          if (hasReferrer() && createdId) {
+            setIsRedirecting(true);
+            navigateBackToReferrer(createdId, 'SundryCreditor');
+          } else {
+            setIsRedirecting(true);
+            sundryCreditorToast.created();
+            router.push('/sundry-creditors');
+          }
         } else if (id) {
           // Note: useUpdateSundryCreditor expects {id, data}
-          updateEntity({ id, data: { ...dataWithStatus, id } });
+          await updateEntity({ id, data: { ...dataWithStatus, id } });
+          await syncSundryCreditorAddresses(id, addresses);
+
+          queryClient.invalidateQueries({
+            queryKey: ['getAllSundryCreditors'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['countSundryCreditors'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['searchSundryCreditors'],
+            refetchType: 'active',
+          });
+
+          setIsRedirecting(true);
+          sundryCreditorToast.updated();
+          router.push('/sundry-creditors');
         }
       }}
       onError={(error) => {

@@ -141,6 +141,10 @@ export function SundryCreditorTableRow({
                   return field?.toString() || '';
                 }
 
+                if (column.id === 'completeAddress') {
+                  return field?.toString() || '';
+                }
+
                 if (column.id === 'status') {
                   return getStatusBadge(field as string);
                 }

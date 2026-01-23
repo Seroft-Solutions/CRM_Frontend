@@ -11,7 +11,7 @@ export const customerFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'completeAddress', 'status'],
+      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
       relationships: ['area'],
       validation: {
         mode: 'onBlur',
@@ -96,14 +96,13 @@ export const customerFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'completeAddress',
-      type: 'textarea',
-      label: 'Address',
+      name: 'addresses',
+      type: 'custom',
+      label: 'Addresses',
       placeholder: 'Enter address',
       required: true,
       validation: {
         required: true,
-        maxLength: 255,
       },
       ui: {},
     },

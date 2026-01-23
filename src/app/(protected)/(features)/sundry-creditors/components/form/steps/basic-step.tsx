@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
+import { AddressListField } from '@/components/address-list-field';
 
 interface SundryCreditorBasicStepProps {
   form: any;
@@ -148,6 +149,13 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
         />
 
       </div>
+
+      <AddressListField
+        form={form}
+        name="addresses"
+        label="Addresses"
+        description="Add one or more addresses and select the default."
+      />
 
       {/* Products Section */}
       <div className="border-t pt-6">

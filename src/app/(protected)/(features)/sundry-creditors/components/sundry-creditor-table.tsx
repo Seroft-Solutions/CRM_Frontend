@@ -170,6 +170,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
+    id: 'completeAddress',
+    label: 'Address',
+    accessor: 'completeAddress',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
     id: 'status',
     label: 'Status',
     accessor: 'status',

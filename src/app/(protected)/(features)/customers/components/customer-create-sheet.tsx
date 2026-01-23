@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,7 +23,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
@@ -32,6 +31,17 @@ import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import type { AreaDTO, CustomerDTO } from '@/core/api/generated/spring/schemas';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
+import { AddressListField } from '@/components/address-list-field';
+import { createCustomerAddress } from '../api/customer-address';
+
+const addressSchema = z.object({
+  id: z.number().optional(),
+  completeAddress: z
+    .string({ message: 'Address is required' })
+    .min(1, { message: 'Address is required' })
+    .max(255, { message: 'Please enter no more than 255 characters' }),
+  isDefault: z.boolean(),
+});
 
 const customerCreationSchema = z.object({
   customerBusinessName: z
@@ -60,10 +70,16 @@ const customerCreationSchema = z.object({
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional()
     .or(z.literal('')),
-  completeAddress: z
-    .string({ message: 'Address is required' })
-    .min(1, { message: 'Address is required' })
-    .max(255, { message: 'Please enter no more than 255 characters' }),
+  completeAddress: z.string().optional(),
+  addresses: z
+    .array(addressSchema)
+    .min(1, { message: 'At least one address is required' })
+    .refine((addresses) => addresses.some((address) => address.isDefault), {
+      message: 'Select a default address',
+    })
+    .refine((addresses) => addresses.filter((address) => address.isDefault).length === 1, {
+      message: 'Select only one default address',
+    }),
   area: z.custom<AreaDTO>(
     (val) => {
       return val && typeof val === 'object' && 'id' in val && 'name' in val;
@@ -90,6 +106,7 @@ export function CustomerCreateSheet({
   const [isOpen, setIsOpen] = useState(false);
   const [whatsAppManuallyEdited, setWhatsAppManuallyEdited] = useState(false);
   const queryClient = useQueryClient();
+  const pendingAddressesRef = useRef<CustomerCreationFormData['addresses']>([]);
 
   const form = useForm<CustomerCreationFormData>({
     resolver: zodResolver(customerCreationSchema),
@@ -100,13 +117,14 @@ export function CustomerCreateSheet({
       whatsApp: '',
       contactPerson: '',
       completeAddress: '',
+      addresses: [],
       area: undefined,
     },
   });
 
   const { mutate: createCustomer, isPending } = useCreateCustomer({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         queryClient.invalidateQueries({
           queryKey: ['getAllCustomers'],
           refetchType: 'active',
@@ -120,11 +138,28 @@ export function CustomerCreateSheet({
           refetchType: 'active',
         });
 
+        const customerId = data?.id;
+        const customerName = data?.customerBusinessName;
+        const addresses = pendingAddressesRef.current;
+
+        if (customerId && Array.isArray(addresses) && addresses.length > 0) {
+          await Promise.all(
+            addresses.map((address) =>
+              createCustomerAddress({
+                completeAddress: address.completeAddress,
+                isDefault: address.isDefault,
+                customer: { id: customerId, customerBusinessName: customerName },
+              })
+            )
+          );
+        }
+
         customerToast.created();
 
         setIsOpen(false);
         form.reset();
         setWhatsAppManuallyEdited(false);
+        pendingAddressesRef.current = [];
 
         onSuccess?.(data);
       },
@@ -135,13 +170,18 @@ export function CustomerCreateSheet({
   });
 
   const onSubmit = (data: CustomerCreationFormData) => {
+    pendingAddressesRef.current = data.addresses ?? [];
+    const defaultAddress =
+      data.addresses?.find((address) => address.isDefault)?.completeAddress ??
+      data.addresses?.[0]?.completeAddress;
+
     const customerData: Partial<CustomerDTO> = {
       customerBusinessName: data.customerBusinessName,
       email: data.email || undefined,
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile,
       contactPerson: data.contactPerson || undefined,
-      completeAddress: data.completeAddress || undefined,
+      completeAddress: defaultAddress || undefined,
 
       area: data.area,
       status: CustomerDTOStatus.ACTIVE,
@@ -374,25 +414,11 @@ export function CustomerCreateSheet({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="completeAddress"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        Address
-                        <span className="text-red-500 ml-1">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter address"
-                          {...field}
-                          className="resize-none min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                <AddressListField
+                  form={form}
+                  name="addresses"
+                  label="Addresses"
+                  description="Add one or more addresses and select the default."
                 />
               </div>
             </form>

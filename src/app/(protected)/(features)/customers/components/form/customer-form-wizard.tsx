@@ -19,6 +19,13 @@ import {
 import { customerToast, handleCustomerError } from '../customer-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  createCustomerAddress,
+  deleteCustomerAddress,
+  getAllCustomerAddresses,
+  updateCustomerAddress,
+  useGetAllCustomerAddresses,
+} from '../../api/customer-address';
 
 interface CustomerFormProps {
   id?: number;
@@ -37,12 +44,25 @@ function CustomerFormContent({ id }: CustomerFormProps) {
     },
   });
 
+  const { data: addressData } = useGetAllCustomerAddresses(
+    { page: 0, size: 1000, 'customerId.equals': id },
+    {
+      query: {
+        enabled: !!id,
+      },
+    }
+  );
+
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
       const formValues: Record<string, any> = {};
 
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name];
+
+        if (fieldConfig.type === 'custom') {
+          return;
+        }
 
         if (fieldConfig.type === 'date') {
           if (value) {
@@ -87,6 +107,37 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       form.reset(formValues);
     }
   }, [entity, config, form, state.isLoading]);
+
+  React.useEffect(() => {
+    if (!id) return;
+    const dataArray = Array.isArray(addressData)
+      ? addressData
+      : addressData?.content
+        ? addressData.content
+        : addressData?.data
+          ? addressData.data
+          : [];
+
+    const legacyAddress = (entity as any)?.completeAddress;
+
+    if (dataArray.length > 0) {
+      form.setValue(
+        'addresses',
+        dataArray.map((address: any) => ({
+          id: address.id,
+          completeAddress: address.completeAddress ?? '',
+          isDefault: Boolean(address.isDefault),
+        })),
+        { shouldDirty: false }
+      );
+    } else if (legacyAddress) {
+      form.setValue(
+        'addresses',
+        [{ completeAddress: legacyAddress, isDefault: true }],
+        { shouldDirty: false }
+      );
+    }
+  }, [addressData, entity, form, id]);
 
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
@@ -213,66 +264,78 @@ export function CustomerForm({ id }: CustomerFormProps) {
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const { mutate: createEntity, isPending: isCreating } = useCreateCustomer({
-    mutation: {
-      onSuccess: (data) => {
-        const entityId = data?.id || data?.id;
+  const { mutateAsync: createEntity, isPending: isCreating } = useCreateCustomer();
+  const { mutateAsync: updateEntity, isPending: isUpdating } = useUpdateCustomer();
 
-        queryClient.invalidateQueries({
-          queryKey: ['getAllCustomers'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countCustomers'],
-          refetchType: 'active',
-        });
+  const normalizeAddressList = (data: any) => {
+    if (Array.isArray(data)) return data;
+    if (data?.content) return data.content;
+    if (data?.data) return data.data;
+    return [];
+  };
 
-        queryClient.invalidateQueries({
-          queryKey: ['searchCustomers'],
-          refetchType: 'active',
-        });
+  const syncCustomerAddresses = async (customerId: number, addresses: any[], skipFetch = false) => {
+    const trimmedAddresses = (addresses || [])
+      .filter((address) => address?.completeAddress?.trim?.())
+      .map((address) => ({
+        id: address.id,
+        completeAddress: address.completeAddress.trim(),
+        isDefault: Boolean(address.isDefault),
+      }));
 
-        if (hasReferrer() && entityId) {
-          setIsRedirecting(true);
-          navigateBackToReferrer(entityId, 'Customer');
-        } else {
-          setIsRedirecting(true);
-          customerToast.created();
-          router.push('/customers');
-        }
-      },
-      onError: (error) => {
-        handleCustomerError(error);
-      },
-    },
-  });
+    if (trimmedAddresses.length === 0) {
+      return;
+    }
 
-  const { mutate: updateEntity, isPending: isUpdating } = useUpdateCustomer({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ['getAllCustomers'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countCustomers'],
-          refetchType: 'active',
-        });
+    if (skipFetch) {
+      await Promise.all(
+        trimmedAddresses.map((address) =>
+          createCustomerAddress({
+            completeAddress: address.completeAddress,
+            isDefault: address.isDefault,
+            customer: { id: customerId, customerBusinessName: undefined },
+          })
+        )
+      );
+      return;
+    }
 
-        queryClient.invalidateQueries({
-          queryKey: ['searchCustomers'],
-          refetchType: 'active',
-        });
+    const existingResponse = await getAllCustomerAddresses({
+      page: 0,
+      size: 1000,
+      'customerId.equals': customerId,
+    });
+    const existingAddresses = normalizeAddressList(existingResponse);
+    const existingIds = new Set(existingAddresses.map((address: any) => address.id));
+    const incomingIds = new Set(trimmedAddresses.filter((address) => address.id).map((address) => address.id));
 
-        setIsRedirecting(true);
-        customerToast.updated();
-        router.push('/customers');
-      },
-      onError: (error) => {
-        handleCustomerError(error);
-      },
-    },
-  });
+    const updates = trimmedAddresses
+      .filter((address) => address.id && existingIds.has(address.id))
+      .map((address) =>
+        updateCustomerAddress(address.id, {
+          id: address.id,
+          completeAddress: address.completeAddress,
+          isDefault: address.isDefault,
+          customer: { id: customerId, customerBusinessName: undefined },
+        })
+      );
+
+    const creates = trimmedAddresses
+      .filter((address) => !address.id)
+      .map((address) =>
+        createCustomerAddress({
+          completeAddress: address.completeAddress,
+          isDefault: address.isDefault,
+          customer: { id: customerId, customerBusinessName: undefined },
+        })
+      );
+
+    const deletions = existingAddresses
+      .filter((address: any) => address.id && !incomingIds.has(address.id))
+      .map((address: any) => deleteCustomerAddress(address.id));
+
+    await Promise.all([...updates, ...creates, ...deletions]);
+  };
 
   if (isRedirecting) {
     return (
@@ -289,17 +352,66 @@ export function CustomerForm({ id }: CustomerFormProps) {
     <CustomerFormProvider
       id={id}
       onSuccess={async (transformedData) => {
-        const { ...customerData } = transformedData as any;
+        const { addresses, ...customerData } = transformedData as any;
+        const defaultAddress =
+          addresses?.find((address: any) => address.isDefault)?.completeAddress ??
+          addresses?.[0]?.completeAddress;
         const customerDataWithStatus = {
           ...customerData,
+          completeAddress: defaultAddress || undefined,
           status: 'ACTIVE',
         };
 
         if (isNew) {
-          createEntity({ data: customerDataWithStatus as any });
+          const created = await createEntity({ data: customerDataWithStatus as any });
+          const createdId = created?.id;
+
+          if (createdId) {
+            await syncCustomerAddresses(createdId, addresses, true);
+          }
+
+          queryClient.invalidateQueries({
+            queryKey: ['getAllCustomers'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['countCustomers'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['searchCustomers'],
+            refetchType: 'active',
+          });
+
+          if (hasReferrer() && createdId) {
+            setIsRedirecting(true);
+            navigateBackToReferrer(createdId, 'Customer');
+          } else {
+            setIsRedirecting(true);
+            customerToast.created();
+            router.push('/customers');
+          }
         } else if (id) {
           const entityData = { ...customerDataWithStatus, id };
-          updateEntity({ id, data: entityData as any });
+          await updateEntity({ id, data: entityData as any });
+          await syncCustomerAddresses(id, addresses);
+
+          queryClient.invalidateQueries({
+            queryKey: ['getAllCustomers'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['countCustomers'],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['searchCustomers'],
+            refetchType: 'active',
+          });
+
+          setIsRedirecting(true);
+          customerToast.updated();
+          router.push('/customers');
         }
       }}
       onError={(error) => {
