@@ -4,7 +4,6 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 import { AddressListField } from '@/components/address-list-field';
 
 interface CustomerBasicStepProps {
@@ -157,34 +156,12 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
         </div>
 
         <div className="space-y-6">
-          <FormField
-            control={form.control}
-            name="area"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  City and Zipcode
-                  <span className="text-red-500 ml-1">*</span>
-                </FormLabel>
-                <FormControl>
-                  <IntelligentLocationField
-                    value={field.value}
-                    onChange={field.onChange}
-                    onError={(error) => {
-                      form.setError('area', { message: error });
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <AddressListField
             form={form}
             name="addresses"
             label="Addresses"
             description="Add one or more addresses and select the default."
+            showLocationFields
           />
         </div>
       </div>

@@ -24,12 +24,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { AreaDTO, CustomerDTO } from '@/core/api/generated/spring/schemas';
+import type { CustomerDTO } from '@/core/api/generated/spring/schemas';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
 import { AddressListField } from '@/components/address-list-field';
 import { createCustomerAddress } from '../api/customer-address';
@@ -40,6 +39,14 @@ const addressSchema = z.object({
     .string({ message: 'Address is required' })
     .min(1, { message: 'Address is required' })
     .max(255, { message: 'Please enter no more than 255 characters' }),
+  city: z.string().min(2, { message: 'City is required' }).max(100, {
+    message: 'Please enter no more than 100 characters',
+  }),
+  zipCode: z
+    .string()
+    .min(6, { message: 'Zip code is required' })
+    .max(6, { message: 'Zip code must be 6 digits' })
+    .regex(/^[0-9]{6}$/, { message: 'Zip code must be 6 digits' }),
   isDefault: z.boolean(),
 });
 
@@ -80,14 +87,6 @@ const customerCreationSchema = z.object({
     .refine((addresses) => addresses.filter((address) => address.isDefault).length === 1, {
       message: 'Select only one default address',
     }),
-  area: z.custom<AreaDTO>(
-    (val) => {
-      return val && typeof val === 'object' && 'id' in val && 'name' in val;
-    },
-    {
-      message: 'Please select a location',
-    }
-  ),
 });
 
 type CustomerCreationFormData = z.infer<typeof customerCreationSchema>;
@@ -118,7 +117,6 @@ export function CustomerCreateSheet({
       contactPerson: '',
       completeAddress: '',
       addresses: [],
-      area: undefined,
     },
   });
 
@@ -147,6 +145,8 @@ export function CustomerCreateSheet({
             addresses.map((address) =>
               createCustomerAddress({
                 completeAddress: address.completeAddress,
+                city: address.city,
+                zipCode: address.zipCode,
                 isDefault: address.isDefault,
                 customer: { id: customerId, customerBusinessName: customerName },
               })
@@ -182,8 +182,6 @@ export function CustomerCreateSheet({
       whatsApp: data.whatsApp || data.mobile,
       contactPerson: data.contactPerson || undefined,
       completeAddress: defaultAddress || undefined,
-
-      area: data.area,
       status: CustomerDTOStatus.ACTIVE,
     } as any;
 
@@ -382,43 +380,21 @@ export function CustomerCreateSheet({
                 />
               </div>
 
-              {/* Location Information Section */}
+              {/* Address Information Section */}
               <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
                 <div className="space-y-1">
-                  <h3 className="text-base font-semibold text-slate-900">Location</h3>
+                  <h3 className="text-base font-semibold text-slate-900">Addresses</h3>
                   <p className="text-xs text-slate-500">
-                    Search for the area to automatically attach its full hierarchy.
+                    Add one or more locations with city and zip code details.
                   </p>
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="area"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        City and Zipcode
-                        <span className="text-red-500 ml-1">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <IntelligentLocationField
-                          value={field.value}
-                          onChange={field.onChange}
-                          onError={(error) => {
-                            form.setError('area', { message: error });
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <AddressListField
                   form={form}
                   name="addresses"
                   label="Addresses"
                   description="Add one or more addresses and select the default."
+                  showLocationFields
                 />
               </div>
             </form>

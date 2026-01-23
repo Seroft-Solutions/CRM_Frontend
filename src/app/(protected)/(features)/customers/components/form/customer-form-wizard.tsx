@@ -121,19 +121,25 @@ function CustomerFormContent({ id }: CustomerFormProps) {
     const legacyAddress = (entity as any)?.completeAddress;
 
     if (dataArray.length > 0) {
+      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
+      const fallbackZip = (entity as any)?.area?.pincode ?? '';
       form.setValue(
         'addresses',
         dataArray.map((address: any) => ({
           id: address.id,
           completeAddress: address.completeAddress ?? '',
+          city: address.city || fallbackCity,
+          zipCode: address.zipCode || fallbackZip,
           isDefault: Boolean(address.isDefault),
         })),
         { shouldDirty: false }
       );
     } else if (legacyAddress) {
+      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
+      const fallbackZip = (entity as any)?.area?.pincode ?? '';
       form.setValue(
         'addresses',
-        [{ completeAddress: legacyAddress, isDefault: true }],
+        [{ completeAddress: legacyAddress, city: fallbackCity, zipCode: fallbackZip, isDefault: true }],
         { shouldDirty: false }
       );
     }
@@ -280,6 +286,8 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .map((address) => ({
         id: address.id,
         completeAddress: address.completeAddress.trim(),
+        city: address.city?.trim?.() ?? '',
+        zipCode: address.zipCode?.trim?.() ?? '',
         isDefault: Boolean(address.isDefault),
       }));
 
@@ -292,6 +300,8 @@ export function CustomerForm({ id }: CustomerFormProps) {
         trimmedAddresses.map((address) =>
           createCustomerAddress({
             completeAddress: address.completeAddress,
+            city: address.city,
+            zipCode: address.zipCode,
             isDefault: address.isDefault,
             customer: { id: customerId, customerBusinessName: undefined },
           })
@@ -315,6 +325,8 @@ export function CustomerForm({ id }: CustomerFormProps) {
         updateCustomerAddress(address.id, {
           id: address.id,
           completeAddress: address.completeAddress,
+          city: address.city,
+          zipCode: address.zipCode,
           isDefault: address.isDefault,
           customer: { id: customerId, customerBusinessName: undefined },
         })
@@ -325,6 +337,8 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .map((address) =>
         createCustomerAddress({
           completeAddress: address.completeAddress,
+          city: address.city,
+          zipCode: address.zipCode,
           isDefault: address.isDefault,
           customer: { id: customerId, customerBusinessName: undefined },
         })

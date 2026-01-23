@@ -12,7 +12,7 @@ export const customerFormConfig: FormConfig = {
       title: 'Basic Information',
       description: 'Enter essential details',
       fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
-      relationships: ['area'],
+      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -108,34 +108,7 @@ export const customerFormConfig: FormConfig = {
     },
   ],
 
-  relationships: [
-    {
-      name: 'area',
-      type: 'many-to-one',
-      targetEntity: 'area',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'geographic',
-      api: {
-        useGetAllHook: 'useGetAllAreas',
-        useSearchHook: 'useSearchGeography',
-        useCountHook: 'useCountAreas',
-        entityName: 'Areas',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/areas/new',
-        createPermission: 'area:create:inline',
-      },
-      ui: {
-        label: 'City and Zipcode',
-        placeholder: 'Search for location...',
-        icon: '📍',
-      },
-    },
-  ],
+  relationships: [],
 
   validation: {
     mode: 'onBlur',

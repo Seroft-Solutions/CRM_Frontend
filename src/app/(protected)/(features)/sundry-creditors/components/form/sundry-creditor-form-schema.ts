@@ -2,13 +2,19 @@
  * Sundry Creditor form validation schema with user-friendly messages
  */
 import { z } from 'zod';
-import type { AreaDTO } from '@/core/api/generated/spring/schemas';
-
 const addressSchema = z.object({
   id: z.number().optional(),
   completeAddress: z.string().min(1, { message: 'Address is required' }).max(255, {
     message: 'Please enter no more than 255 characters',
   }),
+  city: z.string().min(2, { message: 'City is required' }).max(100, {
+    message: 'Please enter no more than 100 characters',
+  }),
+  zipCode: z
+    .string()
+    .min(6, { message: 'Zip code is required' })
+    .max(6, { message: 'Zip code must be 6 digits' })
+    .regex(/^[0-9]{6}$/, { message: 'Zip code must be 6 digits' }),
   isDefault: z.boolean(),
 });
 
@@ -56,14 +62,6 @@ export const sundryCreditorFormSchemaFields = {
     }),
   status: z.string().optional(),
   products: z.array(z.number()).optional(),
-  area: z.custom<AreaDTO>(
-    (val) => {
-      return val && typeof val === 'object' && 'id' in val && 'name' in val;
-    },
-    {
-      message: 'Please select a location',
-    }
-  ),
 };
 
 export const sundryCreditorFormSchema = z.object(sundryCreditorFormSchemaFields);
@@ -79,7 +77,6 @@ export const sundryCreditorFieldSchemas = {
   addresses: sundryCreditorFormSchemaFields.addresses,
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   products: sundryCreditorFormSchemaFields.products,
-  area: sundryCreditorFormSchemaFields.area,
 };
 
 export const sundryCreditorStepSchemas = {
@@ -92,9 +89,6 @@ export const sundryCreditorStepSchemas = {
     addresses: sundryCreditorFieldSchemas.addresses,
     status: sundryCreditorFieldSchemas.status.optional(),
     products: sundryCreditorFieldSchemas.products.optional(),
-  }),
-  geographic: z.object({
-    area: sundryCreditorFieldSchemas.area,
   }),
   review: sundryCreditorFormSchema,
 };

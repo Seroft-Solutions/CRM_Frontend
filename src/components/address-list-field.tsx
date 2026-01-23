@@ -7,12 +7,15 @@ import { Button } from '@/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 
 interface AddressListFieldProps {
   form: any;
   name?: string;
   label?: string;
   description?: string;
+  showLocationFields?: boolean;
+  locationLabel?: string;
 }
 
 export function AddressListField({
@@ -20,6 +23,8 @@ export function AddressListField({
   name = 'addresses',
   label = 'Addresses',
   description,
+  showLocationFields = false,
+  locationLabel = 'City & Zip Code',
 }: AddressListFieldProps) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -30,7 +35,7 @@ export function AddressListField({
 
   useEffect(() => {
     if (fields.length === 0) {
-      append({ completeAddress: '', isDefault: true });
+      append({ completeAddress: '', city: '', zipCode: '', isDefault: true });
     }
   }, [append, fields.length]);
 
@@ -44,7 +49,7 @@ export function AddressListField({
 
   const handleAdd = () => {
     const hasDefault = addresses.some((address: any) => address?.isDefault);
-    append({ completeAddress: '', isDefault: !hasDefault });
+    append({ completeAddress: '', city: '', zipCode: '', isDefault: !hasDefault });
   };
 
   const handleRemove = (index: number) => {
@@ -65,6 +70,28 @@ export function AddressListField({
   const selectedDefaultIndex = addresses.findIndex((address: any) => address?.isDefault);
 
   const arrayError = form.formState?.errors?.[name]?.message as string | undefined;
+
+  const buildLocationValue = (address: any) => {
+    if (!address?.city && !address?.zipCode) return null;
+
+    return {
+      name: address.city ?? '',
+      pincode: address.zipCode ?? '',
+      city: {
+        name: address.city ?? '',
+        district: {
+          state: {
+            name: '',
+          },
+        },
+      },
+    } as any;
+  };
+
+  const getLocationError = (index: number) => {
+    const entryErrors = form.formState?.errors?.[name]?.[index];
+    return entryErrors?.city?.message || entryErrors?.zipCode?.message;
+  };
 
   return (
     <div className="space-y-4">
@@ -104,6 +131,37 @@ export function AddressListField({
                 </Button>
               </div>
             </div>
+
+            {showLocationFields ? (
+              <FormItem>
+                <FormLabel className="text-sm font-medium">
+                  {locationLabel}
+                  <span className="text-red-500 ml-1">*</span>
+                </FormLabel>
+                <FormControl>
+                  <IntelligentLocationField
+                    value={buildLocationValue(addresses[index])}
+                    onChange={(value) => {
+                      const nextCity = value?.city?.name ?? '';
+                      const nextZip = value?.pincode ?? '';
+                      form.setValue(`${name}.${index}.city`, nextCity, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      form.setValue(`${name}.${index}.zipCode`, nextZip, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }}
+                  />
+                </FormControl>
+                <input type="hidden" {...form.register(`${name}.${index}.city`)} />
+                <input type="hidden" {...form.register(`${name}.${index}.zipCode`)} />
+                {getLocationError(index) ? (
+                  <p className="text-sm text-red-500">{getLocationError(index)}</p>
+                ) : null}
+              </FormItem>
+            ) : null}
 
             <FormField
               control={form.control}

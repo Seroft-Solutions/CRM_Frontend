@@ -117,19 +117,32 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
           : [];
 
     if (dataArray.length > 0) {
+      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
+      const fallbackZip = (entity as any)?.area?.pincode ?? '';
       form.setValue(
         'addresses',
         dataArray.map((address: any) => ({
           id: address.id,
           completeAddress: address.completeAddress ?? '',
+          city: address.city || fallbackCity,
+          zipCode: address.zipCode || fallbackZip,
           isDefault: Boolean(address.isDefault),
         })),
         { shouldDirty: false }
       );
     } else if (entity?.completeAddress) {
+      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
+      const fallbackZip = (entity as any)?.area?.pincode ?? '';
       form.setValue(
         'addresses',
-        [{ completeAddress: entity.completeAddress, isDefault: true }],
+        [
+          {
+            completeAddress: entity.completeAddress,
+            city: fallbackCity,
+            zipCode: fallbackZip,
+            isDefault: true,
+          },
+        ],
         { shouldDirty: false }
       );
     }
@@ -259,6 +272,8 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       .map((address) => ({
         id: address.id,
         completeAddress: address.completeAddress.trim(),
+        city: address.city?.trim?.() ?? '',
+        zipCode: address.zipCode?.trim?.() ?? '',
         isDefault: Boolean(address.isDefault),
       }));
 
@@ -271,6 +286,8 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         trimmedAddresses.map((address) =>
           createSundryCreditorAddress({
             completeAddress: address.completeAddress,
+            city: address.city,
+            zipCode: address.zipCode,
             isDefault: address.isDefault,
             sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
           })
@@ -294,6 +311,8 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         updateSundryCreditorAddress(address.id, {
           id: address.id,
           completeAddress: address.completeAddress,
+          city: address.city,
+          zipCode: address.zipCode,
           isDefault: address.isDefault,
           sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
         })
@@ -304,6 +323,8 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       .map((address) =>
         createSundryCreditorAddress({
           completeAddress: address.completeAddress,
+          city: address.city,
+          zipCode: address.zipCode,
           isDefault: address.isDefault,
           sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
         })

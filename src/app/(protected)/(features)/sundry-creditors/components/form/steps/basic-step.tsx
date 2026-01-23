@@ -4,7 +4,6 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
 import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
 import { AddressListField } from '@/components/address-list-field';
 
@@ -148,24 +147,7 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
           )}
         />
 
-      </div>
-
-      <AddressListField
-        form={form}
-        name="addresses"
-        label="Addresses"
-        description="Add one or more addresses and select the default."
-      />
-
-      {/* Products Section */}
-      <div className="border-t pt-6">
-        <div className="border-b pb-2 mb-4">
-          <h3 className="text-sm font-medium text-gray-900">Products</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Select products supplied by this creditor or create a new one.
-          </p>
-        </div>
-
+        {/* Products Field */}
         <FormField
           control={form.control}
           name="products"
@@ -192,36 +174,13 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
         />
       </div>
 
-      {/* Location Field - Full Width */}
-      <div className="border-t pt-6">
-        <div className="border-b pb-2 mb-4">
-          <h3 className="text-sm font-medium text-gray-900">Location Information</h3>
-          <p className="text-xs text-gray-500 mt-1">Search and select sundry creditor location</p>
-        </div>
-
-        <FormField
-          control={form.control}
-          name="area"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">
-                Address
-                <span className="text-red-500 ml-1">*</span>
-              </FormLabel>
-              <FormControl>
-                <IntelligentLocationField
-                  value={field.value}
-                  onChange={field.onChange}
-                  onError={(error) => {
-                    form.setError('area', { message: error });
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <AddressListField
+        form={form}
+        name="addresses"
+        label="Addresses"
+        description="Add one or more addresses and select the default."
+        showLocationFields
+      />
     </div>
   );
 }
