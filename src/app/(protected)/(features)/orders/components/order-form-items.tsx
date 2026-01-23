@@ -21,8 +21,9 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import type { ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
 
@@ -30,6 +31,7 @@ type OrderFormItemsProps = {
   items: OrderItemForm[];
   itemErrors?: ItemErrors[];
   onAddItem: () => void;
+  onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
   onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
 };
@@ -84,6 +86,8 @@ function ProductVariantSelector({
     if (!product) return;
 
     // Set product info
+    onItemChange(index, 'itemType', 'product');
+    onItemChange(index, 'productCatalogId', undefined);
     onItemChange(index, 'productId', product.id);
     onItemChange(index, 'productName', product.name);
     onItemChange(index, 'sku', product.barcodeText);
@@ -105,6 +109,7 @@ function ProductVariantSelector({
     if (!variant) return;
 
     // Set variant info
+    onItemChange(index, 'itemType', 'product');
     onItemChange(index, 'variantId', variant.id);
     onItemChange(index, 'sku', variant.sku);
 
@@ -237,10 +242,119 @@ function ProductVariantSelector({
   );
 }
 
+function buildCatalogAttributes(catalog: ProductCatalogDTO) {
+  const variantSkus = (catalog.variants ?? [])
+    .map((variant) => variant.sku)
+    .filter((sku): sku is string => Boolean(sku));
+
+  if (variantSkus.length > 0) {
+    return `Includes: ${variantSkus.join(', ')}`;
+  }
+
+  if (catalog.product?.name) {
+    return `Product: ${catalog.product.name}`;
+  }
+
+  return undefined;
+}
+
+function ProductCatalogSelector({
+  item,
+  index,
+  onItemChange,
+}: {
+  item: OrderItemForm;
+  index: number;
+  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+}) {
+  const [catalogOpen, setCatalogOpen] = useState(false);
+
+  const { data: catalogData } = useGetAllProductCatalogs({
+    size: 1000,
+  });
+
+  const catalogs = catalogData || [];
+  const selectedCatalog = catalogs.find((catalog) => catalog.id === item.productCatalogId);
+
+  const handleCatalogSelect = (catalogId: number) => {
+    const catalog = catalogs.find((entry) => entry.id === catalogId);
+    if (!catalog) return;
+
+    onItemChange(index, 'itemType', 'catalog');
+    onItemChange(index, 'productCatalogId', catalog.id);
+    onItemChange(index, 'productId', undefined);
+    onItemChange(index, 'variantId', undefined);
+    onItemChange(index, 'sku', undefined);
+    onItemChange(index, 'productName', catalog.productCatalogName);
+    onItemChange(index, 'variantAttributes', buildCatalogAttributes(catalog));
+
+    if (catalog.price !== undefined && catalog.price !== null) {
+      onItemChange(index, 'itemPrice', String(catalog.price));
+    }
+
+    setCatalogOpen(false);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-semibold text-slate-600">Select Product Catalog</Label>
+      <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={catalogOpen}
+            className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+          >
+            {selectedCatalog ? (
+              <span className="truncate text-sm">{selectedCatalog.productCatalogName}</span>
+            ) : (
+              <span className="text-muted-foreground text-sm">Choose a catalog...</span>
+            )}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[420px] p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Search catalogs..." className="h-9" />
+            <CommandList>
+              <CommandEmpty>No catalog found.</CommandEmpty>
+              <CommandGroup>
+                {catalogs.map((catalog) => (
+                  <CommandItem
+                    key={catalog.id}
+                    value={`${catalog.productCatalogName} ${catalog.product?.name ?? ''}`}
+                    onSelect={() => handleCatalogSelect(catalog.id!)}
+                  >
+                    <div className="flex flex-1 flex-col">
+                      <span className="font-medium text-sm">{catalog.productCatalogName}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Product: {catalog.product?.name ?? 'N/A'} • Variants:{' '}
+                        {catalog.variants?.length ?? 0} • ₹{catalog.price ?? 0}
+                      </span>
+                    </div>
+                    <Check
+                      className={cn(
+                        'ml-2 h-4 w-4',
+                        item.productCatalogId === catalog.id ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 export function OrderFormItems({
   items,
   itemErrors,
   onAddItem,
+  onAddCatalogItem,
   onRemoveItem,
   onItemChange,
 }: OrderFormItemsProps) {
@@ -268,16 +382,28 @@ export function OrderFormItems({
             </p>
           </div>
         </div>
-        <Button
-          type="button"
-          onClick={onAddItem}
-          className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
-        >
-          <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Item
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button
+            type="button"
+            onClick={onAddItem}
+            className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
+          >
+            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Item
+          </Button>
+          <Button
+            type="button"
+            onClick={onAddCatalogItem}
+            className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md"
+          >
+            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            Add Product Catalog
+          </Button>
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -310,18 +436,31 @@ export function OrderFormItems({
                       </div>
                     </div>
 
-                    {/* Product Selector & Info */}
+                    {/* Product/Catalog Selector & Info */}
                     <div className="col-span-5">
-                      <ProductVariantSelector
-                        item={item}
-                        index={index}
-                        onItemChange={onItemChange}
-                      />
+                      {item.itemType === 'catalog' ? (
+                        <ProductCatalogSelector
+                          item={item}
+                          index={index}
+                          onItemChange={onItemChange}
+                        />
+                      ) : (
+                        <ProductVariantSelector
+                          item={item}
+                          index={index}
+                          onItemChange={onItemChange}
+                        />
+                      )}
                       {(item.productName || item.sku) && (
                         <div className="mt-2 space-y-1">
-                          {item.productName && (
-                            <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {item.itemType === 'catalog' ? (
+                              <Badge variant="secondary" className="text-xs">Catalog</Badge>
+                            ) : null}
+                            {item.productName && (
+                              <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                            )}
+                          </div>
                           {item.sku && (
                             <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                           )}
@@ -411,18 +550,31 @@ export function OrderFormItems({
                       </Button>
                     </div>
 
-                    {/* Product Selector */}
+                    {/* Product/Catalog Selector */}
                     <div>
-                      <ProductVariantSelector
-                        item={item}
-                        index={index}
-                        onItemChange={onItemChange}
-                      />
+                      {item.itemType === 'catalog' ? (
+                        <ProductCatalogSelector
+                          item={item}
+                          index={index}
+                          onItemChange={onItemChange}
+                        />
+                      ) : (
+                        <ProductVariantSelector
+                          item={item}
+                          index={index}
+                          onItemChange={onItemChange}
+                        />
+                      )}
                       {(item.productName || item.sku) && (
                         <div className="mt-2 space-y-1">
-                          {item.productName && (
-                            <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {item.itemType === 'catalog' ? (
+                              <Badge variant="secondary" className="text-xs">Catalog</Badge>
+                            ) : null}
+                            {item.productName && (
+                              <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                            )}
+                          </div>
                           {item.sku && (
                             <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                           )}

@@ -93,7 +93,7 @@ export const sidebarItems: SidebarItem[] = [
       },
       {
         key: 'createOrder',
-        label: 'Create Order',
+        label: 'Create Sale Order',
         path: '/orders/new',
       },
     ],

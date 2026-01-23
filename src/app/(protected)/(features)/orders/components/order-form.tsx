@@ -88,7 +88,8 @@ interface OrderFormProps {
 
 const taxRateOptions = ['6', '12', '18'] as const;
 
-const emptyOrderItem = (): OrderItemForm => ({
+const emptyOrderItem = (itemType: OrderItemForm['itemType'] = 'product'): OrderItemForm => ({
+  itemType,
   itemStatus: '',
   quantity: '',
   itemPrice: '',
@@ -121,6 +122,7 @@ const hasItemData = (item: OrderItemForm) => {
   return Boolean(
     item.productId ||
     item.variantId ||
+    item.productCatalogId ||
     hasText(item.quantity) ||
     hasText(item.itemPrice) ||
     hasText(item.itemTaxAmount) ||
@@ -204,8 +206,10 @@ export function OrderForm({
     if (!initialOrder?.items?.length) return [];
     return initialOrder.items.map((item) => ({
       id: item.orderDetailId || undefined,
+      itemType: item.productCatalogId ? 'catalog' : 'product',
       productId: item.productId || undefined,
       variantId: item.variantId || undefined,
+      productCatalogId: item.productCatalogId || undefined,
       productName: item.productName || undefined,
       sku: item.sku || undefined,
       variantAttributes: item.variantAttributes || undefined,
@@ -379,6 +383,10 @@ export function OrderForm({
 
   const addItem = () => {
     setItems((prev) => [...prev, emptyOrderItem()]);
+  };
+
+  const addCatalogItem = () => {
+    setItems((prev) => [...prev, emptyOrderItem('catalog')]);
   };
 
   const removeItem = (index: number) => {
@@ -797,6 +805,7 @@ export function OrderForm({
           const hasData =
             item.productId ||
             item.variantId ||
+            item.productCatalogId ||
             item.quantity?.trim() ||
             item.itemPrice?.trim() ||
             item.itemTaxAmount?.trim() ||
@@ -806,6 +815,7 @@ export function OrderForm({
           return hasData;
         })
         .map((item) => {
+          const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
           const quantity = parseInteger(item.quantity || '0');
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
@@ -820,8 +830,9 @@ export function OrderForm({
           const detailPayload = {
             id: item.id,
             orderId,
-            productId: item.productId || undefined,
-            variantId: item.variantId || undefined,
+            productId: isCatalog ? undefined : item.productId || undefined,
+            variantId: isCatalog ? undefined : item.variantId || undefined,
+            productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
             productName: item.productName || undefined,
             sku: item.sku || undefined,
             variantAttributes: item.variantAttributes || undefined,
@@ -1015,12 +1026,21 @@ export function OrderForm({
       : '';
   const itemSummaries = items
     .filter(hasItemData)
-    .map((item, index) => ({
-      key: item.id ?? `${item.productId ?? 'item'}-${index}`,
-      name: item.productName || item.sku || `Item ${index + 1}`,
-      quantity: Number.parseInt(item.quantity, 10) || 0,
-      total: calculateItemTotal(item),
-    }));
+    .map((item, index) => {
+      const name =
+        item.itemType === 'catalog'
+          ? item.productName
+            ? `Catalog: ${item.productName}`
+            : 'Catalog item'
+          : item.productName || item.sku || `Item ${index + 1}`;
+
+      return {
+        key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
+        name,
+        quantity: Number.parseInt(item.quantity, 10) || 0,
+        total: calculateItemTotal(item),
+      };
+    });
   const hasItemSummaries = itemSummaries.length > 0;
 
   return (
@@ -1032,6 +1052,7 @@ export function OrderForm({
               items={items}
               itemErrors={errors.items}
               onAddItem={addItem}
+              onAddCatalogItem={addCatalogItem}
               onRemoveItem={removeItem}
               onItemChange={handleItemChange}
             />

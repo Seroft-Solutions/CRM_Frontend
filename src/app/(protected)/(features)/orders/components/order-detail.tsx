@@ -243,7 +243,12 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         <div>
                           {item.productName ? (
                             <>
-                              <div className="font-semibold text-slate-800">{item.productName}</div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                {item.productCatalogId ? (
+                                  <Badge variant="secondary" className="text-xs">Catalog</Badge>
+                                ) : null}
+                                <div className="font-semibold text-slate-800">{item.productName}</div>
+                              </div>
                               {item.sku && (
                                 <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                               )}
@@ -256,7 +261,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             </>
                           ) : (
                             <>
-                              <div className="font-semibold text-slate-800">Item #{index + 1}</div>
+                              <div className="font-semibold text-slate-800">
+                                {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
+                              </div>
                               <div className="text-xs text-muted-foreground">
                                 {item.itemComment || 'No product selected'}
                               </div>

@@ -43,6 +43,7 @@ export interface OrderDetailItem {
   orderId: number;
   productId?: number;
   variantId?: number;
+  productCatalogId?: number;
   productName?: string;
   sku?: string;
   variantAttributes?: string;
@@ -297,6 +298,7 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
     orderId: detail.orderId ?? 0,
     productId: detail.productId ?? undefined,
     variantId: detail.variantId ?? undefined,
+    productCatalogId: detail.productCatalogId ?? undefined,
     productName: detail.productName ?? undefined,
     sku: detail.sku ?? undefined,
     variantAttributes: detail.variantAttributes ?? undefined,

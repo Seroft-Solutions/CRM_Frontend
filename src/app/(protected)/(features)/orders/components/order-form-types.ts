@@ -35,8 +35,10 @@ export type OrderFormState = {
 
 export type OrderItemForm = {
   id?: number;
+  itemType: 'product' | 'catalog';
   productId?: number;
   variantId?: number;
+  productCatalogId?: number;
   productName?: string;
   sku?: string;
   variantAttributes?: string;
