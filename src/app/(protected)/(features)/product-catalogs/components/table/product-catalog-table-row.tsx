@@ -8,6 +8,8 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { ClickableId } from '@/components/clickable-id';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas/ProductCatalogDTO';
 
 interface ProductCatalogTableRowProps {
@@ -43,73 +45,87 @@ export function ProductCatalogTableRow({
           onCheckedChange={() => productCatalog.id && onSelect(productCatalog.id)}
         />
       </TableCell>
-      {visibleColumns.map((column, index) => (
-        <TableCell
-          key={column.id}
-          className={`
+      {visibleColumns.map((column, index) => {
+        const cellClassName =
+          column.id === 'image'
+            ? 'px-2 sm:px-3 py-2 w-[90px]'
+            : `
             px-2 sm:px-3 py-2
             ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
             whitespace-nowrap overflow-hidden text-ellipsis
-          `}
-        >
-          {column.type === 'field'
-            ? (() => {
-                const field = productCatalog[column.accessor as keyof typeof productCatalog];
+          `;
 
-                if (column.id === 'id') {
-                  return (
-                    <ClickableId id={field as string | number} entityType="product-catalogs" />
-                  );
-                }
+        return (
+          <TableCell key={column.id} className={cellClassName}>
+            {column.type === 'field'
+              ? (() => {
+                  const field = productCatalog[column.accessor as keyof typeof productCatalog];
 
-                if (column.id === 'productCatalogName') {
+                  if (column.id === 'id') {
+                    return (
+                      <ClickableId id={field as string | number} entityType="product-catalogs" />
+                    );
+                  }
+
+                  if (column.id === 'image') {
+                    return (
+                      <ProductImageThumbnail
+                        imageUrl={resolveCatalogImageUrl(productCatalog.image)}
+                        productName={productCatalog.productCatalogName || 'Catalog'}
+                        size={32}
+                      />
+                    );
+                  }
+
+                  if (column.id === 'productCatalogName') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'price') {
+                    return formatPrice(field as number | undefined);
+                  }
+
+                  if (column.id === 'description') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'createdBy') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'createdDate') {
+                    return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
+                  if (column.id === 'lastModifiedBy') {
+                    return field?.toString() || '';
+                  }
+
+                  if (column.id === 'lastModifiedDate') {
+                    return field ? format(new Date(field as string), 'PPP') : '';
+                  }
+
                   return field?.toString() || '';
-                }
+                })()
+              : (() => {
+                  if (column.id === 'product') {
+                    return productCatalog.product?.name || '';
+                  }
 
-                if (column.id === 'price') {
-                  return formatPrice(field as number | undefined);
-                }
+                  if (column.id === 'variants') {
+                    const variants = productCatalog.variants || [];
+                    if (variants.length === 0) return '';
+                    return variants
+                      .map((variant) => variant.sku || variant.id)
+                      .filter(Boolean)
+                      .join(', ');
+                  }
 
-                if (column.id === 'description') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'createdBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                if (column.id === 'lastModifiedBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                return field?.toString() || '';
-              })()
-            : (() => {
-                if (column.id === 'product') {
-                  return productCatalog.product?.name || '';
-                }
-
-                if (column.id === 'variants') {
-                  const variants = productCatalog.variants || [];
-                  if (variants.length === 0) return '';
-                  return variants
-                    .map((variant) => variant.sku || variant.id)
-                    .filter(Boolean)
-                    .join(', ');
-                }
-
-                return '';
-              })()}
-        </TableCell>
-      ))}
+                  return '';
+                })()}
+          </TableCell>
+        );
+      })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
           <InlinePermissionGuard requiredPermission="productCatalog:read">

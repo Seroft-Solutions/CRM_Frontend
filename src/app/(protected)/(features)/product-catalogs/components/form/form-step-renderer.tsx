@@ -24,6 +24,7 @@ import { RelationshipRenderer } from './relationship-renderer';
 import { VariantImagesStep } from './variant-images-step';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -385,10 +386,16 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                           return <span className="text-muted-foreground italic">Not set</span>;
                         }
 
+                        const imageUrl = resolveCatalogImageUrl(String(value));
+
+                        if (!imageUrl) {
+                          return <span className="text-muted-foreground italic">Not set</span>;
+                        }
+
                         return (
                           <div className="flex items-center gap-2">
                             <img
-                              src={String(value)}
+                              src={imageUrl}
                               alt="Catalog image"
                               className="h-10 w-10 rounded border object-cover"
                               loading="lazy"

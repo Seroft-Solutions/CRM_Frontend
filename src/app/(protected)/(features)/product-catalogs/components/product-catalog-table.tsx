@@ -82,6 +82,14 @@ const ALL_COLUMNS: ColumnConfig[] = [
     sortable: true,
   },
   {
+    id: 'image',
+    label: 'Image',
+    accessor: 'image',
+    type: 'field',
+    visible: true,
+    sortable: false,
+  },
+  {
     id: 'productCatalogName',
     label: 'Catalog Name',
     accessor: 'productCatalogName',
@@ -174,7 +182,16 @@ export function ProductCatalogTable() {
     try {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) {
-        setColumnVisibility(parsed);
+        const storedById = new Map(parsed.map((column) => [column.id, column]));
+        const mergedColumns = ALL_COLUMNS.map((column) => {
+          const storedColumn = storedById.get(column.id);
+          if (!storedColumn) return column;
+          return {
+            ...column,
+            visible: storedColumn.visible,
+          };
+        });
+        setColumnVisibility(mergedColumns);
       }
     } catch (error) {
       console.error('Failed to parse column visibility:', error);

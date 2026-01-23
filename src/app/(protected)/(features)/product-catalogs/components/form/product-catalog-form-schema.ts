@@ -22,7 +22,6 @@ export const productCatalogFormSchemaFields = {
     .optional(),
   image: z
     .string()
-    .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
   product: z.number({ message: 'Please select product from the dropdown' }),
   variants: z.array(z.number()).optional(),
@@ -51,7 +50,6 @@ export const productCatalogFieldSchemas = {
     .optional(),
   image: z
     .string()
-    .max(500, { message: 'Please enter no more than 500 characters' })
     .optional(),
   product: z.number({ message: 'Please select product from the dropdown' }),
   variants: z.array(z.number()).optional(),

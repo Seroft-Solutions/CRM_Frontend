@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { Pencil } from 'lucide-react';
 import { handleProductCatalogError, productCatalogToast } from './product-catalog-toast';
 import { productCatalogFormConfig } from './form/product-catalog-form-config';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -123,9 +124,10 @@ export function ProductCatalogDetails({ id }: ProductCatalogDetailsProps) {
 
   const renderFieldValue = (fieldConfig: any, value: any) => {
     if (fieldConfig.name === 'image') {
-      return value ? (
+      const imageUrl = resolveCatalogImageUrl(String(value || ''));
+      return imageUrl ? (
         <img
-          src={String(value)}
+          src={imageUrl}
           alt="Catalog image"
           className="h-16 w-16 rounded border object-cover"
           loading="lazy"

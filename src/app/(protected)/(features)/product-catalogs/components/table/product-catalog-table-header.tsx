@@ -63,15 +63,20 @@ export function ProductCatalogTableHeader({
             }}
           />
         </TableHead>
-        {visibleColumns.map((column, index) => (
-          <TableHead
-            key={column.id}
-            className={`
+        {visibleColumns.map((column, index) => {
+          const isImageColumn = column.id === 'image';
+
+          return (
+            <TableHead
+              key={column.id}
+              className={`
               px-2 sm:px-3 py-2
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
+              ${
+                isImageColumn ? 'w-[90px]' : index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'
+              }
               whitespace-nowrap
             `}
-          >
+            >
             {column.sortable ? (
               <Button
                 variant="ghost"
@@ -84,8 +89,9 @@ export function ProductCatalogTableHeader({
             ) : (
               <span className="font-medium text-gray-700 text-sm">{column.label}</span>
             )}
-          </TableHead>
-        ))}
+            </TableHead>
+          );
+        })}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-gray-50 px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
           <div className="flex items-center justify-center gap-1 sm:gap-2 font-medium text-gray-700 text-xs sm:text-sm">
             <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-500" />
@@ -99,14 +105,19 @@ export function ProductCatalogTableHeader({
         <TableHead className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
           {/* Empty cell for checkbox column */}
         </TableHead>
-        {visibleColumns.map((column, index) => (
-          <TableHead
-            key={`filter-${column.id}`}
-            className={`
+        {visibleColumns.map((column, index) => {
+          const isImageColumn = column.id === 'image';
+
+          return (
+            <TableHead
+              key={`filter-${column.id}`}
+              className={`
               px-2 sm:px-3 py-2
-              ${index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'}
+              ${
+                isImageColumn ? 'w-[90px]' : index === 0 ? 'min-w-[120px]' : 'min-w-[100px]'
+              }
             `}
-          >
+            >
             {column.type === 'field'
               ? (() => {
                   if (column.accessor === 'productCatalogName') {
@@ -148,8 +159,9 @@ export function ProductCatalogTableHeader({
                   return null;
                 })()
               : null}
-          </TableHead>
-        ))}
+            </TableHead>
+          );
+        })}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">
           {/* Empty cell for actions column */}
         </TableHead>
