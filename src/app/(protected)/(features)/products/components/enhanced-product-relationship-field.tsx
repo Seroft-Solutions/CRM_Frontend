@@ -32,6 +32,7 @@ interface EnhancedProductRelationshipFieldProps {
   onProductCreated?: (productId: number) => void;
   customFilters?: Record<string, unknown>;
   buttonClassName?: string;
+  createPayload?: Partial<ProductDTO>;
 }
 
 export function EnhancedProductRelationshipField({
@@ -46,6 +47,7 @@ export function EnhancedProductRelationshipField({
   onProductCreated,
   customFilters = {},
   buttonClassName = '',
+  createPayload,
 }: EnhancedProductRelationshipFieldProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -315,6 +317,7 @@ export function EnhancedProductRelationshipField({
             <ProductCreateSheet
               onSuccess={handleProductCreated}
               isBusinessPartner={isBusinessPartner}
+              createPayload={createPayload}
               trigger={
                 <Button
                   type="button"

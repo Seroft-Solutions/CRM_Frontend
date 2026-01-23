@@ -81,12 +81,14 @@ interface ProductCreateSheetProps {
   onSuccess?: (product: ProductDTO) => void;
   trigger?: React.ReactNode;
   isBusinessPartner?: boolean;
+  createPayload?: Partial<ProductDTO>;
 }
 
 export function ProductCreateSheet({
   onSuccess,
   trigger,
   isBusinessPartner = false,
+  createPayload,
 }: ProductCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -169,7 +171,7 @@ export function ProductCreateSheet({
       status: ProductDTOStatus.ACTIVE,
     };
 
-    createProduct({ data: productData });
+    createProduct({ data: { ...productData, ...createPayload } });
   };
 
   const handleOpenChange = (open: boolean) => {

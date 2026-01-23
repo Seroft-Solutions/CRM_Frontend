@@ -180,6 +180,7 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
                   multiple={true}
                   canCreate={true}
                   createPermission="product:create:inline"
+                  createPayload={{ sundryCreditorProduct: true }}
                   onProductCreated={(productId) => {
                     console.log('New product created:', productId);
                   }}

@@ -60,6 +60,7 @@ export interface ProductDTO {
    * @maxLength 1000
    */
   remark?: string;
+  sundryCreditorProduct?: boolean;
   status: ProductDTOStatus;
   /**
    * @minLength 0

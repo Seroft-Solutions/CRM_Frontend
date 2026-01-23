@@ -531,14 +531,21 @@ export function ProductTable() {
         return { 'status.equals': ProductDTOStatus.ARCHIVED };
       case 'all':
         return {};
+      case 'sundry':
+        return {};
       default:
         return { 'status.equals': ProductDTOStatus.ACTIVE };
     }
   };
 
+  const getSundryFilter = () => {
+    return { 'sundryCreditorProduct.equals': activeStatusTab === 'sundry' };
+  };
+
   const buildFilterParams = () => {
     const params: Record<string, unknown> = {
       ...getStatusFilter(),
+      ...getSundryFilter(),
     };
 
     const relationshipMappings = {
@@ -1433,7 +1440,7 @@ export function ProductTable() {
           }}
         >
           <TabsList
-            className={`grid w-full ${TABLE_CONFIG.showDraftTab ? 'grid-cols-5' : 'grid-cols-4'}`}
+            className={`grid w-full ${TABLE_CONFIG.showDraftTab ? 'grid-cols-6' : 'grid-cols-5'}`}
           >
             <TabsTrigger value="active" className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -1454,6 +1461,7 @@ export function ProductTable() {
               </TabsTrigger>
             )}
             <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="sundry">Sundry Products</TabsTrigger>
           </TabsList>
         </Tabs>
 

@@ -82,6 +82,11 @@ export type CountProductsParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
+'sundryCreditorProduct.equals'?: boolean;
+'sundryCreditorProduct.notEquals'?: boolean;
+'sundryCreditorProduct.specified'?: boolean;
+'sundryCreditorProduct.in'?: boolean[];
+'sundryCreditorProduct.notIn'?: boolean[];
 'status.equals'?: CountProductsStatusEquals;
 'status.notEquals'?: CountProductsStatusNotEquals;
 'status.specified'?: boolean;
