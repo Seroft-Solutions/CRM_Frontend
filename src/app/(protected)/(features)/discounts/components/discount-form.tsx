@@ -22,21 +22,56 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useDebounce } from '@/hooks/use-debounce';
+import { getDiscountByCode } from '../actions/discount-api';
 import { useCreateDiscountMutation, useUpdateDiscountMutation, useDiscountQuery } from '../actions/discount-hooks';
 import { IDiscount } from '../types/discount';
 import { useRouter } from 'next/navigation';
 import { Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-const discountFormSchema = z.object({
-    discountCode: z.string().min(2, 'Code must be at least 2 characters').max(20),
-    discountType: z.enum(['PERCENTAGE', 'AMOUNT']),
-    discountCategory: z.enum(['PROMO', 'SEASONAL', 'BUNDLE', 'VOUCHER']),
-    discountValue: z.number().min(0),
-    maxDiscountValue: z.number().min(0),
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
-});
+const duplicateCodeMessage = 'Discount code already exists.';
+const codeCheckFailedMessage = 'Unable to verify discount code right now.';
+
+const discountFormSchema = z
+    .object({
+        discountCode: z.string().min(2, 'Code must be at least 2 characters').max(20),
+        discountType: z.enum(['PERCENTAGE', 'AMOUNT']),
+        discountCategory: z.enum(['PROMO', 'SEASONAL', 'BUNDLE', 'VOUCHER']),
+        discountValue: z.number().min(0),
+        maxDiscountValue: z.number().min(0),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+    })
+    .superRefine((values, ctx) => {
+        const discountValue = Number(values.discountValue);
+        const maxDiscountValue = Number(values.maxDiscountValue);
+
+        if (Number.isFinite(discountValue) && Number.isFinite(maxDiscountValue)) {
+            if (maxDiscountValue <= discountValue) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Max discount value must be greater than discount value',
+                    path: ['maxDiscountValue'],
+                });
+            }
+        }
+
+        const startDateValue = values.startDate?.trim();
+        const endDateValue = values.endDate?.trim();
+        const startDate = startDateValue ? new Date(startDateValue) : null;
+        const endDate = endDateValue ? new Date(endDateValue) : null;
+
+        if (startDate && endDate && !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
+            if (endDate <= startDate) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'End date must be after start date',
+                    path: ['endDate'],
+                });
+            }
+        }
+    });
 type DiscountFormValues = z.infer<typeof discountFormSchema>;
 
 interface DiscountFormProps {
@@ -48,6 +83,7 @@ export function DiscountForm({ id }: DiscountFormProps) {
     const { data: existingDiscount, isLoading: isLoadingExisting } = useDiscountQuery(id!);
     const { mutate: createDiscount, isPending: isCreating } = useCreateDiscountMutation();
     const { mutate: updateDiscount, isPending: isUpdating } = useUpdateDiscountMutation();
+    const [isCheckingCode, setIsCheckingCode] = React.useState(false);
 
     const form = useForm<DiscountFormValues>({
         resolver: zodResolver(discountFormSchema) as any,
@@ -61,6 +97,19 @@ export function DiscountForm({ id }: DiscountFormProps) {
             endDate: '',
         },
     });
+
+    const watchedDiscountCode = form.watch('discountCode');
+    const debouncedDiscountCode = useDebounce(watchedDiscountCode, 400);
+
+    const clearManualDiscountCodeError = React.useCallback(() => {
+        const fieldError = form.getFieldState('discountCode').error;
+        if (
+            fieldError?.type === 'manual' &&
+            (fieldError.message === duplicateCodeMessage || fieldError.message === codeCheckFailedMessage)
+        ) {
+            form.clearErrors('discountCode');
+        }
+    }, [form]);
 
     React.useEffect(() => {
         if (existingDiscount) {
@@ -76,6 +125,74 @@ export function DiscountForm({ id }: DiscountFormProps) {
         }
     }, [existingDiscount, form]);
 
+    React.useEffect(() => {
+        const code = debouncedDiscountCode?.trim();
+
+        if (!code || code.length < 2) {
+            clearManualDiscountCodeError();
+            setIsCheckingCode(false);
+            return;
+        }
+
+        if (existingDiscount?.discountCode && code.toUpperCase() === existingDiscount.discountCode.toUpperCase()) {
+            clearManualDiscountCodeError();
+            setIsCheckingCode(false);
+            return;
+        }
+
+        let isActive = true;
+        setIsCheckingCode(true);
+
+        getDiscountByCode(code)
+            .then((discount) => {
+                if (!isActive) return;
+                if (discount?.id && discount.id !== id) {
+                    form.setError('discountCode', { type: 'manual', message: duplicateCodeMessage });
+                } else {
+                    clearManualDiscountCodeError();
+                }
+            })
+            .catch((error) => {
+                if (!isActive) return;
+                if (error?.response?.status === 404) {
+                    clearManualDiscountCodeError();
+                } else {
+                    form.setError('discountCode', { type: 'manual', message: codeCheckFailedMessage });
+                }
+            })
+            .finally(() => {
+                if (isActive) {
+                    setIsCheckingCode(false);
+                }
+            });
+
+        return () => {
+            isActive = false;
+        };
+    }, [debouncedDiscountCode, existingDiscount?.discountCode, id, form, clearManualDiscountCodeError]);
+
+    const applyServerErrors = (error: any) => {
+        const messageKey = error?.response?.data?.message;
+        const title = error?.response?.data?.title || error?.message;
+
+        switch (messageKey) {
+            case 'error.discountcodeexists':
+                form.setError('discountCode', { type: 'server', message: title || duplicateCodeMessage });
+                return;
+            case 'error.maxdiscountinvalid':
+                form.setError('maxDiscountValue', {
+                    type: 'server',
+                    message: title || 'Max discount value must be greater than discount value',
+                });
+                return;
+            case 'error.discountdaterange':
+                form.setError('endDate', { type: 'server', message: title || 'End date must be after start date' });
+                return;
+            default:
+                return;
+        }
+    };
+
     function onSubmit(values: DiscountFormValues) {
         const payload: IDiscount = {
             ...values,
@@ -90,11 +207,13 @@ export function DiscountForm({ id }: DiscountFormProps) {
                 { id, discount: payload },
                 {
                     onSuccess: () => router.push('/discounts'),
+                    onError: applyServerErrors,
                 }
             );
         } else {
             createDiscount(payload, {
                 onSuccess: () => router.push('/discounts'),
+                onError: applyServerErrors,
             });
         }
     }
@@ -112,22 +231,48 @@ export function DiscountForm({ id }: DiscountFormProps) {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6">
                     <div className="space-y-4">
-                        <TypedFormField
-                            control={form.control}
-                            name="discountCode"
-                            render={({ field }: any) => (
-                                <FormItem>
-                                    <FormLabel>Discount Code</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="E.g. SUMMER2024" {...field} />
-                                    </FormControl>
-                                    <FormDescription>The code users will enter to apply the discount.</FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                            <TypedFormField
+                                control={form.control}
+                                name="discountCategory"
+                                render={({ field }: any) => (
+                                    <FormItem>
+                                        <FormLabel>Discount Category</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="h-10 w-full">
+                                                    <SelectValue placeholder="Select category" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="PROMO">Promo</SelectItem>
+                                                <SelectItem value="SEASONAL">Seasonal</SelectItem>
+                                                <SelectItem value="BUNDLE">Bundle</SelectItem>
+                                                <SelectItem value="VOUCHER">Voucher</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
 
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <TypedFormField
+                                control={form.control}
+                                name="discountCode"
+                                render={({ field }: any) => (
+                                    <FormItem>
+                                        <FormLabel>Discount Code</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="E.g. SUMMER2024" className="h-10" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
                             <TypedFormField
                                 control={form.control}
                                 name="discountType"
@@ -139,7 +284,7 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                             value={field.value}
                                         >
                                             <FormControl>
-                                                <SelectTrigger>
+                                                <SelectTrigger className="h-10 w-full">
                                                     <SelectValue placeholder="Select type" />
                                                 </SelectTrigger>
                                             </FormControl>
@@ -155,35 +300,6 @@ export function DiscountForm({ id }: DiscountFormProps) {
 
                             <TypedFormField
                                 control={form.control}
-                                name="discountCategory"
-                                render={({ field }: any) => (
-                                    <FormItem>
-                                        <FormLabel>Discount Category</FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select category" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="PROMO">Promo</SelectItem>
-                                                <SelectItem value="SEASONAL">Seasonal</SelectItem>
-                                                <SelectItem value="BUNDLE">Bundle</SelectItem>
-                                                <SelectItem value="VOUCHER">Voucher</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <TypedFormField
-                                control={form.control}
                                 name="discountValue"
                                 render={({ field }: any) => (
                                     <FormItem>
@@ -192,8 +308,12 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                             <div className="relative">
                                                 <Input
                                                     type="number"
+                                                    className="h-10"
                                                     {...field}
-                                                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                                    onChange={(e) => {
+                                                        const nextValue = e.target.value;
+                                                        field.onChange(nextValue === '' ? 0 : Number(nextValue));
+                                                    }}
                                                 />
                                                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
                                                     {form.watch('discountType') === 'PERCENTAGE' ? '%' : '₹'}
@@ -214,8 +334,12 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                         <FormControl>
                                             <Input
                                                 type="number"
+                                                className="h-10"
                                                 {...field}
-                                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                                onChange={(e) => {
+                                                    const nextValue = e.target.value;
+                                                    field.onChange(nextValue === '' ? 0 : Number(nextValue));
+                                                }}
                                                 placeholder="E.g. 500"
                                             />
                                         </FormControl>
@@ -224,6 +348,11 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                 )}
                             />
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                            {isCheckingCode
+                                ? 'Checking code availability...'
+                                : 'The code users will enter to apply the discount.'}
+                        </p>
 
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <FormField

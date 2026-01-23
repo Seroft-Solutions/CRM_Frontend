@@ -78,7 +78,7 @@ export const sidebarItems: SidebarItem[] = [
     children: [
       {
         key: 'ordersList',
-        label: 'Orders',
+        label: 'Sale Orders',
         path: '/orders',
       },
       {
@@ -89,7 +89,7 @@ export const sidebarItems: SidebarItem[] = [
       },
       {
         key: 'orderHistory',
-        label: 'Order History',
+        label: 'Sale Order History',
         path: '/orders/history',
       },
       {
@@ -108,19 +108,19 @@ export const sidebarItems: SidebarItem[] = [
     children: [
       {
         key: 'purchaseOrdersList',
-        label: 'View Orders',
+        label: 'View Purchase Orders',
         path: '/purchase-orders',
         requiredPermission: 'purchase-order:read',
       },
       {
         key: 'createPurchaseOrder',
-        label: 'Create Order',
+        label: 'Create Purchase Order',
         path: '/purchase-orders/new',
         requiredPermission: 'purchase-order:create',
       },
       {
         key: 'purchaseOrderHistory',
-        label: 'Order History',
+        label: 'Purchase Order History',
         path: '/purchase-orders/history',
         requiredPermission: 'purchase-order:read',
       },
