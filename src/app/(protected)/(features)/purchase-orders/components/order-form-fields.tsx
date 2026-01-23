@@ -224,6 +224,7 @@ export function OrderFormFields({
               placeholder="Select sundry creditor"
               entityName="SundryCreditors"
               displayField="customerBusinessName"
+              searchField="creditorName"
               useGetAllHook={useGetAllSundryCreditors}
               canCreate={true}
               createEntityPath="/sundry-creditors/new"

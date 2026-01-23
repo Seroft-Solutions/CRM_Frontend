@@ -7,6 +7,7 @@ import {
   Box,
   ArrowDownToLine,
   Cog,
+  ShoppingBag,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -95,6 +96,33 @@ export const sidebarItems: SidebarItem[] = [
         key: 'createOrder',
         label: 'Create Sale Order',
         path: '/orders/new',
+      },
+    ],
+  },
+  {
+    key: 'purchaseOrders',
+    label: 'Purchase Orders',
+    icon: ShoppingBag,
+    expandable: false,
+    requiredPermission: 'purchase-order:read',
+    children: [
+      {
+        key: 'purchaseOrdersList',
+        label: 'View Orders',
+        path: '/purchase-orders',
+        requiredPermission: 'purchase-order:read',
+      },
+      {
+        key: 'createPurchaseOrder',
+        label: 'Create Order',
+        path: '/purchase-orders/new',
+        requiredPermission: 'purchase-order:create',
+      },
+      {
+        key: 'purchaseOrderHistory',
+        label: 'Order History',
+        path: '/purchase-orders/history',
+        requiredPermission: 'purchase-order:read',
       },
     ],
   },
