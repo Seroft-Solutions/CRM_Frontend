@@ -223,7 +223,7 @@ export function OrderFormFields({
               onValueChange={(value) => onChange('customerId', value ? String(value) : '')}
               placeholder="Select sundry creditor"
               entityName="SundryCreditors"
-              displayField="customerBusinessName"
+              displayField="creditorName"
               searchField="creditorName"
               useGetAllHook={useGetAllSundryCreditors}
               canCreate={true}
