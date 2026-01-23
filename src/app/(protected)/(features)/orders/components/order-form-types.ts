@@ -1,6 +1,4 @@
 import type {
-  DiscountMode,
-  DiscountType,
   NotificationType,
   OrderStatus,
   PaymentStatus,
@@ -15,17 +13,11 @@ export type OrderFormState = {
   paymentStatus: PaymentStatus;
   userType: UserType;
   orderBaseAmount: string;
-  discountMode: OptionalSelectValue<DiscountMode>;
-  discountValue: string;
-  maxDiscountValue: string;
-  discountStartDate: string;
-  discountEndDate: string;
   shippingAmount: string;
   orderTaxRate: string;
   customerId: string;
   shippingMethod: OptionalSelectValue<ShippingMethod>;
   shippingId?: string;
-  discountType?: OptionalSelectValue<DiscountType>;
   discountCode?: string;
   notificationType?: OptionalSelectValue<NotificationType>;
   busyFlag: boolean;
@@ -46,9 +38,6 @@ export type OrderItemForm = {
   quantity: string;
   itemPrice: string;
   itemTaxAmount: string;
-  discountType?: OptionalSelectValue<DiscountType>;
-  discountCode?: string;
-  discountAmount?: string;
   itemComment?: string;
 };
 
@@ -75,11 +64,6 @@ export type ItemErrors = Partial<Record<keyof OrderItemForm, string>>;
 
 export type OrderFormErrors = {
   orderBaseAmount?: string;
-  discountMode?: string;
-  discountValue?: string;
-  maxDiscountValue?: string;
-  discountStartDate?: string;
-  discountEndDate?: string;
   shippingAmount?: string;
   orderTaxRate?: string;
   customerId?: string;

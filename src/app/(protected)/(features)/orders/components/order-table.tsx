@@ -9,11 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import type { CountOrdersParams } from '@/core/api/generated/spring/schemas';
-import { useGetAllOrderDiscountDetails } from '@/core/api/order-discount-detail';
 import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
 import {
   getOrderStatusCode,
-  mapOrderDiscountDetail,
   mapOrderDtoToRecord,
   mapOrderShippingDetail,
   OrderStatus,
@@ -119,37 +117,36 @@ export function OrderTable() {
     }
   );
 
-  const { data: discountData } = useGetAllOrderDiscountDetails(
-    orderIds.length ? { 'orderId.in': orderIds } : undefined,
-    {
-      query: {
-        enabled: orderIds.length > 0,
-        refetchOnWindowFocus: false,
-        staleTime: 30_000,
-      },
-    }
-  );
-
   const shippingByOrderId = useMemo(() => {
     return new Map((shippingData ?? []).map((shipping) => [shipping.orderId ?? 0, shipping]));
   }, [shippingData]);
-
-  const discountByOrderId = useMemo(() => {
-    return new Map((discountData ?? []).map((discount) => [discount.orderId ?? 0, discount]));
-  }, [discountData]);
 
   const ordersWithShipping = useMemo(() => {
     return orders.map((order) => {
       const shipping = shippingByOrderId.get(order.orderId);
       const orderDto = orderById.get(order.orderId);
-      const discount = discountByOrderId.get(order.orderId);
       return {
         ...order,
         shipping: mapOrderShippingDetail(shipping, orderDto),
-        discount: mapOrderDiscountDetail(discount, orderDto),
       };
     });
-  }, [orders, orderById, shippingByOrderId, discountByOrderId]);
+  }, [orders, orderById, shippingByOrderId]);
+
+  const resolveDiscountAmount = (order: (typeof ordersWithShipping)[number]) => {
+    if (order.discountAmount > 0) {
+      return order.discountAmount;
+    }
+    if (!order.discountCode) {
+      return 0;
+    }
+    const shippingAmount = order.shipping.shippingAmount ?? 0;
+    const taxRate = order.orderTaxRate ?? 0;
+    const totalAmount = order.orderTotalAmount ?? 0;
+    const divisor = 1 + taxRate / 100;
+    if (divisor <= 0) return 0;
+    const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
+    return Math.max(order.orderBaseAmount - taxableAmount, 0);
+  };
 
   const totalCount = countData ?? orders.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -307,9 +304,9 @@ export function OrderTable() {
                     <div className="text-xs text-muted-foreground">
                       Base {formatCurrency(order.orderBaseAmount)}
                     </div>
-                    {order.discount.discountAmount > 0 && (
+                    {resolveDiscountAmount(order) > 0 && (
                       <div className="text-xs font-semibold text-red-600">
-                        -{formatCurrency(order.discount.discountAmount)}
+                        -{formatCurrency(resolveDiscountAmount(order))}
                       </div>
                     )}
                   </div>
@@ -345,9 +342,9 @@ export function OrderTable() {
                     <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
                       {order.paymentStatus}
                     </Badge>
-                    {order.discount.discountCode ? (
+                    {order.discountCode ? (
                       <div className="mt-1 text-xs font-semibold text-amber-700">
-                        {order.discount.discountCode}
+                        {order.discountCode}
                       </div>
                     ) : null}
                   </div>

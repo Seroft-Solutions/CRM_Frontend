@@ -30,7 +30,18 @@ interface OrderDetailProps {
 
 export function OrderDetail({ order }: OrderDetailProps) {
   const taxRate = order.orderTaxRate ?? 0;
-  const taxableAmount = Math.max(order.orderBaseAmount - order.discount.discountAmount, 0);
+  const discountAmount = (() => {
+    if (!order.discountCode) {
+      return 0;
+    }
+    const shippingAmount = order.shipping.shippingAmount ?? 0;
+    const totalAmount = order.orderTotalAmount ?? 0;
+    const divisor = 1 + taxRate / 100;
+    if (divisor <= 0) return 0;
+    const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
+    return Math.max(order.orderBaseAmount - taxableAmount, 0);
+  })();
+  const taxableAmount = Math.max(order.orderBaseAmount - discountAmount, 0);
   const taxAmount = (taxRate / 100) * taxableAmount;
   const customerName = order.customer?.customerBusinessName || order.email || '—';
   const customerPhone = order.customer?.mobile || order.phone || '—';
@@ -66,7 +77,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between text-red-600">
               <span>Discount</span>
               <span className="font-semibold">
-                - {formatCurrency(order.discount.discountAmount)}
+                - {formatCurrency(discountAmount)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -89,32 +100,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 {formatCurrency(order.orderTotalAmount)}
               </span>
             </div>
-            {order.discount.discountCode ? (
+            {order.discountCode ? (
               <div className="rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
-                <span className="font-semibold">Code:</span> {order.discount.discountCode} ·{' '}
-                {order.discount.discountType || 'N/A'}
-              </div>
-            ) : null}
-            {order.discount.discountMode ? (
-              <div className="text-xs text-amber-900">
-                <span className="font-semibold">Mode:</span> {order.discount.discountMode}{' '}
-                {order.discount.discountValue
-                  ? order.discount.discountMode === 'Percentage'
-                    ? `· ${order.discount.discountValue}%`
-                    : `· ${formatCurrency(order.discount.discountValue)}`
-                  : ''}
-              </div>
-            ) : null}
-            {order.discount.maxDiscountValue ? (
-              <div className="text-xs text-slate-600">
-                <span className="font-semibold">Cap:</span>{' '}
-                {formatCurrency(order.discount.maxDiscountValue)}
-              </div>
-            ) : null}
-            {order.discount.startDate || order.discount.endDate ? (
-              <div className="text-xs text-slate-600">
-                <span className="font-semibold">Validity:</span>{' '}
-                {order.discount.startDate || '—'} → {order.discount.endDate || '—'}
+                <span className="font-semibold">Code:</span> {order.discountCode}
               </div>
             ) : null}
           </CardContent>
@@ -190,10 +178,8 @@ export function OrderDetail({ order }: OrderDetailProps) {
               <span className="font-semibold text-slate-800">{order.shipping.shippingId || '—'}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-600">Discount Type</span>
-              <span className="font-semibold text-slate-800">
-                {order.discount.discountType || '—'}
-              </span>
+              <span className="text-slate-600">Discount Code</span>
+              <span className="font-semibold text-slate-800">{order.discountCode || '—'}</span>
             </div>
             <div className="rounded-md bg-slate-50 p-2">
               <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-600">Audit Trail</div>
@@ -228,7 +214,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 <TableHead className="font-bold text-slate-700">Price</TableHead>
                 <TableHead className="font-bold text-slate-700">Tax</TableHead>
                 <TableHead className="font-bold text-slate-700">Total</TableHead>
-                <TableHead className="font-bold text-slate-700">Discount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -283,24 +268,11 @@ export function OrderDetail({ order }: OrderDetailProps) {
                     <TableCell className="font-bold text-slate-900">
                       {formatCurrency(item.itemTotalAmount)}
                     </TableCell>
-                    <TableCell>
-                      {item.discountAmount ? (
-                        <div className="space-y-1">
-                          <div className="font-semibold text-red-600">-{formatCurrency(item.discountAmount)}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {item.discountType || 'Discount'}{' '}
-                            {item.discountCode ? `· ${item.discountCode}` : ''}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center">
+                  <TableCell colSpan={6} className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
                         <svg className="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -15,10 +15,6 @@ import {
 } from '@/components/ui/select';
 import {
   OrderRecord,
-  discountModeOptions,
-  discountTypeOptions,
-  getDiscountModeCode,
-  getDiscountTypeCode,
   getNotificationTypeCode,
   getOrderStatusCode,
   getPaymentStatusCode,
@@ -56,14 +52,11 @@ import {
 } from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import {
-  useCreateOrderDiscountDetail,
-  useUpdateOrderDiscountDetail,
-} from '@/core/api/order-discount-detail';
-import {
   useCreateOrderShippingDetail,
   useUpdateOrderShippingDetail,
 } from '@/core/api/order-shipping-detail';
 import { getDiscountByCode } from '../../discounts/actions/discount-api';
+import type { IDiscount } from '../../discounts/types/discount';
 import type {
   AddressFieldsForm,
   ItemErrors,
@@ -82,7 +75,6 @@ interface OrderFormProps {
   initialOrder?: OrderRecord;
   addressExists?: boolean;
   shippingExists?: boolean;
-  discountExists?: boolean;
   onSubmitSuccess?: () => void;
 }
 
@@ -94,9 +86,6 @@ const emptyOrderItem = (itemType: OrderItemForm['itemType'] = 'product'): OrderI
   quantity: '',
   itemPrice: '',
   itemTaxAmount: '',
-  discountType: '',
-  discountCode: '',
-  discountAmount: '',
   itemComment: '',
 });
 
@@ -105,16 +94,14 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-    const discount = Number.parseFloat(item.discountAmount || '0') || 0;
-    return sum + Math.max(qty * price + tax - discount, 0);
+    return sum + Math.max(qty * price + tax, 0);
   }, 0);
 
 const calculateItemTotal = (item: OrderItemForm) => {
   const qty = Number.parseInt(item.quantity, 10) || 0;
   const price = Number.parseFloat(item.itemPrice) || 0;
   const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-  const discount = Number.parseFloat(item.discountAmount || '0') || 0;
-  return Math.max(qty * price + tax - discount, 0);
+  return Math.max(qty * price + tax, 0);
 };
 
 const hasItemData = (item: OrderItemForm) => {
@@ -126,8 +113,6 @@ const hasItemData = (item: OrderItemForm) => {
     hasText(item.quantity) ||
     hasText(item.itemPrice) ||
     hasText(item.itemTaxAmount) ||
-    hasText(item.discountAmount) ||
-    hasText(item.discountCode) ||
     hasText(item.itemComment)
   );
 };
@@ -142,7 +127,6 @@ export function OrderForm({
   initialOrder,
   addressExists,
   shippingExists,
-  discountExists,
   onSubmitSuccess,
 }: OrderFormProps) {
   const router = useRouter();
@@ -160,35 +144,23 @@ export function OrderForm({
   const { mutateAsync: deleteOrderDetail } = useDeleteOrderDetail();
   const { mutateAsync: createOrderAddressDetail } = useCreateOrderAddressDetail();
   const { mutateAsync: updateOrderAddressDetail } = useUpdateOrderAddressDetail();
-  const { mutateAsync: createOrderDiscountDetail } = useCreateOrderDiscountDetail();
-  const { mutateAsync: updateOrderDiscountDetail } = useUpdateOrderDiscountDetail();
   const { mutateAsync: createOrderShippingDetail } = useCreateOrderShippingDetail();
   const { mutateAsync: updateOrderShippingDetail } = useUpdateOrderShippingDetail();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
   const defaultState: OrderFormState = useMemo(() => {
-    const discountDetail = initialOrder?.discount;
-
     return {
       orderStatus: initialOrder?.orderStatus || 'Pending',
       paymentStatus: initialOrder?.paymentStatus || 'Pending',
       userType: initialOrder?.userType || 'B2C',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
-      discountMode: discountDetail?.discountMode || '',
-      discountValue:
-        discountDetail?.discountValue !== undefined ? discountDetail.discountValue.toString() : '',
-      maxDiscountValue:
-        discountDetail?.maxDiscountValue !== undefined ? discountDetail.maxDiscountValue.toString() : '',
-      discountStartDate: discountDetail?.startDate || '',
-      discountEndDate: discountDetail?.endDate || '',
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       orderTaxRate:
         typeof initialOrder?.orderTaxRate === 'number' ? initialOrder.orderTaxRate.toString() : '',
       customerId: initialOrder?.customer?.id ? String(initialOrder.customer.id) : '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
-      discountType: discountDetail?.discountType || '',
-      discountCode: discountDetail?.discountCode || '',
+      discountCode: initialOrder?.discountCode || '',
       notificationType: initialOrder?.notificationType || '',
       busyFlag: Boolean(initialOrder?.busyFlag),
       busyVoucherId: initialOrder?.busyVoucherId || '',
@@ -197,6 +169,7 @@ export function OrderForm({
   }, [initialOrder]);
 
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
+  const [discountData, setDiscountData] = useState<IDiscount | null>(null);
   const [useCustomTaxRate, setUseCustomTaxRate] = useState(() => {
     const rate = defaultState.orderTaxRate.trim();
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
@@ -217,9 +190,6 @@ export function OrderForm({
       quantity: item.quantity ? item.quantity.toString() : '',
       itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
       itemTaxAmount: item.itemTaxAmount ? item.itemTaxAmount.toString() : '',
-      discountType: item.discountType || '',
-      discountCode: item.discountCode || '',
-      discountAmount: item.discountAmount ? item.discountAmount.toString() : '',
       itemComment: item.itemComment || '',
     }));
   });
@@ -262,6 +232,7 @@ export function OrderForm({
   );
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
+  const discountCodeRef = useRef<string>('');
 
   const selectedCustomerId = formState.customerId.trim()
     ? Number.parseInt(formState.customerId, 10)
@@ -333,15 +304,23 @@ export function OrderForm({
     lastCustomerIdRef.current = currentId;
   }, [addressExists, customerData?.id]);
 
+  useEffect(() => {
+    const code = formState.discountCode?.trim() || '';
+    if (!code) {
+      setDiscountData(null);
+      discountCodeRef.current = '';
+      return;
+    }
+    if (discountCodeRef.current && discountCodeRef.current !== code) {
+      setDiscountData(null);
+    }
+    discountCodeRef.current = code;
+  }, [formState.discountCode]);
+
   const handleChange = (key: keyof OrderFormState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
     if (
       key === 'orderBaseAmount' ||
-      key === 'discountValue' ||
-      key === 'discountMode' ||
-      key === 'maxDiscountValue' ||
-      key === 'discountStartDate' ||
-      key === 'discountEndDate' ||
       key === 'shippingAmount' ||
       key === 'orderTaxRate' ||
       key === 'shippingId' ||
@@ -441,31 +420,79 @@ export function OrderForm({
     }
   };
 
+  const isDiscountActive = (discount?: IDiscount | null) =>
+    (discount?.status || '').toUpperCase() === 'ACTIVE';
+
+  const isDiscountInDateRange = (discount?: IDiscount | null) => {
+    if (!discount) return false;
+    const today = new Date();
+    const start = discount.startDate ? new Date(discount.startDate) : null;
+    const end = discount.endDate ? new Date(discount.endDate) : null;
+    if (start && Number.isNaN(start.getTime())) {
+      return false;
+    }
+    if (end && Number.isNaN(end.getTime())) {
+      return false;
+    }
+    if (start && today < start) {
+      return false;
+    }
+    if (end && today > end) {
+      return false;
+    }
+    return true;
+  };
+
+  const resolveDiscountAmount = (baseAmount: number, discount?: IDiscount | null) => {
+    if (!discount || !isDiscountActive(discount) || !isDiscountInDateRange(discount)) {
+      return 0;
+    }
+    const discountType = (discount.discountType || '').toUpperCase();
+    const rawValue = Number(discount.discountValue ?? discount.discountAmount ?? 0);
+    if (!Number.isFinite(rawValue) || rawValue <= 0) {
+      return 0;
+    }
+    let amount = 0;
+    if (discountType === 'PERCENTAGE') {
+      const safePercent = Math.min(Math.max(rawValue, 0), 100);
+      amount = (safePercent / 100) * baseAmount;
+    } else {
+      amount = Math.max(rawValue, 0);
+    }
+    const maxDiscountValue = Number(discount.maxDiscountValue);
+    if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0) {
+      amount = Math.min(amount, maxDiscountValue);
+    }
+    return Math.max(amount, 0);
+  };
+
+  const fetchDiscountByCode = async (code: string) => {
+    try {
+      const discount = await getDiscountByCode(code);
+      setDiscountData(discount);
+      const isValid = isDiscountActive(discount) && isDiscountInDateRange(discount);
+      if (isValid) {
+        toast.success(`Discount code "${discount.discountCode}" applied!`);
+      } else {
+        toast.error('This discount code is inactive or expired.');
+      }
+      return discount;
+    } catch (error) {
+      console.error('Failed to verify discount code:', error);
+      setDiscountData(null);
+      toast.error('Invalid discount code.');
+      return null;
+    }
+  };
+
   const handleVerifyDiscount = async () => {
-    if (!formState.discountCode?.trim()) {
+    const code = formState.discountCode?.trim();
+    if (!code) {
       toast.error('Please enter a discount code.');
       return;
     }
 
-    try {
-      const discount = await getDiscountByCode(formState.discountCode.trim());
-      if (discount && discount.active) {
-        setFormState((prev) => ({
-          ...prev,
-          discountMode: discount.discountMode === 1 ? 'Percentage' : 'Amount',
-          discountValue: discount.discountValue?.toString() || '0',
-          maxDiscountValue: discount.maxDiscountValue?.toString() || '0',
-          discountStartDate: discount.startDate || '',
-          discountEndDate: discount.endDate || '',
-        }));
-        toast.success(`Discount code "${discount.discountCode}" applied!`);
-      } else {
-        toast.error('This discount code is inactive.');
-      }
-    } catch (error) {
-      console.error('Failed to verify discount code:', error);
-      toast.error('Invalid discount code.');
-    }
+    await fetchDiscountByCode(code);
   };
 
   const shouldSaveAddress = (value: OrderAddressForm) => {
@@ -480,7 +507,7 @@ export function OrderForm({
 
     const validateAmount = (
       value: string,
-      key: 'orderBaseAmount' | 'shippingAmount' | 'discountValue' | 'maxDiscountValue'
+      key: 'orderBaseAmount' | 'shippingAmount'
     ) => {
       if (!value.trim()) {
         return;
@@ -495,7 +522,7 @@ export function OrderForm({
       }
     };
 
-    const validatePercentage = (value: string, key: 'discountValue' | 'orderTaxRate') => {
+    const validatePercentage = (value: string, key: 'orderTaxRate') => {
       if (!value.trim()) {
         return;
       }
@@ -511,24 +538,7 @@ export function OrderForm({
 
     validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
     validateAmount(formState.shippingAmount, 'shippingAmount');
-    validateAmount(formState.maxDiscountValue, 'maxDiscountValue');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
-
-    const hasDiscountValue = Boolean(formState.discountValue.trim());
-    const hasDiscountMode = Boolean(formState.discountMode);
-    if (hasDiscountValue && !hasDiscountMode) {
-      nextErrors.discountMode = 'Select a discount mode.';
-    }
-    if (hasDiscountMode && !hasDiscountValue) {
-      nextErrors.discountValue = 'Enter a discount value.';
-    }
-    if (hasDiscountValue) {
-      if (formState.discountMode === 'Percentage') {
-        validatePercentage(formState.discountValue, 'discountValue');
-      } else {
-        validateAmount(formState.discountValue, 'discountValue');
-      }
-    }
 
     if (formState.notificationType === 'Email') {
       const customerEmail = selectedCustomerEmail?.trim() || '';
@@ -547,14 +557,6 @@ export function OrderForm({
 
     if (formState.busyVoucherId && formState.busyVoucherId.length > 50) {
       nextErrors.busyVoucherId = 'Max 50 characters.';
-    }
-
-    if (formState.discountStartDate && formState.discountEndDate) {
-      const start = new Date(formState.discountStartDate);
-      const end = new Date(formState.discountEndDate);
-      if (!Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start > end) {
-        nextErrors.discountEndDate = 'End date must be on or after start date.';
-      }
     }
 
     if (shouldSaveAddress(address)) {
@@ -582,8 +584,6 @@ export function OrderForm({
         hasText(item.quantity) ||
         hasText(item.itemPrice) ||
         hasText(item.itemTaxAmount) ||
-        hasText(item.discountAmount) ||
-        hasText(item.discountCode) ||
         hasText(item.itemComment) ||
         hasText(item.itemStatus);
 
@@ -611,16 +611,6 @@ export function OrderForm({
         }
       }
 
-      if (item.discountAmount?.trim()) {
-        const value = Number.parseFloat(item.discountAmount);
-        if (!Number.isFinite(value) || value < 0) {
-          nextItemErrors[index].discountAmount = 'Enter a valid amount.';
-        }
-      }
-
-      if (item.discountCode && item.discountCode.length > 20) {
-        nextItemErrors[index].discountCode = 'Max 20 characters.';
-      }
     });
 
     const hasItemErrors = nextItemErrors.some((entry) => Object.keys(entry).length > 0);
@@ -645,14 +635,6 @@ export function OrderForm({
     formState.shippingMethod === 'Unknown'
       ? [...shippingMethodOptions, 'Unknown']
       : shippingMethodOptions;
-  const discountTypeSelectOptions =
-    formState.discountType === 'Unknown'
-      ? [...discountTypeOptions, 'Unknown']
-      : discountTypeOptions;
-  const discountModeSelectOptions =
-    formState.discountMode === 'Unknown'
-      ? [...discountModeOptions, 'Unknown']
-      : discountModeOptions;
   const notificationTypeSelectOptions =
     formState.notificationType === 'Unknown'
       ? [...notificationTypeOptions, 'Unknown']
@@ -723,28 +705,12 @@ export function OrderForm({
     const baseAmount = formState.orderBaseAmount.trim()
       ? parseAmount(formState.orderBaseAmount)
       : itemsTotal;
-    const discountModeCode =
-      getDiscountModeCode(formState.discountMode || undefined) ??
-      initialOrder?.discount.discountModeCode ??
-      undefined;
-    const discountValue = parseAmount(formState.discountValue || '0');
-    const maxDiscountValue = formState.maxDiscountValue.trim()
-      ? parseAmount(formState.maxDiscountValue)
-      : undefined;
-    const percentageModeCode = getDiscountModeCode('Percentage');
-    const amountModeCode = getDiscountModeCode('Amount');
-
-    let discountAmount = 0;
-    if (discountModeCode === percentageModeCode) {
-      const safePercent = Math.min(Math.max(discountValue, 0), 100);
-      discountAmount = (safePercent / 100) * baseAmount;
-    } else if (discountModeCode === amountModeCode) {
-      discountAmount = Math.max(discountValue, 0);
+    const discountCode = formState.discountCode?.trim() || '';
+    let resolvedDiscount = discountData;
+    if (discountCode && discountData?.discountCode?.toUpperCase() !== discountCode.toUpperCase()) {
+      resolvedDiscount = await fetchDiscountByCode(discountCode);
     }
-
-    if (typeof maxDiscountValue === 'number' && maxDiscountValue > 0) {
-      discountAmount = Math.min(discountAmount, maxDiscountValue);
-    }
+    const discountAmount = resolveDiscountAmount(baseAmount, resolvedDiscount);
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
     const taxableAmount = Math.max(baseAmount - discountAmount, 0);
@@ -757,10 +723,6 @@ export function OrderForm({
       getPaymentStatusCode(formState.paymentStatus) ?? initialOrder?.paymentStatusCode ?? 0;
     const userTypeCode =
       getUserTypeCode(formState.userType) ?? initialOrder?.userTypeCode ?? 0;
-    const discountTypeCode =
-      getDiscountTypeCode(formState.discountType || undefined) ??
-      initialOrder?.discount.discountTypeCode ??
-      undefined;
     const notificationTypeCode =
       getNotificationTypeCode(formState.notificationType || undefined) ??
       initialOrder?.notificationTypeCode ??
@@ -788,6 +750,7 @@ export function OrderForm({
       busyFlag: formState.busyFlag ? 1 : 0,
       busyVoucherId: formState.busyVoucherId || undefined,
       notificationType: notificationTypeCode,
+      discountCode: discountCode || undefined,
     };
 
     try {
@@ -809,8 +772,6 @@ export function OrderForm({
             item.quantity?.trim() ||
             item.itemPrice?.trim() ||
             item.itemTaxAmount?.trim() ||
-            item.discountAmount?.trim() ||
-            item.discountCode?.trim() ||
             item.itemComment?.trim();
           return hasData;
         })
@@ -819,13 +780,8 @@ export function OrderForm({
           const quantity = parseInteger(item.quantity || '0');
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
-          const discountAmountValue = parseAmount(item.discountAmount || '0');
-          const itemTotalAmount = Math.max(
-            quantity * itemPrice + itemTaxAmount - discountAmountValue,
-            0
-          );
+          const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
           const itemStatus = parseInteger(item.itemStatus || '0');
-          const discountType = getDiscountTypeCode(item.discountType || undefined);
 
           const detailPayload = {
             id: item.id,
@@ -841,9 +797,6 @@ export function OrderForm({
             itemPrice,
             itemTaxAmount,
             itemTotalAmount,
-            discountType,
-            discountCode: item.discountCode || undefined,
-            discountAmount: discountAmountValue || undefined,
             itemComment: item.itemComment || undefined,
           };
 
@@ -887,38 +840,6 @@ export function OrderForm({
         }
       }
 
-      const discountTasks: Promise<unknown>[] = [];
-      const hasDiscountFields =
-        Boolean(discountExists) ||
-        Boolean(formState.discountMode) ||
-        Boolean(formState.discountValue.trim()) ||
-        Boolean(formState.discountType) ||
-        Boolean(formState.discountCode?.trim()) ||
-        Boolean(formState.maxDiscountValue.trim()) ||
-        Boolean(formState.discountStartDate) ||
-        Boolean(formState.discountEndDate);
-
-      if (hasDiscountFields) {
-        const discountPayload = {
-          id: discountExists ? orderId : undefined,
-          orderId,
-          discountAmount,
-          discountType: discountTypeCode,
-          discountCode: formState.discountCode || undefined,
-          discountMode: discountModeCode,
-          discountValue: formState.discountValue.trim() ? discountValue : undefined,
-          maxDiscountValue,
-          startDate: formState.discountStartDate || undefined,
-          endDate: formState.discountEndDate || undefined,
-        };
-
-        if (discountExists) {
-          discountTasks.push(updateOrderDiscountDetail({ id: orderId, data: discountPayload }));
-        } else {
-          discountTasks.push(createOrderDiscountDetail({ data: discountPayload }));
-        }
-      }
-
       const statusChanged =
         initialOrder?.orderStatus && initialOrder.orderStatus !== formState.orderStatus;
       const historyStatus = isEditing
@@ -939,7 +860,6 @@ export function OrderForm({
         ...deleteTasks,
         ...addressTasks,
         ...shippingTasks,
-        ...discountTasks,
         historyTask,
       ]);
 
@@ -960,7 +880,6 @@ export function OrderForm({
       await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-discount-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
 
       toast.success(isEditing ? 'Order updated' : 'Order created', {
@@ -991,29 +910,14 @@ export function OrderForm({
   const baseAmount = formState.orderBaseAmount.trim()
     ? Number.parseFloat(formState.orderBaseAmount) || 0
     : itemsTotal;
-  const discountModeCode = getDiscountModeCode(formState.discountMode || undefined);
-  const discountValue = Number.parseFloat(formState.discountValue) || 0;
-  const maxDiscountValue = formState.maxDiscountValue.trim()
-    ? Number.parseFloat(formState.maxDiscountValue) || 0
-    : undefined;
-  const percentageModeCode = getDiscountModeCode('Percentage');
-  const amountModeCode = getDiscountModeCode('Amount');
-
-  let discountAmount = 0;
-  let discountLabel = 'Discount';
-
-  if (discountModeCode === percentageModeCode) {
-    const safeDiscountPercent = Math.min(Math.max(discountValue, 0), 100);
-    discountAmount = (safeDiscountPercent / 100) * baseAmount;
-    discountLabel = `Discount (${safeDiscountPercent.toFixed(2)}%)`;
-  } else if (discountModeCode === amountModeCode) {
-    discountAmount = Math.max(discountValue, 0);
-    discountLabel = `Discount (₹${discountValue.toFixed(2)})`;
-  }
-
-  if (typeof maxDiscountValue === 'number' && maxDiscountValue > 0) {
-    discountAmount = Math.min(discountAmount, maxDiscountValue);
-  }
+  const discountCodeValue = formState.discountCode?.trim() || '';
+  const activeDiscount =
+    discountCodeValue &&
+    discountData?.discountCode?.toUpperCase() === discountCodeValue.toUpperCase()
+      ? discountData
+      : null;
+  const discountAmount = resolveDiscountAmount(baseAmount, activeDiscount);
+  const discountLabel = discountCodeValue ? `Discount (${discountCodeValue})` : 'Discount';
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const taxRateValue = Math.min(Math.max(Number.parseFloat(formState.orderTaxRate) || 0, 0), 100);
   const taxableAmount = Math.max(baseAmount - discountAmount, 0);
@@ -1078,8 +982,6 @@ export function OrderForm({
                 paymentStatusOptions={paymentStatusSelectOptions as any}
                 userTypeOptions={userTypeSelectOptions as any}
                 shippingMethodOptions={shippingMethodSelectOptions as any}
-                discountTypeOptions={discountTypeSelectOptions as any}
-                discountModeOptions={discountModeSelectOptions as any}
                 notificationTypeOptions={notificationTypeSelectOptions as any}
                 onChange={handleChange}
                 onVerifyDiscount={handleVerifyDiscount}

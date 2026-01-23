@@ -11,11 +11,9 @@ import {
   useGetAllOrderHistories,
 } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { useGetOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
-import { useGetAllOrderDiscountDetails } from '@/core/api/order-discount-detail';
 import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
 import {
   mapOrderAddressDetail,
-  mapOrderDiscountDetail,
   mapOrderDetails,
   mapOrderDtoToRecord,
   mapOrderHistoryEntries,
@@ -72,22 +70,12 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
     }
   );
 
-  const discountQuery = useGetAllOrderDiscountDetails(
-    isValidId ? { 'orderId.equals': orderId } : undefined,
-    {
-      query: {
-        enabled: isValidId,
-      },
-    }
-  );
-
   const isLoading =
     orderQuery.isLoading ||
     detailQuery.isLoading ||
     historyQuery.isLoading ||
     addressQuery.isLoading ||
-    shippingQuery.isLoading ||
-    discountQuery.isLoading;
+    shippingQuery.isLoading;
 
   const orderRecord = useMemo(() => {
     if (!orderQuery.data) return undefined;
@@ -99,7 +87,6 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
       history: mapOrderHistoryEntries(historyQuery.data),
       address: mapOrderAddressDetail(addressQuery.data?.[0], orderQuery.data),
       shipping: mapOrderShippingDetail(shippingQuery.data?.[0], orderQuery.data),
-      discount: mapOrderDiscountDetail(discountQuery.data?.[0], orderQuery.data),
     };
   }, [
     orderQuery.data,
@@ -107,7 +94,6 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
     historyQuery.data,
     addressQuery.data,
     shippingQuery.data,
-    discountQuery.data,
   ]);
 
   if (isLoading) {

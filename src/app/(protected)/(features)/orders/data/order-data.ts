@@ -4,7 +4,6 @@ import type {
   OrderDetailDTO,
   OrderHistoryDTO,
 } from '@/core/api/generated/spring/schemas';
-import type { OrderDiscountDetailDTO } from '@/core/api/order-discount-detail';
 import type { OrderShippingDetailDTO } from '@/core/api/order-shipping-detail';
 
 const UNKNOWN_LABEL = 'Unknown';
@@ -23,19 +22,12 @@ export const userTypeOptions = ['B2C', 'B2B', 'Guest'] as const;
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
-export const discountTypeOptions = ['Percentage', 'Amount'] as const;
-export const discountModeOptions = ['Amount', 'Percentage'] as const;
-export const discountCategoryOptions = ['Promo', 'Voucher', 'Seasonal', 'Bundle'] as const;
-
 export const notificationTypeOptions = ['Email', 'SMS', 'Push'] as const;
 
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type UserType = (typeof userTypeOptions)[number] | typeof UNKNOWN_LABEL;
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
-export type DiscountType = (typeof discountTypeOptions)[number] | typeof UNKNOWN_LABEL;
-export type DiscountMode = (typeof discountModeOptions)[number] | typeof UNKNOWN_LABEL;
-export type DiscountCategory = (typeof discountCategoryOptions)[number] | typeof UNKNOWN_LABEL;
 export type NotificationType = (typeof notificationTypeOptions)[number] | typeof UNKNOWN_LABEL;
 
 export interface OrderDetailItem {
@@ -53,9 +45,6 @@ export interface OrderDetailItem {
   quantity: number;
   itemPrice: number;
   itemTaxAmount: number;
-  discountType?: DiscountType;
-  discountCode?: string;
-  discountAmount?: number;
   itemComment?: string;
   createdBy: string;
   createdDate: string;
@@ -113,26 +102,6 @@ export interface OrderShippingDetail {
   lastModifiedDate?: string;
 }
 
-export interface OrderDiscountDetail {
-  orderId: number;
-  discountAmount: number;
-  discountType?: DiscountType;
-  discountTypeCode?: number;
-  discountMode?: DiscountMode;
-  discountModeCode?: number;
-  discountCode?: string;
-  discountCategory?: DiscountCategory;
-  discountCategoryCode?: number;
-  discountValue: number;
-  maxDiscountValue?: number;
-  startDate?: string;
-  endDate?: string;
-  createdBy: string;
-  createdDate: string;
-  lastModifiedBy?: string;
-  lastModifiedDate?: string;
-}
-
 export interface OrderRecord {
   orderId: number;
   orderStatus: OrderStatus;
@@ -140,6 +109,7 @@ export interface OrderRecord {
   orderTotalAmount: number;
   orderTaxRate: number;
   orderBaseAmount: number;
+  discountCode?: string;
   customer?: OrderDTO['customer'];
   userType: UserType;
   userTypeCode?: number;
@@ -159,7 +129,6 @@ export interface OrderRecord {
   history: OrderHistoryEntry[];
   address: OrderAddressDetail;
   shipping: OrderShippingDetail;
-  discount: OrderDiscountDetail;
 }
 
 const getLabelFromCode = (options: readonly string[], code?: number) => {
@@ -196,24 +165,6 @@ export const getShippingMethodLabel = (code?: number): ShippingMethod =>
 export const getShippingMethodCode = (status?: ShippingMethod) =>
   getCodeFromLabel(shippingMethodOptions, status);
 
-export const getDiscountTypeLabel = (code?: number): DiscountType =>
-  getLabelFromCode(discountTypeOptions, code) as DiscountType;
-
-export const getDiscountTypeCode = (status?: DiscountType) =>
-  getCodeFromLabel(discountTypeOptions, status);
-
-export const getDiscountModeLabel = (code?: number): DiscountMode =>
-  getLabelFromCode(discountModeOptions, code) as DiscountMode;
-
-export const getDiscountModeCode = (status?: DiscountMode) =>
-  getCodeFromLabel(discountModeOptions, status);
-
-export const getDiscountCategoryLabel = (label?: string): DiscountCategory =>
-  (label as DiscountCategory) || UNKNOWN_LABEL;
-
-export const getDiscountCategoryCode = (status?: DiscountCategory) =>
-  getCodeFromLabel(discountCategoryOptions, status);
-
 export const getNotificationTypeLabel = (code?: number): NotificationType =>
   getLabelFromCode(notificationTypeOptions, code) as NotificationType;
 
@@ -226,10 +177,10 @@ const resolveOrderTotal = (order: OrderDTO) => {
   }
 
   const base = order.orderBaseAmount ?? 0;
-  const discount = order.discountAmount ?? 0;
+  // Note: discountAmount is no longer in orderDTO, resolving via computation if needed elsewhere
   const shipping = order.shippingAmount ?? 0;
   const taxRate = order.orderTaxRate ?? 0;
-  const taxableAmount = Math.max(base - discount, 0);
+  const taxableAmount = base; // simplified fallback
   const taxAmount = (taxRate / 100) * taxableAmount;
   return Math.max(taxableAmount + shipping + taxAmount, 0);
 };
@@ -252,6 +203,7 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
     orderTotalAmount: resolveOrderTotal(order),
     orderTaxRate: order.orderTaxRate ?? 0,
     orderBaseAmount: order.orderBaseAmount ?? 0,
+    discountCode: order.discountCode ?? undefined,
     customer: order.customer ?? undefined,
     userType: getUserTypeLabel(userTypeCode),
     userTypeCode,
@@ -283,15 +235,12 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
       lastUpdated: order.lastUpdated ?? undefined,
     },
     shipping: mapOrderShippingDetail(undefined, order),
-    discount: mapOrderDiscountDetail(undefined, order),
   };
 };
 
 export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
   const itemStatusCode = typeof detail.itemStatus === 'number' ? detail.itemStatus : undefined;
   const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
-  const discountType =
-    typeof detail.discountType === 'number' ? getDiscountTypeLabel(detail.discountType) : undefined;
 
   return {
     orderDetailId: detail.id ?? 0,
@@ -308,9 +257,6 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
     quantity: detail.quantity ?? 0,
     itemPrice: detail.itemPrice ?? 0,
     itemTaxAmount: detail.itemTaxAmount ?? 0,
-    discountType,
-    discountCode: detail.discountCode ?? undefined,
-    discountAmount: detail.discountAmount ?? undefined,
     itemComment: detail.itemComment ?? undefined,
     createdBy: detail.createdBy ?? 'System',
     createdDate: detail.createdDate ?? '',
@@ -387,34 +333,6 @@ export const mapOrderShippingDetail = (
     createdDate: shipping?.createdDate ?? order?.createdDate ?? '',
     lastModifiedBy: shipping?.lastModifiedBy ?? order?.lastModifiedBy ?? undefined,
     lastModifiedDate: shipping?.lastModifiedDate ?? order?.lastModifiedDate ?? undefined,
-  };
-};
-
-export const mapOrderDiscountDetail = (
-  discount: OrderDiscountDetailDTO | undefined,
-  order?: OrderDTO
-): OrderDiscountDetail => {
-  const fallbackAmount = order?.discountAmount ?? 0;
-  const discountModeCode = discount?.discountMode ?? undefined;
-  return {
-    orderId: discount?.orderId ?? order?.id ?? 0,
-    discountAmount: discount?.discountAmount ?? fallbackAmount ?? 0,
-    discountType: (discount?.discountType as unknown as DiscountType) ?? undefined,
-    discountTypeCode: undefined,
-    discountMode:
-      typeof discountModeCode === 'number' ? getDiscountModeLabel(discountModeCode) : undefined,
-    discountModeCode,
-    discountCode: discount?.discountCode ?? order?.discountCode ?? undefined,
-    discountCategory: (discount?.discountCategory as unknown as DiscountCategory) ?? undefined,
-    discountCategoryCode: undefined,
-    discountValue: discount?.discountValue ?? (fallbackAmount || 0),
-    maxDiscountValue: discount?.maxDiscountValue ?? undefined,
-    startDate: discount?.startDate ?? undefined,
-    endDate: discount?.endDate ?? undefined,
-    createdBy: discount?.createdBy ?? order?.createdBy ?? 'System',
-    createdDate: discount?.createdDate ?? order?.createdDate ?? '',
-    lastModifiedBy: discount?.lastModifiedBy ?? order?.lastModifiedBy ?? undefined,
-    lastModifiedDate: discount?.lastModifiedDate ?? order?.lastModifiedDate ?? undefined,
   };
 };
 

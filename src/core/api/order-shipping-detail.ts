@@ -51,7 +51,7 @@ export const getAllOrderShippingDetails = (
 
 export const useGetAllOrderShippingDetails = (
   params?: GetAllOrderShippingDetailsParams,
-  options?: { query?: UseQueryOptions<OrderShippingDetailDTO[], Error> },
+  options?: { query?: Partial<UseQueryOptions<OrderShippingDetailDTO[], Error>> },
   queryClient?: QueryClient
 ): UseQueryResult<OrderShippingDetailDTO[], Error> & { queryKey: QueryKey } => {
   const queryOptions = options?.query ?? {};

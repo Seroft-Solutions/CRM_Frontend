@@ -362,8 +362,7 @@ export function OrderFormItems({
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-    const discount = Number.parseFloat(item.discountAmount) || 0;
-    return Math.max(qty * price + tax - discount, 0);
+    return Math.max(qty * price + tax, 0);
   };
 
   return (
