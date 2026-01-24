@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
 import type { CustomerDTO } from '@/core/api/generated/spring/schemas/CustomerDTO';
+import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
 
 const resolveQueryOptions = (options?: any) => {
   if (!options) return {};
@@ -15,8 +16,7 @@ const resolveMutationOptions = (options?: any) => {
 export interface CustomerAddressDTO {
   id?: number;
   completeAddress: string;
-  city?: string;
-  zipCode?: string;
+  area?: AreaDTO;
   isDefault: boolean;
   createdBy?: string;
   createdDate?: string;

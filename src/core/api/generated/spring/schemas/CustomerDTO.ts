@@ -8,6 +8,8 @@
 import type { CustomerDTOStatus } from './CustomerDTOStatus';
 import type { AreaDTO } from './AreaDTO';
 
+import type { CustomerAddressDTO } from './CustomerAddressDTO';
+
 export interface CustomerDTO {
   id?: number;
   /**
@@ -43,5 +45,6 @@ export interface CustomerDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  area: AreaDTO;
+  area?: AreaDTO;
+  addresses?: CustomerAddressDTO[];
 }

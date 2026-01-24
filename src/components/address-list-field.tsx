@@ -35,7 +35,7 @@ export function AddressListField({
 
   useEffect(() => {
     if (fields.length === 0) {
-      append({ completeAddress: '', city: '', zipCode: '', isDefault: true });
+      append({ completeAddress: '', area: null, isDefault: true });
     }
   }, [append, fields.length]);
 
@@ -49,7 +49,7 @@ export function AddressListField({
 
   const handleAdd = () => {
     const hasDefault = addresses.some((address: any) => address?.isDefault);
-    append({ completeAddress: '', city: '', zipCode: '', isDefault: !hasDefault });
+    append({ completeAddress: '', area: null, isDefault: !hasDefault });
   };
 
   const handleRemove = (index: number) => {
@@ -72,25 +72,12 @@ export function AddressListField({
   const arrayError = form.formState?.errors?.[name]?.message as string | undefined;
 
   const buildLocationValue = (address: any) => {
-    if (!address?.city && !address?.zipCode) return null;
-
-    return {
-      name: address.city ?? '',
-      pincode: address.zipCode ?? '',
-      city: {
-        name: address.city ?? '',
-        district: {
-          state: {
-            name: '',
-          },
-        },
-      },
-    } as any;
+    return address?.area ?? null;
   };
 
   const getLocationError = (index: number) => {
     const entryErrors = form.formState?.errors?.[name]?.[index];
-    return entryErrors?.city?.message || entryErrors?.zipCode?.message;
+    return entryErrors?.area?.message;
   };
 
   return (
@@ -142,21 +129,13 @@ export function AddressListField({
                   <IntelligentLocationField
                     value={buildLocationValue(addresses[index])}
                     onChange={(value) => {
-                      const nextCity = value?.city?.name ?? '';
-                      const nextZip = value?.pincode ?? '';
-                      form.setValue(`${name}.${index}.city`, nextCity, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                      form.setValue(`${name}.${index}.zipCode`, nextZip, {
+                      form.setValue(`${name}.${index}.area`, value, {
                         shouldDirty: true,
                         shouldValidate: true,
                       });
                     }}
                   />
                 </FormControl>
-                <input type="hidden" {...form.register(`${name}.${index}.city`)} />
-                <input type="hidden" {...form.register(`${name}.${index}.zipCode`)} />
                 {getLocationError(index) ? (
                   <p className="text-sm text-red-500">{getLocationError(index)}</p>
                 ) : null}

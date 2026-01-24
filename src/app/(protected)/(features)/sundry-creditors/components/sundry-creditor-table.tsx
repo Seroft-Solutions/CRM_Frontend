@@ -188,10 +188,10 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'area',
+    id: 'defaultAddress',
     label: 'Location',
-    accessor: 'area',
-    type: 'relationship',
+    accessor: 'defaultAddress',
+    type: 'field',
     visible: true,
     sortable: false,
   },
@@ -378,11 +378,18 @@ export function SundryCreditorTable() {
             if (col.type === 'field') {
               const fieldValue = item[col.accessor as keyof typeof item];
               value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
-            } else if (col.type === 'relationship') {
-              const relationship = item[col.accessor as keyof typeof item] as any;
 
-              if (col.id === 'area' && relationship) {
-                value = relationship.name || '';
+              if (col.id === 'defaultAddress') {
+                const addresses = (item as any).addresses || [];
+                const defaultAddr = addresses.find((a: any) => a.isDefault) || addresses[0];
+                if (defaultAddr) {
+                  const { city, state, zipCode } = defaultAddr;
+                  const parts = [];
+                  if (city) parts.push(city);
+                  if (state) parts.push(state);
+                  const cityState = parts.join(', ');
+                  value = cityState ? `${cityState}${zipCode ? ` (${zipCode})` : ''}` : zipCode || '';
+                }
               }
             }
 
@@ -567,36 +574,36 @@ export function SundryCreditorTable() {
 
   const { data, isLoading, refetch } = searchTerm
     ? useSearchSundryCreditors(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
+      {
+        query: searchTerm,
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+      {
+        query: {
+          enabled: true,
+          staleTime: 0,
+          refetchOnWindowFocus: true,
         },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
+      }
+    )
     : useGetAllSundryCreditors(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
+      {
+        page: apiPage,
+        size: pageSize,
+        sort: [`${sort},${order}`],
+        ...filterParams,
+      },
+      {
+        query: {
+          enabled: true,
+          staleTime: 0,
+          refetchOnWindowFocus: true,
         },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+      }
+    );
 
   const { data: countData } = useCountSundryCreditors(filterParams, {
     query: {

@@ -37,20 +37,8 @@ function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig:
     );
   }
 
-  if (relConfig.name === 'area' && typeof value === 'object') {
-    const parts = [];
-
-    if (value.city?.district?.state?.name) parts.push(value.city.district.state.name);
-    if (value.city?.district?.name) parts.push(value.city.district.name);
-    if (value.city?.name) parts.push(value.city.name);
-    if (value.name) parts.push(value.name);
-    if (value.pincode) parts.push(value.pincode);
-
-    return parts.length > 0 ? (
-      <span>{parts.join(', ')}</span>
-    ) : (
-      <span className="text-muted-foreground italic">Location data incomplete</span>
-    );
+  if (relConfig.name === 'area') {
+    return <span className="text-muted-foreground italic">Deprecated: See Addresses Section</span>;
   }
 
   if (relConfig.multiple && Array.isArray(value)) {
@@ -86,7 +74,7 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
   });
 
   const handleDelete = () => {
-    deleteEntity(id);
+    (deleteEntity as any)(id);
     setShowDeleteDialog(false);
   };
 
@@ -207,6 +195,44 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
             </div>
           );
         })}
+
+        {/* Addresses Section */}
+        <div className="border rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-3 pb-2 border-b border-border/50">
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm text-foreground">Addresses</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">Manage and view sundry creditor delivery locations</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {((entity as any).addresses || []).length > 0 ? (
+              (entity as any).addresses.map((address: any, idx: number) => (
+                <div key={address.id || idx} className={`p-3 rounded-md border ${address.isDefault ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50/50 border-slate-200'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Address {idx + 1}</span>
+                    {address.isDefault && (
+                      <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">DEFAULT</span>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-slate-900 mb-1">{address.completeAddress}</p>
+                  <p className="text-xs text-slate-600">
+                    {[address.city, address.state, address.zipCode].filter(Boolean).join(', ')}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-4 text-center text-sm text-muted-foreground italic bg-slate-50 rounded-md border border-dashed border-slate-300">
+                No addresses recorded
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Action Buttons */}

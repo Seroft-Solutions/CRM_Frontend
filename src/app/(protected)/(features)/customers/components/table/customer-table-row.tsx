@@ -178,36 +178,21 @@ export function CustomerTableRow({
                 );
               }
 
+              if (column.id === 'defaultAddress') {
+                const addresses = customer.addresses || [];
+                const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+                if (!defaultAddr) return '-';
+                const { city, state, zipCode } = defaultAddr;
+                const parts = [];
+                if (city) parts.push(city);
+                if (state) parts.push(state);
+                const cityState = parts.join(', ');
+                return cityState ? `${cityState}${zipCode ? ` (${zipCode})` : ''}` : zipCode || '-';
+              }
+
               return field?.toString() || '';
             })()
             : (() => {
-              if (column.id === 'area') {
-                const cellKey = `${customer.id}-area`;
-                return (
-                  <RelationshipCell
-                    entityId={customer.id || 0}
-                    relationshipName="area"
-                    currentValue={customer.area}
-                    options={
-                      relationshipConfigs.find((config) => config.name === 'area')?.options || []
-                    }
-                    displayField="name"
-                    onUpdate={(entityId, relationshipName, newValue) =>
-                      onRelationshipUpdate
-                        ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                        : Promise.resolve()
-                    }
-                    isEditable={
-                      relationshipConfigs.find((config) => config.name === 'area')?.isEditable ||
-                      false
-                    }
-                    isLoading={updatingCells.has(cellKey)}
-                    className="min-w-[150px]"
-                    relatedEntityRoute="areas"
-                    showNavigationIcon={true}
-                  />
-                );
-              }
 
               return null;
             })()}

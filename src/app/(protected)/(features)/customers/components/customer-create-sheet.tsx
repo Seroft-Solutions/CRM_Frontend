@@ -39,14 +39,7 @@ const addressSchema = z.object({
     .string({ message: 'Address is required' })
     .min(1, { message: 'Address is required' })
     .max(255, { message: 'Please enter no more than 255 characters' }),
-  city: z.string().min(2, { message: 'City is required' }).max(100, {
-    message: 'Please enter no more than 100 characters',
-  }),
-  zipCode: z
-    .string()
-    .min(6, { message: 'Zip code is required' })
-    .max(6, { message: 'Zip code must be 6 digits' })
-    .regex(/^[0-9]{6}$/, { message: 'Zip code must be 6 digits' }),
+  area: z.any().nullable().refine(val => val !== null, { message: 'Location is required' }),
   isDefault: z.boolean(),
 });
 
@@ -145,11 +138,10 @@ export function CustomerCreateSheet({
             addresses.map((address) =>
               createCustomerAddress({
                 completeAddress: address.completeAddress,
-                city: address.city,
-                zipCode: address.zipCode,
+                area: address.area,
                 isDefault: address.isDefault,
                 customer: { id: customerId, customerBusinessName: customerName },
-              })
+              } as any)
             )
           );
         }
@@ -175,7 +167,7 @@ export function CustomerCreateSheet({
       data.addresses?.find((address) => address.isDefault)?.completeAddress ??
       data.addresses?.[0]?.completeAddress;
 
-    const customerData: Partial<CustomerDTO> = {
+    const customerData = {
       customerBusinessName: data.customerBusinessName,
       email: data.email || undefined,
       mobile: data.mobile,
@@ -183,7 +175,7 @@ export function CustomerCreateSheet({
       contactPerson: data.contactPerson || undefined,
       completeAddress: defaultAddress || undefined,
       status: CustomerDTOStatus.ACTIVE,
-    } as any;
+    } as CustomerDTO;
 
     createCustomer({ data: customerData });
   };

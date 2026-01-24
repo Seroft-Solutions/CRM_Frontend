@@ -58,9 +58,9 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       const formValues: Record<string, any> = {};
 
       config.fields.forEach((fieldConfig) => {
-        const value = entity[fieldConfig.name];
+        const value = (entity as any)[fieldConfig.name];
 
-        if (fieldConfig.type === 'custom') {
+        if ((fieldConfig.type as string) === 'custom') {
           return;
         }
 
@@ -89,7 +89,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       });
 
       config.relationships.forEach((relConfig) => {
-        const value = entity[relConfig.name];
+        const value = (entity as any)[relConfig.name];
 
         if (relConfig.multiple) {
           formValues[relConfig.name] = value
@@ -112,34 +112,21 @@ function CustomerFormContent({ id }: CustomerFormProps) {
     if (!id) return;
     const dataArray = Array.isArray(addressData)
       ? addressData
-      : addressData?.content
-        ? addressData.content
-        : addressData?.data
-          ? addressData.data
+      : (addressData as any)?.content
+        ? (addressData as any).content
+        : (addressData as any)?.data
+          ? (addressData as any).data
           : [];
 
-    const legacyAddress = (entity as any)?.completeAddress;
-
     if (dataArray.length > 0) {
-      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
-      const fallbackZip = (entity as any)?.area?.pincode ?? '';
       form.setValue(
         'addresses',
         dataArray.map((address: any) => ({
           id: address.id,
           completeAddress: address.completeAddress ?? '',
-          city: address.city || fallbackCity,
-          zipCode: address.zipCode || fallbackZip,
+          area: address.area || null,
           isDefault: Boolean(address.isDefault),
         })),
-        { shouldDirty: false }
-      );
-    } else if (legacyAddress) {
-      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
-      const fallbackZip = (entity as any)?.area?.pincode ?? '';
-      form.setValue(
-        'addresses',
-        [{ completeAddress: legacyAddress, city: fallbackCity, zipCode: fallbackZip, isDefault: true }],
         { shouldDirty: false }
       );
     }
@@ -252,7 +239,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
       {/* Navigation */}
       <FormNavigation
         onCancel={handleCancel}
-        onSubmit={async () => {}}
+        onSubmit={async () => { }}
         isSubmitting={false}
         isNew={isNew}
       />
@@ -286,8 +273,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .map((address) => ({
         id: address.id,
         completeAddress: address.completeAddress.trim(),
-        city: address.city?.trim?.() ?? '',
-        zipCode: address.zipCode?.trim?.() ?? '',
+        area: address.area,
         isDefault: Boolean(address.isDefault),
       }));
 
@@ -300,10 +286,9 @@ export function CustomerForm({ id }: CustomerFormProps) {
         trimmedAddresses.map((address) =>
           createCustomerAddress({
             completeAddress: address.completeAddress,
-            city: address.city,
-            zipCode: address.zipCode,
+            area: address.area,
             isDefault: address.isDefault,
-            customer: { id: customerId, customerBusinessName: undefined },
+            customer: { id: customerId, customerBusinessName: undefined as any },
           })
         )
       );
@@ -325,10 +310,9 @@ export function CustomerForm({ id }: CustomerFormProps) {
         updateCustomerAddress(address.id, {
           id: address.id,
           completeAddress: address.completeAddress,
-          city: address.city,
-          zipCode: address.zipCode,
+          area: address.area,
           isDefault: address.isDefault,
-          customer: { id: customerId, customerBusinessName: undefined },
+          customer: { id: customerId, customerBusinessName: undefined as any },
         })
       );
 
@@ -337,8 +321,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .map((address) =>
         createCustomerAddress({
           completeAddress: address.completeAddress,
-          city: address.city,
-          zipCode: address.zipCode,
+          area: address.area,
           isDefault: address.isDefault,
           customer: { id: customerId, customerBusinessName: undefined },
         })

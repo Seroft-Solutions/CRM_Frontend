@@ -58,7 +58,7 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
       config.fields.forEach((fieldConfig) => {
         const value = entity[fieldConfig.name as keyof typeof entity];
 
-        if (fieldConfig.type === 'custom') {
+        if ((fieldConfig.type as string) === 'custom') {
           return;
         }
 
@@ -110,43 +110,25 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
     if (!id) return;
     const dataArray = Array.isArray(addressData)
       ? addressData
-      : addressData?.content
-        ? addressData.content
-        : addressData?.data
-          ? addressData.data
+      : (addressData as any)?.content
+        ? (addressData as any).content
+        : (addressData as any)?.data
+          ? (addressData as any).data
           : [];
 
     if (dataArray.length > 0) {
-      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
-      const fallbackZip = (entity as any)?.area?.pincode ?? '';
       form.setValue(
         'addresses',
         dataArray.map((address: any) => ({
           id: address.id,
           completeAddress: address.completeAddress ?? '',
-          city: address.city || fallbackCity,
-          zipCode: address.zipCode || fallbackZip,
+          area: address.area || null,
           isDefault: Boolean(address.isDefault),
         })),
         { shouldDirty: false }
       );
-    } else if (entity?.completeAddress) {
-      const fallbackCity = (entity as any)?.area?.city?.name ?? '';
-      const fallbackZip = (entity as any)?.area?.pincode ?? '';
-      form.setValue(
-        'addresses',
-        [
-          {
-            completeAddress: entity.completeAddress,
-            city: fallbackCity,
-            zipCode: fallbackZip,
-            isDefault: true,
-          },
-        ],
-        { shouldDirty: false }
-      );
     }
-  }, [addressData, entity?.completeAddress, form, id]);
+  }, [addressData, entity, form, id]);
 
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
@@ -272,8 +254,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       .map((address) => ({
         id: address.id,
         completeAddress: address.completeAddress.trim(),
-        city: address.city?.trim?.() ?? '',
-        zipCode: address.zipCode?.trim?.() ?? '',
+        area: address.area,
         isDefault: Boolean(address.isDefault),
       }));
 
@@ -286,10 +267,9 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         trimmedAddresses.map((address) =>
           createSundryCreditorAddress({
             completeAddress: address.completeAddress,
-            city: address.city,
-            zipCode: address.zipCode,
+            area: address.area,
             isDefault: address.isDefault,
-            sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
+            sundryCreditor: { id: sundryCreditorId, creditorName: '' },
           })
         )
       );
@@ -311,10 +291,9 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         updateSundryCreditorAddress(address.id, {
           id: address.id,
           completeAddress: address.completeAddress,
-          city: address.city,
-          zipCode: address.zipCode,
+          area: address.area,
           isDefault: address.isDefault,
-          sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
+          sundryCreditor: { id: sundryCreditorId, creditorName: undefined as any },
         })
       );
 
@@ -323,10 +302,9 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       .map((address) =>
         createSundryCreditorAddress({
           completeAddress: address.completeAddress,
-          city: address.city,
-          zipCode: address.zipCode,
+          area: address.area,
           isDefault: address.isDefault,
-          sundryCreditor: { id: sundryCreditorId, creditorName: undefined },
+          sundryCreditor: { id: sundryCreditorId, creditorName: undefined as any },
         })
       );
 
@@ -363,7 +341,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         };
 
         if (isNew) {
-          const created = await createEntity(dataWithStatus);
+          const created = (await createEntity(dataWithStatus)) as any;
           const createdId = created?.id;
 
           if (createdId) {

@@ -7,14 +7,7 @@ const addressSchema = z.object({
   completeAddress: z.string().min(1, { message: 'Address is required' }).max(255, {
     message: 'Please enter no more than 255 characters',
   }),
-  city: z.string().min(2, { message: 'City is required' }).max(100, {
-    message: 'Please enter no more than 100 characters',
-  }),
-  zipCode: z
-    .string()
-    .min(6, { message: 'Zip code is required' })
-    .max(6, { message: 'Zip code must be 6 digits' })
-    .regex(/^[0-9]{6}$/, { message: 'Zip code must be 6 digits' }),
+  area: z.any().nullable().refine(val => val !== null, { message: 'Location is required' }),
   isDefault: z.boolean(),
 });
 

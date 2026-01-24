@@ -33,7 +33,7 @@ function transformEnumValue(enumValue: string): string {
 interface RelationshipConfig {
   name: string;
   displayName: string;
-  options: Array<{ id: number; [key: string]: any }>;
+  options: Array<{ id: number;[key: string]: any }>;
   displayField: string;
   isEditable: boolean;
 }
@@ -119,94 +119,78 @@ export function SundryCreditorTableRow({
         >
           {column.type === 'field'
             ? (() => {
-                const field = customer[column.accessor as keyof typeof customer];
+              const field = customer[column.accessor as keyof typeof customer];
 
-                if (column.id === 'creditorName') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'email') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'mobile') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'whatsApp') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'contactPerson') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'completeAddress') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'status') {
-                  return getStatusBadge(field as string);
-                }
-
-                if (column.id === 'createdBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'createdDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                if (column.id === 'lastModifiedBy') {
-                  return field?.toString() || '';
-                }
-
-                if (column.id === 'lastModifiedDate') {
-                  return field ? format(new Date(field as string), 'PPP') : '';
-                }
-
-                if (column.id === 'id') {
-                  return (
-                    <ClickableId
-                      id={field as string | number}
-                      entityType="sundry-creditors"
-                    />
-                  );
-                }
-
+              if (column.id === 'creditorName') {
                 return field?.toString() || '';
-              })()
-            : (() => {
-                if (column.id === 'area') {
-                  const cellKey = `${customer.id}-area`;
-                  return (
-                    <RelationshipCell
-                      entityId={customer.id || 0}
-                      relationshipName="area"
-                      currentValue={customer.area}
-                      options={
-                        relationshipConfigs.find((config) => config.name === 'area')?.options || []
-                      }
-                      displayField="name"
-                      onUpdate={(entityId, relationshipName, newValue) =>
-                        onRelationshipUpdate
-                          ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                          : Promise.resolve()
-                      }
-                      isEditable={
-                        relationshipConfigs.find((config) => config.name === 'area')?.isEditable ||
-                        false
-                      }
-                      isLoading={updatingCells.has(cellKey)}
-                      className="min-w-[150px]"
-                      relatedEntityRoute="areas"
-                      showNavigationIcon={true}
-                    />
-                  );
-                }
+              }
 
-                return null;
-              })()}
+              if (column.id === 'email') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'mobile') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'whatsApp') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'contactPerson') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'completeAddress') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'status') {
+                return getStatusBadge(field as string);
+              }
+
+              if (column.id === 'createdBy') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'createdDate') {
+                return field ? format(new Date(field as string), 'PPP') : '';
+              }
+
+              if (column.id === 'lastModifiedBy') {
+                return field?.toString() || '';
+              }
+
+              if (column.id === 'lastModifiedDate') {
+                return field ? format(new Date(field as string), 'PPP') : '';
+              }
+
+              if (column.id === 'id') {
+                return (
+                  <ClickableId
+                    id={field as string | number}
+                    entityType="sundry-creditors"
+                  />
+                );
+              }
+
+              if (column.id === 'defaultAddress') {
+                const addresses = customer.addresses || [];
+                const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+                if (!defaultAddr) return '-';
+                const { city, state, zipCode } = defaultAddr;
+                const parts = [];
+                if (city) parts.push(city);
+                if (state) parts.push(state);
+                const cityState = parts.join(', ');
+                return cityState ? `${cityState}${zipCode ? ` (${zipCode})` : ''}` : zipCode || '-';
+              }
+
+              return field?.toString() || '';
+            })()
+            : (() => {
+              return null;
+            })()}
         </TableCell>
       ))}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
