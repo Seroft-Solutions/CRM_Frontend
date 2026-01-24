@@ -383,12 +383,16 @@ export function SundryCreditorTable() {
                 const addresses = (item as any).addresses || [];
                 const defaultAddr = addresses.find((a: any) => a.isDefault) || addresses[0];
                 if (defaultAddr) {
-                  const { city, state, zipCode } = defaultAddr;
+                  const area = defaultAddr.area;
+                  const pincode = area?.pincode;
+                  const city = area?.city?.name || area?.cityName;
+                  const state = area?.city?.district?.state?.name || area?.stateName;
+
                   const parts = [];
                   if (city) parts.push(city);
                   if (state) parts.push(state);
                   const cityState = parts.join(', ');
-                  value = cityState ? `${cityState}${zipCode ? ` (${zipCode})` : ''}` : zipCode || '';
+                  value = cityState ? `${cityState}${pincode ? ` (${pincode})` : ''}` : pincode || '';
                 }
               }
             }

@@ -178,12 +178,20 @@ export function SundryCreditorTableRow({
                 const addresses = customer.addresses || [];
                 const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
                 if (!defaultAddr) return '-';
-                const { city, state, zipCode } = defaultAddr;
-                const parts = [];
-                if (city) parts.push(city);
-                if (state) parts.push(state);
-                const cityState = parts.join(', ');
-                return cityState ? `${cityState}${zipCode ? ` (${zipCode})` : ''}` : zipCode || '-';
+
+                const area = defaultAddr.area;
+                if (area) {
+                  const city = (area as any).city?.name || (area as any).cityName;
+                  const state = (area as any).city?.district?.state?.name || (area as any).stateName;
+                  const pincode = area.pincode;
+
+                  const parts = [];
+                  if (city) parts.push(city);
+                  if (state) parts.push(state);
+                  const cityState = parts.join(', ');
+                  return cityState ? `${cityState}${pincode ? ` (${pincode})` : ''}` : pincode || '-';
+                }
+                return '-';
               }
 
               return field?.toString() || '';

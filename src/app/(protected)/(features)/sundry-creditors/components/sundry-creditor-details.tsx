@@ -222,7 +222,11 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
                   </div>
                   <p className="text-sm font-medium text-slate-900 mb-1">{address.completeAddress}</p>
                   <p className="text-xs text-slate-600">
-                    {[address.city, address.state, address.zipCode].filter(Boolean).join(', ')}
+                    {address.area ? [
+                      (address.area as any).city?.name || (address.area as any).cityName,
+                      (address.area as any).city?.district?.state?.name || (address.area as any).stateName,
+                      address.area.pincode
+                    ].filter(Boolean).join(', ') : [address.city, address.state, address.zipCode].filter(Boolean).join(', ')}
                   </p>
                 </div>
               ))
