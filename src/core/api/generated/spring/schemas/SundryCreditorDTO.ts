@@ -7,6 +7,7 @@
  */
 import type { SundryCreditorDTOStatus } from './SundryCreditorDTOStatus';
 import type { AreaDTO } from './AreaDTO';
+import type { SundryCreditorAddressDTO } from './SundryCreditorAddressDTO';
 
 export interface SundryCreditorDTO {
   id?: number;
@@ -30,6 +31,8 @@ export interface SundryCreditorDTO {
    * @maxLength 100
    */
   contactPerson?: string;
+  /** @maxLength 255 */
+  completeAddress?: string;
   status: SundryCreditorDTOStatus;
   /**
    * @minLength 0
@@ -43,5 +46,7 @@ export interface SundryCreditorDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  area: AreaDTO;
+  area?: AreaDTO;
+  defaultAddress?: SundryCreditorAddressDTO;
+  addresses?: SundryCreditorAddressDTO[];
 }

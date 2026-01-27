@@ -271,6 +271,25 @@ export function OrderForm({
 
   const buildAddressFromCustomer = (customer: CustomerDTO): AddressFieldsForm => {
     const { firstName, middleName, lastName } = splitContactPerson(customer.contactPerson);
+
+    // Prioritize defaultAddress if available (new structure)
+    if (customer.defaultAddress) {
+      const defaultAddr = customer.defaultAddress;
+      return {
+        firstName,
+        middleName,
+        lastName,
+        addrLine1: defaultAddr.completeAddress ?? '',
+        addrLine2: '',
+        city: defaultAddr.area?.city?.name ?? '',
+        state: defaultAddr.area?.city?.district?.state?.name ?? '',
+        zipcode: defaultAddr.area?.pincode ?? '',
+        country: defaultAddr.area?.city?.district?.state?.country ?? '',
+        contact: customer.mobile ?? '',
+      };
+    }
+
+    // Fallback to legacy area field for backward compatibility
     return {
       firstName,
       middleName,
