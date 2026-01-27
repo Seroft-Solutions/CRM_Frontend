@@ -6,27 +6,13 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { CustomerDTO } from './CustomerDTO';
+import type { AreaDTO } from './AreaDTO';
 
 export interface CustomerAddressDTO {
     id?: number;
     /** @maxLength 255 */
     completeAddress: string;
-    /**
-     * @minLength 2
-     * @maxLength 100
-     */
-    city?: string;
-    /**
-     * @minLength 6
-     * @maxLength 6
-     * @pattern ^[0-9]{1,6}$
-     */
-    zipCode?: string;
-    /**
-     * @minLength 2
-     * @maxLength 100
-     */
-    state?: string;
+    area?: AreaDTO;
     isDefault: boolean;
     /** @maxLength 50 */
     createdBy?: string;
