@@ -17,11 +17,11 @@ export default async function EditOrderPage({ params }: EditOrderPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    // <PermissionGuard
-    //   requiredPermission="order:update"
-    //   unauthorizedTitle="Access Denied to Edit Order"
-    //   unauthorizedDescription="You don't have permission to edit order records."
-    // >
+    <PermissionGuard
+      requiredPermission="order:update"
+      unauthorizedTitle="Access Denied to Edit Order"
+      unauthorizedDescription="You don't have permission to edit order records."
+    >
       <div className="space-y-6">
         {/* Modern Centered Header for Edit Page */}
         <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
@@ -49,6 +49,6 @@ export default async function EditOrderPage({ params }: EditOrderPageProps) {
           <OrderEditForm orderId={id} />
         </div>
       </div>
-    // </PermissionGuard>
+    </PermissionGuard>
   );
 }

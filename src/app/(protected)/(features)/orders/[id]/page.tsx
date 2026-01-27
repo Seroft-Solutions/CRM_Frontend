@@ -15,11 +15,11 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
   const id = parseInt(idParam, 10);
 
   return (
-    // <PermissionGuard
-    //   requiredPermission="order:read"
-    //   unauthorizedTitle="Access Denied to Order Details"
-    //   unauthorizedDescription="You don't have permission to view this order."
-    // >
+    <PermissionGuard
+      requiredPermission="order:read"
+      unauthorizedTitle="Access Denied to Order Details"
+      unauthorizedDescription="You don't have permission to view this order."
+    >
       <div className="space-y-6">
         {/* Modern Centered Header for View Page */}
         <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
@@ -60,6 +60,6 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
           <OrderDetailContainer orderId={id} />
         </div>
       </div>
-    // </PermissionGuard>
+    </PermissionGuard>
   );
 }

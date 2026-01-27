@@ -75,11 +75,13 @@ export const sidebarItems: SidebarItem[] = [
     label: 'Order Management',
     icon: ArrowDownToLine,
     expandable: false,
+    requiredPermission: 'order:sidebar',
     children: [
       {
         key: 'ordersList',
         label: 'Sale Orders',
         path: '/orders',
+        requiredPermission: 'order:read',
       },
       {
         key: 'discount',
@@ -91,11 +93,13 @@ export const sidebarItems: SidebarItem[] = [
         key: 'orderHistory',
         label: 'Sale Order History',
         path: '/orders/history',
+        requiredPermission: 'order:read',
       },
       {
         key: 'createOrder',
         label: 'Create Sale Order',
         path: '/orders/new',
+        requiredPermission: 'order:create',
       },
     ],
   },

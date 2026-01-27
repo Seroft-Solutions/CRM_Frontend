@@ -8,14 +8,14 @@ export const metadata = {
 
 export default function OrdersRoutePage() {
   return (
-    // <PermissionGuard
-    //   requiredPermission="order:read"
-    //   unauthorizedTitle="Access Denied to Orders"
-    //   unauthorizedDescription="You don't have permission to view orders."
-    // >
+    <PermissionGuard
+      requiredPermission="order:read"
+      unauthorizedTitle="Access Denied to Orders"
+      unauthorizedDescription="You don't have permission to view orders."
+    >
       <Suspense fallback={<div>Loading...</div>}>
         <OrdersPage />
       </Suspense>
-    // </PermissionGuard>
+    </PermissionGuard>
   );
 }
