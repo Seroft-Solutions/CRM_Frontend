@@ -45,19 +45,19 @@ import { useGetSundryCreditor as useGetCustomer } from '@/core/api/generated/spr
 import type { SundryCreditorDTO as CustomerDTO } from '@/core/api/generated/spring/schemas/SundryCreditorDTO';
 import type { PurchaseOrderDTO as OrderDTO } from '@/core/api/purchase-order';
 import {
-  useCreateOrderDetail,
-  useDeleteOrderDetail,
-  useUpdateOrderDetail,
-} from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
+  useCreatePurchaseOrderDetail as useCreateOrderDetail,
+  useDeletePurchaseOrderDetail as useDeleteOrderDetail,
+  useUpdatePurchaseOrderDetail as useUpdateOrderDetail,
+} from '@/core/api/purchase-order-detail';
 import {
-  useCreateOrderAddressDetail,
-  useUpdateOrderAddressDetail,
-} from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
-import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+  useCreatePurchaseOrderAddressDetail as useCreateOrderAddressDetail,
+  useUpdatePurchaseOrderAddressDetail as useUpdateOrderAddressDetail,
+} from '@/core/api/purchase-order-address-detail';
+import { useCreatePurchaseOrderHistory as useCreateOrderHistory } from '@/core/api/purchase-order-history';
 import {
-  useCreateOrderShippingDetail,
-  useUpdateOrderShippingDetail,
-} from '@/core/api/order-shipping-detail';
+  useCreatePurchaseOrderShippingDetail as useCreateOrderShippingDetail,
+  useUpdatePurchaseOrderShippingDetail as useUpdateOrderShippingDetail,
+} from '@/core/api/purchase-order-shipping-detail';
 import { getDiscountByCode } from '../../discounts/actions/discount-api';
 import type { IDiscount } from '../../discounts/types/discount';
 import type {
@@ -769,8 +769,8 @@ export function OrderForm({
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
-      busyFlag: formState.busyFlag ? 1 : 0,
-      busyVoucherId: formState.busyVoucherId || undefined,
+      // busyFlag: formState.busyFlag ? 1 : 0,
+      // busyVoucherId: formState.busyVoucherId || undefined,
       notificationType: notificationTypeCode,
       discountCode: discountCode || undefined,
     };
@@ -807,7 +807,7 @@ export function OrderForm({
 
           const detailPayload = {
             id: item.id,
-            orderId,
+            purchaseOrderId: orderId,
             productId: isCatalog ? undefined : item.productId || undefined,
             variantId: isCatalog ? undefined : item.variantId || undefined,
             productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
@@ -831,7 +831,13 @@ export function OrderForm({
 
       const addressTasks: Promise<unknown>[] = [];
       if (shouldSaveAddress(address)) {
-        const addressPayload = buildAddressPayload(orderId);
+        const addressPayload = {
+          ...buildAddressPayload(orderId),
+          purchaseOrderId: orderId,
+        };
+        // Remove the orderId field as it's not used in purchase order address
+        delete (addressPayload as any).orderId;
+
         if (addressExists) {
           addressTasks.push(updateOrderAddressDetail({ id: orderId, data: addressPayload }));
         } else {
@@ -849,7 +855,7 @@ export function OrderForm({
       if (shouldSaveShipping) {
         const shippingPayload = {
           id: shippingExists ? orderId : undefined,
-          orderId,
+          purchaseOrderId: orderId,
           shippingAmount,
           shippingMethod: shippingMethodCode,
           shippingId: formState.shippingId || undefined,
@@ -871,7 +877,7 @@ export function OrderForm({
         : `Order created (${formState.orderStatus})`;
       const historyTask = createOrderHistory({
         data: {
-          orderId,
+          purchaseOrderId: orderId,
           status: historyStatus,
           notificationSent: Boolean(formState.notificationType),
         },

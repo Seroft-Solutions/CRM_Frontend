@@ -210,8 +210,8 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
     email: order.email ?? '',
     paymentStatus: getPaymentStatusLabel(paymentStatusCode),
     paymentStatusCode,
-    busyFlag: Boolean(order.busyFlag),
-    busyVoucherId: order.busyVoucherId ?? undefined,
+    // busyFlag: Boolean(order.busyFlag),
+    // busyVoucherId: order.busyVoucherId ?? undefined,
     notificationType:
       typeof order.notificationType === 'number'
         ? getNotificationTypeLabel(notificationTypeCode)
