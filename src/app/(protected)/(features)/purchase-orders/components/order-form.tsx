@@ -898,17 +898,17 @@ export function OrderForm({
         });
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] });
       if (result?.id) {
-        await queryClient.invalidateQueries({ queryKey: [`/api/orders/${result.id}`] });
+        await queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${result.id}`] });
       }
       if (initialOrder?.orderId) {
-        await queryClient.invalidateQueries({ queryKey: [`/api/orders/${initialOrder.orderId}`] });
+        await queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${initialOrder.orderId}`] });
       }
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-address-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-shipping-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-histories'] });
 
       toast.success(isEditing ? 'Order updated' : 'Order created', {
         description: isEditing ? 'Changes saved successfully.' : 'New order is now available.',
@@ -919,11 +919,11 @@ export function OrderForm({
       if (onSubmitSuccess) {
         onSubmitSuccess();
       } else if (isEditing && initialOrder?.orderId) {
-        router.push(`/orders/${initialOrder.orderId}`);
+        router.push(`/purchase-orders/${initialOrder.orderId}`);
       } else if (result?.id) {
-        router.push(`/orders/${result.id}`);
+        router.push(`/purchase-orders/${result.id}`);
       } else {
-        router.push('/orders');
+        router.push('/purchase-orders');
       }
     } catch (_error) {
       toast.error('Unable to save order', {

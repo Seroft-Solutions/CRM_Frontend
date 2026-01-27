@@ -2,16 +2,16 @@
 
 import { useMemo } from 'react';
 import {
-  useGetAllOrderAddressDetails,
-} from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
+  useGetAllPurchaseOrderAddressDetails as useGetAllOrderAddressDetails,
+} from '@/core/api/purchase-order-address-detail';
 import {
-  useGetAllOrderDetails,
-} from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
+  useGetAllPurchaseOrderDetails as useGetAllOrderDetails,
+} from '@/core/api/purchase-order-detail';
 import {
-  useGetAllOrderHistories,
-} from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+  useGetAllPurchaseOrderHistories as useGetAllOrderHistories,
+} from '@/core/api/purchase-order-history';
 import { useGetPurchaseOrder as useGetOrder } from '@/core/api/purchase-order';
-import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
+import { useGetAllPurchaseOrderShippingDetails as useGetAllOrderShippingDetails } from '@/core/api/purchase-order-shipping-detail';
 import {
   mapOrderAddressDetail,
   mapOrderDetails,
@@ -35,7 +35,7 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
   });
 
   const detailQuery = useGetAllOrderDetails(
-    isValidId ? { 'orderId.equals': orderId, sort: ['id,asc'] } : undefined,
+    isValidId ? { 'purchaseOrderId.equals': orderId, sort: ['id,asc'] } : undefined,
     {
       query: {
         enabled: isValidId,
@@ -44,7 +44,7 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
   );
 
   const historyQuery = useGetAllOrderHistories(
-    isValidId ? { 'orderId.equals': orderId, sort: ['createdDate,desc'] } : undefined,
+    isValidId ? { 'purchaseOrderId.equals': orderId, sort: ['createdDate,desc'] } : undefined,
     {
       query: {
         enabled: isValidId,
@@ -53,7 +53,7 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
   );
 
   const addressQuery = useGetAllOrderAddressDetails(
-    isValidId ? { 'orderId.equals': orderId } : undefined,
+    isValidId ? { 'purchaseOrderId.equals': orderId } : undefined,
     {
       query: {
         enabled: isValidId,
@@ -62,7 +62,7 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
   );
 
   const shippingQuery = useGetAllOrderShippingDetails(
-    isValidId ? { 'orderId.equals': orderId } : undefined,
+    isValidId ? { 'purchaseOrderId.equals': orderId } : undefined,
     {
       query: {
         enabled: isValidId,

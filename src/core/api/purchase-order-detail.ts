@@ -1,8 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type {
     QueryClient,
+    QueryFunction,
+    QueryKey,
     UseMutationOptions,
     UseMutationResult,
+    UseQueryOptions,
+    UseQueryResult,
 } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
 
@@ -28,6 +32,45 @@ export interface PurchaseOrderDetailDTO {
     lastModifiedBy?: string;
     lastModifiedDate?: string;
 }
+
+export type GetAllPurchaseOrderDetailsParams = {
+    'id.equals'?: number;
+    'purchaseOrderId.equals'?: number;
+    'purchaseOrderId.in'?: number[];
+    page?: number;
+    size?: number;
+    sort?: string[];
+};
+
+export const getAllPurchaseOrderDetails = (
+    params?: GetAllPurchaseOrderDetailsParams,
+    signal?: AbortSignal
+) =>
+    springServiceMutator<PurchaseOrderDetailDTO[]>({
+        url: '/api/purchase-order-details',
+        method: 'GET',
+        params,
+        signal,
+    });
+
+export const useGetAllPurchaseOrderDetails = (
+    params?: GetAllPurchaseOrderDetailsParams,
+    options?: { query?: Partial<UseQueryOptions<PurchaseOrderDetailDTO[], Error>> },
+    queryClient?: QueryClient
+): UseQueryResult<PurchaseOrderDetailDTO[], Error> & { queryKey: QueryKey } => {
+    const queryOptions = options?.query ?? {};
+    const queryKey = queryOptions.queryKey ?? ['/api/purchase-order-details', params];
+    const queryFn: QueryFunction<PurchaseOrderDetailDTO[]> = ({ signal }) =>
+        getAllPurchaseOrderDetails(params, signal);
+
+    const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
+        PurchaseOrderDetailDTO[],
+        Error
+    > & { queryKey: QueryKey };
+
+    query.queryKey = queryKey;
+    return query;
+};
 
 export const createPurchaseOrderDetail = (purchaseOrderDetailDTO: PurchaseOrderDetailDTO) =>
     springServiceMutator<PurchaseOrderDetailDTO>({

@@ -1,9 +1,7 @@
-import type {
-  OrderAddressDetailDTO,
-  OrderDetailDTO,
-  OrderHistoryDTO,
-} from '@/core/api/generated/spring/schemas';
-import type { OrderShippingDetailDTO } from '@/core/api/order-shipping-detail';
+import type { PurchaseOrderAddressDetailDTO } from '@/core/api/purchase-order-address-detail';
+import type { PurchaseOrderDetailDTO } from '@/core/api/purchase-order-detail';
+import type { PurchaseOrderHistoryDTO } from '@/core/api/purchase-order-history';
+import type { PurchaseOrderShippingDetailDTO } from '@/core/api/purchase-order-shipping-detail';
 import type { PurchaseOrderDTO } from '@/core/api/purchase-order';
 
 const UNKNOWN_LABEL = 'Unknown';
@@ -237,13 +235,13 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
   };
 };
 
-export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
+export const mapOrderDetailDto = (detail: PurchaseOrderDetailDTO): OrderDetailItem => {
   const itemStatusCode = typeof detail.itemStatus === 'number' ? detail.itemStatus : undefined;
   const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
 
   return {
     orderDetailId: detail.id ?? 0,
-    orderId: detail.orderId ?? 0,
+    orderId: detail.purchaseOrderId ?? 0,
     productId: detail.productId ?? undefined,
     variantId: detail.variantId ?? undefined,
     productCatalogId: detail.productCatalogId ?? undefined,
@@ -264,9 +262,9 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
   };
 };
 
-export const mapOrderHistoryDto = (history: OrderHistoryDTO): OrderHistoryEntry => ({
+export const mapOrderHistoryDto = (history: PurchaseOrderHistoryDTO): OrderHistoryEntry => ({
   orderHistoryId: history.id ?? 0,
-  orderId: history.orderId ?? 0,
+  orderId: history.purchaseOrderId ?? 0,
   status: history.status ?? 'Updated',
   notificationSent: history.notificationSent ?? undefined,
   createdDate: history.createdDate ?? '',
@@ -276,10 +274,10 @@ export const mapOrderHistoryDto = (history: OrderHistoryDTO): OrderHistoryEntry 
 });
 
 export const mapOrderAddressDetail = (
-  address: OrderAddressDetailDTO | undefined,
+  address: PurchaseOrderAddressDetailDTO | undefined,
   order?: PurchaseOrderDTO
 ): OrderAddressDetail => ({
-  orderId: address?.orderId ?? order?.id ?? 0,
+  orderId: address?.purchaseOrderId ?? order?.id ?? 0,
   shipTo: {
     firstName: address?.shipToFirstName ?? undefined,
     middleName: address?.shipToMiddleName ?? undefined,
@@ -314,13 +312,13 @@ export const mapOrderAddressDetail = (
 });
 
 export const mapOrderShippingDetail = (
-  shipping: OrderShippingDetailDTO | undefined,
+  shipping: PurchaseOrderShippingDetailDTO | undefined,
   order?: PurchaseOrderDTO
 ): OrderShippingDetail => {
   const shippingMethodCode = shipping?.shippingMethod ?? undefined;
 
   return {
-    orderId: shipping?.orderId ?? order?.id ?? 0,
+    orderId: shipping?.purchaseOrderId ?? order?.id ?? 0,
     shippingAmount: shipping?.shippingAmount ?? 0,
     shippingMethod:
       typeof shipping?.shippingMethod === 'number'
@@ -335,9 +333,9 @@ export const mapOrderShippingDetail = (
   };
 };
 
-export const mapOrderDetails = (details?: OrderDetailDTO[]) =>
+export const mapOrderDetails = (details?: PurchaseOrderDetailDTO[]) =>
   details ? details.map(mapOrderDetailDto) : [];
 
-export const mapOrderHistoryEntries = (entries?: OrderHistoryDTO[]) =>
+export const mapOrderHistoryEntries = (entries?: PurchaseOrderHistoryDTO[]) =>
   entries ? entries.map(mapOrderHistoryDto) : [];
 
