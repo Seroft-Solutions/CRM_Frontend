@@ -297,10 +297,22 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'productCatalog:sidebar',
       },
       {
+        key: 'createProductCatalog',
+        label: 'Create Product Catalog',
+        path: '/product-catalogs/new',
+        requiredPermission: 'productCatalog:create',
+      },
+      {
         key: 'product',
-        label: 'Add/View Products',
+        label: 'View Products',
         path: '/products',
         requiredPermission: 'product:sidebar',
+      },
+      {
+        key: 'addProduct',
+        label: 'Add Products',
+        path: '/products/new',
+        requiredPermission: 'product:create',
       },
       {
         key: 'productImport',
