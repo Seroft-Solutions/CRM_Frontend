@@ -18,14 +18,17 @@ import {
   mapOrderDtoToRecord,
   mapOrderHistoryEntries,
   mapOrderShippingDetail,
+  OrderRecord,
 } from '../data/order-data';
 import { OrderDetail } from './order-detail';
+import { useEffect } from 'react';
 
 interface OrderDetailContainerProps {
   orderId: number;
+  onOrderLoaded?: (order: OrderRecord) => void;
 }
 
-export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
+export function OrderDetailContainer({ orderId, onOrderLoaded }: OrderDetailContainerProps) {
   const isValidId = Number.isFinite(orderId) && orderId > 0;
 
   const orderQuery = useGetOrder(orderId, {
@@ -95,6 +98,12 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
     addressQuery.data,
     shippingQuery.data,
   ]);
+
+  useEffect(() => {
+    if (orderRecord && onOrderLoaded) {
+      onOrderLoaded(orderRecord);
+    }
+  }, [orderRecord, onOrderLoaded]);
 
   if (isLoading) {
     return (

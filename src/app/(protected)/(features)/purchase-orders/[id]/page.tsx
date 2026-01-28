@@ -1,8 +1,13 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PermissionGuard } from '@/core/auth';
 import { OrderDetailContainer } from '../components/order-detail-container';
 import { Eye, ArrowLeft, Edit } from 'lucide-react';
+import { useState, use } from 'react';
+import { OrderRecord } from '../data/purchase-order-data';
+import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
 
 interface OrderPageProps {
   params: Promise<{
@@ -10,9 +15,10 @@ interface OrderPageProps {
   }>;
 }
 
-export default async function OrderDetailPage({ params }: OrderPageProps) {
-  const { id: idParam } = await params;
+export default function OrderDetailPage({ params }: OrderPageProps) {
+  const { id: idParam } = use(params);
   const id = parseInt(idParam, 10);
+  const [orderData, setOrderData] = useState<OrderRecord | null>(null);
 
   return (
     // <PermissionGuard
@@ -49,6 +55,9 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
                 Edit
               </Link>
             </Button>
+            {orderData && (
+              <InvoicePrintButton order={orderData} orderType="purchase" />
+            )}
           </div>
 
           {/* Right Section: Spacer for balance */}
@@ -57,7 +66,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <OrderDetailContainer orderId={id} />
+        <OrderDetailContainer orderId={id} onOrderLoaded={setOrderData} />
       </div>
     </div>
     // </PermissionGuard>

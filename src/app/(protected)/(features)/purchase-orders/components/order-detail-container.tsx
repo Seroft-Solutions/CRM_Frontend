@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import {
   useGetAllPurchaseOrderAddressDetails as useGetAllOrderAddressDetails,
 } from '@/core/api/purchase-order-address-detail';
@@ -18,14 +18,16 @@ import {
   mapOrderDtoToRecord,
   mapOrderHistoryEntries,
   mapOrderShippingDetail,
+  OrderRecord,
 } from '../data/purchase-order-data';
 import { OrderDetail } from './order-detail';
 
 interface OrderDetailContainerProps {
   orderId: number;
+  onOrderLoaded?: (order: OrderRecord) => void;
 }
 
-export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
+export function OrderDetailContainer({ orderId, onOrderLoaded }: OrderDetailContainerProps) {
   const isValidId = Number.isFinite(orderId) && orderId > 0;
 
   const orderQuery = useGetOrder(orderId, {
@@ -95,6 +97,15 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
     addressQuery.data,
     shippingQuery.data,
   ]);
+
+  useEffect(() => {
+    if (orderRecord && onOrderLoaded) {
+      onOrderLoaded(orderRecord);
+    }
+  }, [orderRecord, onOrderLoaded]);
+
+  console.log('isLoading', isLoading);
+  console.log('orderRecord', orderRecord);
 
   if (isLoading) {
     return (
