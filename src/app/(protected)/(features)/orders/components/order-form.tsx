@@ -15,16 +15,12 @@ import {
 } from '@/components/ui/select';
 import {
   OrderRecord,
-  getNotificationTypeCode,
   getOrderStatusCode,
   getPaymentStatusCode,
   getShippingMethodCode,
-  getUserTypeCode,
-  notificationTypeOptions,
   orderStatusOptions,
   paymentStatusOptions,
   shippingMethodOptions,
-  userTypeOptions,
 } from '../data/order-data';
 import {
   AlertDialog,
@@ -152,7 +148,6 @@ export function OrderForm({
     return {
       orderStatus: initialOrder?.orderStatus || 'Pending',
       paymentStatus: initialOrder?.paymentStatus || 'Pending',
-      userType: initialOrder?.userType || 'B2C',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       orderTaxRate:
@@ -161,9 +156,6 @@ export function OrderForm({
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
       discountCode: initialOrder?.discountCode || '',
-      notificationType: initialOrder?.notificationType || '',
-      busyFlag: Boolean(initialOrder?.busyFlag),
-      busyVoucherId: initialOrder?.busyVoucherId || '',
       orderComment: '',
     };
   }, [initialOrder]);
@@ -344,7 +336,6 @@ export function OrderForm({
       key === 'orderTaxRate' ||
       key === 'shippingId' ||
       key === 'discountCode' ||
-      key === 'busyVoucherId' ||
       key === 'customerId'
     ) {
       setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
@@ -559,12 +550,6 @@ export function OrderForm({
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
 
-    if (formState.notificationType === 'Email') {
-      const customerEmail = selectedCustomerEmail?.trim() || '';
-      if (!customerEmail) {
-        nextErrors.customerId = 'Select a customer with an email address.';
-      }
-    }
 
     if (formState.discountCode && formState.discountCode.length > 20) {
       nextErrors.discountCode = 'Max 20 characters.';
@@ -574,9 +559,6 @@ export function OrderForm({
       nextErrors.shippingId = 'Max 50 characters.';
     }
 
-    if (formState.busyVoucherId && formState.busyVoucherId.length > 50) {
-      nextErrors.busyVoucherId = 'Max 50 characters.';
-    }
 
     if (shouldSaveAddress(address)) {
       if (address.shipTo.zipcode.trim().length > 10) {
@@ -648,16 +630,10 @@ export function OrderForm({
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
       : paymentStatusOptions;
-  const userTypeSelectOptions =
-    formState.userType === 'Unknown' ? [...userTypeOptions, 'Unknown'] : userTypeOptions;
   const shippingMethodSelectOptions =
     formState.shippingMethod === 'Unknown'
       ? [...shippingMethodOptions, 'Unknown']
       : shippingMethodOptions;
-  const notificationTypeSelectOptions =
-    formState.notificationType === 'Unknown'
-      ? [...notificationTypeOptions, 'Unknown']
-      : notificationTypeOptions;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -740,12 +716,6 @@ export function OrderForm({
       getOrderStatusCode(formState.orderStatus) ?? initialOrder?.orderStatusCode ?? 0;
     const paymentStatusCode =
       getPaymentStatusCode(formState.paymentStatus) ?? initialOrder?.paymentStatusCode ?? 0;
-    const userTypeCode =
-      getUserTypeCode(formState.userType) ?? initialOrder?.userTypeCode ?? 0;
-    const notificationTypeCode =
-      getNotificationTypeCode(formState.notificationType || undefined) ??
-      initialOrder?.notificationTypeCode ??
-      undefined;
     const shippingMethodCode =
       getShippingMethodCode(formState.shippingMethod || undefined) ??
       initialOrder?.shipping.shippingMethodCode ??
@@ -762,13 +732,9 @@ export function OrderForm({
       orderTaxRate: taxRate,
       customer: customerPayload,
       orderBaseAmount: baseAmount,
-      userType: userTypeCode,
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
-      busyFlag: formState.busyFlag ? 1 : 0,
-      busyVoucherId: formState.busyVoucherId || undefined,
-      notificationType: notificationTypeCode,
       discountCode: discountCode || undefined,
     };
 
@@ -870,7 +836,7 @@ export function OrderForm({
         data: {
           orderId,
           status: historyStatus,
-          notificationSent: Boolean(formState.notificationType),
+          notificationSent: false,
         },
       });
 
@@ -999,9 +965,7 @@ export function OrderForm({
                 errors={errors}
                 orderStatusOptions={orderStatusSelectOptions as any}
                 paymentStatusOptions={paymentStatusSelectOptions as any}
-                userTypeOptions={userTypeSelectOptions as any}
                 shippingMethodOptions={shippingMethodSelectOptions as any}
-                notificationTypeOptions={notificationTypeSelectOptions as any}
                 onChange={handleChange}
                 onVerifyDiscount={handleVerifyDiscount}
               />
@@ -1142,10 +1106,6 @@ export function OrderForm({
                     <div>
                       <div className="text-muted-foreground">Items</div>
                       <div className="font-semibold text-slate-800">{items.length}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Type</div>
-                      <div className="font-semibold text-slate-800">{formState.userType}</div>
                     </div>
                   </div>
                 </div>

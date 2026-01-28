@@ -133,9 +133,6 @@ export function OrderTable() {
   }, [orders, orderById, shippingByOrderId]);
 
   const resolveDiscountAmount = (order: (typeof ordersWithShipping)[number]) => {
-    if (order.discountAmount > 0) {
-      return order.discountAmount;
-    }
     if (!order.discountCode) {
       return 0;
     }
@@ -276,101 +273,98 @@ export function OrderTable() {
               const customerContact = order.customer?.mobile || order.phone || '—';
 
               return (
-              <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                      {startIndex + index + 1}
+                <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
+                        {startIndex + index + 1}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-800">#{order.orderId}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDateTime(order.createdDate)}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-bold text-slate-800">#{order.orderId}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={`border-2 font-semibold ${statusColors[order.orderStatus] ?? statusColors.Unknown}`}
+                    >
+                      {order.orderStatus}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-bold text-slate-900">{formatCurrency(order.orderTotalAmount)}</div>
                       <div className="text-xs text-muted-foreground">
-                        {formatDateTime(order.createdDate)}
+                        Base {formatCurrency(order.orderBaseAmount)}
                       </div>
+                      {resolveDiscountAmount(order) > 0 && (
+                        <div className="text-xs font-semibold text-red-600">
+                          -{formatCurrency(resolveDiscountAmount(order))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={`border-2 font-semibold ${statusColors[order.orderStatus] ?? statusColors.Unknown}`}
-                  >
-                    {order.orderStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-bold text-slate-900">{formatCurrency(order.orderTotalAmount)}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Base {formatCurrency(order.orderBaseAmount)}
-                    </div>
-                    {resolveDiscountAmount(order) > 0 && (
-                      <div className="text-xs font-semibold text-red-600">
-                        -{formatCurrency(resolveDiscountAmount(order))}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-semibold text-slate-700">
+                        {order.shipping.shippingMethod || 'Not set'}
                       </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-semibold text-slate-700">
-                      {order.shipping.shippingMethod || 'Not set'}
+                      <div className="text-xs text-muted-foreground">
+                        {order.shipping.shippingAmount
+                          ? formatCurrency(order.shipping.shippingAmount)
+                          : 'Included'}
+                      </div>
+                      {order.shipping.shippingId ? (
+                        <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900">
+                          #{order.shipping.shippingId}
+                        </Badge>
+                      ) : null}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {order.shipping.shippingAmount
-                        ? formatCurrency(order.shipping.shippingAmount)
-                        : 'Included'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-semibold text-slate-800">{customerName}</div>
+                      <div className="text-xs text-muted-foreground">{customerContact}</div>
                     </div>
-                    {order.shipping.shippingId ? (
-                      <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900">
-                        #{order.shipping.shippingId}
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
+                        {order.paymentStatus}
                       </Badge>
-                    ) : null}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-semibold text-slate-800">{customerName}</div>
-                    <div className="text-xs text-muted-foreground">{customerContact}</div>
-                    <Badge variant="outline" className="border-blue-300 bg-blue-50 text-xs text-blue-900">
-                      {order.userType}
-                    </Badge>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
-                      {order.paymentStatus}
-                    </Badge>
-                    {order.discountCode ? (
-                      <div className="mt-1 text-xs font-semibold text-amber-700">
-                        {order.discountCode}
-                      </div>
-                    ) : null}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button asChild size="sm" variant="outline" className="border-slate-300">
-                      <Link href={`/orders/${order.orderId}`}>
-                        <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        View
-                      </Link>
-                    </Button>
-                    <Button asChild size="sm" className="bg-slate-600 text-white hover:bg-slate-700">
-                      <Link href={`/orders/${order.orderId}/edit`}>
-                        <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </Link>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+                      {order.discountCode ? (
+                        <div className="mt-1 text-xs font-semibold text-amber-700">
+                          {order.discountCode}
+                        </div>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button asChild size="sm" variant="outline" className="border-slate-300">
+                        <Link href={`/orders/${order.orderId}`}>
+                          <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          View
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" className="bg-slate-600 text-white hover:bg-slate-700">
+                        <Link href={`/orders/${order.orderId}/edit`}>
+                          <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </Link>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
               );
             })}
 

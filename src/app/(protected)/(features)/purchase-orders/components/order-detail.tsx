@@ -31,18 +31,7 @@ interface OrderDetailProps {
 
 export function OrderDetail({ order }: OrderDetailProps) {
   const taxRate = order.orderTaxRate ?? 0;
-  const discountAmount = (() => {
-    if (!order.discountCode) {
-      return 0;
-    }
-    const shippingAmount = order.shipping.shippingAmount ?? 0;
-    const totalAmount = order.orderTotalAmount ?? 0;
-    const divisor = 1 + taxRate / 100;
-    if (divisor <= 0) return 0;
-    const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
-    return Math.max(order.orderBaseAmount - taxableAmount, 0);
-  })();
-  const taxableAmount = Math.max(order.orderBaseAmount - discountAmount, 0);
+  const taxableAmount = order.orderBaseAmount;
   const taxAmount = (taxRate / 100) * taxableAmount;
   const sundryCreditorName = order.sundryCreditor?.creditorName || order.email || '—';
   const sundryCreditorPhone = order.sundryCreditor?.mobile || order.phone || '—';
@@ -75,12 +64,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
               <span className="text-slate-600">Base</span>
               <span className="font-semibold text-slate-800">{formatCurrency(order.orderBaseAmount)}</span>
             </div>
-            <div className="flex items-center justify-between text-red-600">
-              <span>Discount</span>
-              <span className="font-semibold">
-                - {formatCurrency(discountAmount)}
-              </span>
-            </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Shipping</span>
               <span className="font-semibold text-slate-800">
@@ -101,11 +84,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 {formatCurrency(order.orderTotalAmount)}
               </span>
             </div>
-            {order.discountCode ? (
-              <div className="rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
-                <span className="font-semibold">Code:</span> {order.discountCode}
-              </div>
-            ) : null}
           </CardContent>
         </Card>
 
@@ -122,10 +100,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
           </CardHeader>
           <CardContent className="space-y-2.5 pt-4 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-slate-600">Type</span>
-              <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-900">{order.userType}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
               <span className="text-slate-600">Name</span>
               <span className="truncate font-semibold text-slate-800">{sundryCreditorName}</span>
             </div>
@@ -136,18 +110,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Email</span>
               <span className="truncate font-semibold text-slate-800">{sundryCreditorEmail}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Notification</span>
-              <span className="font-semibold text-slate-800">{order.notificationType || 'Not set'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Busy Flag</span>
-              {order.busyFlag ? (
-                <Badge className="bg-amber-100 text-amber-900">Yes</Badge>
-              ) : (
-                <span className="font-semibold text-slate-600">No</span>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -177,10 +139,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Tracking ID</span>
               <span className="font-semibold text-slate-800">{order.shipping.shippingId || '—'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Discount Code</span>
-              <span className="font-semibold text-slate-800">{order.discountCode || '—'}</span>
             </div>
             <div className="rounded-md bg-slate-50 p-2">
               <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-600">Audit Trail</div>

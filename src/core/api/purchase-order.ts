@@ -18,15 +18,10 @@ export interface PurchaseOrderDTO {
   orderTaxRate?: number;
   orderBaseAmount?: number;
   shippingAmount?: number;
-  userType?: number;
   phone?: string;
   email?: string;
   paymentStatus?: number;
-  notificationType?: number;
   sundryCreditor?: SundryCreditorDTO;
-  discountCode?: string;
-  busyFlag?: number;
-  busyVoucherId?: string;
   updatedBy?: number;
   lastUpdated?: string;
   createdBy?: string;

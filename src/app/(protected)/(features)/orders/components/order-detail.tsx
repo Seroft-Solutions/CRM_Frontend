@@ -121,10 +121,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
           </CardHeader>
           <CardContent className="space-y-2.5 pt-4 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-slate-600">Type</span>
-              <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-900">{order.userType}</Badge>
-            </div>
-            <div className="flex items-center justify-between">
               <span className="text-slate-600">Customer</span>
               <span className="truncate font-semibold text-slate-800">{customerName}</span>
             </div>
@@ -135,18 +131,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Email</span>
               <span className="truncate font-semibold text-slate-800">{customerEmail}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Notification</span>
-              <span className="font-semibold text-slate-800">{order.notificationType || 'Not set'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Busy Flag</span>
-              {order.busyFlag ? (
-                <Badge className="bg-amber-100 text-amber-900">Yes</Badge>
-              ) : (
-                <span className="font-semibold text-slate-600">No</span>
-              )}
             </div>
           </CardContent>
         </Card>

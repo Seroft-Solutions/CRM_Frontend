@@ -1,7 +1,6 @@
 'use client';
 
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -14,11 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { PaginatedRelationshipCombobox } from '@/app/(protected)/(features)/sundry-creditors/components/form/paginated-relationship-combobox';
 import { useGetAllSundryCreditors } from '@/core/api/generated/spring/endpoints/sundry-creditor-resource/sundry-creditor-resource.gen';
 import {
-  NotificationType,
   OrderStatus,
   PaymentStatus,
   ShippingMethod,
-  UserType,
 } from '../data/purchase-order-data';
 import { FieldError } from './order-form-field-error';
 import type { OrderFormErrors, OrderFormState } from './order-form-types';
@@ -28,11 +25,8 @@ type OrderFormFieldsProps = {
   errors: OrderFormErrors;
   orderStatusOptions: OrderStatus[];
   paymentStatusOptions: PaymentStatus[];
-  userTypeOptions: UserType[];
   shippingMethodOptions: (ShippingMethod | 'Unknown')[];
-  notificationTypeOptions: (NotificationType | 'Unknown')[];
   onChange: (key: keyof OrderFormState, value: string | boolean) => void;
-  onVerifyDiscount: () => void;
 };
 
 export function OrderFormFields({
@@ -40,19 +34,16 @@ export function OrderFormFields({
   errors,
   orderStatusOptions,
   paymentStatusOptions,
-  userTypeOptions,
   shippingMethodOptions,
-  notificationTypeOptions,
   onChange,
-  onVerifyDiscount,
 }: OrderFormFieldsProps) {
   return (
     <div className="space-y-5">
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
         <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Status & Type
+          Status
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Purchase Order Status</Label>
             <Select
@@ -89,73 +80,6 @@ export function OrderFormFields({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">User Type</Label>
-            <Select
-              value={formState.userType}
-              onValueChange={(value) => onChange('userType', value as UserType)}
-            >
-              <SelectTrigger className="h-10 w-full border-slate-300">
-                <SelectValue placeholder="Select user type" />
-              </SelectTrigger>
-              <SelectContent>
-                {userTypeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Notification Type</Label>
-            <Select
-              value={formState.notificationType || ''}
-              onValueChange={(value) => onChange('notificationType', value)}
-            >
-              <SelectTrigger className="h-10 w-full border-slate-300">
-                <SelectValue placeholder="Select notification type" />
-              </SelectTrigger>
-              <SelectContent>
-                {notificationTypeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
-        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Discount
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Discount Code</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="PROMO2024"
-                value={formState.discountCode}
-                onChange={(event) => onChange('discountCode', event.target.value)}
-                className="border-slate-300"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-10 px-3 bg-slate-50 border-slate-300 hover:bg-slate-100"
-                onClick={onVerifyDiscount}
-              >
-                Verify
-              </Button>
-            </div>
-            <FieldError message={errors.discountCode} />
           </div>
         </div>
       </div>

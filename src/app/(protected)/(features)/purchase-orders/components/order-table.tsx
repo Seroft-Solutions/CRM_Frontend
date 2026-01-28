@@ -135,18 +135,6 @@ export function OrderTable() {
     });
   }, [orders, orderById, shippingByOrderId]);
 
-  const resolveDiscountAmount = (order: (typeof ordersWithShipping)[number]) => {
-    if (!order.discountCode) {
-      return 0;
-    }
-    const shippingAmount = order.shipping.shippingAmount ?? 0;
-    const taxRate = order.orderTaxRate ?? 0;
-    const totalAmount = order.orderTotalAmount ?? 0;
-    const divisor = 1 + taxRate / 100;
-    if (divisor <= 0) return 0;
-    const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
-    return Math.max(order.orderBaseAmount - taxableAmount, 0);
-  };
 
   const totalCount = countData ?? orders.length;
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -304,11 +292,6 @@ export function OrderTable() {
                       <div className="text-xs text-muted-foreground">
                         Base {formatCurrency(order.orderBaseAmount)}
                       </div>
-                      {resolveDiscountAmount(order) > 0 && (
-                        <div className="text-xs font-semibold text-red-600">
-                          -{formatCurrency(resolveDiscountAmount(order))}
-                        </div>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -332,9 +315,6 @@ export function OrderTable() {
                     <div className="space-y-1">
                       <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
                       <div className="text-xs text-muted-foreground">{sundryCreditorContact}</div>
-                      <Badge variant="outline" className="border-blue-300 bg-blue-50 text-xs text-blue-900">
-                        {order.userType}
-                      </Badge>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -342,11 +322,6 @@ export function OrderTable() {
                       <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
                         {order.paymentStatus}
                       </Badge>
-                      {order.discountCode ? (
-                        <div className="mt-1 text-xs font-semibold text-amber-700">
-                          {order.discountCode}
-                        </div>
-                      ) : null}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

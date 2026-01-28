@@ -17,16 +17,12 @@ import {
   OrderStatus,
   PaymentStatus,
   OrderRecord,
-  getNotificationTypeCode,
   getOrderStatusCode,
   getPaymentStatusCode,
   getShippingMethodCode,
-  getUserTypeCode,
-  notificationTypeOptions,
   orderStatusOptions,
   paymentStatusOptions,
   shippingMethodOptions,
-  userTypeOptions,
 } from '../data/purchase-order-data';
 import {
   AlertDialog,
@@ -58,7 +54,6 @@ import {
   useCreatePurchaseOrderShippingDetail as useCreateOrderShippingDetail,
   useUpdatePurchaseOrderShippingDetail as useUpdateOrderShippingDetail,
 } from '@/core/api/purchase-order-shipping-detail';
-import { getDiscountByCode } from '../../discounts/actions/discount-api';
 import type { IDiscount } from '../../discounts/types/discount';
 import type {
   AddressFieldsForm,
@@ -155,7 +150,6 @@ export function OrderForm({
     return {
       orderStatus: initialOrder?.orderStatus || 'Pending',
       paymentStatus: initialOrder?.paymentStatus || 'Pending',
-      userType: initialOrder?.userType || 'B2C',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       orderTaxRate:
@@ -163,16 +157,10 @@ export function OrderForm({
       customerId: initialOrder?.sundryCreditor?.id ? String(initialOrder.sundryCreditor.id) : '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
-      discountCode: initialOrder?.discountCode || '',
-      notificationType: initialOrder?.notificationType || '',
-      busyFlag: Boolean(initialOrder?.busyFlag),
-      busyVoucherId: initialOrder?.busyVoucherId || '',
       orderComment: '',
     };
   }, [initialOrder]);
-
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
-  const [discountData, setDiscountData] = useState<IDiscount | null>(null);
   const [useCustomTaxRate, setUseCustomTaxRate] = useState(() => {
     const rate = defaultState.orderTaxRate.trim();
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
@@ -235,7 +223,6 @@ export function OrderForm({
   );
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
-  const discountCodeRef = useRef<string>('');
 
   const selectedCustomerId = formState.customerId.trim()
     ? Number.parseInt(formState.customerId, 10)
@@ -326,18 +313,6 @@ export function OrderForm({
     lastCustomerIdRef.current = currentId;
   }, [addressExists, sundryCreditorData?.id]);
 
-  useEffect(() => {
-    const code = formState.discountCode?.trim() || '';
-    if (!code) {
-      setDiscountData(null);
-      discountCodeRef.current = '';
-      return;
-    }
-    if (discountCodeRef.current && discountCodeRef.current !== code) {
-      setDiscountData(null);
-    }
-    discountCodeRef.current = code;
-  }, [formState.discountCode]);
 
   const handleChange = (key: keyof OrderFormState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
@@ -346,8 +321,6 @@ export function OrderForm({
       key === 'shippingAmount' ||
       key === 'orderTaxRate' ||
       key === 'shippingId' ||
-      key === 'discountCode' ||
-      key === 'busyVoucherId' ||
       key === 'customerId'
     ) {
       setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
@@ -442,80 +415,6 @@ export function OrderForm({
     }
   };
 
-  const isDiscountActive = (discount?: IDiscount | null) =>
-    (discount?.status || '').toUpperCase() === 'ACTIVE';
-
-  const isDiscountInDateRange = (discount?: IDiscount | null) => {
-    if (!discount) return false;
-    const today = new Date();
-    const start = discount.startDate ? new Date(discount.startDate) : null;
-    const end = discount.endDate ? new Date(discount.endDate) : null;
-    if (start && Number.isNaN(start.getTime())) {
-      return false;
-    }
-    if (end && Number.isNaN(end.getTime())) {
-      return false;
-    }
-    if (start && today < start) {
-      return false;
-    }
-    if (end && today > end) {
-      return false;
-    }
-    return true;
-  };
-
-  const resolveDiscountAmount = (baseAmount: number, discount?: IDiscount | null) => {
-    if (!discount || !isDiscountActive(discount) || !isDiscountInDateRange(discount)) {
-      return 0;
-    }
-    const discountType = (discount.discountType || '').toUpperCase();
-    const rawValue = Number(discount.discountValue ?? discount.discountAmount ?? 0);
-    if (!Number.isFinite(rawValue) || rawValue <= 0) {
-      return 0;
-    }
-    let amount = 0;
-    if (discountType === 'PERCENTAGE') {
-      const safePercent = Math.min(Math.max(rawValue, 0), 100);
-      amount = (safePercent / 100) * baseAmount;
-    } else {
-      amount = Math.max(rawValue, 0);
-    }
-    const maxDiscountValue = Number(discount.maxDiscountValue);
-    if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0) {
-      amount = Math.min(amount, maxDiscountValue);
-    }
-    return Math.max(amount, 0);
-  };
-
-  const fetchDiscountByCode = async (code: string) => {
-    try {
-      const discount = await getDiscountByCode(code);
-      setDiscountData(discount);
-      const isValid = isDiscountActive(discount) && isDiscountInDateRange(discount);
-      if (isValid) {
-        toast.success(`Discount code "${discount.discountCode}" applied!`);
-      } else {
-        toast.error('This discount code is inactive or expired.');
-      }
-      return discount;
-    } catch (error) {
-      console.error('Failed to verify discount code:', error);
-      setDiscountData(null);
-      toast.error('Invalid discount code.');
-      return null;
-    }
-  };
-
-  const handleVerifyDiscount = async () => {
-    const code = formState.discountCode?.trim();
-    if (!code) {
-      toast.error('Please enter a discount code.');
-      return;
-    }
-
-    await fetchDiscountByCode(code);
-  };
 
   const shouldSaveAddress = (value: OrderAddressForm) => {
     const hasShipTo = Object.values(value.shipTo).some((field) => field.trim() !== '');
@@ -562,24 +461,6 @@ export function OrderForm({
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
 
-    if (formState.notificationType === 'Email') {
-      const customerEmail = selectedCustomerEmail?.trim() || '';
-      if (!customerEmail) {
-        nextErrors.customerId = 'Select a customer with an email address.';
-      }
-    }
-
-    if (formState.discountCode && formState.discountCode.length > 20) {
-      nextErrors.discountCode = 'Max 20 characters.';
-    }
-
-    if (formState.shippingId && formState.shippingId.length > 50) {
-      nextErrors.shippingId = 'Max 50 characters.';
-    }
-
-    if (formState.busyVoucherId && formState.busyVoucherId.length > 50) {
-      nextErrors.busyVoucherId = 'Max 50 characters.';
-    }
 
     if (shouldSaveAddress(address)) {
       if (address.shipTo.zipcode.trim().length > 10) {
@@ -651,16 +532,10 @@ export function OrderForm({
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
       : paymentStatusOptions;
-  const userTypeSelectOptions =
-    formState.userType === 'Unknown' ? [...userTypeOptions, 'Unknown'] : userTypeOptions;
   const shippingMethodSelectOptions =
     formState.shippingMethod === 'Unknown'
       ? [...shippingMethodOptions, 'Unknown']
       : shippingMethodOptions;
-  const notificationTypeSelectOptions =
-    formState.notificationType === 'Unknown'
-      ? [...notificationTypeOptions, 'Unknown']
-      : notificationTypeOptions;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -727,15 +602,9 @@ export function OrderForm({
     const baseAmount = formState.orderBaseAmount.trim()
       ? parseAmount(formState.orderBaseAmount)
       : itemsTotal;
-    const discountCode = formState.discountCode?.trim() || '';
-    let resolvedDiscount = discountData;
-    if (discountCode && discountData?.discountCode?.toUpperCase() !== discountCode.toUpperCase()) {
-      resolvedDiscount = await fetchDiscountByCode(discountCode);
-    }
-    const discountAmount = resolveDiscountAmount(baseAmount, resolvedDiscount);
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
-    const taxableAmount = Math.max(baseAmount - discountAmount, 0);
+    const taxableAmount = baseAmount;
     const taxAmount = (taxRate / 100) * taxableAmount;
     const orderTotalAmount = Math.max(taxableAmount + shippingAmount + taxAmount, 0);
 
@@ -743,12 +612,6 @@ export function OrderForm({
       getOrderStatusCode(formState.orderStatus) ?? initialOrder?.orderStatusCode ?? 0;
     const paymentStatusCode =
       getPaymentStatusCode(formState.paymentStatus) ?? initialOrder?.paymentStatusCode ?? 0;
-    const userTypeCode =
-      getUserTypeCode(formState.userType) ?? initialOrder?.userTypeCode ?? 0;
-    const notificationTypeCode =
-      getNotificationTypeCode(formState.notificationType || undefined) ??
-      initialOrder?.notificationTypeCode ??
-      undefined;
     const shippingMethodCode =
       getShippingMethodCode(formState.shippingMethod || undefined) ??
       initialOrder?.shipping.shippingMethodCode ??
@@ -765,14 +628,9 @@ export function OrderForm({
       orderTaxRate: taxRate,
       sundryCreditor: sundryCreditorPayload,
       orderBaseAmount: baseAmount,
-      userType: userTypeCode,
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
-      // busyFlag: formState.busyFlag ? 1 : 0,
-      // busyVoucherId: formState.busyVoucherId || undefined,
-      notificationType: notificationTypeCode,
-      discountCode: discountCode || undefined,
     };
 
     try {
@@ -879,7 +737,7 @@ export function OrderForm({
         data: {
           purchaseOrderId: orderId,
           status: historyStatus,
-          notificationSent: Boolean(formState.notificationType),
+          notificationSent: false,
         },
       });
 
@@ -938,17 +796,9 @@ export function OrderForm({
   const baseAmount = formState.orderBaseAmount.trim()
     ? Number.parseFloat(formState.orderBaseAmount) || 0
     : itemsTotal;
-  const discountCodeValue = formState.discountCode?.trim() || '';
-  const activeDiscount =
-    discountCodeValue &&
-      discountData?.discountCode?.toUpperCase() === discountCodeValue.toUpperCase()
-      ? discountData
-      : null;
-  const discountAmount = resolveDiscountAmount(baseAmount, activeDiscount);
-  const discountLabel = discountCodeValue ? `Discount (${discountCodeValue})` : 'Discount';
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const taxRateValue = Math.min(Math.max(Number.parseFloat(formState.orderTaxRate) || 0, 0), 100);
-  const taxableAmount = Math.max(baseAmount - discountAmount, 0);
+  const taxableAmount = baseAmount;
   const taxAmount = (taxRateValue / 100) * taxableAmount;
   const orderTotal = Math.max(taxableAmount + shippingAmount + taxAmount, 0);
   const taxRateSelectValue = useCustomTaxRate
@@ -1008,11 +858,8 @@ export function OrderForm({
                 errors={errors}
                 orderStatusOptions={orderStatusSelectOptions as any}
                 paymentStatusOptions={paymentStatusSelectOptions as any}
-                userTypeOptions={userTypeSelectOptions as any}
                 shippingMethodOptions={shippingMethodSelectOptions as any}
-                notificationTypeOptions={notificationTypeSelectOptions as any}
                 onChange={handleChange}
-                onVerifyDiscount={handleVerifyDiscount}
               />
             </div>
 
@@ -1121,12 +968,6 @@ export function OrderForm({
                       ₹{shippingAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
-                    <span className="font-semibold text-red-600">
-                      -₹{discountAmount.toFixed(2)}
-                    </span>
-                  </div>
                   <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
                     <span className="font-bold text-slate-900">Order Total</span>
                     <span className="text-lg font-bold text-slate-900">
@@ -1151,10 +992,6 @@ export function OrderForm({
                     <div>
                       <div className="text-muted-foreground">Items</div>
                       <div className="font-semibold text-slate-800">{items.length}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Type</div>
-                      <div className="font-semibold text-slate-800">{formState.userType}</div>
                     </div>
                   </div>
                 </div>

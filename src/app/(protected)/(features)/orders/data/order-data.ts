@@ -18,17 +18,13 @@ export const orderStatusOptions = [
 
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;
 
-export const userTypeOptions = ['B2C', 'B2B', 'Guest'] as const;
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
-export const notificationTypeOptions = ['Email', 'SMS', 'Push'] as const;
 
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
-export type UserType = (typeof userTypeOptions)[number] | typeof UNKNOWN_LABEL;
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
-export type NotificationType = (typeof notificationTypeOptions)[number] | typeof UNKNOWN_LABEL;
 
 export interface OrderDetailItem {
   orderDetailId: number;
@@ -111,16 +107,10 @@ export interface OrderRecord {
   orderBaseAmount: number;
   discountCode?: string;
   customer?: OrderDTO['customer'];
-  userType: UserType;
-  userTypeCode?: number;
   phone: string;
   email: string;
   paymentStatus: PaymentStatus;
   paymentStatusCode?: number;
-  busyFlag?: boolean;
-  busyVoucherId?: string;
-  notificationType?: NotificationType;
-  notificationTypeCode?: number;
   createdBy: string;
   createdDate: string;
   updatedBy?: string;
@@ -154,10 +144,6 @@ export const getPaymentStatusLabel = (code?: number): PaymentStatus =>
 export const getPaymentStatusCode = (status?: PaymentStatus) =>
   getCodeFromLabel(paymentStatusOptions, status);
 
-export const getUserTypeLabel = (code?: number): UserType =>
-  getLabelFromCode(userTypeOptions, code) as UserType;
-
-export const getUserTypeCode = (status?: UserType) => getCodeFromLabel(userTypeOptions, status);
 
 export const getShippingMethodLabel = (code?: number): ShippingMethod =>
   getLabelFromCode(shippingMethodOptions, code) as ShippingMethod;
@@ -165,11 +151,6 @@ export const getShippingMethodLabel = (code?: number): ShippingMethod =>
 export const getShippingMethodCode = (status?: ShippingMethod) =>
   getCodeFromLabel(shippingMethodOptions, status);
 
-export const getNotificationTypeLabel = (code?: number): NotificationType =>
-  getLabelFromCode(notificationTypeOptions, code) as NotificationType;
-
-export const getNotificationTypeCode = (status?: NotificationType) =>
-  getCodeFromLabel(notificationTypeOptions, status);
 
 const resolveOrderTotal = (order: OrderDTO) => {
   if (typeof order.orderTotalAmount === 'number') {
@@ -193,8 +174,6 @@ const toStringValue = (value?: string | number | null) => {
 export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
   const orderStatusCode = order.orderStatus ?? undefined;
   const paymentStatusCode = order.paymentStatus ?? undefined;
-  const userTypeCode = order.userType ?? undefined;
-  const notificationTypeCode = order.notificationType ?? undefined;
 
   return {
     orderId: order.id ?? 0,
@@ -205,19 +184,12 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
     orderBaseAmount: order.orderBaseAmount ?? 0,
     discountCode: order.discountCode ?? undefined,
     customer: order.customer ?? undefined,
-    userType: getUserTypeLabel(userTypeCode),
-    userTypeCode,
     phone: order.phone ?? '',
     email: order.email ?? '',
     paymentStatus: getPaymentStatusLabel(paymentStatusCode),
     paymentStatusCode,
-    busyFlag: Boolean(order.busyFlag),
-    busyVoucherId: order.busyVoucherId ?? undefined,
-    notificationType:
-      typeof order.notificationType === 'number'
-        ? getNotificationTypeLabel(notificationTypeCode)
-        : undefined,
-    notificationTypeCode,
+    // busyFlag: Boolean(order.busyFlag),
+    // busyVoucherId: order.busyVoucherId ?? undefined,
     createdBy: order.createdBy ?? 'System',
     createdDate: order.createdDate ?? '',
     updatedBy: toStringValue(order.updatedBy) || undefined,
@@ -239,8 +211,10 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
 };
 
 export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
-  const itemStatusCode = typeof detail.itemStatus === 'number' ? detail.itemStatus : undefined;
-  const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
+  // const itemStatusCode = typeof detail.itemStatus === 'number' ? detail.itemStatus : undefined;
+  // const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
+  const itemStatus = UNKNOWN_LABEL;
+  const itemStatusCode = undefined;
 
   return {
     orderDetailId: detail.id ?? 0,
@@ -256,8 +230,8 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
     itemTotalAmount: detail.itemTotalAmount ?? 0,
     quantity: detail.quantity ?? 0,
     itemPrice: detail.itemPrice ?? 0,
-    itemTaxAmount: detail.itemTaxAmount ?? 0,
-    itemComment: detail.itemComment ?? undefined,
+    itemTaxAmount: 0,
+    itemComment: undefined,
     createdBy: detail.createdBy ?? 'System',
     createdDate: detail.createdDate ?? '',
     updatedBy: detail.updatedBy ?? undefined,

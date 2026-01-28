@@ -1,9 +1,7 @@
 import type {
-  NotificationType,
   OrderStatus,
   PaymentStatus,
   ShippingMethod,
-  UserType,
 } from '../data/order-data';
 
 type OptionalSelectValue<T extends string> = T | '';
@@ -11,7 +9,6 @@ type OptionalSelectValue<T extends string> = T | '';
 export type OrderFormState = {
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
-  userType: UserType;
   orderBaseAmount: string;
   shippingAmount: string;
   orderTaxRate: string;
@@ -19,9 +16,6 @@ export type OrderFormState = {
   shippingMethod: OptionalSelectValue<ShippingMethod>;
   shippingId?: string;
   discountCode?: string;
-  notificationType?: OptionalSelectValue<NotificationType>;
-  busyFlag: boolean;
-  busyVoucherId?: string;
   orderComment?: string;
 };
 
@@ -69,7 +63,6 @@ export type OrderFormErrors = {
   customerId?: string;
   shippingId?: string;
   discountCode?: string;
-  busyVoucherId?: string;
   shipToZipcode?: string;
   billToZipcode?: string;
   shipToContact?: string;

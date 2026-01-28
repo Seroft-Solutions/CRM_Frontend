@@ -13,11 +13,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { EnhancedCustomerRelationshipField } from '@/app/(protected)/(features)/customers/components/enhanced-customer-relationship-field';
 import {
-  NotificationType,
   OrderStatus,
   PaymentStatus,
   ShippingMethod,
-  UserType,
 } from '../data/order-data';
 import { FieldError } from './order-form-field-error';
 import type { OrderFormErrors, OrderFormState } from './order-form-types';
@@ -27,9 +25,7 @@ type OrderFormFieldsProps = {
   errors: OrderFormErrors;
   orderStatusOptions: OrderStatus[];
   paymentStatusOptions: PaymentStatus[];
-  userTypeOptions: UserType[];
   shippingMethodOptions: (ShippingMethod | 'Unknown')[];
-  notificationTypeOptions: (NotificationType | 'Unknown')[];
   onChange: (key: keyof OrderFormState, value: string | boolean) => void;
   onVerifyDiscount: () => void;
 };
@@ -39,9 +35,7 @@ export function OrderFormFields({
   errors,
   orderStatusOptions,
   paymentStatusOptions,
-  userTypeOptions,
   shippingMethodOptions,
-  notificationTypeOptions,
   onChange,
   onVerifyDiscount,
 }: OrderFormFieldsProps) {
@@ -49,9 +43,9 @@ export function OrderFormFields({
     <div className="space-y-5">
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
         <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Status & Type
+          Status
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Order Status</Label>
             <Select
@@ -84,44 +78,6 @@ export function OrderFormFields({
                 {paymentStatusOptions.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">User Type</Label>
-            <Select
-              value={formState.userType}
-              onValueChange={(value) => onChange('userType', value as UserType)}
-            >
-              <SelectTrigger className="h-10 w-full border-slate-300">
-                <SelectValue placeholder="Select user type" />
-              </SelectTrigger>
-              <SelectContent>
-                {userTypeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Notification Type</Label>
-            <Select
-              value={formState.notificationType || ''}
-              onValueChange={(value) => onChange('notificationType', value)}
-            >
-              <SelectTrigger className="h-10 w-full border-slate-300">
-                <SelectValue placeholder="Select notification type" />
-              </SelectTrigger>
-              <SelectContent>
-                {notificationTypeOptions.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
                   </SelectItem>
                 ))}
               </SelectContent>
