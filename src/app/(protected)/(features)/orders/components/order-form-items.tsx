@@ -1,5 +1,4 @@
-'use client';
-
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +24,7 @@ import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { ProductCreateSheet } from '../../products/components/product-create-sheet';
 import { ProductCatalogCreateSheet } from '../../product-catalogs/components/product-catalog-create-sheet';
-import { Plus } from 'lucide-react';
+import { Plus, ExternalLink } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
@@ -490,7 +489,17 @@ export function OrderFormItems({
                               <Badge variant="secondary" className="text-xs">Catalog</Badge>
                             ) : null}
                             {item.productName && (
-                              <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                              item.itemType === 'catalog' && item.productCatalogId ? (
+                                <Link
+                                  href={`/product-catalogs/${item.productCatalogId}`}
+                                  target="_blank"
+                                  className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+                                >
+                                  {item.productName}
+                                </Link>
+                              ) : (
+                                <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                              )
                             )}
                           </div>
                           {item.sku && (
@@ -604,7 +613,17 @@ export function OrderFormItems({
                               <Badge variant="secondary" className="text-xs">Catalog</Badge>
                             ) : null}
                             {item.productName && (
-                              <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                              item.itemType === 'catalog' && item.productCatalogId ? (
+                                <Link
+                                  href={`/product-catalogs/${item.productCatalogId}`}
+                                  target="_blank"
+                                  className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+                                >
+                                  {item.productName}
+                                </Link>
+                              ) : (
+                                <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                              )
                             )}
                           </div>
                           {item.sku && (
