@@ -54,6 +54,7 @@ interface VariantTableRowProps {
   onDeleteRow: (row: ExistingVariantRow) => void;
   isViewMode?: boolean;
   selection?: VariantTableSelection;
+  validationErrors?: string[];
 }
 
 /**
@@ -75,6 +76,7 @@ export function VariantTableRow({
   onDeleteRow,
   isViewMode = false,
   selection,
+  validationErrors = [],
 }: VariantTableRowProps) {
   const isDraft = item.kind === 'draft';
   const isDuplicate = item.kind === 'duplicate';
@@ -200,6 +202,10 @@ export function VariantTableRow({
   const isSelectableRow = item.kind === 'existing' && typeof row.id === 'number';
   const isSelected = selection ? (isSelectableRow ? selection.isRowSelected(item) : false) : false;
 
+  // Validation error detection
+  const hasPriceError = validationErrors.some(err => err.toLowerCase().includes('price'));
+  const hasStockError = validationErrors.some(err => err.toLowerCase().includes('stock'));
+
   return (
     <>
       <TableRow
@@ -241,10 +247,10 @@ export function VariantTableRow({
             : undefined;
           const badgeStyle = colorCode
             ? {
-                backgroundColor: colorCode,
-                borderColor: colorCode,
-                color: resolveReadableTextColor(colorCode),
-              }
+              backgroundColor: colorCode,
+              borderColor: colorCode,
+              color: resolveReadableTextColor(colorCode),
+            }
             : undefined;
 
           return (
@@ -252,11 +258,10 @@ export function VariantTableRow({
               {selection ? (
                 <Badge
                   variant="secondary"
-                  className={`border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 ${
-                    colorCode
-                      ? 'bg-transparent'
-                      : 'bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground'
-                  }`}
+                  className={`border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 ${colorCode
+                    ? 'bg-transparent'
+                    : 'bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground'
+                    }`}
                   style={badgeStyle}
                 >
                   {selection.optionLabel}
@@ -296,11 +301,10 @@ export function VariantTableRow({
           ) : (
             <div className="flex items-center gap-2">
               <code
-                className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block ${
-                  isDuplicate
-                    ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
-                    : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
-                }`}
+                className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block ${isDuplicate
+                  ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
+                  : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
+                  }`}
               >
                 {row.sku}
                 {isDuplicate && <span className="ml-1 text-xs">⚠️</span>}
@@ -312,18 +316,26 @@ export function VariantTableRow({
         {/* Price & Stock Columns */}
         <TableCell className="py-2">
           {isDraft || isEditing ? (
-            <Input
-              className={`h-8 border-2 transition-colors text-sm ${
-                isDraft
-                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-              }`}
-              type="number"
-              step="0.01"
-              placeholder="Price"
-              value={data.price ?? ''}
-              onChange={handlePriceChange}
-            />
+            <div className="space-y-1">
+              <Input
+                className={`h-8 border-2 transition-colors text-sm ${hasPriceError
+                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                    : isDraft
+                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                  }`}
+                type="number"
+                step="0.01"
+                placeholder="Price"
+                value={data.price ?? ''}
+                onChange={handlePriceChange}
+              />
+              {hasPriceError && (
+                <p className="text-xs text-red-600 font-medium">
+                  Price is required and must be greater than 0
+                </p>
+              )}
+            </div>
           ) : (
             <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 text-sm">
               {data.price?.toFixed(2) ?? '—'}
@@ -332,18 +344,26 @@ export function VariantTableRow({
         </TableCell>
         <TableCell className="py-2">
           {isDraft || isEditing ? (
-            <Input
-              className={`h-8 border-2 transition-colors text-sm ${
-                isDraft
-                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-              }`}
-              type="number"
-              min="0"
-              placeholder="Quantity"
-              value={data.stockQuantity}
-              onChange={handleStockChange}
-            />
+            <div className="space-y-1">
+              <Input
+                className={`h-8 border-2 transition-colors text-sm ${hasStockError
+                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                    : isDraft
+                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                  }`}
+                type="number"
+                min="0"
+                placeholder="Quantity"
+                value={data.stockQuantity ?? ''}
+                onChange={handleStockChange}
+              />
+              {hasStockError && (
+                <p className="text-xs text-red-600 font-medium">
+                  Stock is required and cannot be negative
+                </p>
+              )}
+            </div>
           ) : (
             <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200 text-sm">
               {data.stockQuantity}
@@ -356,11 +376,10 @@ export function VariantTableRow({
           {isDraft || isEditing ? (
             <Select value={data.status} onValueChange={handleStatusChange}>
               <SelectTrigger
-                className={`h-8 border-2 transition-colors text-sm ${
-                  isDraft
-                    ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                    : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                }`}
+                className={`h-8 border-2 transition-colors text-sm ${isDraft
+                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                  }`}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -381,18 +400,16 @@ export function VariantTableRow({
             </Select>
           ) : (
             <Badge
-              className={`font-medium px-2 py-0.5 text-xs ${
-                data.status === ProductVariantDTOStatus.ACTIVE
-                  ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
-                  : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
-              }`}
+              className={`font-medium px-2 py-0.5 text-xs ${data.status === ProductVariantDTOStatus.ACTIVE
+                ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
+                : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                }`}
             >
               <div
-                className={`w-1.5 h-1.5 rounded-full mr-1 inline-block ${
-                  data.status === ProductVariantDTOStatus.ACTIVE
-                    ? 'bg-green-500'
-                    : 'bg-gray-500'
-                }`}
+                className={`w-1.5 h-1.5 rounded-full mr-1 inline-block ${data.status === ProductVariantDTOStatus.ACTIVE
+                  ? 'bg-green-500'
+                  : 'bg-gray-500'
+                  }`}
               ></div>
               {data.status === ProductVariantDTOStatus.ACTIVE
                 ? 'Active'

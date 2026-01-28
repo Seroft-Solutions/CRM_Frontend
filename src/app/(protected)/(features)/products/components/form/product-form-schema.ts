@@ -136,6 +136,33 @@ export const productFormSchema = productFormSchemaBase.superRefine((data, ctx) =
       }
     }
   }
+
+  // Validate variants if present
+  if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
+    data.variants.forEach((variant: any, index: number) => {
+      // Price validation
+      if (variant.price === undefined || variant.price === null || variant.price <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Variant ${index + 1} (${variant.sku || 'Unknown'}): Price is required and must be greater than 0`,
+          path: ['variants'],
+        });
+      }
+
+      // Stock validation
+      if (
+        variant.stockQuantity === undefined ||
+        variant.stockQuantity === null ||
+        variant.stockQuantity < 0
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Variant ${index + 1} (${variant.sku || 'Unknown'}): Stock quantity is required and cannot be negative`,
+          path: ['variants'],
+        });
+      }
+    });
+  }
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;

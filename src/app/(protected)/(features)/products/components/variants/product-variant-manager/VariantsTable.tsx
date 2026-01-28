@@ -32,6 +32,7 @@ interface VariantsTableProps {
   isLoading?: boolean;
   isViewMode?: boolean;
   selection?: VariantTableSelection;
+  validationErrors?: Record<string, string[]>;
 }
 
 /**
@@ -57,6 +58,7 @@ export function VariantsTable({
   isLoading,
   isViewMode = false,
   selection,
+  validationErrors = {},
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
@@ -118,23 +120,27 @@ export function VariantsTable({
                 </TableCell>
               </TableRow>
             ) : totalRowsToDisplay > 0 ? (
-              rows.map((item) => (
-                <VariantTableRow
-                  key={item.rowKey}
-                  item={item}
-                  visibleEnumAttributes={visibleEnumAttributes}
-                  existingSkus={existingSkus}
-                  onUpdateDraft={onUpdateDraft}
-                  editingRowData={editingRowData}
-                  onEditRow={onEditRow}
-                  onUpdateEditingRow={onUpdateEditingRow}
-                  onSaveExisting={onSaveExisting}
-                  onCancelEdit={onCancelEdit}
-                  onDeleteRow={onDeleteRow}
-                  isViewMode={isViewMode}
-                  selection={selection}
-                />
-              ))
+              rows.map((item) => {
+                const rowErrors = validationErrors[item.rowKey] || [];
+                return (
+                  <VariantTableRow
+                    key={item.rowKey}
+                    item={item}
+                    visibleEnumAttributes={visibleEnumAttributes}
+                    existingSkus={existingSkus}
+                    onUpdateDraft={onUpdateDraft}
+                    editingRowData={editingRowData}
+                    onEditRow={onEditRow}
+                    onUpdateEditingRow={onUpdateEditingRow}
+                    onSaveExisting={onSaveExisting}
+                    onCancelEdit={onCancelEdit}
+                    onDeleteRow={onDeleteRow}
+                    isViewMode={isViewMode}
+                    selection={selection}
+                    validationErrors={rowErrors}
+                  />
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={totalColumnCount} className="h-24 text-center">

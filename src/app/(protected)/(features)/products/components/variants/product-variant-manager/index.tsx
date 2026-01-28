@@ -150,9 +150,9 @@ export function ProductVariantManager({
     useGetAllProductVariantSelections(
       variantIds.length > 0
         ? {
-            'variantId.in': variantIds,
-            size: 2000,
-          }
+          'variantId.in': variantIds,
+          size: 2000,
+        }
         : undefined,
       {
         query: { enabled: variantIds.length > 0 },
@@ -696,6 +696,49 @@ export function ProductVariantManager({
   const canApplySelections =
     missingRequiredEnumAttributes.length === 0 && !isLoadingSelections && !isLoadingOptions;
 
+  // #region Variant Validation
+  /**
+   * Validates a single variant for required fields
+   */
+  const validateVariant = (variant: DraftVariantRow): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // Price validation: must be defined and greater than 0
+    if (variant.price === undefined || variant.price === null) {
+      errors.push('Price is required');
+    } else if (variant.price <= 0) {
+      errors.push('Price must be greater than 0');
+    }
+
+    // Stock validation: must be defined and non-negative
+    if (variant.stockQuantity === undefined || variant.stockQuantity === null) {
+      errors.push('Stock is required');
+    } else if (variant.stockQuantity < 0) {
+      errors.push('Stock cannot be negative');
+    }
+
+    return { isValid: errors.length === 0, errors };
+  };
+
+  /**
+   * Validates all draft variants and returns a map of errors by row key
+   */
+  const variantValidationErrors = useMemo(() => {
+    const errors: Record<string, string[]> = {};
+
+    newDraftVariants.forEach((variant) => {
+      const validation = validateVariant(variant);
+      if (!validation.isValid) {
+        errors[`draft-${variant.key}`] = validation.errors;
+      }
+    });
+
+    return errors;
+  }, [newDraftVariants]);
+
+  const hasValidationErrors = Object.keys(variantValidationErrors).length > 0;
+  // #endregion
+
   // #endregion
 
   // #region Mutations & Handlers (moved up for auto-save useEffect)
@@ -707,6 +750,15 @@ export function ProductVariantManager({
     if (isViewMode || !form) return;
 
     const variantsForForm: ProductVariantDTO[] = [];
+
+    // Check for validation errors before allowing submission
+    if (hasValidationErrors) {
+      form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
+      toast.error(
+        `Cannot save product: ${Object.keys(variantValidationErrors).length} variant(s) have validation errors. Please fill in all required fields.`
+      );
+      return;
+    }
 
     if (newDraftVariants.length > 0 && canApplySelections) {
       variantsForForm.push(
@@ -753,7 +805,7 @@ export function ProductVariantManager({
     } else {
       form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
     }
-  }, [isViewMode, newDraftVariants, form, canApplySelections, upgradeCandidate]);
+  }, [isViewMode, newDraftVariants, form, canApplySelections, upgradeCandidate, hasValidationErrors, variantValidationErrors]);
   // #endregion
 
   // #region Mutations & Handlers (continued)
@@ -915,6 +967,7 @@ export function ProductVariantManager({
         isLoading={isLoadingVariants || isLoadingSelections}
         isViewMode={isViewMode}
         selection={selection}
+        validationErrors={variantValidationErrors}
       />
     </div>
   );
