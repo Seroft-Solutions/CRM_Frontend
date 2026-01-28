@@ -486,7 +486,9 @@ export function OrderFormItems({
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             {item.itemType === 'catalog' ? (
-                              <Badge variant="secondary" className="text-xs">Catalog</Badge>
+                              <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
+                                Catalog
+                              </Badge>
                             ) : null}
                             {item.productName && (
                               item.itemType === 'catalog' && item.productCatalogId ? (
@@ -610,7 +612,9 @@ export function OrderFormItems({
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2">
                             {item.itemType === 'catalog' ? (
-                              <Badge variant="secondary" className="text-xs">Catalog</Badge>
+                              <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
+                                Catalog
+                              </Badge>
                             ) : null}
                             {item.productName && (
                               item.itemType === 'catalog' && item.productCatalogId ? (
