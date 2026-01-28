@@ -126,7 +126,16 @@ function RelationshipDisplayValue({
     }
 
     const displayValues = selectedItems.map((item: any) => item[displayField]);
-    return displayValues.join(', ');
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 leading-none">
+            {displayValues.length} {displayValues.length === 1 ? 'Item' : 'Items'}
+          </span>
+        </div>
+        <div className="text-xs text-muted-foreground line-clamp-2">{displayValues.join(', ')}</div>
+      </div>
+    );
   } else {
     const selectedItem = dataArray.find((item: any) => item[primaryKey] === value);
 
@@ -220,6 +229,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                 <Textarea
                   placeholder={fieldConfig.placeholder}
                   {...field}
+                  maxLength={fieldConfig.validation?.maxLength}
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     form.trigger(fieldConfig.name);
@@ -230,6 +240,8 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                   type="number"
                   placeholder={fieldConfig.placeholder}
                   {...field}
+                  min={fieldConfig.validation?.min}
+                  max={fieldConfig.validation?.max}
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     form.trigger(fieldConfig.name);
@@ -301,6 +313,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                   type="text"
                   placeholder={fieldConfig.placeholder}
                   {...field}
+                  maxLength={fieldConfig.validation?.maxLength}
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     form.trigger(fieldConfig.name);
@@ -473,6 +486,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
     return (
       <div className="space-y-6">
+
         <div
           className={`grid ${config.ui.responsive.mobile} ${config.ui.responsive.tablet} ${config.ui.responsive.desktop} ${config.ui.spacing.fieldGap}`}
         >

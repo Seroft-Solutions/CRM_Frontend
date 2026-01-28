@@ -55,10 +55,10 @@ export function RelationshipRenderer({
   const { data: variantsData, isLoading: isLoadingVariants } = useGetAllProductVariants(
     productId
       ? {
-          'productId.equals': productId,
-          size: 1000,
-          sort: ['sku,asc'],
-        }
+        'productId.equals': productId,
+        size: 1000,
+        sort: ['sku,asc'],
+      }
       : undefined,
     {
       query: {
@@ -197,6 +197,38 @@ export function RelationshipRenderer({
 
         return (
           <div className="space-y-4">
+            <div className="flex items-center justify-between bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm transition-all animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m2 6 2 2 4-4" />
+                    <path d="m2 12 2 2 4-4" />
+                    <path d="m2 18 2 2 4-4" />
+                    <path d="M12 4h10" />
+                    <path d="M12 10h10" />
+                    <path d="M12 16h10" />
+                  </svg>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-slate-800">Total No of Item</span>
+                  <span className="text-xs text-slate-500">Selected from product variants</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-center h-10 min-w-[40px] px-3 rounded-full bg-primary text-primary-foreground font-bold text-lg shadow-sm">
+                {selectedVariantIds.length}
+              </div>
+            </div>
+
             {variants.length === 0 ? (
               <div className="text-sm text-muted-foreground border border-dashed rounded-md p-3">
                 No variants available for the selected product.
