@@ -53,7 +53,7 @@ export const productCatalogFormConfig: FormConfig = {
       validation: {
         required: true,
         minLength: 2,
-        maxLength: 100,
+        maxLength: 50,
       },
       ui: {},
     },
@@ -65,7 +65,7 @@ export const productCatalogFormConfig: FormConfig = {
       required: true,
       validation: {
         required: true,
-        min: 0,
+        min: 0.01,
         max: 999999,
       },
       ui: {},

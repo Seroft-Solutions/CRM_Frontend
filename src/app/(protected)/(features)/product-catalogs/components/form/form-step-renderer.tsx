@@ -237,13 +237,19 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                 />
               ) : fieldConfig.type === 'number' ? (
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   placeholder={fieldConfig.placeholder}
                   {...field}
-                  min={fieldConfig.validation?.min}
-                  max={fieldConfig.validation?.max}
                   onChange={(e) => {
-                    field.onChange(e.target.value);
+                    const val = e.target.value;
+                    // Allow only numbers and a single decimal point
+                    let cleaned = val.replace(/[^0-9.]/g, '');
+                    const parts = cleaned.split('.');
+                    if (parts.length > 2) {
+                      cleaned = `${parts[0]}.${parts.slice(1).join('')}`;
+                    }
+                    field.onChange(cleaned);
                     form.trigger(fieldConfig.name);
                   }}
                 />
