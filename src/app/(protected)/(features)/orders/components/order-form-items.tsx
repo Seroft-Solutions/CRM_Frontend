@@ -329,7 +329,7 @@ function ProductCatalogSelector({
                     <div className="flex flex-1 flex-col">
                       <span className="font-medium text-sm">{catalog.productCatalogName}</span>
                       <span className="text-xs text-muted-foreground">
-                        Product: {catalog.product?.name ?? 'N/A'} • Variants:{' '}
+                        Product: {catalog.product?.name ?? 'N/A'} • Items:{' '}
                         {catalog.variants?.length ?? 0} • ₹{catalog.price ?? 0}
                       </span>
                     </div>
