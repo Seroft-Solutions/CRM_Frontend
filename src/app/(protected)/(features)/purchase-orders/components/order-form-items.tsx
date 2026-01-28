@@ -23,6 +23,9 @@ import { useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { ProductCreateSheet } from '../../products/components/product-create-sheet';
+import { ProductCatalogCreateSheet } from '../../product-catalogs/components/product-catalog-create-sheet';
+import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
@@ -382,26 +385,56 @@ export function OrderFormItems({
           </div>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-          <Button
-            type="button"
-            onClick={onAddItem}
-            className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
-          >
-            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Item
-          </Button>
-          <Button
-            type="button"
-            onClick={onAddCatalogItem}
-            className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md"
-          >
-            <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
-            </svg>
-            Add Product Catalog
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              onClick={onAddItem}
+              className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
+            >
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Item
+            </Button>
+            <ProductCreateSheet
+              trigger={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-9 gap-1.5 border-dashed border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Product
+                </Button>
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              onClick={onAddCatalogItem}
+              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md"
+            >
+              <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+              Add Product Catalog
+            </Button>
+            <ProductCatalogCreateSheet
+              trigger={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-9 gap-1.5 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Catalog
+                </Button>
+              }
+            />
+          </div>
         </div>
       </div>
 
