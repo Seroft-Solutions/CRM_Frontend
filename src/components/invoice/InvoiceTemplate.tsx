@@ -50,17 +50,17 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
       <div className="grid grid-cols-2 gap-8 mb-8">
         <div className="space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Order Information</h2>
-          <div className="space-y-1">
-            <div className="flex justify-between border-b border-slate-50 py-1">
-              <span className="text-slate-500 text-sm">Order ID:</span>
+          <div className="space-y-2 text-sm text-slate-600">
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Order ID</span>
               <span className="font-semibold text-slate-900">{order.id}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-50 py-1">
-              <span className="text-slate-500 text-sm">Date:</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Date</span>
               <span className="font-semibold text-slate-900">{order.orderDate}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-50 py-1">
-              <span className="text-slate-500 text-sm">Status:</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Status</span>
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
                 {order.orderStatus}
               </span>
