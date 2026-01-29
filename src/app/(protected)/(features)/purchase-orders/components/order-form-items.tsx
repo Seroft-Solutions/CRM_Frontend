@@ -22,12 +22,12 @@ import { useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import { ProductCreateSheet } from '../../products/components/product-create-sheet';
 import { ProductCatalogCreateSheet } from '../../product-catalogs/components/product-catalog-create-sheet';
-import { Plus, ExternalLink } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -36,6 +36,9 @@ type OrderFormItemsProps = {
   onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
   onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  referrerForm?: string;
+  referrerSessionId?: string;
+  referrerField?: string;
 };
 
 // Helper component for product/variant selection
@@ -359,12 +362,31 @@ export function OrderFormItems({
   onAddCatalogItem,
   onRemoveItem,
   onItemChange,
+  referrerForm,
+  referrerSessionId,
+  referrerField,
 }: OrderFormItemsProps) {
+  const { navigateWithDraftCheck } = useCrossFormNavigation();
+
   const calculateItemTotal = (item: OrderItemForm) => {
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
     return Math.max(qty * price + tax, 0);
+  };
+
+  const handleCreateProduct = () => {
+    if (referrerForm && referrerSessionId && referrerField) {
+      navigateWithDraftCheck({
+        entityPath: '/products/new',
+        referrerForm,
+        referrerSessionId,
+        referrerField,
+        referrerUrl: window.location.href,
+      });
+    } else {
+      window.location.href = '/products/new';
+    }
   };
 
   return (
@@ -395,19 +417,16 @@ export function OrderFormItems({
               </svg>
               Add Item
             </Button>
-            <ProductCreateSheet
-              trigger={
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-9 gap-1.5 border-dashed border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Product
-                </Button>
-              }
-            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-9 gap-1.5 border-dashed border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800"
+              onClick={handleCreateProduct}
+            >
+              <Plus className="h-4 w-4" />
+              Create Product
+            </Button>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button

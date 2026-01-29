@@ -132,6 +132,24 @@ export function OrderForm({
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
   const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
   const isEditing = Boolean(initialOrder?.orderId);
+  const [formSessionId] = useState(() => {
+    const fallbackId = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    if (typeof window === 'undefined') {
+      return fallbackId;
+    }
+
+    const sessionKey = `orderFormSession:${initialOrder?.orderId ?? 'new'}`;
+    const existingSession = sessionStorage.getItem(sessionKey);
+
+    if (existingSession) {
+      return existingSession;
+    }
+
+    sessionStorage.setItem(sessionKey, fallbackId);
+    return fallbackId;
+  });
+  const formStateStorageKey = `orderFormState:${formSessionId}`;
 
   const { mutateAsync: createOrder } = useCreateOrder();
   const { mutateAsync: updateOrder } = useUpdateOrder();
@@ -225,6 +243,128 @@ export function OrderForm({
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
   const discountCodeRef = useRef<string>('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleSaveFormState = () => {
+      const payload = {
+        timestamp: Date.now(),
+        pathname: window.location.pathname,
+        orderId: initialOrder?.orderId ?? null,
+        pendingReturn: true,
+        data: {
+          formState,
+          items,
+          removedItemIds,
+          address,
+          useCustomTaxRate,
+          shippingEditable,
+          discountData,
+        },
+      };
+
+      localStorage.setItem(formStateStorageKey, JSON.stringify(payload));
+    };
+
+    window.addEventListener('saveFormState', handleSaveFormState);
+
+    return () => {
+      window.removeEventListener('saveFormState', handleSaveFormState);
+    };
+  }, [
+    formState,
+    items,
+    removedItemIds,
+    address,
+    useCustomTaxRate,
+    shippingEditable,
+    discountData,
+    initialOrder?.orderId,
+    formStateStorageKey,
+  ]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const savedRaw = localStorage.getItem(formStateStorageKey);
+
+    if (!savedRaw) {
+      return;
+    }
+
+    try {
+      const saved = JSON.parse(savedRaw);
+      const isRecent = Date.now() - saved.timestamp < 30 * 60 * 1000;
+      const pathnameMatches = saved.pathname === window.location.pathname;
+      const orderMatches = saved.orderId ? saved.orderId === initialOrder?.orderId : !saved.orderId;
+
+      if (!saved.pendingReturn || !isRecent || !pathnameMatches || !orderMatches) {
+        return;
+      }
+
+      if (saved.data?.formState) {
+        setFormState(saved.data.formState);
+      }
+      if (saved.data?.items) {
+        setItems(saved.data.items);
+      }
+      if (saved.data?.removedItemIds) {
+        setRemovedItemIds(saved.data.removedItemIds);
+      }
+      if (saved.data?.address) {
+        setAddress(saved.data.address);
+        hasInitialShipToRef.current = hasAddressValues(saved.data.address.shipTo);
+        hasInitialBillToRef.current =
+          hasAddressValues(saved.data.address.billTo) ||
+          (saved.data.address.billToSameFlag &&
+            hasAddressValues(saved.data.address.shipTo));
+      }
+      if (typeof saved.data?.useCustomTaxRate === 'boolean') {
+        setUseCustomTaxRate(saved.data.useCustomTaxRate);
+      }
+      if (typeof saved.data?.shippingEditable === 'boolean') {
+        setShippingEditable(saved.data.shippingEditable);
+      }
+      if (saved.data?.discountData !== undefined) {
+        setDiscountData(saved.data.discountData);
+      }
+      if (saved.data?.formState?.customerId) {
+        const restoredCustomerId = Number.parseInt(saved.data.formState.customerId, 10);
+        if (!Number.isNaN(restoredCustomerId)) {
+          lastCustomerIdRef.current = restoredCustomerId;
+        }
+      }
+
+      localStorage.removeItem(formStateStorageKey);
+    } catch (error) {
+      console.error('Failed to restore order form state:', error);
+    }
+  }, [formStateStorageKey, initialOrder?.orderId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const createdEntityInfo = localStorage.getItem('createdEntityInfo');
+
+    if (!createdEntityInfo) {
+      return;
+    }
+
+    try {
+      const info = JSON.parse(createdEntityInfo);
+      const sessionMatches = info.targetSessionId === formSessionId;
+
+      if (sessionMatches) {
+        queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' });
+        queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' });
+        queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' });
+        localStorage.removeItem('createdEntityInfo');
+      }
+    } catch (error) {
+      console.error('Failed to process created entity info:', error);
+    }
+  }, [formSessionId, queryClient]);
 
   const selectedCustomerId = formState.customerId.trim()
     ? Number.parseInt(formState.customerId, 10)
@@ -944,6 +1084,9 @@ export function OrderForm({
               onAddCatalogItem={addCatalogItem}
               onRemoveItem={removeItem}
               onItemChange={handleItemChange}
+              referrerForm="orders"
+              referrerSessionId={formSessionId}
+              referrerField="productId"
             />
 
             <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
