@@ -71,11 +71,31 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
             {orderType === 'purchase' ? 'Supplier Details' : 'Billing To'}
           </h2>
-          <div className="space-y-1">
-            <p className="font-bold text-slate-900 text-lg">{order.customer.name}</p>
-            <p className="text-slate-600 text-sm">{order.customer.phone}</p>
-            <p className="text-slate-600 text-sm">{order.customer.email}</p>
-            <p className="text-slate-600 text-sm leading-relaxed">{order.customer.billingAddress}</p>
+          <div className="space-y-2 text-sm text-slate-600">
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Name</span>
+              <span className="font-semibold text-slate-900">{order.customer.name}</span>
+            </div>
+            {order.customer.phone && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Phone</span>
+                <span>{order.customer.phone}</span>
+              </div>
+            )}
+            {order.customer.email && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Email</span>
+                <span>{order.customer.email}</span>
+              </div>
+            )}
+            {order.customer.billingAddress && (
+              <div className="flex items-start gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-0.5">
+                  Address
+                </span>
+                <span className="leading-relaxed">{order.customer.billingAddress}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
