@@ -22,7 +22,6 @@ import { useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import { ProductCatalogCreateSheet } from '../../product-catalogs/components/product-catalog-create-sheet';
 import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
@@ -39,6 +38,7 @@ type OrderFormItemsProps = {
   referrerForm?: string;
   referrerSessionId?: string;
   referrerField?: string;
+  referrerCatalogField?: string;
 };
 
 // Helper component for product/variant selection
@@ -365,6 +365,7 @@ export function OrderFormItems({
   referrerForm,
   referrerSessionId,
   referrerField,
+  referrerCatalogField,
 }: OrderFormItemsProps) {
   const { navigateWithDraftCheck } = useCrossFormNavigation();
 
@@ -386,6 +387,20 @@ export function OrderFormItems({
       });
     } else {
       window.location.href = '/products/new';
+    }
+  };
+
+  const handleCreateCatalog = () => {
+    if (referrerForm && referrerSessionId && referrerCatalogField) {
+      navigateWithDraftCheck({
+        entityPath: '/product-catalogs/new',
+        referrerForm,
+        referrerSessionId,
+        referrerField: referrerCatalogField,
+        referrerUrl: window.location.href,
+      });
+    } else {
+      window.location.href = '/product-catalogs/new';
     }
   };
 
@@ -439,19 +454,16 @@ export function OrderFormItems({
               </svg>
               Add Product Catalog
             </Button>
-            <ProductCatalogCreateSheet
-              trigger={
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-9 gap-1.5 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Catalog
-                </Button>
-              }
-            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-9 gap-1.5 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
+              onClick={handleCreateCatalog}
+            >
+              <Plus className="h-4 w-4" />
+              Create Catalog
+            </Button>
           </div>
         </div>
       </div>

@@ -359,6 +359,18 @@ export function OrderForm({
         queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' });
         queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' });
         queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' });
+        queryClient.invalidateQueries({
+          queryKey: ['getAllProductCatalogs'],
+          refetchType: 'active',
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['searchProductCatalogs'],
+          refetchType: 'active',
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['countProductCatalogs'],
+          refetchType: 'active',
+        });
         localStorage.removeItem('createdEntityInfo');
       }
     } catch (error) {
@@ -1087,6 +1099,7 @@ export function OrderForm({
               referrerForm="orders"
               referrerSessionId={formSessionId}
               referrerField="productId"
+              referrerCatalogField="productCatalogId"
             />
 
             <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
