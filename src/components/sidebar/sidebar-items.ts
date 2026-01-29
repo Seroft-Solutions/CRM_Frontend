@@ -5,10 +5,10 @@ import {
   Settings,
   PhoneCall,
   Box,
-  ArrowDownToLine,
+  HandCoins,
   Cog,
   ShoppingBag,
-    BadgePercent,
+  BadgePercent,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -82,7 +82,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'salesOrders',
     label: 'Sale Order',
-    icon: ArrowDownToLine,
+    icon: HandCoins,
     expandable: false,
     requiredPermission: 'order:sidebar',
     children: [

@@ -459,7 +459,7 @@ export function OrderFormItems({
               onClick={handleCreateProduct}
             >
               <Plus className="h-4 w-4" />
-              Create Product
+              Create Product/Catalog
             </Button>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
