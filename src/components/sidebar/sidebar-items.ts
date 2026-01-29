@@ -8,6 +8,7 @@ import {
   ArrowDownToLine,
   Cog,
   ShoppingBag,
+    BadgePercent,
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -71,23 +72,25 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
-    key: 'orders',
-    label: 'Order Management',
+    key: 'discount',
+    label: 'Discount',
+    path: '/discounts',
+    icon: BadgePercent,
+    requiredPermission: 'discount:sidebar',
+    expandable: false,
+  },
+  {
+    key: 'salesOrders',
+    label: 'Sale Order',
     icon: ArrowDownToLine,
     expandable: false,
     requiredPermission: 'order:sidebar',
     children: [
       {
         key: 'ordersList',
-        label: 'Sale Orders',
+        label: 'View Sale Orders',
         path: '/orders',
         requiredPermission: 'order:read',
-      },
-      {
-        key: 'discount',
-        label: 'Discount',
-        path: '/discounts',
-        requiredPermission: 'discount:sidebar',
       },
       {
         key: 'orderHistory',

@@ -18,15 +18,19 @@ import {
 } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import {
+  getGetAllProductCatalogsQueryOptions,
+  useGetAllProductCatalogs,
+} from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -276,6 +280,11 @@ function ProductCatalogSelector({
 
   const { data: catalogData } = useGetAllProductCatalogs({
     size: 1000,
+  }, {
+    query: {
+      staleTime: 5 * 60 * 1000,
+      keepPreviousData: true,
+    },
   });
 
   const catalogs = catalogData || [];
@@ -368,6 +377,16 @@ export function OrderFormItems({
   referrerCatalogField,
 }: OrderFormItemsProps) {
   const { navigateWithDraftCheck } = useCrossFormNavigation();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const options = getGetAllProductCatalogsQueryOptions(
+      { size: 1000 },
+      { query: { staleTime: 5 * 60 * 1000 } }
+    );
+
+    queryClient.prefetchQuery(options);
+  }, [queryClient]);
 
   const calculateItemTotal = (item: OrderItemForm) => {
     const qty = Number.parseInt(item.quantity, 10) || 0;

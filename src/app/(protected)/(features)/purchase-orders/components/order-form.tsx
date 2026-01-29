@@ -349,19 +349,18 @@ export function OrderForm({
       const sessionMatches = info.targetSessionId === formSessionId;
 
       if (sessionMatches) {
-        queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' });
-        queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' });
-        queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' });
         queryClient.invalidateQueries({
-          queryKey: ['getAllProductCatalogs'],
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return typeof key === 'string' && key.startsWith('/api/products');
+          },
           refetchType: 'active',
         });
         queryClient.invalidateQueries({
-          queryKey: ['searchProductCatalogs'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countProductCatalogs'],
+          predicate: (query) => {
+            const key = query.queryKey[0];
+            return typeof key === 'string' && key.startsWith('/api/product-catalogs');
+          },
           refetchType: 'active',
         });
         localStorage.removeItem('createdEntityInfo');
