@@ -41,9 +41,9 @@ export function OrderFormFields({
     <div className="space-y-5">
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
         <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Status
+          Status & Shipping
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-5">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Purchase Order Status</Label>
             <Select
@@ -81,14 +81,7 @@ export function OrderFormFields({
               </SelectContent>
             </Select>
           </div>
-        </div>
-      </div>
 
-      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
-        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Shipping
-        </div>
-        <div className="grid gap-4 grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Shipping Method</Label>
             <Select

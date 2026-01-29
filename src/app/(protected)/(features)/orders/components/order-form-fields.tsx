@@ -43,9 +43,9 @@ export function OrderFormFields({
     <div className="space-y-5">
       <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
         <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Status
+          Status & Discount
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Order Status</Label>
             <Select
@@ -83,14 +83,7 @@ export function OrderFormFields({
               </SelectContent>
             </Select>
           </div>
-        </div>
-      </div>
 
-      <div className="rounded-lg bg-white/60 px-4 pb-4 pt-0.5">
-        <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-600">
-          Discount
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Discount Code</Label>
             <div className="flex gap-2">
@@ -102,9 +95,8 @@ export function OrderFormFields({
               />
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
-                className="h-10 px-3 bg-slate-50 border-slate-300 hover:bg-slate-100"
+                className="h-10 px-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600"
                 onClick={onVerifyDiscount}
               >
                 Verify
