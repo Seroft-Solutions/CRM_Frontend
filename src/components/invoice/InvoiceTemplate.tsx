@@ -43,7 +43,7 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
           </div>
           {order.recipientAddressLine1 && <div>{order.recipientAddressLine1}</div>}
           {order.recipientAddressLine2 && <div>{order.recipientAddressLine2}</div>}
-          <div>support@example.com</div>
+          {order.organizationEmail && <div>{order.organizationEmail}</div>}
         </div>
       </div>
 

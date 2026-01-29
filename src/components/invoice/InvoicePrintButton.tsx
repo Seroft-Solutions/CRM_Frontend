@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useUserOrganizations } from '@/hooks/useUserOrganizations';
+import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { useMemo, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { InvoiceTemplate } from './InvoiceTemplate';
@@ -13,6 +13,7 @@ export interface InvoiceOrderRecord {
   orderDate: string;
   orderStatus: string;
   organizationName: string;
+  organizationEmail: string;
   recipientAddressLine1: string;
   recipientAddressLine2: string;
   customer: {
@@ -85,6 +86,23 @@ const resolveOrganizationName = (
   return organizations?.[0]?.name || '';
 };
 
+const resolveOrganizationId = (
+  organizations?: Array<{ id: string; name: string }>,
+) => {
+  if (typeof window === 'undefined') return '';
+
+  const selectedOrgId = localStorage.getItem('selectedOrganizationId');
+  if (selectedOrgId) return selectedOrgId;
+
+  const selectedOrgName = localStorage.getItem('selectedOrganizationName');
+  if (selectedOrgName && organizations?.length) {
+    const selectedOrg = organizations.find((org) => org.name === selectedOrgName);
+    if (selectedOrg) return selectedOrg.id;
+  }
+
+  return organizations?.[0]?.id || '';
+};
+
 const formatInvoiceDate = (value?: string) => {
   if (!value) return '';
   const trimmed = value.trim();
@@ -107,6 +125,7 @@ function mapOrderRecordToInvoiceOrderRecord(
   order: any,
   orderType: 'purchase' | 'sales',
   organizationName: string,
+  organizationEmail: string,
 ): InvoiceOrderRecord {
   const isPurchase = orderType === 'purchase';
   const shipToName = compactJoin(
@@ -149,6 +168,7 @@ function mapOrderRecordToInvoiceOrderRecord(
     orderDate: formatInvoiceDate(order.createdDate),
     orderStatus: order.orderStatus,
     organizationName,
+    organizationEmail,
     recipientAddressLine1: resolvedAddress.line1,
     recipientAddressLine2: resolvedAddress.line2,
     customer: {
@@ -182,12 +202,25 @@ export function InvoicePrintButton({ order, orderType }: InvoicePrintButtonProps
     () => resolveOrganizationName(organizations),
     [organizations],
   );
+  const organizationId = useMemo(
+    () => resolveOrganizationId(organizations),
+    [organizations],
+  );
+  const { data: organizationDetails } = useOrganizationDetails(organizationId);
+  const organizationEmail = useMemo(() => {
+    return organizationDetails?.attributes?.organizationEmail?.[0] || '';
+  }, [organizationDetails]);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
   });
 
-  const invoiceOrder = mapOrderRecordToInvoiceOrderRecord(order, orderType, organizationName);
+  const invoiceOrder = mapOrderRecordToInvoiceOrderRecord(
+    order,
+    orderType,
+    organizationName,
+    organizationEmail,
+  );
 
   return (
     <>
