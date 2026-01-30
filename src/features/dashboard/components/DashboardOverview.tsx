@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -27,13 +27,25 @@ import {
   YAxis,
 } from 'recharts';
 import { Activity, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
-import { useGetAllCustomers, useCountCustomers } from '@/core/api/generated/spring';
+import { useGetAllCustomers, useCountCustomers, useGetAllUserProfiles } from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
+import {
+  StaffLeadSummaryPeriod,
+  useGetStaffLeadSummary,
+} from '@/core/api/call-analytics';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
   const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
   const { data: products = [] } = useGetAllProducts({ size: 1000 });
+  const { data: userProfiles = [] } = useGetAllUserProfiles({ size: 1000 });
 
   // Get actual counts (not limited to 1000)
   const { data: totalCallsCount = 0 } = useCountCalls();
@@ -41,6 +53,13 @@ export function DashboardOverview() {
   const { data: totalProductsCount = 0 } = useCountProducts();
 
   const [tabValue, setTabValue] = useState('overview');
+  const [staffPeriod, setStaffPeriod] = useState<StaffLeadSummaryPeriod>('DAILY');
+  const [selectedStaff, setSelectedStaff] = useState<string>('ALL');
+
+  const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
+    period: staffPeriod,
+    createdBy: selectedStaff === 'ALL' ? undefined : selectedStaff,
+  });
 
   const callStatuses = calls.reduce(
     (acc, call) => {
@@ -208,6 +227,60 @@ export function DashboardOverview() {
     '#82ca9d',
     '#ffc658',
     '#ff7c7c',
+  ];
+
+  const staffOptions = useMemo(() => {
+    const unique = new Map<string, string>();
+    userProfiles.forEach((profile) => {
+      if (!profile.email) return;
+      const label =
+        profile.displayName ||
+        `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
+        profile.email;
+      unique.set(profile.email, label);
+    });
+
+    return Array.from(unique.entries()).map(([value, label]) => ({ value, label }));
+  }, [userProfiles]);
+
+  const staffTotals = staffLeadSummary.reduce(
+    (acc, item) => {
+      acc.total += item.total || 0;
+      acc.active += item.active || 0;
+      acc.inactive += item.inactive || 0;
+      return acc;
+    },
+    { total: 0, active: 0, inactive: 0 }
+  );
+
+  const selectedSummary =
+    selectedStaff === 'ALL'
+      ? staffTotals
+      : staffLeadSummary.find((item) => item.createdBy === selectedStaff) || {
+          total: 0,
+          active: 0,
+          inactive: 0,
+        };
+
+  const staffSummaryChartData = [
+    {
+      name: 'Total',
+      total: selectedSummary.total,
+      active: selectedSummary.active,
+      inactive: selectedSummary.inactive,
+    },
+    {
+      name: 'Active',
+      total: selectedSummary.total,
+      active: selectedSummary.active,
+      inactive: selectedSummary.inactive,
+    },
+    {
+      name: 'Inactive',
+      total: selectedSummary.total,
+      active: selectedSummary.active,
+      inactive: selectedSummary.inactive,
+    },
   ];
 
   return (
@@ -523,6 +596,102 @@ export function DashboardOverview() {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6 mt-6">
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <CardTitle>Staff Lead Performance</CardTitle>
+                  <CardDescription>
+                    Leads created and managed by staff for the selected period
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Tabs
+                    value={staffPeriod}
+                    onValueChange={(value) => setStaffPeriod(value as StaffLeadSummaryPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-3">
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+                    <SelectTrigger className="min-w-[220px]">
+                      <SelectValue placeholder="Select staff" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Staff</SelectItem>
+                      {staffOptions.map((staff) => (
+                        <SelectItem key={staff.value} value={staff.value}>
+                          {staff.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {staffLeadSummary.length > 0 || selectedSummary.total > 0 ? (
+                <div className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-lg border bg-slate-50/60 p-4">
+                      <div className="text-xs text-muted-foreground">Total Leads</div>
+                      <div className="text-2xl font-bold">{selectedSummary.total}</div>
+                    </div>
+                    <div className="rounded-lg border bg-emerald-50/60 p-4">
+                      <div className="text-xs text-muted-foreground">Active Leads</div>
+                      <div className="text-2xl font-bold">{selectedSummary.active}</div>
+                    </div>
+                    <div className="rounded-lg border bg-rose-50/60 p-4">
+                      <div className="text-xs text-muted-foreground">Inactive Leads</div>
+                      <div className="text-2xl font-bold">{selectedSummary.inactive}</div>
+                    </div>
+                  </div>
+
+                  <ResponsiveContainer width="100%" height={260}>
+                    <LineChart data={staffSummaryChartData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        stroke={COLORS[0]}
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="active"
+                        stroke={COLORS[1]}
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="inactive"
+                        stroke={COLORS[2]}
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex h-[260px] items-center justify-center">
+                  <p className="text-muted-foreground">No data for this period</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Agent Performance */}
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
