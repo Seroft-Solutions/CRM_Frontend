@@ -26,8 +26,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
-import { useGetAllCustomers, useCountCustomers, useGetAllUserProfiles } from '@/core/api/generated/spring';
+import { Activity, Calendar, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import {
+  useGetAllCustomers,
+  useCountCustomers,
+  useGetAllMeetings,
+  useCountMeetings,
+  useGetAllUserProfiles,
+} from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
 import {
   StaffLeadSummaryPeriod,
@@ -42,6 +48,8 @@ import {
 } from '@/components/ui/select';
 
 export function DashboardOverview() {
+  type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
+
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
   const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
   const { data: products = [] } = useGetAllProducts({ size: 1000 });
@@ -55,10 +63,75 @@ export function DashboardOverview() {
   const [tabValue, setTabValue] = useState('overview');
   const [staffPeriod, setStaffPeriod] = useState<StaffLeadSummaryPeriod>('DAILY');
   const [selectedStaff, setSelectedStaff] = useState<string>('ALL');
+  const [meetingPeriod, setMeetingPeriod] = useState<MeetingPeriod>('DAILY');
 
   const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
     period: staffPeriod,
     createdBy: selectedStaff === 'ALL' ? undefined : selectedStaff,
+  });
+
+  const getCalendarRange = (period: MeetingPeriod) => {
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+
+    switch (period) {
+      case 'WEEKLY': {
+        const day = now.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+        end = new Date(start);
+        end.setDate(start.getDate() + 7);
+        break;
+      }
+      case 'MONTHLY':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        break;
+      case 'DAILY':
+      default:
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+    }
+
+    return {
+      start: start.toISOString(),
+      end: end.toISOString(),
+    };
+  };
+
+  const upcomingRange = useMemo(() => {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + 7);
+    return { start: start.toISOString(), end: end.toISOString() };
+  }, []);
+
+  const meetingFiltersBase = useMemo(() => {
+    const range =
+      meetingPeriod === 'OTHERS' ? upcomingRange : getCalendarRange(meetingPeriod);
+
+    return {
+      'meetingDateTime.greaterThanOrEqual': range.start,
+      'meetingDateTime.lessThan': range.end,
+      'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
+    };
+  }, [meetingPeriod, upcomingRange]);
+
+  const { data: scheduledMeetings = [] } = useGetAllMeetings({
+    ...meetingFiltersBase,
+    sort: ['meetingDateTime,asc'],
+    size: 20,
+  });
+
+  const { data: scheduledMeetingsCount = 0 } = useCountMeetings(meetingFiltersBase);
+
+  const todayRange = useMemo(() => getCalendarRange('DAILY'), []);
+  const { data: meetingsTodayCount = 0 } = useCountMeetings({
+    'meetingDateTime.greaterThanOrEqual': todayRange.start,
+    'meetingDateTime.lessThan': todayRange.end,
+    'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
   });
 
   const callStatuses = calls.reduce(
@@ -506,6 +579,97 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Scheduled Meetings */}
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <CardTitle>Scheduled Meetings</CardTitle>
+                  <CardDescription>
+                    {meetingPeriod === 'OTHERS'
+                      ? 'Upcoming meetings scheduled in the next 7 days'
+                      : 'View meetings for the selected period and today&apos;s schedule'}
+                  </CardDescription>
+                </div>
+                <Tabs
+                  value={meetingPeriod}
+                  onValueChange={(value) => setMeetingPeriod(value as MeetingPeriod)}
+                >
+                  <TabsList className="grid grid-cols-4">
+                    <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                    <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                    <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    <TabsTrigger value="OTHERS">Others</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+                <div className="rounded-lg border bg-slate-50/60 p-4">
+                  <div className="text-xs text-muted-foreground">
+                    {meetingPeriod === 'OTHERS' ? 'Upcoming meetings' : 'Meetings in period'}
+                  </div>
+                  <div className="text-2xl font-bold">{scheduledMeetingsCount}</div>
+                </div>
+                <div className="rounded-lg border bg-blue-50/60 p-4">
+                  <div className="text-xs text-muted-foreground">Meetings today</div>
+                  <div className="text-2xl font-bold">{meetingsTodayCount}</div>
+                </div>
+              </div>
+
+              {scheduledMeetings.length > 0 ? (
+                <div className="space-y-4 max-h-[360px] overflow-y-auto">
+                  {scheduledMeetings.map((meeting) => {
+                    const meetingDate = new Date(meeting.meetingDateTime);
+                    const organizer =
+                      meeting.organizer?.displayName ||
+                      `${meeting.organizer?.firstName || ''} ${meeting.organizer?.lastName || ''}`.trim() ||
+                      meeting.organizer?.email ||
+                      'Unassigned';
+                    const leadNo = meeting.call?.leadNo || '—';
+                    const customer =
+                      meeting.assignedCustomer?.customerBusinessName || '—';
+
+                    return (
+                      <div
+                        key={meeting.id}
+                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{meeting.title}</p>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                              <span>{organizer}</span>
+                              <span>•</span>
+                              <span>Lead {leadNo}</span>
+                              <span>•</span>
+                              <span>{customer}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline">{meeting.meetingStatus}</Badge>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {meetingDate.toLocaleDateString()} {meetingDate.toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex h-[260px] items-center justify-center">
+                  <p className="text-muted-foreground">No meetings scheduled for this period</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
