@@ -103,7 +103,7 @@ export function VariantsTable({
         </div>
       </div>
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="table-fixed w-full">
           <VariantsTableHeader
             visibleEnumAttributes={visibleEnumAttributes}
             isViewMode={isViewMode}

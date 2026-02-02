@@ -205,6 +205,10 @@ export function VariantTableRow({
   // Validation error detection
   const hasPriceError = validationErrors.some(err => err.toLowerCase().includes('price'));
   const hasStockError = validationErrors.some(err => err.toLowerCase().includes('stock'));
+  const dataColumnCount = visibleEnumAttributes.length + 6 + (isViewMode ? 0 : 1);
+  const columnWidth = selection
+    ? `calc((100% - 2.5rem) / ${dataColumnCount})`
+    : `calc(100% / ${dataColumnCount})`;
 
   return (
     <>
@@ -240,7 +244,7 @@ export function VariantTableRow({
           </TableCell>
         )}
         {/* Primary Column */}
-        <TableCell className="py-2 w-16">
+        <TableCell className="py-2" style={{ width: columnWidth }}>
           {isDraft || isEditing ? (
             <div className="flex items-center justify-center">
               <input
@@ -278,7 +282,11 @@ export function VariantTableRow({
             : undefined;
 
           return (
-            <TableCell key={`${item.rowKey}-${attr.id}`} className="py-2">
+            <TableCell
+              key={`${item.rowKey}-${attr.id}`}
+              className="py-2"
+              style={{ width: columnWidth }}
+            >
               {selection ? (
                 <Badge
                   variant="secondary"
@@ -300,11 +308,11 @@ export function VariantTableRow({
         })}
 
         {/* SKU Column */}
-        <TableCell className="py-2 w-32">
+        <TableCell className="py-2" style={{ width: columnWidth }}>
           {isDraft ? (
             <div className="space-y-1">
               <Input
-                className="h-8 w-32 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
+                className="h-8 w-full min-w-0 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
                 value={row.sku}
                 onChange={(e) =>
                   onUpdateDraft(row.key, { sku: e.target.value })
@@ -318,7 +326,7 @@ export function VariantTableRow({
             </div>
           ) : isEditing ? (
             <Input
-              className="h-8 w-32 border-2 border-amber-200 focus:border-amber-400 bg-amber-50/50 transition-colors text-sm"
+              className="h-8 w-full min-w-0 border-2 border-amber-200 focus:border-amber-400 bg-amber-50/50 transition-colors text-sm"
               value={data.sku}
               onChange={(e) => onUpdateEditingRow({ sku: e.target.value })}
             />
@@ -338,11 +346,11 @@ export function VariantTableRow({
         </TableCell>
 
         {/* Price & Stock Columns */}
-        <TableCell className="py-2 w-24">
+        <TableCell className="py-2" style={{ width: columnWidth }}>
           {isDraft || isEditing ? (
             <div className="space-y-1">
               <Input
-                className={`h-8 w-24 border-2 transition-colors text-sm ${hasPriceError
+                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${hasPriceError
                     ? 'border-red-300 focus:border-red-500 bg-red-50/50'
                     : isDraft
                       ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
@@ -366,11 +374,11 @@ export function VariantTableRow({
             </span>
           )}
         </TableCell>
-        <TableCell className="py-2 w-20">
+        <TableCell className="py-2" style={{ width: columnWidth }}>
           {isDraft || isEditing ? (
             <div className="space-y-1">
               <Input
-                className={`h-8 w-20 border-2 transition-colors text-sm ${hasStockError
+                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${hasStockError
                     ? 'border-red-300 focus:border-red-500 bg-red-50/50'
                     : isDraft
                       ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
@@ -396,7 +404,7 @@ export function VariantTableRow({
         </TableCell>
 
         {/* Status Column */}
-        <TableCell className="py-2">
+        <TableCell className="py-2" style={{ width: columnWidth }}>
           {isDraft || isEditing ? (
             <Select value={data.status} onValueChange={handleStatusChange}>
               <SelectTrigger
@@ -443,7 +451,7 @@ export function VariantTableRow({
         </TableCell>
 
         {/* Image Column */}
-        <TableCell className="py-2">
+        <TableCell className="py-2" style={{ width: columnWidth }}>
           <div className="flex items-center justify-center">
             {imageUrl ? (
               <img
@@ -459,7 +467,7 @@ export function VariantTableRow({
 
         {/* Actions Column - Hidden in view mode */}
         {!isViewMode && (
-          <TableCell className="py-2 text-right">
+          <TableCell className="py-2 text-right" style={{ width: columnWidth }}>
             <div className="flex items-center justify-end gap-1">
               <Button
                 variant="ghost"

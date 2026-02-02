@@ -27,6 +27,11 @@ export function VariantsTableHeader({
   isViewMode = false,
   selection,
 }: VariantsTableHeaderProps) {
+  const dataColumnCount = visibleEnumAttributes.length + 6 + (isViewMode ? 0 : 1);
+  const columnWidth = selection
+    ? `calc((100% - 2.5rem) / ${dataColumnCount})`
+    : `calc(100% / ${dataColumnCount})`;
+
   return (
     <TableHeader>
       <TableRow className="bg-muted/50">
@@ -44,23 +49,37 @@ export function VariantsTableHeader({
             )}
           </TableHead>
         )}
-        <TableHead className="font-semibold text-center w-16">Primary</TableHead>
+        <TableHead className="font-semibold text-center" style={{ width: columnWidth }}>
+          Primary
+        </TableHead>
         {visibleEnumAttributes.map((attr) => (
-          <TableHead key={`attr-header-${attr.id}`} className="font-semibold">
+          <TableHead
+            key={`attr-header-${attr.id}`}
+            className="font-semibold"
+            style={{ width: columnWidth }}
+          >
             {attr.label ?? attr.name}
           </TableHead>
         ))}
-        <TableHead className="font-semibold w-32">SKU</TableHead>
-        <TableHead className="font-semibold w-24">
+        <TableHead className="font-semibold" style={{ width: columnWidth }}>
+          SKU
+        </TableHead>
+        <TableHead className="font-semibold" style={{ width: columnWidth }}>
           Price <span className="text-red-500">*</span>
         </TableHead>
-        <TableHead className="font-semibold w-20">
+        <TableHead className="font-semibold" style={{ width: columnWidth }}>
           Stock <span className="text-red-500">*</span>
         </TableHead>
-        <TableHead className="font-semibold">Status</TableHead>
-        <TableHead className="font-semibold text-center">Image</TableHead>
+        <TableHead className="font-semibold" style={{ width: columnWidth }}>
+          Status
+        </TableHead>
+        <TableHead className="font-semibold text-center" style={{ width: columnWidth }}>
+          Image
+        </TableHead>
         {!isViewMode && (
-          <TableHead className="font-semibold text-right">Actions</TableHead>
+          <TableHead className="font-semibold text-right" style={{ width: columnWidth }}>
+            Actions
+          </TableHead>
         )}
       </TableRow>
     </TableHeader>
