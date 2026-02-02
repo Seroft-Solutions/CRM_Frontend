@@ -239,6 +239,30 @@ export function VariantTableRow({
             </div>
           </TableCell>
         )}
+        {/* Primary Column */}
+        <TableCell className="py-2 w-16">
+          {isDraft || isEditing ? (
+            <div className="flex items-center justify-center">
+              <input
+                type="radio"
+                checked={!!data.isPrimary}
+                onChange={() => handlePrimaryChange(true)}
+                disabled={isViewMode}
+                className={cn('h-4 w-4 accent-primary', isViewMode && 'opacity-50 cursor-not-allowed')}
+              />
+            </div>
+          ) : data.isPrimary ? (
+            <div className="flex items-center justify-center">
+              <Badge className="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
+                Primary
+              </Badge>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <span className="text-muted-foreground text-xs">—</span>
+            </div>
+          )}
+        </TableCell>
         {/* Attribute Columns */}
         {visibleEnumAttributes.map((attr) => {
           const selection = row.selections.find((s) => s.attributeId === attr.id);
@@ -276,11 +300,11 @@ export function VariantTableRow({
         })}
 
         {/* SKU Column */}
-        <TableCell className="py-2">
+        <TableCell className="py-2 w-32">
           {isDraft ? (
             <div className="space-y-1">
               <Input
-                className="h-8 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
+                className="h-8 w-32 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
                 value={row.sku}
                 onChange={(e) =>
                   onUpdateDraft(row.key, { sku: e.target.value })
@@ -294,7 +318,7 @@ export function VariantTableRow({
             </div>
           ) : isEditing ? (
             <Input
-              className="h-8 border-2 border-amber-200 focus:border-amber-400 bg-amber-50/50 transition-colors text-sm"
+              className="h-8 w-32 border-2 border-amber-200 focus:border-amber-400 bg-amber-50/50 transition-colors text-sm"
               value={data.sku}
               onChange={(e) => onUpdateEditingRow({ sku: e.target.value })}
             />
@@ -314,11 +338,11 @@ export function VariantTableRow({
         </TableCell>
 
         {/* Price & Stock Columns */}
-        <TableCell className="py-2">
+        <TableCell className="py-2 w-24">
           {isDraft || isEditing ? (
             <div className="space-y-1">
               <Input
-                className={`h-8 border-2 transition-colors text-sm ${hasPriceError
+                className={`h-8 w-24 border-2 transition-colors text-sm ${hasPriceError
                     ? 'border-red-300 focus:border-red-500 bg-red-50/50'
                     : isDraft
                       ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
@@ -342,11 +366,11 @@ export function VariantTableRow({
             </span>
           )}
         </TableCell>
-        <TableCell className="py-2">
+        <TableCell className="py-2 w-20">
           {isDraft || isEditing ? (
             <div className="space-y-1">
               <Input
-                className={`h-8 border-2 transition-colors text-sm ${hasStockError
+                className={`h-8 w-20 border-2 transition-colors text-sm ${hasStockError
                     ? 'border-red-300 focus:border-red-500 bg-red-50/50'
                     : isDraft
                       ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
@@ -431,34 +455,6 @@ export function VariantTableRow({
               <span className="text-muted-foreground text-xs">—</span>
             )}
           </div>
-        </TableCell>
-
-        {/* Primary Column */}
-        <TableCell className="py-2">
-          {isDraft || isEditing ? (
-            <div className="flex items-center justify-center">
-              <input
-                type="radio"
-                checked={!!data.isPrimary}
-                onChange={() => handlePrimaryChange(true)}
-                disabled={isViewMode}
-                className={cn(
-                  'h-4 w-4 accent-primary',
-                  isViewMode && 'opacity-50 cursor-not-allowed'
-                )}
-              />
-            </div>
-          ) : data.isPrimary ? (
-            <div className="flex items-center justify-center">
-              <Badge className="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm">
-                Primary
-              </Badge>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <span className="text-muted-foreground text-xs">—</span>
-            </div>
-          )}
         </TableCell>
 
         {/* Actions Column - Hidden in view mode */}

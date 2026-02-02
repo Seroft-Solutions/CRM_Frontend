@@ -44,21 +44,21 @@ export function VariantsTableHeader({
             )}
           </TableHead>
         )}
+        <TableHead className="font-semibold text-center w-16">Primary</TableHead>
         {visibleEnumAttributes.map((attr) => (
           <TableHead key={`attr-header-${attr.id}`} className="font-semibold">
             {attr.label ?? attr.name}
           </TableHead>
         ))}
-        <TableHead className="font-semibold">SKU</TableHead>
-        <TableHead className="font-semibold">
+        <TableHead className="font-semibold w-32">SKU</TableHead>
+        <TableHead className="font-semibold w-24">
           Price <span className="text-red-500">*</span>
         </TableHead>
-        <TableHead className="font-semibold">
+        <TableHead className="font-semibold w-20">
           Stock <span className="text-red-500">*</span>
         </TableHead>
         <TableHead className="font-semibold">Status</TableHead>
         <TableHead className="font-semibold text-center">Image</TableHead>
-        <TableHead className="font-semibold text-center">Primary</TableHead>
         {!isViewMode && (
           <TableHead className="font-semibold text-right">Actions</TableHead>
         )}
