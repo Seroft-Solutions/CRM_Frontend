@@ -43,6 +43,7 @@ interface ProductVariantManagerProps {
   productName: string;
   variantConfigId?: number;
   form?: UseFormReturn<Record<string, unknown>>;
+  defaultVariantPrice?: number;
   isViewMode?: boolean;
   selection?: VariantTableSelection;
 }
@@ -60,6 +61,7 @@ export function ProductVariantManager({
   productName,
   variantConfigId,
   form,
+  defaultVariantPrice,
   isViewMode = false,
   selection,
 }: ProductVariantManagerProps) {
@@ -484,7 +486,7 @@ export function ProductVariantManager({
         const variant = {
           key,
           sku,
-          price: undefined,
+          price: defaultVariantPrice ?? 1,
           stockQuantity: 0,
           status: defaultGeneratedStatus,
           isPrimary: false,
@@ -533,6 +535,7 @@ export function ProductVariantManager({
     defaultGeneratedStatus,
     optionById,
     buildCombinationKey,
+    defaultVariantPrice,
   ]);
 
   useEffect(() => {
@@ -542,10 +545,17 @@ export function ProductVariantManager({
       // Add new variants only (duplicates are excluded)
       draftCombinations.newVariants?.forEach((row) => {
         const existing = prev[row.key];
+        const merged = existing ? { ...row, ...existing } : row;
 
-        next[row.key] = existing
-          ? { ...row, ...existing, isDuplicate: false }
-          : { ...row, isDuplicate: false };
+        if (
+          (merged.price === undefined || merged.price === null || merged.price === 1) &&
+          row.price !== undefined &&
+          row.price !== 1
+        ) {
+          merged.price = row.price;
+        }
+
+        next[row.key] = { ...merged, isDuplicate: false };
       });
 
       // Basic check to prevent re-render if only references changed

@@ -1,7 +1,8 @@
 'use client';
 
-import { ProductVariantManager } from './ProductVariantManager';
+import { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { ProductVariantManager } from './ProductVariantManager';
 import { VariantTableSelection } from './product-variant-manager/types';
 
 interface ProductVariantManagerWrapperProps {
@@ -24,6 +25,15 @@ export function ProductVariantManagerWrapper({
 }: ProductVariantManagerWrapperProps) {
   const productName = providedProductName ?? 'Product';
   const variantConfigId = providedVariantConfigId;
+  const salePriceRaw = form?.watch?.('salePrice');
+  const defaultVariantPrice = useMemo(() => {
+    const parsed =
+      salePriceRaw !== undefined && salePriceRaw !== null && String(salePriceRaw).trim() !== ''
+        ? Number(salePriceRaw)
+        : undefined;
+
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  }, [salePriceRaw]);
 
   if (!variantConfigId) {
     return null;
@@ -35,6 +45,7 @@ export function ProductVariantManagerWrapper({
       productName={productName}
       variantConfigId={variantConfigId}
       form={form}
+      defaultVariantPrice={defaultVariantPrice}
       isViewMode={isViewMode}
       selection={selection}
     />
