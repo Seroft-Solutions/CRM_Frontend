@@ -12,6 +12,8 @@ export interface InvoiceOrderRecord {
   id: string;
   orderDate: string;
   orderStatus: string;
+  paymentStatus?: string;
+  shippingTrackingId?: string;
   organizationName: string;
   organizationEmail: string;
   recipientAddressLine1: string;
@@ -167,6 +169,8 @@ function mapOrderRecordToInvoiceOrderRecord(
     id: String(order.orderId),
     orderDate: formatInvoiceDate(order.createdDate),
     orderStatus: order.orderStatus,
+    paymentStatus: order.paymentStatus ? String(order.paymentStatus) : undefined,
+    shippingTrackingId: order.shipping?.shippingId || order.shippingId || undefined,
     organizationName,
     organizationEmail,
     recipientAddressLine1: resolvedAddress.line1,

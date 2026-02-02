@@ -32,9 +32,11 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
       <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-slate-100">
         <div>
           <h1 className="text-4xl font-black uppercase tracking-tight text-slate-900 mb-1">
-            {orderType === 'purchase' ? 'Purchase Order' : 'Tax Invoice'}
+            {orderType === 'purchase' ? 'Purchase Order' : 'Order Invoice'}
           </h1>
-          <p className="text-slate-500 font-medium"># {order.id}</p>
+          {orderType === 'purchase' && (
+            <p className="text-slate-500 font-medium"># {order.id}</p>
+          )}
         </div>
         <div className="text-right text-sm text-slate-500">
           {/* Company details could go here */}
@@ -64,6 +66,18 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
                 {order.orderStatus}
               </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Payment Status
+              </span>
+              <span className="font-semibold text-slate-900">{order.paymentStatus || '—'}</span>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Tracking ID
+              </span>
+              <span className="font-semibold text-slate-900">{order.shippingTrackingId || '—'}</span>
             </div>
           </div>
         </div>
