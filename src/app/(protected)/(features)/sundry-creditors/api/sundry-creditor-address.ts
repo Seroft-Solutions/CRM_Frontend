@@ -15,6 +15,7 @@ const resolveMutationOptions = (options?: any) => {
 
 export interface SundryCreditorAddressDTO {
   id?: number;
+  title?: string;
   completeAddress: string;
   area?: AreaDTO;
   isDefault: boolean;

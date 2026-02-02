@@ -4,6 +4,11 @@
 import { z } from 'zod';
 const addressSchema = z.object({
   id: z.number().optional(),
+  title: z
+    .string()
+    .max(100, { message: 'Please enter no more than 100 characters' })
+    .optional()
+    .or(z.literal('')),
   completeAddress: z.string().min(1, { message: 'Address is required' }).max(255, {
     message: 'Please enter no more than 255 characters',
   }),

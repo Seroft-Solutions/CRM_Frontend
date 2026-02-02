@@ -5,6 +5,7 @@ import { useFieldArray } from 'react-hook-form';
 import { Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
@@ -35,7 +36,7 @@ export function AddressListField({
 
   useEffect(() => {
     if (fields.length === 0) {
-      append({ completeAddress: '', area: null, isDefault: true });
+      append({ title: '', completeAddress: '', area: null, isDefault: true });
     }
   }, [append, fields.length]);
 
@@ -49,7 +50,7 @@ export function AddressListField({
 
   const handleAdd = () => {
     const hasDefault = addresses.some((address: any) => address?.isDefault);
-    append({ completeAddress: '', area: null, isDefault: !hasDefault });
+    append({ title: '', completeAddress: '', area: null, isDefault: !hasDefault });
   };
 
   const handleRemove = (index: number) => {
@@ -118,6 +119,27 @@ export function AddressListField({
                 </Button>
               </div>
             </div>
+
+            <FormField
+              control={form.control}
+              name={`${name}.${index}.title`}
+              render={({ field: titleField }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">Address title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Head Office, Warehouse"
+                      {...titleField}
+                      onChange={(event) => {
+                        titleField.onChange(event.target.value);
+                        form.trigger(`${name}.${index}.title`);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {showLocationFields ? (
               <FormItem>

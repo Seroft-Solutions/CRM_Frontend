@@ -123,6 +123,7 @@ function CustomerFormContent({ id }: CustomerFormProps) {
         'addresses',
         dataArray.map((address: any) => ({
           id: address.id,
+          title: address.title ?? '',
           completeAddress: address.completeAddress ?? '',
           area: address.area || null,
           isDefault: Boolean(address.isDefault),
@@ -272,6 +273,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .filter((address) => address?.completeAddress?.trim?.())
       .map((address) => ({
         id: address.id,
+        title: address.title?.trim?.() || undefined,
         completeAddress: address.completeAddress.trim(),
         area: address.area,
         isDefault: Boolean(address.isDefault),
@@ -285,6 +287,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       await Promise.all(
         trimmedAddresses.map((address) =>
           createCustomerAddress({
+            title: address.title,
             completeAddress: address.completeAddress,
             area: address.area,
             isDefault: address.isDefault,
@@ -309,6 +312,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .map((address) =>
         updateCustomerAddress(address.id, {
           id: address.id,
+          title: address.title,
           completeAddress: address.completeAddress,
           area: address.area,
           isDefault: address.isDefault,
@@ -320,6 +324,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .filter((address) => !address.id)
       .map((address) =>
         createCustomerAddress({
+          title: address.title,
           completeAddress: address.completeAddress,
           area: address.area,
           isDefault: address.isDefault,
