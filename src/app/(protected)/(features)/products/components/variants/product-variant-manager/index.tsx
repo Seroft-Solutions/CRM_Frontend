@@ -966,6 +966,7 @@ export function ProductVariantManager({
         existingVariantRows={existingVariantRows}
         draftVariants={draftVariants}
         visibleEnumAttributes={visibleEnumAttributes}
+        productName={productName}
         existingSkus={existingSkus}
         onUpdateDraft={updateDraft}
         editingRowData={editingRowData}

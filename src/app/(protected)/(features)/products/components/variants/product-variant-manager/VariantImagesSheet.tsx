@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Pencil, Upload, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
@@ -31,6 +32,7 @@ import {
 type VariantImageSlotState = {
   existing: ProductVariantImageDTO | null;
   file: File | null;
+  name: string;
 };
 
 type VariantImageSlotStateMap = VariantImageSlotMap<VariantImageSlotState>;
@@ -40,6 +42,7 @@ interface VariantImagesSheetProps {
   onOpenChange: (open: boolean) => void;
   variantId?: number;
   variantLabel: string;
+  productName?: string;
   existingImages?: ProductVariantImageDTO[];
   initialFiles?: VariantImageSlotMap<File | null>;
   onSaveDraft?: (files: VariantImageSlotMap<File | null>) => void;
@@ -51,11 +54,55 @@ const emptySlotFiles: VariantImageSlotMap<File | null> = {
   side: null,
 };
 
+const VARIANT_IMAGE_MIME_EXTENSION_MAP: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
+
+const normalizeNamePart = (value?: string, fallback = 'image') => {
+  const normalized = (value ?? '')
+    .trim()
+    .replace(/[^A-Za-z0-9]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  return normalized || fallback;
+};
+
+const stripExtension = (name: string) => name.replace(/\.[^.]+$/, '');
+
+const resolveFileExtension = (file: File) => {
+  const nameMatch = file.name.match(/(\.[^.]+)$/);
+
+  if (nameMatch?.[1]) {
+    return nameMatch[1].toLowerCase();
+  }
+
+  return VARIANT_IMAGE_MIME_EXTENSION_MAP[file.type] ?? '';
+};
+
+const renameVariantImageFile = (file: File, baseName: string) => {
+  if (typeof File === 'undefined') {
+    return file;
+  }
+
+  const extension = resolveFileExtension(file);
+  const finalBase = normalizeNamePart(stripExtension(baseName || ''));
+  const finalName = `${finalBase}${extension}`;
+
+  return new File([file], finalName, {
+    type: file.type,
+    lastModified: file.lastModified,
+  });
+};
+
 export function VariantImagesSheet({
   open,
   onOpenChange,
   variantId,
   variantLabel,
+  productName,
   existingImages,
   initialFiles,
   onSaveDraft,
@@ -65,18 +112,35 @@ export function VariantImagesSheet({
   const deleteImageMutation = useHardDeleteVariantImage();
   const reorderImagesMutation = useReorderVariantImages();
   const [isSaving, setIsSaving] = useState(false);
+  const variantNamePart = useMemo(
+    () => normalizeNamePart(variantLabel || productName, 'variant'),
+    [variantLabel, productName]
+  );
+  const defaultNameBySlot = useMemo(() => {
+    return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
+      const slotPrefix =
+        slot === 'front' ? 'Front' : slot === 'back' ? 'Back' : slot === 'side' ? 'Side' : 'Image';
+      acc[slot] = `${slotPrefix}_${variantNamePart}`;
+      return acc;
+    }, {} as VariantImageSlotMap<string>);
+  }, [variantNamePart]);
 
   const initialSlotState = useMemo<VariantImageSlotStateMap>(() => {
     const mappedExisting = mapVariantImagesToSlots(existingImages);
 
     return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
+      const initialFile = initialFiles?.[slot] ?? null;
+      const initialName = initialFile
+        ? stripExtension(initialFile.name)
+        : defaultNameBySlot[slot];
       acc[slot] = {
         existing: mappedExisting[slot] ?? null,
-        file: initialFiles?.[slot] ?? null,
+        file: initialFile,
+        name: initialName,
       };
       return acc;
     }, {} as VariantImageSlotStateMap);
-  }, [existingImages, initialFiles]);
+  }, [existingImages, initialFiles, defaultNameBySlot]);
 
   const [slotState, setSlotState] = useState<VariantImageSlotStateMap>(initialSlotState);
 
@@ -89,7 +153,9 @@ export function VariantImagesSheet({
   const handleSave = async () => {
     if (!variantId) {
       const filesToSave = VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
-        acc[slot] = slotState[slot].file ?? null;
+        const file = slotState[slot].file;
+        const desiredName = slotState[slot].name || defaultNameBySlot[slot];
+        acc[slot] = file ? renameVariantImageFile(file, desiredName) : null;
         return acc;
       }, {} as VariantImageSlotMap<File | null>);
 
@@ -126,8 +192,12 @@ export function VariantImagesSheet({
 
         if (!file) continue;
 
+        const renamedFile = renameVariantImageFile(
+          file,
+          slotState[slot].name || defaultNameBySlot[slot]
+        );
         const uploaded = await uploadImageMutation.mutateAsync({
-          data: { file },
+          data: { file: renamedFile },
           params: { variantId },
         });
         uploadsBySlot[slot] = uploaded;
@@ -187,15 +257,32 @@ export function VariantImagesSheet({
                     [slot.key]: {
                       existing: prev[slot.key].existing,
                       file,
+                      name: file
+                        ? prev[slot.key].name || defaultNameBySlot[slot.key]
+                        : defaultNameBySlot[slot.key],
+                    },
+                  }))
+                }
+                onNameChange={(name) =>
+                  setSlotState((prev) => ({
+                    ...prev,
+                    [slot.key]: {
+                      ...prev[slot.key],
+                      name,
                     },
                   }))
                 }
                 onClear={() =>
                   setSlotState((prev) => ({
                     ...prev,
-                    [slot.key]: { existing: null, file: null },
+                    [slot.key]: {
+                      existing: null,
+                      file: null,
+                      name: defaultNameBySlot[slot.key],
+                    },
                   }))
                 }
+                defaultName={defaultNameBySlot[slot.key]}
               />
             ))}
           </div>
@@ -241,7 +328,9 @@ interface VariantImageSlotCardProps {
   badge: string;
   state: VariantImageSlotState;
   onFileChange: (file: File | null) => void;
+  onNameChange: (name: string) => void;
   onClear: () => void;
+  defaultName: string;
 }
 
 function VariantImageSlotCard({
@@ -249,10 +338,14 @@ function VariantImageSlotCard({
   badge,
   state,
   onFileChange,
+  onNameChange,
   onClear,
+  defaultName,
 }: VariantImageSlotCardProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
     if (state.file) {
@@ -263,8 +356,23 @@ function VariantImageSlotCard({
     setPreviewUrl(null);
   }, [state.file]);
 
+  useEffect(() => {
+    if (!state.file) {
+      setIsEditingName(false);
+    }
+  }, [state.file]);
+
+  useEffect(() => {
+    if (isEditingName) {
+      nameInputRef.current?.focus();
+      nameInputRef.current?.select();
+    }
+  }, [isEditingName]);
+
   const imageUrl =
     previewUrl || state.existing?.thumbnailUrl || state.existing?.cdnUrl || null;
+  const extension = state.file ? resolveFileExtension(state.file) : '';
+  const displayName = state.file ? `${state.name || defaultName}${extension}` : '';
 
   return (
     <div className="space-y-2">
@@ -319,12 +427,50 @@ function VariantImageSlotCard({
         onChange={(event) => {
           const file = event.target.files?.[0] ?? null;
           onFileChange(file);
+          if (file) {
+            onNameChange(defaultName);
+          }
         }}
       />
       {state.file && (
-        <p className="truncate text-[10px] text-slate-500" title={state.file.name}>
-          {state.file.name}
-        </p>
+        <div className="space-y-1">
+          <label className="text-[10px] font-medium text-slate-500">Image name</label>
+          {isEditingName ? (
+            <Input
+              ref={nameInputRef}
+              value={state.name || ''}
+              onChange={(event) => onNameChange(event.target.value)}
+              onBlur={() => setIsEditingName(false)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  setIsEditingName(false);
+                }
+                if (event.key === 'Escape') {
+                  event.preventDefault();
+                  setIsEditingName(false);
+                }
+              }}
+              placeholder={defaultName}
+              className="h-7 px-2 text-[10px]"
+            />
+          ) : (
+            <div className="flex items-center justify-between gap-2">
+              <p className="truncate text-[10px] text-slate-500" title={displayName}>
+                {displayName}
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-slate-500 hover:text-slate-700"
+                onClick={() => setIsEditingName(true)}
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

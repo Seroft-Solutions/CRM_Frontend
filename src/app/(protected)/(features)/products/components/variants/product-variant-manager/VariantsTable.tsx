@@ -21,6 +21,7 @@ interface VariantsTableProps {
   existingVariantRows: ExistingVariantRow[];
   draftVariants: DraftVariantRow[];
   visibleEnumAttributes: SystemConfigAttributeDTO[];
+  productName: string;
   existingSkus: Set<string>;
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
   editingRowData: ExistingVariantRow | null;
@@ -47,6 +48,7 @@ export function VariantsTable({
   existingVariantRows,
   draftVariants,
   visibleEnumAttributes,
+  productName,
   existingSkus,
   onUpdateDraft,
   editingRowData,
@@ -127,6 +129,7 @@ export function VariantsTable({
                     key={item.rowKey}
                     item={item}
                     visibleEnumAttributes={visibleEnumAttributes}
+                    productName={productName}
                     existingSkus={existingSkus}
                     onUpdateDraft={onUpdateDraft}
                     editingRowData={editingRowData}

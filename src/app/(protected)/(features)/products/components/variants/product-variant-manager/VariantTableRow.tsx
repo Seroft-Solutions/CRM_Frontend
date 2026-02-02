@@ -44,6 +44,7 @@ import {
 interface VariantTableRowProps {
   item: CombinedVariantRow;
   visibleEnumAttributes: SystemConfigAttributeDTO[];
+  productName: string;
   existingSkus: Set<string>;
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
   editingRowData: ExistingVariantRow | null;
@@ -66,6 +67,7 @@ interface VariantTableRowProps {
 export function VariantTableRow({
   item,
   visibleEnumAttributes,
+  productName,
   existingSkus,
   onUpdateDraft,
   editingRowData,
@@ -581,6 +583,7 @@ export function VariantTableRow({
         onOpenChange={setIsImageSheetOpen}
         variantId={variantId}
         variantLabel={row.sku || 'Variant'}
+        productName={productName}
         existingImages={variantImages ?? []}
         initialFiles={draftImageFiles}
         onSaveDraft={handleDraftImagesSave}
