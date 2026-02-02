@@ -79,6 +79,10 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
   };
 
   const renderFieldValue = (fieldConfig: any, value: any) => {
+    if (fieldConfig.type === 'custom') {
+      return <span className="text-muted-foreground italic">Not set</span>;
+    }
+
     if (fieldConfig.type === 'boolean') {
       return value ? 'Yes' : 'No';
     }
@@ -101,6 +105,10 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
 
     if (fieldConfig.type === 'enum') {
       return value || <span className="text-muted-foreground italic">Not set</span>;
+    }
+
+    if (value && typeof value === 'object') {
+      return Array.isArray(value) ? `${value.length} item(s)` : JSON.stringify(value);
     }
 
     return value || <span className="text-muted-foreground italic">Not set</span>;
@@ -157,7 +165,7 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
                 {/* Render Fields */}
                 {step.fields.map((fieldName) => {
                   const fieldConfig = formConfig.fields.find((f) => f.name === fieldName);
-                  if (!fieldConfig) return null;
+                  if (!fieldConfig || fieldConfig.type === 'custom') return null;
 
                   const value = (entity as any)[fieldName];
 

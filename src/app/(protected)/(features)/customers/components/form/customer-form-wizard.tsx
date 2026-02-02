@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CustomerFormProvider, useEntityForm } from './customer-form-provider';
 import { FormProgressIndicator } from './form-progress-indicator';
@@ -31,16 +31,20 @@ interface CustomerFormProps {
   id?: number;
 }
 
-function CustomerFormContent({ id }: CustomerFormProps) {
+interface CustomerFormContentProps extends CustomerFormProps {
+  registerReset?: React.MutableRefObject<(() => void) | null>;
+}
+
+function CustomerFormContent({ id, registerReset }: CustomerFormContentProps) {
   const router = useRouter();
   const isNew = !id;
   const { state, actions, form, navigation, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
+  const addressesInitializedFor = useRef<number | null>(null);
 
   const { data: entity, isLoading: isLoadingEntity } = useGetCustomer(id || 0, {
     query: {
       enabled: !!id,
-      queryKey: ['get-customer', id],
     },
   });
 
@@ -110,6 +114,8 @@ function CustomerFormContent({ id }: CustomerFormProps) {
 
   React.useEffect(() => {
     if (!id) return;
+    if (addressData === undefined) return;
+    if (addressesInitializedFor.current === id) return;
     const dataArray = Array.isArray(addressData)
       ? addressData
       : (addressData as any)?.content
@@ -130,8 +136,26 @@ function CustomerFormContent({ id }: CustomerFormProps) {
         })),
         { shouldDirty: false }
       );
+      addressesInitializedFor.current = id;
+      return;
     }
+
+    form.setValue('addresses', [], { shouldDirty: false });
+    addressesInitializedFor.current = id;
   }, [addressData, entity, form, id]);
+
+  React.useEffect(() => {
+    if (!registerReset) return;
+    const resetHandler = () => {
+      form.reset(form.getValues());
+    };
+    registerReset.current = resetHandler;
+    return () => {
+      if (registerReset.current === resetHandler) {
+        registerReset.current = null;
+      }
+    };
+  }, [form, registerReset]);
 
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
@@ -257,6 +281,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const resetFormRef = useRef<(() => void) | null>(null);
 
   const { mutateAsync: createEntity, isPending: isCreating } = useCreateCustomer();
   const { mutateAsync: updateEntity, isPending: isUpdating } = useUpdateCustomer();
@@ -410,7 +435,16 @@ export function CustomerForm({ id }: CustomerFormProps) {
             queryKey: ['searchCustomers'],
             refetchType: 'active',
           });
+          queryClient.invalidateQueries({
+            queryKey: [`/api/customers/${id}`],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['getAllCustomerAddresses'],
+            refetchType: 'active',
+          });
 
+          resetFormRef.current?.();
           setIsRedirecting(true);
           customerToast.updated();
           router.push('/customers');
@@ -420,7 +454,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
         handleCustomerError(error);
       }}
     >
-      <CustomerFormContent id={id} />
+      <CustomerFormContent id={id} registerReset={resetFormRef} />
     </CustomerFormProvider>
   );
 }

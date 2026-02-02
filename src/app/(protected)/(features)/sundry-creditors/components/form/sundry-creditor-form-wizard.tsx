@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SundryCreditorFormProvider, useEntityForm } from './sundry-creditor-form-provider';
 import { FormProgressIndicator } from './form-progress-indicator';
@@ -31,11 +31,16 @@ interface SundryCreditorFormProps {
   id?: number;
 }
 
-function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
+interface SundryCreditorFormContentProps extends SundryCreditorFormProps {
+  registerReset?: React.MutableRefObject<(() => void) | null>;
+}
+
+function SundryCreditorFormContent({ id, registerReset }: SundryCreditorFormContentProps) {
   const router = useRouter();
   const isNew = !id;
   const { state, actions, form, navigation, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
+  const addressesInitializedFor = useRef<number | null>(null);
 
   const { data: entity, isLoading: isLoadingEntity } = useGetSundryCreditor(id || 0, {
     enabled: !!id,
@@ -108,6 +113,8 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
 
   React.useEffect(() => {
     if (!id) return;
+    if (addressData === undefined) return;
+    if (addressesInitializedFor.current === id) return;
     const dataArray = Array.isArray(addressData)
       ? addressData
       : (addressData as any)?.content
@@ -128,8 +135,26 @@ function SundryCreditorFormContent({ id }: SundryCreditorFormProps) {
         })),
         { shouldDirty: false }
       );
+      addressesInitializedFor.current = id;
+      return;
     }
+
+    form.setValue('addresses', [], { shouldDirty: false });
+    addressesInitializedFor.current = id;
   }, [addressData, entity, form, id]);
+
+  React.useEffect(() => {
+    if (!registerReset) return;
+    const resetHandler = () => {
+      form.reset(form.getValues());
+    };
+    registerReset.current = resetHandler;
+    return () => {
+      if (registerReset.current === resetHandler) {
+        registerReset.current = null;
+      }
+    };
+  }, [form, registerReset]);
 
   const renderGeneratedStep = () => {
     const currentStepConfig = config.steps[state.currentStep];
@@ -238,6 +263,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
   const isNew = !id;
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const resetFormRef = useRef<(() => void) | null>(null);
 
   const { mutateAsync: createEntity, isPending: isCreating } = useCreateSundryCreditor();
   const { mutateAsync: updateEntity, isPending: isUpdating } = useUpdateSundryCreditor();
@@ -391,7 +417,16 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
             queryKey: ['searchSundryCreditors'],
             refetchType: 'active',
           });
+          queryClient.invalidateQueries({
+            queryKey: ['getSundryCreditor', id],
+            refetchType: 'active',
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['getAllSundryCreditorAddresses'],
+            refetchType: 'active',
+          });
 
+          resetFormRef.current?.();
           setIsRedirecting(true);
           sundryCreditorToast.updated();
           router.push('/sundry-creditors');
@@ -401,7 +436,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         handleSundryCreditorError(error);
       }}
     >
-      <SundryCreditorFormContent id={id} />
+      <SundryCreditorFormContent id={id} registerReset={resetFormRef} />
     </SundryCreditorFormProvider>
   );
 }

@@ -27,18 +27,26 @@ export function AddressListField({
   showLocationFields = false,
   locationLabel = 'City & Zip Code',
 }: AddressListFieldProps) {
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name,
+    keyName: 'fieldId',
   });
 
   const addresses = form.watch(name) || [];
 
   useEffect(() => {
-    if (fields.length === 0) {
+    if (!Array.isArray(addresses)) return;
+    if (addresses.length > 0 && fields.length !== addresses.length) {
+      replace(addresses);
+    }
+  }, [addresses, fields.length, replace]);
+
+  useEffect(() => {
+    if (fields.length === 0 && addresses.length === 0) {
       append({ title: '', completeAddress: '', area: null, isDefault: true });
     }
-  }, [append, fields.length]);
+  }, [append, addresses.length, fields.length]);
 
   useEffect(() => {
     if (addresses.length === 0) return;
@@ -100,7 +108,10 @@ export function AddressListField({
         className="space-y-4"
       >
         {fields.map((field, index) => (
-          <div key={field.id} className="rounded-lg border border-gray-200 bg-white p-4 space-y-3">
+          <div
+            key={field.fieldId}
+            className="rounded-lg border border-gray-200 bg-white p-4 space-y-3"
+          >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <FormLabel className="text-sm font-medium text-gray-800">Address {index + 1}</FormLabel>
               <div className="flex items-center gap-3">

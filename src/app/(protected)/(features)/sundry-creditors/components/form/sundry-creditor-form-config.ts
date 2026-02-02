@@ -11,7 +11,15 @@ export const sundryCreditorFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['creditorName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
+      fields: [
+        'creditorName',
+        'email',
+        'mobile',
+        'whatsApp',
+        'contactPerson',
+        'status',
+        'addresses',
+      ],
       relationships: ['products'],
       validation: {
         mode: 'onBlur',

@@ -11,7 +11,15 @@ export const customerFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'status'],
+      fields: [
+        'customerBusinessName',
+        'email',
+        'mobile',
+        'whatsApp',
+        'contactPerson',
+        'status',
+        'addresses',
+      ],
       relationships: [],
       validation: {
         mode: 'onBlur',
