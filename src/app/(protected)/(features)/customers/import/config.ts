@@ -5,7 +5,7 @@ export const customerImportConfig = {
     'Mobile number must be unique - duplicates will be skipped',
     'Customer Business Name and Mobile are required',
     'Email and Contact Person are optional',
-    'Zip Code is required and must exist in the system',
+    'Zip Code is optional',
     'Save the file as .xlsx or .xls format',
   ],
   filename: 'customer_import_template.xlsx',
@@ -37,7 +37,7 @@ export const customerImportConfig = {
     {
       column: 'E',
       header: 'Zip Code',
-      description: 'Area zip code (Required)',
+      description: 'Area zip code (Optional)',
       example: '12345',
     },
   ],

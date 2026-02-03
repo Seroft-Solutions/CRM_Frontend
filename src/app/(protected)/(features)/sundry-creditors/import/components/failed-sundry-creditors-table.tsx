@@ -18,7 +18,6 @@ import {
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import { useCreateSundryCreditor } from '../../api/sundry-creditor';
 
-const ZIP_REGEX = /^[0-9]{6}$/;
 const MOBILE_REGEX = /^[+]?[0-9]{10,15}$/;
 
 function hasText(value: unknown): value is string {
@@ -45,14 +44,6 @@ function isSundryCreditorImportHistoryRow(row: ImportHistoryDTO): boolean {
     hasText(row.productCode);
 
   return !hasCallOrProductSignals;
-}
-
-async function resolveAreaIdByZip(zipCode: string): Promise<number | null> {
-  const { searchGeography } = await import('@/core/api/generated/spring/endpoints/area-resource/area-resource.gen');
-  const areas = await searchGeography({ term: zipCode, size: 5 });
-  const match = areas?.find((a) => a?.pincode === zipCode && a?.status === 'ACTIVE');
-
-  return typeof match?.id === 'number' ? match.id : null;
 }
 
 type RowErrorMap = Record<number, string>;
@@ -128,13 +119,11 @@ export function FailedSundryCreditorsTable() {
 
     const creditorName = (row.customerBusinessName ?? '').trim();
     const mobile = (row.phoneNumber ?? '').trim();
-    const zip = (row.zipCode ?? '').trim();
 
     if (creditorName.length < 2 || creditorName.length > 100) {
       issues.push('Creditor Name must be 2-100 characters.');
     }
     if (!MOBILE_REGEX.test(mobile)) issues.push('Mobile must be 10-15 digits (optional leading +).');
-    if (!ZIP_REGEX.test(zip)) issues.push('Zip Code must be exactly 6 digits.');
 
     return issues;
   }, []);
@@ -173,27 +162,18 @@ export function FailedSundryCreditorsTable() {
         return false;
       }
 
-      const zip = (row.zipCode ?? '').trim();
       const mobile = (row.phoneNumber ?? '').trim();
       const creditorName = (row.customerBusinessName ?? '').trim();
 
       setPendingRowIds((prev) => new Set(prev).add(row.id!));
 
       try {
-        const areaId = await resolveAreaIdByZip(zip);
-        if (!areaId) {
-          toast.error(`Zip Code ${zip} not found in Areas.`);
-          setRowErrors((prev) => ({ ...prev, [row.id!]: `Zip Code ${zip} not found in Areas.` }));
-          return false;
-        }
-
         const extras = parseRemarkForSundryCreditorExtras(row.remark);
 
         await createSundryCreditorAsync({
           creditorName,
           mobile,
           status: CustomerDTOStatus.ACTIVE,
-          area: { id: areaId } as any,
           ...(extras.email ? { email: extras.email } : {}),
           ...(extras.contactPerson ? { contactPerson: extras.contactPerson } : {}),
         } as any);
@@ -313,7 +293,7 @@ export function FailedSundryCreditorsTable() {
         <div>
           <CardTitle>Failed Sundry Creditor Import Rows</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Fix fields (especially Zip Code) and save to create sundry creditors.
+            Fix fields and save to create sundry creditors.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -366,7 +346,7 @@ export function FailedSundryCreditorsTable() {
                     <Input
                       value={(row.zipCode ?? '') as string}
                       onChange={(e) => handleFieldChange(rowId, 'zipCode', e.target.value)}
-                      placeholder="6 digits"
+                      placeholder="Optional"
                     />
                   </TableCell>
                   <TableCell className="min-w-[220px]">

@@ -149,8 +149,8 @@ function mapOrderRecordToInvoiceOrderRecord(
 
   const addressFromOrder = formatAddressFromFields(order.address?.billTo);
   const addressFromEntity = isPurchase
-    ? order.sundryCreditor?.defaultAddress?.completeAddress || order.sundryCreditor?.completeAddress
-    : order.customer?.defaultAddress?.completeAddress || order.customer?.completeAddress;
+    ? order.sundryCreditor?.defaultAddress?.completeAddress
+    : order.customer?.defaultAddress?.completeAddress;
 
   const addressFromEntityValue = (addressFromEntity ?? '').trim();
   const resolvedAddress = isPurchase

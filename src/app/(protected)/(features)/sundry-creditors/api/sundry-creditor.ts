@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
-import { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas/CustomerDTOStatus';
 import type { CustomerImportJobDTO } from '@/core/api/generated/spring/schemas/CustomerImportJobDTO';
 import { SundryCreditorAddressDTO } from '@/core/api/generated/spring/schemas/SundryCreditorAddressDTO';
@@ -24,13 +23,11 @@ export interface SundryCreditorDTO {
   mobile?: string;
   whatsApp?: string;
   contactPerson?: string;
-  completeAddress?: string;
   status: SundryCreditorStatus;
   createdBy?: string;
   createdDate?: string;
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  area?: AreaDTO;
   addresses?: SundryCreditorAddressDTO[];
 }
 

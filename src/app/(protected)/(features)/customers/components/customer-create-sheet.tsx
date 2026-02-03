@@ -33,6 +33,16 @@ import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
 import { AddressListField } from '@/components/address-list-field';
 import { createCustomerAddress } from '../api/customer-address';
 
+const toAreaRef = (area: any) => {
+  if (!area) return undefined;
+  if (typeof area === 'number') return { id: area };
+  if (typeof area === 'object') {
+    const id = (area as any).id ?? (area as any).areaId;
+    return id ? { id } : undefined;
+  }
+  return undefined;
+};
+
 const addressSchema = z.object({
   id: z.number().optional(),
   completeAddress: z
@@ -70,7 +80,6 @@ const customerCreationSchema = z.object({
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional()
     .or(z.literal('')),
-  completeAddress: z.string().optional(),
   addresses: z
     .array(addressSchema)
     .min(1, { message: 'At least one address is required' })
@@ -108,7 +117,6 @@ export function CustomerCreateSheet({
       mobile: '',
       whatsApp: '',
       contactPerson: '',
-      completeAddress: '',
       addresses: [],
     },
   });
@@ -138,7 +146,7 @@ export function CustomerCreateSheet({
             addresses.map((address) =>
               createCustomerAddress({
                 completeAddress: address.completeAddress,
-                area: address.area,
+                area: toAreaRef(address.area),
                 isDefault: address.isDefault,
                 customer: { id: customerId, customerBusinessName: customerName },
               } as any)
@@ -163,9 +171,6 @@ export function CustomerCreateSheet({
 
   const onSubmit = (data: CustomerCreationFormData) => {
     pendingAddressesRef.current = data.addresses ?? [];
-    const defaultAddress =
-      data.addresses?.find((address) => address.isDefault)?.completeAddress ??
-      data.addresses?.[0]?.completeAddress;
 
     const customerData = {
       customerBusinessName: data.customerBusinessName,
@@ -173,7 +178,6 @@ export function CustomerCreateSheet({
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile,
       contactPerson: data.contactPerson || undefined,
-      completeAddress: defaultAddress || undefined,
       status: CustomerDTOStatus.ACTIVE,
     } as CustomerDTO;
 
@@ -377,7 +381,7 @@ export function CustomerCreateSheet({
                 <div className="space-y-1">
                   <h3 className="text-base font-semibold text-slate-900">Addresses</h3>
                   <p className="text-xs text-slate-500">
-                    Add one or more locations with city and zip code details.
+                    Add one or more locations and select the default.
                   </p>
                 </div>
 

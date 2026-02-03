@@ -184,16 +184,6 @@ export function CustomerSearchAndFilters({
                       className="h-8"
                     />
                   </div>
-
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Area</label>
-                    <Input
-                      placeholder="Filter by area..."
-                      value={(filters['area.name'] as string) || ''}
-                      onChange={(e) => onFilterChange('area.name', e.target.value || undefined)}
-                      className="h-8"
-                    />
-                  </div>
                 </div>
               </div>
 

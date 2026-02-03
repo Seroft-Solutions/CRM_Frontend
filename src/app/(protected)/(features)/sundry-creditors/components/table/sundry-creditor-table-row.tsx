@@ -142,7 +142,9 @@ export function SundryCreditorTableRow({
               }
 
               if (column.id === 'completeAddress') {
-                return field?.toString() || '';
+                const addresses = customer.addresses || [];
+                const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+                return defaultAddr?.completeAddress?.toString() || '';
               }
 
               if (column.id === 'status') {

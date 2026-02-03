@@ -146,9 +146,12 @@ export function CustomerTableRow({
               }
 
               if (column.id === 'completeAddress') {
+                const addresses = customer.addresses || [];
+                const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+                const value = defaultAddr?.completeAddress;
                 return (
                   <div className="whitespace-normal min-w-[200px] max-w-[300px]">
-                    {field?.toString() || '-'}
+                    {value?.toString() || '-'}
                   </div>
                 );
               }

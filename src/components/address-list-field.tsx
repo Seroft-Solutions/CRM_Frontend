@@ -25,7 +25,7 @@ export function AddressListField({
   label = 'Addresses',
   description,
   showLocationFields = false,
-  locationLabel = 'City & Zip Code',
+  locationLabel = 'Location',
 }: AddressListFieldProps) {
   const { fields, append, remove, replace } = useFieldArray({
     control: form.control,

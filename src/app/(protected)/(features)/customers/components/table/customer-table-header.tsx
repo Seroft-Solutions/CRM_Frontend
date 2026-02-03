@@ -229,20 +229,7 @@ export function CustomerTableHeader({
 
                   return null;
                 })()
-              : (() => {
-                  if (column.accessor === 'area') {
-                    return (
-                      <Input
-                        placeholder="Filter..."
-                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
-                        value={(filters['area.name'] as string) || ''}
-                        onChange={(e) => onFilterChange('area.name', e.target.value || undefined)}
-                      />
-                    );
-                  }
-
-                  return null;
-                })()}
+              : null}
           </TableHead>
         ))}
         <TableHead className="w-[100px] sm:w-[120px] sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10">

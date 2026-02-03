@@ -41,6 +41,7 @@ function SundryCreditorFormContent({ id, registerReset }: SundryCreditorFormCont
   const { state, actions, form, navigation, config } = useEntityForm();
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const addressesInitializedFor = useRef<number | null>(null);
+  const entityResetDoneRef = useRef(false);
 
   const { data: entity, isLoading: isLoadingEntity } = useGetSundryCreditor(id || 0, {
     enabled: !!id,
@@ -55,6 +56,11 @@ function SundryCreditorFormContent({ id, registerReset }: SundryCreditorFormCont
       },
     }
   );
+
+  React.useEffect(() => {
+    entityResetDoneRef.current = false;
+    addressesInitializedFor.current = null;
+  }, [id]);
 
   React.useEffect(() => {
     if (entity && !state.isLoading && config?.behavior?.rendering?.useGeneratedSteps) {
@@ -108,11 +114,13 @@ function SundryCreditorFormContent({ id, registerReset }: SundryCreditorFormCont
       });
 
       form.reset(formValues);
+      entityResetDoneRef.current = true;
     }
   }, [entity, config, form, state.isLoading]);
 
   React.useEffect(() => {
     if (!id) return;
+    if (!entityResetDoneRef.current) return;
     if (addressData === undefined) return;
     if (addressesInitializedFor.current === id) return;
     const dataArray = Array.isArray(addressData)
@@ -275,6 +283,16 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
     return [];
   };
 
+  const toAreaRef = (area: any) => {
+    if (!area) return undefined;
+    if (typeof area === 'number') return { id: area };
+    if (typeof area === 'object') {
+      const id = (area as any).id ?? (area as any).areaId;
+      return id ? { id } : undefined;
+    }
+    return undefined;
+  };
+
   const syncSundryCreditorAddresses = async (sundryCreditorId: number, addresses: any[], skipFetch = false) => {
     const trimmedAddresses = (addresses || [])
       .filter((address) => address?.completeAddress?.trim?.())
@@ -282,7 +300,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         id: address.id,
         title: address.title?.trim?.() || undefined,
         completeAddress: address.completeAddress.trim(),
-        area: address.area,
+        areaRef: toAreaRef(address.area),
         isDefault: Boolean(address.isDefault),
       }));
 
@@ -296,7 +314,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           createSundryCreditorAddress({
             title: address.title,
             completeAddress: address.completeAddress,
-            area: address.area,
+            area: address.areaRef,
             isDefault: address.isDefault,
             sundryCreditor: { id: sundryCreditorId, creditorName: '' },
           })
@@ -321,7 +339,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           id: address.id,
           title: address.title,
           completeAddress: address.completeAddress,
-          area: address.area,
+          area: address.areaRef,
           isDefault: address.isDefault,
           sundryCreditor: { id: sundryCreditorId, creditorName: undefined as any },
         })
@@ -333,7 +351,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         createSundryCreditorAddress({
           title: address.title,
           completeAddress: address.completeAddress,
-          area: address.area,
+          area: address.areaRef,
           isDefault: address.isDefault,
           sundryCreditor: { id: sundryCreditorId, creditorName: undefined as any },
         })
@@ -362,12 +380,8 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       id={id}
       onSuccess={async (transformedData) => {
         const { addresses, ...sundryCreditorData } = transformedData as any;
-        const defaultAddress =
-          addresses?.find((address: any) => address.isDefault)?.completeAddress ??
-          addresses?.[0]?.completeAddress;
         const dataWithStatus = {
           ...sundryCreditorData,
-          completeAddress: defaultAddress || undefined,
           status: 'ACTIVE',
         };
 
