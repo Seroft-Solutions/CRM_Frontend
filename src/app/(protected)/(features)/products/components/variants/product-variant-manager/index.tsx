@@ -28,6 +28,31 @@ import { NoVariantConfigPlaceholder } from './NoVariantConfigPlaceholder';
 import { VariantGenerator } from './VariantGenerator';
 import { VariantsTable } from './VariantsTable';
 
+const normalizeSizeToken = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+const sizeRankByToken = (() => {
+  const map = new Map<string, number>();
+  const groups = [
+    ['xxxl', '3xl'],
+    ['xxl', '2xl'],
+    ['xl', 'xlarge', 'extralarge', 'extralarger'],
+    ['l', 'large'],
+    ['m', 'medium', 'med'],
+    ['s', 'small'],
+    ['xs', 'xsmall', 'extrasmall', 'exsmall'],
+    ['xxs', '2xs'],
+    ['xxxs', '3xs'],
+  ];
+  groups.forEach((tokens, index) => {
+    tokens.forEach((token) => map.set(token, index));
+  });
+  return map;
+})();
+const isSizeLabel = (label?: string) => {
+  if (!label) return false;
+  const normalized = label.toLowerCase().replace(/[^a-z]/g, '');
+  return normalized === 'size' || normalized.startsWith('size') || normalized.endsWith('size');
+};
+
 /**
  * @interface ProductVariantManagerProps
  * @description Props for the ProductVariantManager component.
@@ -302,6 +327,53 @@ export function ProductVariantManager({
 
     return map;
   }, [configAttributes]);
+
+  const buildSizeSortKey = (selections: VariantSelection[]) => {
+    const sizeSelection = selections.find((selection) => {
+      const meta = attributeById.get(selection.attributeId);
+      return isSizeLabel(selection.attributeLabel) || isSizeLabel(meta?.label) || isSizeLabel(meta?.name);
+    });
+
+    if (!sizeSelection) {
+      return null;
+    }
+
+    const rawValue = sizeSelection.optionLabel || sizeSelection.optionCode || '';
+    const normalized = normalizeSizeToken(rawValue);
+    if (!normalized) {
+      return { rank: Number.MAX_SAFE_INTEGER, label: rawValue };
+    }
+
+    const rank = sizeRankByToken.get(normalized);
+    if (rank !== undefined) {
+      return { rank, label: rawValue };
+    }
+
+    const numeric = Number.parseFloat(normalized);
+    if (!Number.isNaN(numeric)) {
+      return { rank: 1000 - numeric, label: rawValue };
+    }
+
+    return { rank: 999, label: rawValue };
+  };
+
+  const sortVariantsBySize = <T extends { selections: VariantSelection[] }>(variants: T[]) => {
+    return variants
+      .map((variant, index) => ({
+        variant,
+        index,
+        sortKey: buildSizeSortKey(variant.selections),
+      }))
+      .sort((a, b) => {
+        if (!a.sortKey || !b.sortKey) {
+          return a.index - b.index;
+        }
+        const diff = a.sortKey.rank - b.sortKey.rank;
+        if (diff !== 0) return diff;
+        return a.index - b.index;
+      })
+      .map((item) => item.variant);
+  };
 
   const existingVariantRows: ExistingVariantRow[] = useMemo(() => {
     return (variants ?? [])
@@ -670,8 +742,12 @@ export function ProductVariantManager({
   }, [newDraftVariants, editingRowData, displayExistingVariantRows]);
 
   const combinedRows = useMemo(() => {
+    const sortedNewDrafts = sortVariantsBySize(newDraftVariants);
+    const sortedDuplicateDrafts = sortVariantsBySize(duplicateDraftVariants);
+    const sortedExistingRows = sortVariantsBySize(displayExistingVariantRows);
+
     return [
-      ...newDraftVariants.map((d) => ({
+      ...sortedNewDrafts.map((d) => ({
         kind: 'draft' as const,
         rowKey: `draft-${d.key}`,
         row: {
@@ -682,12 +758,12 @@ export function ProductVariantManager({
               : Boolean(d.isPrimary) && !primarySelection,
         },
       })),
-      ...duplicateDraftVariants.map((d) => ({
+      ...sortedDuplicateDrafts.map((d) => ({
         kind: 'duplicate' as const,
         rowKey: `duplicate-${d.key}`,
         row: d,
       })),
-      ...displayExistingVariantRows.map((e) => ({
+      ...sortedExistingRows.map((e) => ({
         kind: 'existing' as const,
         rowKey: `existing-${e.id}`,
         row: {
@@ -699,7 +775,13 @@ export function ProductVariantManager({
         },
       })),
     ];
-  }, [newDraftVariants, duplicateDraftVariants, displayExistingVariantRows, primarySelection]);
+  }, [
+    newDraftVariants,
+    duplicateDraftVariants,
+    displayExistingVariantRows,
+    primarySelection,
+    attributeById,
+  ]);
 
   const visibleEnumAttributes = useMemo(() => {
     return enumAttributes
