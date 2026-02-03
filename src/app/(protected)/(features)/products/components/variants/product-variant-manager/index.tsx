@@ -468,15 +468,31 @@ export function ProductVariantManager({
 
     function generate(index: number, current: VariantSelection[]) {
       if (index === sortedAttributes.length) {
-        // Clean option codes for SKU generation - remove # prefix from hex colors
-        const cleanOptionCode = (code: string | undefined) => {
-          if (!code) return code;
+        const isColorAttribute = (attributeId: number, attributeLabel?: string) => {
+          const attrMeta = attributeById.get(attributeId);
+          const rawName =
+            attrMeta?.name ??
+            attrMeta?.label ??
+            attributeLabel ??
+            '';
+          return rawName.toLowerCase() === 'color';
+        };
 
-          return code.startsWith('#') ? code.substring(1) : code;
+        const resolveSkuToken = (selection: VariantSelection) => {
+          if (isColorAttribute(selection.attributeId, selection.attributeLabel)) {
+            return selection.optionLabel;
+          }
+
+          return selection.optionCode ?? selection.optionLabel;
+        };
+
+        const cleanToken = (token: string | undefined) => {
+          if (!token) return token;
+          return token.startsWith('#') ? token.substring(1) : token;
         };
         const skuParts = [
           basePrefix,
-          ...current.map((sel) => cleanOptionCode(sel.optionCode)).filter(Boolean),
+          ...current.map((sel) => cleanToken(resolveSkuToken(sel))).filter(Boolean),
         ];
         const sku = normalizeSku(skuParts.join('-'), basePrefix);
         const key = buildCombinationKey(
