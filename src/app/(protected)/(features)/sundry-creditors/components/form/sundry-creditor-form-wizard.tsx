@@ -293,7 +293,12 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
     return undefined;
   };
 
-  const syncSundryCreditorAddresses = async (sundryCreditorId: number, addresses: any[], skipFetch = false) => {
+  const syncSundryCreditorAddresses = async (
+    sundryCreditorId: number,
+    addresses: any[],
+    options: { skipFetch?: boolean; returnUpdated?: boolean } = {}
+  ) => {
+    const { skipFetch = false, returnUpdated = false } = options;
     const trimmedAddresses = (addresses || [])
       .filter((address) => address?.completeAddress?.trim?.())
       .map((address) => ({
@@ -305,11 +310,19 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       }));
 
     if (trimmedAddresses.length === 0) {
-      return;
+      if (!returnUpdated) {
+        return [];
+      }
+      const refreshed = await getAllSundryCreditorAddresses({
+        page: 0,
+        size: 1000,
+        'sundryCreditorId.equals': sundryCreditorId,
+      });
+      return normalizeAddressList(refreshed);
     }
 
     if (skipFetch) {
-      await Promise.all(
+      const created = await Promise.all(
         trimmedAddresses.map((address) =>
           createSundryCreditorAddress({
             title: address.title,
@@ -320,7 +333,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           })
         )
       );
-      return;
+      return returnUpdated ? created : [];
     }
 
     const existingResponse = await getAllSundryCreditorAddresses({
@@ -362,6 +375,17 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       .map((address: any) => deleteSundryCreditorAddress(address.id));
 
     await Promise.all([...updates, ...creates, ...deletions]);
+
+    if (!returnUpdated) {
+      return [];
+    }
+
+    const refreshed = await getAllSundryCreditorAddresses({
+      page: 0,
+      size: 1000,
+      'sundryCreditorId.equals': sundryCreditorId,
+    });
+    return normalizeAddressList(refreshed);
   };
 
   if (isRedirecting) {
@@ -390,7 +414,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           const createdId = created?.id;
 
           if (createdId) {
-            await syncSundryCreditorAddresses(createdId, addresses, true);
+            await syncSundryCreditorAddresses(createdId, addresses, { skipFetch: true });
           }
 
           queryClient.invalidateQueries({
@@ -415,9 +439,21 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
             router.push('/sundry-creditors');
           }
         } else if (id) {
-          // Note: useUpdateSundryCreditor expects {id, data}
-          await updateEntity({ id, data: { ...dataWithStatus, id } });
-          await syncSundryCreditorAddresses(id, addresses);
+          const updatedAddresses = await syncSundryCreditorAddresses(id, addresses, {
+            returnUpdated: true,
+          });
+          const entityData = {
+            ...dataWithStatus,
+            id,
+            addresses: updatedAddresses.map((address: any) => ({
+              id: address.id,
+              title: address.title ?? undefined,
+              completeAddress: address.completeAddress ?? '',
+              area: address.area ?? undefined,
+              isDefault: Boolean(address.isDefault),
+            })),
+          };
+          await updateEntity({ id, data: entityData });
 
           queryClient.invalidateQueries({
             queryKey: ['getAllSundryCreditors'],
