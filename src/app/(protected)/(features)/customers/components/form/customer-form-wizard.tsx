@@ -311,7 +311,12 @@ export function CustomerForm({ id }: CustomerFormProps) {
     return undefined;
   };
 
-  const syncCustomerAddresses = async (customerId: number, addresses: any[], skipFetch = false) => {
+  const syncCustomerAddresses = async (
+    customerId: number,
+    addresses: any[],
+    options: { skipFetch?: boolean; returnUpdated?: boolean } = {}
+  ) => {
+    const { skipFetch = false, returnUpdated = false } = options;
     const trimmedAddresses = (addresses || [])
       .filter((address) => address?.completeAddress?.trim?.())
       .map((address) => ({
@@ -323,11 +328,19 @@ export function CustomerForm({ id }: CustomerFormProps) {
       }));
 
     if (trimmedAddresses.length === 0) {
-      return;
+      if (!returnUpdated) {
+        return [];
+      }
+      const refreshed = await getAllCustomerAddresses({
+        page: 0,
+        size: 1000,
+        'customerId.equals': customerId,
+      });
+      return normalizeAddressList(refreshed);
     }
 
     if (skipFetch) {
-      await Promise.all(
+      const created = await Promise.all(
         trimmedAddresses.map((address) =>
           createCustomerAddress({
             title: address.title,
@@ -338,7 +351,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
           })
         )
       );
-      return;
+      return returnUpdated ? created : [];
     }
 
     const existingResponse = await getAllCustomerAddresses({
@@ -380,6 +393,17 @@ export function CustomerForm({ id }: CustomerFormProps) {
       .map((address: any) => deleteCustomerAddress(address.id));
 
     await Promise.all([...updates, ...creates, ...deletions]);
+
+    if (!returnUpdated) {
+      return [];
+    }
+
+    const refreshed = await getAllCustomerAddresses({
+      page: 0,
+      size: 1000,
+      'customerId.equals': customerId,
+    });
+    return normalizeAddressList(refreshed);
   };
 
   if (isRedirecting) {
@@ -408,7 +432,7 @@ export function CustomerForm({ id }: CustomerFormProps) {
           const createdId = created?.id;
 
           if (createdId) {
-            await syncCustomerAddresses(createdId, addresses, true);
+            await syncCustomerAddresses(createdId, addresses, { skipFetch: true });
           }
 
           queryClient.invalidateQueries({
@@ -433,9 +457,19 @@ export function CustomerForm({ id }: CustomerFormProps) {
             router.push('/customers');
           }
         } else if (id) {
-          const entityData = { ...customerDataWithStatus, id };
+          const updatedAddresses = await syncCustomerAddresses(id, addresses, { returnUpdated: true });
+          const entityData = {
+            ...customerDataWithStatus,
+            id,
+            addresses: updatedAddresses.map((address: any) => ({
+              id: address.id,
+              title: address.title ?? undefined,
+              completeAddress: address.completeAddress ?? '',
+              area: address.area ?? undefined,
+              isDefault: Boolean(address.isDefault),
+            })),
+          };
           await updateEntity({ id, data: entityData as any });
-          await syncCustomerAddresses(id, addresses);
 
           queryClient.invalidateQueries({
             queryKey: ['getAllCustomers'],
