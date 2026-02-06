@@ -107,7 +107,27 @@ const renameImageFileForOrientation = (
 
 const normalizeSku = (value: string, fallback = 'PROD') => {
   const sanitized = value.replace(/[^A-Za-z0-9_-]+/g, '');
+
   return sanitized.length > 0 ? sanitized : fallback;
+};
+
+const extractErrorMessage = (error: unknown, fallback: string) => {
+  const errorResponse = (
+    error as {
+      response?: {
+        data?: { message?: string; detail?: string; error?: string };
+      };
+      message?: string;
+    }
+  )?.response;
+
+  return (
+    errorResponse?.data?.message ||
+    errorResponse?.data?.detail ||
+    errorResponse?.data?.error ||
+    (error as { message?: string })?.message ||
+    fallback
+  );
 };
 
 function ProductFormContent({
@@ -434,14 +454,26 @@ export function ProductForm({ id }: ProductFormProps) {
           }
 
           const imageFiles = variantData.imageFiles as VariantImageSlotMap<File | null> | undefined;
-          if (imageFiles && createdVariant?.id) {
-            for (const slot of VARIANT_IMAGE_ORDER) {
-              const file = imageFiles[slot];
-              if (!file) continue;
 
-              await uploadVariantImageMutation.mutateAsync({
-                data: { file },
-                params: { variantId: createdVariant.id },
+          if (imageFiles && createdVariant?.id) {
+            try {
+              for (const slot of VARIANT_IMAGE_ORDER) {
+                const file = imageFiles[slot];
+
+                if (!file) continue;
+
+                await uploadVariantImageMutation.mutateAsync({
+                  data: { file },
+                  params: { variantId: createdVariant.id },
+                });
+              }
+            } catch (uploadError) {
+              console.error('Failed to upload variant pictures:', uploadError);
+              toast.error('Failed to upload variant pictures', {
+                description: extractErrorMessage(
+                  uploadError,
+                  'The variant was created but pictures could not be uploaded.'
+                ),
               });
             }
           }
