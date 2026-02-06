@@ -184,6 +184,11 @@ export function CustomerCreateSheet({
     createCustomer({ data: customerData });
   };
 
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.stopPropagation();
+    return form.handleSubmit(onSubmit)(event);
+  };
+
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
@@ -234,7 +239,7 @@ export function CustomerCreateSheet({
           <Form {...form}>
             <form
               id="customer-creation-form"
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleFormSubmit}
               className="space-y-5"
             >
               {/* Basic Information Section */}
