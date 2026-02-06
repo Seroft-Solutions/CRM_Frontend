@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAccount, useUserAuthorities } from '@/core/auth';
 import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import type { CountOrdersParams } from '@/core/api/generated/spring/schemas';
 import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
@@ -38,6 +39,9 @@ function formatDateTime(value?: string) {
 }
 
 export function OrderTable() {
+  const { hasGroup } = useUserAuthorities();
+  const { data: accountData } = useAccount();
+  const isBusinessPartner = hasGroup('Business Partners');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,8 +73,12 @@ export function OrderTable() {
       }
     }
 
+    if (isBusinessPartner && accountData?.login) {
+      params['createdBy.equals'] = accountData.login;
+    }
+
     return params;
-  }, [searchTerm, statusFilter]);
+  }, [accountData?.login, isBusinessPartner, searchTerm, statusFilter]);
 
   const apiPage = Math.max(currentPage - 1, 0);
 
