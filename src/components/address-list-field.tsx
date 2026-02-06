@@ -182,7 +182,7 @@ export function AddressListField({
                 <FormItem>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter address"
+                      placeholder="e.g. street address and home"
                       className="resize-none min-h-[80px]"
                       {...addressField}
                       onChange={(event) => {

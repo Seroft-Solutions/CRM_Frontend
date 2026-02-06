@@ -107,7 +107,7 @@ export const sundryCreditorFormConfig: FormConfig = {
       name: 'addresses',
       type: 'custom',
       label: 'Addresses',
-      placeholder: 'Enter address',
+      placeholder: 'e.g. street address and home',
       required: true,
       validation: {
         required: true,
