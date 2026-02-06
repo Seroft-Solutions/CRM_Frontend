@@ -39,16 +39,23 @@ const discountFormSchema = z
         discountType: z.enum(['PERCENTAGE', 'AMOUNT']),
         discountCategory: z.enum(['PROMO', 'SEASONAL', 'BUNDLE', 'VOUCHER']),
         discountValue: z.number().min(0),
-        maxDiscountValue: z.number().min(0),
+        maxDiscountValue: z.number().min(0).optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
     })
     .superRefine((values, ctx) => {
         const discountValue = Number(values.discountValue);
-        const maxDiscountValue = Number(values.maxDiscountValue);
+        const maxDiscountValue =
+            values.maxDiscountValue === undefined ? undefined : Number(values.maxDiscountValue);
 
-        if (Number.isFinite(discountValue) && Number.isFinite(maxDiscountValue)) {
-            if (maxDiscountValue <= discountValue) {
+        if (values.discountType === 'PERCENTAGE') {
+            if (!Number.isFinite(maxDiscountValue)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: 'Max discount value is required for percentage discounts',
+                    path: ['maxDiscountValue'],
+                });
+            } else if (Number.isFinite(discountValue) && maxDiscountValue <= discountValue) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: 'Max discount value must be greater than discount value',
@@ -92,7 +99,7 @@ export function DiscountForm({ id }: DiscountFormProps) {
             discountType: 'PERCENTAGE',
             discountCategory: 'PROMO',
             discountValue: 0,
-            maxDiscountValue: 0,
+            maxDiscountValue: undefined,
             startDate: '',
             endDate: '',
         },
@@ -100,6 +107,7 @@ export function DiscountForm({ id }: DiscountFormProps) {
 
     const watchedDiscountCode = form.watch('discountCode');
     const debouncedDiscountCode = useDebounce(watchedDiscountCode, 400);
+    const discountType = form.watch('discountType');
 
     const clearManualDiscountCodeError = React.useCallback(() => {
         const fieldError = form.getFieldState('discountCode').error;
@@ -118,12 +126,19 @@ export function DiscountForm({ id }: DiscountFormProps) {
                 discountType: (existingDiscount.discountType as any) || 'PERCENTAGE',
                 discountCategory: (existingDiscount.discountCategory as any) || 'PROMO',
                 discountValue: existingDiscount.discountValue || 0,
-                maxDiscountValue: existingDiscount.maxDiscountValue || 0,
+                maxDiscountValue: existingDiscount.maxDiscountValue ?? undefined,
                 startDate: existingDiscount.startDate || '',
                 endDate: existingDiscount.endDate || '',
             });
         }
     }, [existingDiscount, form]);
+
+    React.useEffect(() => {
+        if (discountType === 'AMOUNT') {
+            form.setValue('maxDiscountValue', undefined, { shouldValidate: true, shouldDirty: true });
+            form.clearErrors('maxDiscountValue');
+        }
+    }, [discountType, form]);
 
     React.useEffect(() => {
         const code = debouncedDiscountCode?.trim();
@@ -201,6 +216,9 @@ export function DiscountForm({ id }: DiscountFormProps) {
             startDate: values.startDate || undefined,
             endDate: values.endDate || undefined,
         };
+        if (values.discountType === 'AMOUNT') {
+            delete payload.maxDiscountValue;
+        }
 
         if (id) {
             updateDiscount(
@@ -231,7 +249,11 @@ export function DiscountForm({ id }: DiscountFormProps) {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6">
                     <div className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                        <div
+                            className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${
+                                discountType === 'PERCENTAGE' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'
+                            }`}
+                        >
                             <TypedFormField
                                 control={form.control}
                                 name="discountCategory"
@@ -316,7 +338,7 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                                     }}
                                                 />
                                                 <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-muted-foreground">
-                                                    {form.watch('discountType') === 'PERCENTAGE' ? '%' : '₹'}
+                                                    {discountType === 'PERCENTAGE' ? '%' : '₹'}
                                                 </div>
                                             </div>
                                         </FormControl>
@@ -325,28 +347,30 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                 )}
                             />
 
-                            <TypedFormField
-                                control={form.control}
-                                name="maxDiscountValue"
-                                render={({ field }: any) => (
-                                    <FormItem>
-                                        <FormLabel>Max Discount Value (₹)</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                className="h-10"
-                                                {...field}
-                                                onChange={(e) => {
-                                                    const nextValue = e.target.value;
-                                                    field.onChange(nextValue === '' ? 0 : Number(nextValue));
-                                                }}
-                                                placeholder="E.g. 500"
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            {discountType === 'PERCENTAGE' ? (
+                                <TypedFormField
+                                    control={form.control}
+                                    name="maxDiscountValue"
+                                    render={({ field }: any) => (
+                                        <FormItem>
+                                            <FormLabel>Max Discount Value (₹)</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    className="h-10"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const nextValue = e.target.value;
+                                                        field.onChange(nextValue === '' ? undefined : Number(nextValue));
+                                                    }}
+                                                    placeholder="E.g. 500"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            ) : null}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             {isCheckingCode
