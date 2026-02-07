@@ -4,7 +4,6 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { EnhancedProductRelationshipField } from '@/app/(protected)/(features)/products/components/enhanced-product-relationship-field';
 import { AddressListField } from '@/components/address-list-field';
 
 interface SundryCreditorBasicStepProps {
@@ -139,32 +138,6 @@ export function SundryCreditorBasicStep({ form, config, actions, entity }: Sundr
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     form.trigger('contactPerson');
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Products Field */}
-        <FormField
-          control={form.control}
-          name="products"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium">Products</FormLabel>
-              <FormControl>
-                <EnhancedProductRelationshipField
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Select products"
-                  multiple={true}
-                  canCreate={true}
-                  createPermission="product:create:inline"
-                  createPayload={{ sundryCreditorProduct: true }}
-                  onProductCreated={(productId) => {
-                    console.log('New product created:', productId);
                   }}
                 />
               </FormControl>

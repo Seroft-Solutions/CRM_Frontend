@@ -25,7 +25,7 @@ export interface FormStep {
 
 export interface FieldConfig {
   name: string;
-  type: 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'file' | 'textarea';
+  type: 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'file' | 'textarea' | 'custom';
   label: string;
   placeholder?: string;
   required: boolean;
@@ -44,13 +44,13 @@ export interface RelationshipConfig {
   required: boolean;
   multiple: boolean;
   category:
-    | 'geographic'
-    | 'user'
-    | 'classification'
-    | 'business'
-    | 'channel'
-    | 'assignment'
-    | 'other';
+  | 'geographic'
+  | 'user'
+  | 'classification'
+  | 'business'
+  | 'channel'
+  | 'assignment'
+  | 'other';
   cascadingFilter?: CascadingFilter;
   autoPopulate?: AutoPopulateConfig;
   customFilters?: Record<string, any>;

@@ -59,7 +59,6 @@ export const sundryCreditorFormSchemaFields = {
       message: 'Select only one default address',
     }),
   status: z.string().optional(),
-  products: z.array(z.number()).optional(),
 };
 
 export const sundryCreditorFormSchema = z.object(sundryCreditorFormSchemaFields);
@@ -74,7 +73,6 @@ export const sundryCreditorFieldSchemas = {
   contactPerson: sundryCreditorFormSchemaFields.contactPerson,
   addresses: sundryCreditorFormSchemaFields.addresses,
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
-  products: sundryCreditorFormSchemaFields.products,
 };
 
 export const sundryCreditorStepSchemas = {
@@ -86,7 +84,6 @@ export const sundryCreditorStepSchemas = {
     contactPerson: sundryCreditorFieldSchemas.contactPerson,
     addresses: sundryCreditorFieldSchemas.addresses,
     status: sundryCreditorFieldSchemas.status.optional(),
-    products: sundryCreditorFieldSchemas.products.optional(),
   }),
   review: sundryCreditorFormSchema,
 };
