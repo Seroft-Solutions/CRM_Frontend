@@ -235,6 +235,12 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'customer:sidebar',
       },
       {
+        key: 'createCustomer',
+        label: 'Create Customer',
+        path: '/customers/new',
+        requiredPermission: 'customer:create',
+      },
+      {
         key: 'importCustomers',
         label: 'Import Customers',
         path: '/customers/import',
@@ -260,6 +266,12 @@ export const sidebarItems: SidebarItem[] = [
         label: 'View Creditors',
         path: '/sundry-creditors',
         requiredPermission: 'sundryCreditor:sidebar',
+      },
+      {
+        key: 'createSundryCreditor',
+        label: 'Create Creditor',
+        path: '/sundry-creditors/new',
+        requiredPermission: 'sundryCreditor:create',
       },
       {
         key: 'importSundryCreditors',
