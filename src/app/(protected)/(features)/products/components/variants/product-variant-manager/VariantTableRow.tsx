@@ -353,10 +353,10 @@ export function VariantTableRow({
             <div className="space-y-1">
               <Input
                 className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${hasPriceError
-                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                    : isDraft
-                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                  ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                  : isDraft
+                    ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                    : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
                   }`}
                 type="number"
                 step="0.01"
@@ -366,7 +366,7 @@ export function VariantTableRow({
               />
               {hasPriceError && (
                 <p className="text-xs text-red-600 font-medium">
-                  Price is required and must be greater than 0
+                  Price must be greater than 0
                 </p>
               )}
             </div>
@@ -381,10 +381,10 @@ export function VariantTableRow({
             <div className="space-y-1">
               <Input
                 className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${hasStockError
-                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                    : isDraft
-                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                  ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                  : isDraft
+                    ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                    : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
                   }`}
                 type="number"
                 min="0"

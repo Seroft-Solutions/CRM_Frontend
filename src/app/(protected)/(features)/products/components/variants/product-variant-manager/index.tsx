@@ -574,7 +574,7 @@ export function ProductVariantManager({
         const variant = {
           key,
           sku,
-          price: defaultVariantPrice ?? 1,
+          price: defaultVariantPrice ?? 0,
           stockQuantity: 0,
           status: defaultGeneratedStatus,
           isPrimary: false,
@@ -636,9 +636,9 @@ export function ProductVariantManager({
         const merged = existing ? { ...row, ...existing } : row;
 
         if (
-          (merged.price === undefined || merged.price === null || merged.price === 1) &&
+          (merged.price === undefined || merged.price === null || merged.price === 0) &&
           row.price !== undefined &&
-          row.price !== 1
+          row.price !== 0
         ) {
           merged.price = row.price;
         }
@@ -862,9 +862,11 @@ export function ProductVariantManager({
     // Check for validation errors before allowing submission
     if (hasValidationErrors) {
       form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
-      toast.error(
-        `Cannot save product: ${Object.keys(variantValidationErrors).length} variant(s) have validation errors. Please fill in all required fields.`
-      );
+      if ((form?.formState.submitCount ?? 0) > 0) {
+        toast.error(
+          `Cannot save product: ${Object.keys(variantValidationErrors).length} variant(s) have validation errors. Please fill in all required fields.`
+        );
+      }
       return;
     }
 
@@ -1076,7 +1078,7 @@ export function ProductVariantManager({
         isLoading={isLoadingVariants || isLoadingSelections}
         isViewMode={isViewMode}
         selection={selection}
-        validationErrors={variantValidationErrors}
+        validationErrors={(form?.formState.submitCount ?? 0) > 0 ? variantValidationErrors : {}}
       />
     </div>
   );
