@@ -99,7 +99,7 @@ function ProductVariantSelector({
     onItemChange(index, 'productCatalogId', undefined);
     onItemChange(index, 'productId', product.id);
     onItemChange(index, 'productName', product.name);
-    onItemChange(index, 'sku', product.barcodeText);
+    onItemChange(index, 'sku', product.articleNumber ?? product.articalNumber);
     onItemChange(index, 'variantAttributes', undefined);
     onItemChange(index, 'variantId', undefined);
 

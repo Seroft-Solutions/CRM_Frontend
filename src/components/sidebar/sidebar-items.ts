@@ -93,16 +93,16 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'order:read',
       },
       {
-        key: 'orderHistory',
-        label: 'Sale Order History',
-        path: '/orders/history',
-        requiredPermission: 'order:read',
-      },
-      {
         key: 'createOrder',
         label: 'Create Sale Order',
         path: '/orders/new',
         requiredPermission: 'order:create',
+      },
+      {
+        key: 'orderHistory',
+        label: 'Sale Order History',
+        path: '/orders/history',
+        requiredPermission: 'order:read',
       },
     ],
   },
