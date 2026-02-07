@@ -16,8 +16,6 @@ export interface InvoiceOrderRecord {
   shippingTrackingId?: string;
   organizationName: string;
   organizationEmail: string;
-  recipientAddressLine1: string;
-  recipientAddressLine2: string;
   customer: {
     name: string;
     phone: string;
@@ -173,8 +171,6 @@ function mapOrderRecordToInvoiceOrderRecord(
     shippingTrackingId: order.shipping?.shippingId || order.shippingId || undefined,
     organizationName,
     organizationEmail,
-    recipientAddressLine1: resolvedAddress.line1,
-    recipientAddressLine2: resolvedAddress.line2,
     customer: {
       name: customerName,
       phone: customerPhone,

@@ -34,80 +34,85 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
           <h1 className="text-4xl font-black uppercase tracking-tight text-slate-900 mb-1">
             {orderType === 'purchase' ? 'Purchase Order' : 'Order Invoice'}
           </h1>
-          {orderType === 'purchase' && (
-            <p className="text-slate-500 font-medium"># {order.id}</p>
-          )}
-        </div>
-        <div className="text-right text-sm text-slate-500">
-          {/* Company details could go here */}
-          <div className="font-bold text-slate-900 text-lg mb-1">
-            {order.organizationName || 'Organization'}
-          </div>
-          {order.recipientAddressLine1 && <div>{order.recipientAddressLine1}</div>}
-          {order.recipientAddressLine2 && <div>{order.recipientAddressLine2}</div>}
-          {order.organizationEmail && <div>{order.organizationEmail}</div>}
+          <p className="text-slate-500 font-medium"># {order.id}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        <div className="space-y-2">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Order Information</h2>
-          <div className="space-y-2 text-sm text-slate-600">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Order ID</span>
-              <span className="font-semibold text-slate-900">{order.id}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Date</span>
-              <span className="font-semibold text-slate-900">{order.orderDate}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Status</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
-                {order.orderStatus}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Payment Status
-              </span>
-              <span className="font-semibold text-slate-900">{order.paymentStatus || '—'}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+      <div className="mb-8 p-4 bg-slate-50 rounded-lg border border-slate-100">
+        <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">Order Information</h2>
+        <div className="flex flex-wrap gap-x-12 gap-y-4 text-sm text-slate-600">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Order ID</span>
+            <span className="font-semibold text-slate-900 break-all">{order.id}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Date</span>
+            <span className="font-semibold text-slate-900">{order.orderDate}</span>
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Status</span>
+            <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-200 text-slate-800">
+              {order.orderStatus}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              Payment Status
+            </span>
+            <span className="font-semibold text-slate-900">{order.paymentStatus || '—'}</span>
+          </div>
+          {order.shippingTrackingId && (
+            <div className="flex flex-col">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                 Tracking ID
               </span>
-              <span className="font-semibold text-slate-900">{order.shippingTrackingId || '—'}</span>
+              <span className="font-semibold text-slate-900 break-all">{order.shippingTrackingId}</span>
             </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-12 mb-8">
+        <div className="space-y-2 min-w-0">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">From</h2>
+          <div className="space-y-2 text-sm text-slate-600">
+            <div className="flex items-baseline gap-2">
+              <span className="font-bold text-slate-900 whitespace-nowrap">Organization Name:</span>
+              <span className="text-slate-700 break-words">{order.organizationName || 'Organization'}</span>
+            </div>
+            {order.organizationEmail && (
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold text-slate-900 whitespace-nowrap">Email:</span>
+                <span className="text-slate-700 break-all">{order.organizationEmail}</span>
+              </div>
+            )}
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2 min-w-0">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
             {orderType === 'purchase' ? 'Supplier Details' : 'Billing To'}
           </h2>
           <div className="space-y-2 text-sm text-slate-600">
             <div className="flex items-baseline gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Name</span>
-              <span className="font-semibold text-slate-900">{order.customer.name}</span>
+              <span className="font-bold text-slate-900 whitespace-nowrap">Name:</span>
+              <span className="text-slate-700 break-words">{order.customer.name}</span>
             </div>
             {order.customer.phone && (
               <div className="flex items-baseline gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Phone</span>
-                <span>{order.customer.phone}</span>
+                <span className="font-bold text-slate-900 whitespace-nowrap">Phone:</span>
+                <span className="text-slate-700">{order.customer.phone}</span>
               </div>
             )}
             {order.customer.email && (
               <div className="flex items-baseline gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Email</span>
-                <span>{order.customer.email}</span>
+                <span className="font-bold text-slate-900 whitespace-nowrap">Email:</span>
+                <span className="text-slate-700 break-all">{order.customer.email}</span>
               </div>
             )}
             {order.customer.billingAddress && (
               <div className="flex items-start gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-0.5">
-                  Address
-                </span>
-                <span className="leading-relaxed">{order.customer.billingAddress}</span>
+                <span className="font-bold text-slate-900 whitespace-nowrap">Address:</span>
+                <span className="text-slate-700 leading-relaxed break-words">{order.customer.billingAddress}</span>
               </div>
             )}
           </div>
