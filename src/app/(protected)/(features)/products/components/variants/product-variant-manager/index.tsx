@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useQueryClient, useQueries } from '@tanstack/react-query';
@@ -91,6 +91,7 @@ export function ProductVariantManager({
   selection,
 }: ProductVariantManagerProps) {
   const queryClient = useQueryClient();
+  const submitCount = form?.formState.submitCount ?? 0;
 
   const defaultGeneratedStatus = ProductVariantDTOStatus.ACTIVE;
   const [preSelectedOptionIdsByAttributeId, setPreSelectedOptionIdsByAttributeId] = useState<
@@ -101,6 +102,9 @@ export function ProductVariantManager({
   >({});
   const [draftVariantsByKey, setDraftVariantsByKey] = useState<Record<string, DraftVariantRow>>({});
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
+  const validationErrorsRef = useRef<Record<string, string[]>>({});
+
+
   const createEmptyImageFiles = () =>
     VARIANT_IMAGE_ORDER.reduce(
       (acc, slot) => {
@@ -847,6 +851,30 @@ export function ProductVariantManager({
   const hasValidationErrors = Object.keys(variantValidationErrors).length > 0;
   // #endregion
 
+  // #region Form Validator Registration
+  useEffect(() => {
+    validationErrorsRef.current = variantValidationErrors;
+    if (hasValidationErrors && form) {
+      // Force re-validation immediately so UI shows error state if field is touched/form submitted
+      form.trigger('variants');
+    }
+  }, [variantValidationErrors, hasValidationErrors, form]);
+
+  useEffect(() => {
+    if (form) {
+      form.register('variants', {
+        validate: () => {
+          const errors = validationErrorsRef.current;
+          if (Object.keys(errors).length > 0) {
+            return `${Object.keys(errors).length} variant(s) have validation errors`;
+          }
+          return true;
+        }
+      });
+    }
+  }, [form]);
+  // #endregion
+
   // #endregion
 
   // #region Mutations & Handlers (moved up for auto-save useEffect)
@@ -859,15 +887,22 @@ export function ProductVariantManager({
 
     const variantsForForm: ProductVariantDTO[] = [];
 
-    // Check for validation errors before allowing submission
+    // Update ref for validator access
+    // We do NOT return early here anymore because we want the validator to handle blocking
+    // But we might want to avoid setting invalid data as the value if we prefer?
+    // Actually, setting the value ensures the form has something to validate against, 
+    // and the custom validator validator intercepts it regardless of value.
     if (hasValidationErrors) {
-      form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
-      if ((form?.formState.submitCount ?? 0) > 0) {
+      // If we have errors, we can optionally clear the value to be safe, or set it.
+      // But to ensure 'submitCount' toast triggers, we rely on the validator returning string.
+      // The form.setError happening via validator logic during submit is automatic.
+
+      // Note: We still show the toast if user tries to submit
+      if (submitCount > 0) {
         toast.error(
           `Cannot save product: ${Object.keys(variantValidationErrors).length} variant(s) have validation errors. Please fill in all required fields.`
         );
       }
-      return;
     }
 
     if (newDraftVariants.length > 0 && canApplySelections) {
@@ -915,7 +950,7 @@ export function ProductVariantManager({
     } else {
       form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
     }
-  }, [isViewMode, newDraftVariants, form, canApplySelections, upgradeCandidate, hasValidationErrors, variantValidationErrors]);
+  }, [isViewMode, newDraftVariants, form, canApplySelections, upgradeCandidate, hasValidationErrors, variantValidationErrors, submitCount]);
   // #endregion
 
   // #region Mutations & Handlers (continued)
