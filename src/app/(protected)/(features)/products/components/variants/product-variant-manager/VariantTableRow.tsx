@@ -20,6 +20,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
@@ -333,16 +339,26 @@ export function VariantTableRow({
               onChange={(e) => onUpdateEditingRow({ sku: e.target.value })}
             />
           ) : (
-            <div className="flex items-center gap-2">
-              <code
-                className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block ${isDuplicate
-                  ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
-                  : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
-                  }`}
-              >
-                {row.sku}
-                {isDuplicate && <span className="ml-1 text-xs">⚠️</span>}
-              </code>
+            <div className="flex items-center gap-2 max-w-full">
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <code
+                      className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block truncate max-w-[150px] ${isDuplicate
+                        ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
+                        : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
+                        }`}
+                    >
+                      {row.sku}
+                      {isDuplicate && <span className="ml-1 text-xs">⚠️</span>}
+                    </code>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="font-mono font-bold">{row.sku}</p>
+                    {isDuplicate && <p className="text-xs text-amber-500 mt-1">Duplicate SKU</p>}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
         </TableCell>
