@@ -34,7 +34,6 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
           <h1 className="text-4xl font-black uppercase tracking-tight text-slate-900 mb-1">
             {orderType === 'purchase' ? 'Purchase Order' : 'Order Invoice'}
           </h1>
-          <p className="text-slate-500 font-medium"># {order.id}</p>
         </div>
       </div>
 
@@ -74,10 +73,10 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
 
       <div className="grid grid-cols-2 gap-12 mb-8">
         <div className="space-y-2 min-w-0">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">From</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Billing From</h2>
           <div className="space-y-2 text-sm text-slate-600">
             <div className="flex items-baseline gap-2">
-              <span className="font-bold text-slate-900 whitespace-nowrap">Organization Name:</span>
+              <span className="font-bold text-slate-900 whitespace-nowrap">Name:</span>
               <span className="text-slate-700 break-words">{order.organizationName || 'Organization'}</span>
             </div>
             {order.organizationEmail && (
@@ -89,9 +88,7 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
           </div>
         </div>
         <div className="space-y-2 min-w-0">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            {orderType === 'purchase' ? 'Supplier Details' : 'Billing To'}
-          </h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Billing To</h2>
           <div className="space-y-2 text-sm text-slate-600">
             <div className="flex items-baseline gap-2">
               <span className="font-bold text-slate-900 whitespace-nowrap">Name:</span>
@@ -126,7 +123,6 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
               <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900">Item Details</th>
               <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-center">Qty</th>
               <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-right">Unit Price</th>
-              <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-right">Tax</th>
               <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-right">Total</th>
             </tr>
           </thead>
@@ -142,7 +138,6 @@ export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateP
                 </td>
                 <td className="py-3 text-center font-medium text-slate-700">{item.quantity}</td>
                 <td className="py-3 text-right font-medium text-slate-700">{formatCurrency(item.unitPrice)}</td>
-                <td className="py-3 text-right font-medium text-slate-700">{formatCurrency(item.tax)}</td>
                 <td className="py-3 text-right font-bold text-slate-900">{formatCurrency(item.total)}</td>
               </tr>
             ))}
