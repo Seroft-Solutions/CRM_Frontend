@@ -222,7 +222,11 @@ export function OrderDetail({ order }: OrderDetailProps) {
                                 <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                               )}
                               {item.variantAttributes && (
-                                <div className="text-xs text-blue-600">{item.variantAttributes}</div>
+                                <div className="text-xs text-blue-600">
+                                  {item.variantAttributes.split(',').map((attr, i) => (
+                                    <div key={i}>{attr.trim()}</div>
+                                  ))}
+                                </div>
                               )}
                               {item.itemComment && (
                                 <div className="text-xs italic text-muted-foreground">{item.itemComment}</div>
