@@ -174,9 +174,9 @@ function ProductVariantSelector({
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium text-sm">{product.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          SKU Title: {product.articleNumber ?? product.articalNumber ?? 'N/A'} •
-                          SKU: {product.barcodeText} • QTY: {getProductQuantity(product)} • ₹
-                          {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} •
+                          QTY: {getProductQuantity(product)} •
+                          Price: ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
                         </span>
                       </div>
                       <Check
