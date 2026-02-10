@@ -59,6 +59,32 @@ function formatStatus(status: string) {
         .join(' ');
 }
 
+function formatDate(date?: string | null) {
+    if (!date) {
+        return '—';
+    }
+
+    const parsedDate = new Date(`${date}T00:00:00`);
+    if (Number.isNaN(parsedDate.getTime())) {
+        return date;
+    }
+
+    return parsedDate.toLocaleDateString();
+}
+
+function formatTime(time?: string | null) {
+    if (!time) {
+        return '—';
+    }
+
+    const [hours, minutes] = time.split(':');
+    if (hours === undefined || minutes === undefined) {
+        return time;
+    }
+
+    return `${hours}:${minutes}`;
+}
+
 export function DiscountTable() {
     const [search, setSearch] = React.useState('');
     const [statusTab, setStatusTab] = React.useState('active');
@@ -126,6 +152,10 @@ export function DiscountTable() {
                             <TableHead>Category</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Value</TableHead>
+                            <TableHead>Start Date</TableHead>
+                            <TableHead>Start Time</TableHead>
+                            <TableHead>End Date</TableHead>
+                            <TableHead>End Time</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -154,6 +184,10 @@ export function DiscountTable() {
                                                 ? `₹${discount.discountValue?.toLocaleString()}`
                                                 : `${discount.discountValue}%`}
                                         </TableCell>
+                                        <TableCell>{formatDate(discount.startDate)}</TableCell>
+                                        <TableCell>{formatTime(discount.discountStartTime)}</TableCell>
+                                        <TableCell>{formatDate(discount.endDate)}</TableCell>
+                                        <TableCell>{formatTime(discount.discountEndTime)}</TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant="outline"
@@ -211,7 +245,7 @@ export function DiscountTable() {
                             })
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={10} className="h-24 text-center text-muted-foreground">
                                     No discounts found.
                                 </TableCell>
                             </TableRow>

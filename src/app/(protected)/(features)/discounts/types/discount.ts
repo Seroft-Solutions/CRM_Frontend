@@ -7,6 +7,8 @@ export interface IDiscount {
     discountValue?: number;
     startDate?: string;
     endDate?: string;
+    discountStartTime?: string | null;
+    discountEndTime?: string | null;
     maxDiscountValue?: number;
     status?: string;
     createdBy?: string;

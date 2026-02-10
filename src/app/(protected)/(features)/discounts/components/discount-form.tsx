@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -33,6 +32,19 @@ import Link from 'next/link';
 const duplicateCodeMessage = 'Discount code already exists.';
 const codeCheckFailedMessage = 'Unable to verify discount code right now.';
 
+const toTimeInputValue = (value?: string | null) => {
+    if (!value) {
+        return '';
+    }
+
+    const [hours, minutes] = value.split(':');
+    if (hours === undefined || minutes === undefined) {
+        return value;
+    }
+
+    return `${hours}:${minutes}`;
+};
+
 const discountFormSchema = z
     .object({
         discountCode: z.string().min(2, 'Code must be at least 2 characters').max(20),
@@ -42,6 +54,8 @@ const discountFormSchema = z
         maxDiscountValue: z.number().min(0).optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
+        discountStartTime: z.string().optional(),
+        discountEndTime: z.string().optional(),
     })
     .superRefine((values, ctx) => {
         const discountValue = Number(values.discountValue);
@@ -66,17 +80,30 @@ const discountFormSchema = z
 
         const startDateValue = values.startDate?.trim();
         const endDateValue = values.endDate?.trim();
-        const startDate = startDateValue ? new Date(startDateValue) : null;
-        const endDate = endDateValue ? new Date(endDateValue) : null;
+        const discountStartTimeValue = values.discountStartTime?.trim();
+        const discountEndTimeValue = values.discountEndTime?.trim();
 
-        if (startDate && endDate && !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())) {
-            if (endDate <= startDate) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: 'End date must be after start date',
-                    path: ['endDate'],
-                });
-            }
+        if (startDateValue && endDateValue && endDateValue < startDateValue) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'End date must be on or after start date',
+                path: ['endDate'],
+            });
+        }
+
+        if (
+            startDateValue &&
+            endDateValue &&
+            startDateValue === endDateValue &&
+            discountStartTimeValue &&
+            discountEndTimeValue &&
+            discountEndTimeValue <= discountStartTimeValue
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'End time must be after start time for the same date',
+                path: ['discountEndTime'],
+            });
         }
     });
 type DiscountFormValues = z.infer<typeof discountFormSchema>;
@@ -102,6 +129,8 @@ export function DiscountForm({ id }: DiscountFormProps) {
             maxDiscountValue: undefined,
             startDate: '',
             endDate: '',
+            discountStartTime: '',
+            discountEndTime: '',
         },
     });
 
@@ -129,6 +158,8 @@ export function DiscountForm({ id }: DiscountFormProps) {
                 maxDiscountValue: existingDiscount.maxDiscountValue ?? undefined,
                 startDate: existingDiscount.startDate || '',
                 endDate: existingDiscount.endDate || '',
+                discountStartTime: toTimeInputValue(existingDiscount.discountStartTime),
+                discountEndTime: toTimeInputValue(existingDiscount.discountEndTime),
             });
         }
     }, [existingDiscount, form]);
@@ -201,7 +232,13 @@ export function DiscountForm({ id }: DiscountFormProps) {
                 });
                 return;
             case 'error.discountdaterange':
-                form.setError('endDate', { type: 'server', message: title || 'End date must be after start date' });
+                form.setError('endDate', { type: 'server', message: title || 'End date must be on or after start date' });
+                return;
+            case 'error.discounttimerange':
+                form.setError('discountEndTime', {
+                    type: 'server',
+                    message: title || 'End time must be after start time for the same date',
+                });
                 return;
             default:
                 return;
@@ -215,6 +252,8 @@ export function DiscountForm({ id }: DiscountFormProps) {
             status: existingDiscount?.status || 'ACTIVE',
             startDate: values.startDate || undefined,
             endDate: values.endDate || undefined,
+            discountStartTime: values.discountStartTime || undefined,
+            discountEndTime: values.discountEndTime || undefined,
         };
         if (values.discountType === 'AMOUNT') {
             delete payload.maxDiscountValue;
@@ -401,6 +440,34 @@ export function DiscountForm({ id }: DiscountFormProps) {
                                         <FormLabel>End Date</FormLabel>
                                         <FormControl>
                                             <Input type="date" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="discountStartTime"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Discount Start Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="discountEndTime"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Discount End Time</FormLabel>
+                                        <FormControl>
+                                            <Input type="time" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

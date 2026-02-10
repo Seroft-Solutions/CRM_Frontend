@@ -21,6 +21,8 @@ export interface DiscountDTO {
   discountValue?: number;
   startDate?: string;
   endDate?: string;
+  discountStartTime?: string | null;
+  discountEndTime?: string | null;
   /** @minimum 0 */
   maxDiscountValue?: number;
   /**
