@@ -582,28 +582,81 @@ export function OrderForm({
   const isDiscountActive = (discount?: IDiscount | null) =>
     (discount?.status || '').toUpperCase() === 'ACTIVE';
 
-  const isDiscountInDateRange = (discount?: IDiscount | null) => {
-    if (!discount) return false;
-    const today = new Date();
-    const start = discount.startDate ? new Date(discount.startDate) : null;
-    const end = discount.endDate ? new Date(discount.endDate) : null;
-    if (start && Number.isNaN(start.getTime())) {
-      return false;
+  const normalizeTimeForCompare = (time?: string | null) => {
+    if (!time) {
+      return null;
     }
-    if (end && Number.isNaN(end.getTime())) {
-      return false;
+
+    const segments = time.split(':');
+    if (segments.length < 2) {
+      return null;
     }
-    if (start && today < start) {
-      return false;
+
+    const [hoursRaw, minutesRaw, secondsRaw = '00'] = segments;
+    const hours = Number.parseInt(hoursRaw, 10);
+    const minutes = Number.parseInt(minutesRaw, 10);
+    const seconds = Number.parseInt(secondsRaw, 10);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes) || !Number.isFinite(seconds)) {
+      return null;
     }
-    if (end && today > end) {
-      return false;
+
+    const hh = String(hours).padStart(2, '0');
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  };
+
+  const getNowDateForCompare = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getNowTimeForCompare = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
+  const evaluateDiscountAvailability = (discount?: IDiscount | null) => {
+    if (!discount || !isDiscountActive(discount)) {
+      return 'inactive' as const;
     }
-    return true;
+
+    const today = getNowDateForCompare();
+    const nowTime = getNowTimeForCompare();
+    const startDate = discount.startDate?.trim() || null;
+    const endDate = discount.endDate?.trim() || null;
+    const startTime = normalizeTimeForCompare(discount.discountStartTime);
+    const endTime = normalizeTimeForCompare(discount.discountEndTime);
+
+    if (startDate) {
+      if (today < startDate) {
+        return 'not_started' as const;
+      }
+      if (today === startDate && startTime && nowTime < startTime) {
+        return 'not_started' as const;
+      }
+    }
+
+    if (endDate) {
+      if (today > endDate) {
+        return 'expired' as const;
+      }
+      if (today === endDate && endTime && nowTime > endTime) {
+        return 'expired' as const;
+      }
+    }
+
+    return 'valid' as const;
   };
 
   const resolveDiscountAmount = (baseAmount: number, discount?: IDiscount | null) => {
-    if (!discount || !isDiscountActive(discount) || !isDiscountInDateRange(discount)) {
+    if (evaluateDiscountAvailability(discount) !== 'valid') {
       return 0;
     }
     const discountType = (discount.discountType || '').toUpperCase();
@@ -629,12 +682,18 @@ export function OrderForm({
     try {
       const discount = await getDiscountByCode(code);
       setDiscountData(discount);
-      const isValid = isDiscountActive(discount) && isDiscountInDateRange(discount);
-      if (isValid) {
+      const availability = evaluateDiscountAvailability(discount);
+
+      if (availability === 'valid') {
         toast.success(`Discount code "${discount.discountCode}" applied!`);
+      } else if (availability === 'expired') {
+        toast.error('This discount code is expired.');
+      } else if (availability === 'not_started') {
+        toast.error('This discount code is not active yet.');
       } else {
-        toast.error('This discount code is inactive or expired.');
+        toast.error('This discount code is inactive.');
       }
+
       return discount;
     } catch (error) {
       console.error('Failed to verify discount code:', error);
