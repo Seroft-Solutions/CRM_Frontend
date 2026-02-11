@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -27,11 +27,17 @@ import {
 } from 'recharts';
 import { Activity, MapPin, Phone, Search, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { useCountCustomers, useGetAllCustomers } from '@/core/api/generated/spring';
+import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
 import { QuickActionTiles } from './QuickActionTiles';
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
   const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
+  const { organizationId } = useOrganizationContext();
+  const { users: organizationUsers } = useOrganizationUsers(organizationId, {
+    page: 1,
+    size: 1000,
+  });
 
   // Get actual counts (not limited to 1000)
   const { data: totalCallsCount = 0 } = useCountCalls();
@@ -41,22 +47,137 @@ export function DashboardOverview() {
   const [tabValue, setTabValue] = useState('overview');
   const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
 
-  const callStatuses = calls.reduce(
-    (acc, call) => {
-      const status = call.callStatus?.name || 'Unknown';
+  const getCallStatusChartData = (inputCalls: typeof calls) => {
+    const statusBuckets = inputCalls.reduce(
+      (acc, call) => {
+        const status = call.callStatus?.name || 'Unknown';
 
-      acc[status] = (acc[status] || 0) + 1;
+        acc[status] = (acc[status] || 0) + 1;
 
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-  const callStatusData = Object.entries(callStatuses).map(([name, value]) => ({
-    name,
-    value,
-    percentage: ((value / calls.length) * 100).toFixed(1),
-  }));
+    return Object.entries(statusBuckets).map(([name, value]) => ({
+      name,
+      value,
+      percentage: inputCalls.length > 0 ? ((value / inputCalls.length) * 100).toFixed(1) : '0.0',
+    }));
+  };
+
+  const callStatusData = getCallStatusChartData(calls);
+  const userDisplayNameById = useMemo(() => {
+    const map = new Map<string, string>();
+
+    (organizationUsers || []).forEach((user) => {
+      if (!user.id) return;
+
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      const displayName = fullName || user.email || user.username || 'Unknown User';
+
+      map.set(user.id, displayName);
+    });
+
+    return map;
+  }, [organizationUsers]);
+
+  const getAssignedUserChartData = (inputCalls: typeof calls) => {
+    const assigneeBuckets = inputCalls.reduce(
+      (acc, call) => {
+        const assignedUserId = call.assignedTo?.id;
+
+        if (!assignedUserId) {
+          return acc;
+        }
+
+        const assignedUserName =
+          call.assignedTo?.firstName && call.assignedTo?.lastName
+            ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
+            : call.assignedTo?.firstName ||
+              userDisplayNameById.get(assignedUserId) ||
+              call.assignedTo?.email ||
+              'Unknown User';
+
+        if (!acc[assignedUserId]) {
+          acc[assignedUserId] = {
+            name: assignedUserName,
+            value: 0,
+          };
+        }
+
+        acc[assignedUserId].value += 1;
+
+        return acc;
+      },
+      {} as Record<string, { name: string; value: number }>
+    );
+
+    return Object.values(assigneeBuckets)
+      .map((bucket) => ({
+        name: bucket.name,
+        value: bucket.value,
+        percentage:
+          inputCalls.length > 0 ? ((bucket.value / inputCalls.length) * 100).toFixed(1) : '0.0',
+      }))
+      .sort((a, b) => b.value - a.value);
+  };
+
+  const salesmanUserIds = useMemo(() => {
+    return new Set(
+      (organizationUsers || [])
+        .filter((user) =>
+          (user.assignedGroups || []).some((group) => {
+            const normalizedGroupName = (group.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            return normalizedGroupName === 'salesman' || normalizedGroupName === 'salesmen';
+          })
+        )
+        .map((user) => user.id)
+        .filter((userId): userId is string => Boolean(userId))
+    );
+  }, [organizationUsers]);
+
+  const salesManagerUserIds = useMemo(() => {
+    return new Set(
+      (organizationUsers || [])
+        .filter((user) =>
+          (user.assignedGroups || []).some((group) => {
+            const normalizedGroupName = (group.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            return (
+              normalizedGroupName === 'salesmanager' || normalizedGroupName === 'salesmanagers'
+            );
+          })
+        )
+        .map((user) => user.id)
+        .filter((userId): userId is string => Boolean(userId))
+    );
+  }, [organizationUsers]);
+
+  const closedSalesmanCalls = calls.filter((call) => {
+    const assignedUserId = call.assignedTo?.id;
+    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
+
+    return (
+      Boolean(assignedUserId) && callStatusName === 'closed' && salesmanUserIds.has(assignedUserId)
+    );
+  });
+
+  const closedSalesManagerCalls = calls.filter((call) => {
+    const assignedUserId = call.assignedTo?.id;
+    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
+
+    return (
+      Boolean(assignedUserId) &&
+      callStatusName === 'closed' &&
+      salesManagerUserIds.has(assignedUserId)
+    );
+  });
+
+  const salesmanClosedCallsByAssignedUserData = getAssignedUserChartData(closedSalesmanCalls);
+  const salesManagerClosedCallsByAssignedUserData =
+    getAssignedUserChartData(closedSalesManagerCalls);
 
   const callCategories = calls.reduce(
     (acc, call) => {
@@ -480,6 +601,68 @@ export function DashboardOverview() {
                 ) : (
                   <div className="flex h-[350px] items-center justify-center">
                     <p className="text-muted-foreground">No priority data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <CardTitle>Salesman Calls</CardTitle>
+                <CardDescription>
+                  Closed calls grouped by assigned user in the Salesman group
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {salesmanClosedCallsByAssignedUserData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={salesmanClosedCallsByAssignedUserData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Assigned User: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No closed calls found for Salesman group users
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <CardTitle>Sales Manager Calls</CardTitle>
+                <CardDescription>
+                  Closed calls grouped by assigned user in the Sales Manager group
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {salesManagerClosedCallsByAssignedUserData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={salesManagerClosedCallsByAssignedUserData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Assigned User: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No closed calls found for Sales Manager group users
+                    </p>
                   </div>
                 )}
               </CardContent>
