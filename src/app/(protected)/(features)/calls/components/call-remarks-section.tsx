@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import {
   Edit2,
@@ -16,10 +17,8 @@ import {
 import { toast } from 'sonner';
 import {
   ColumnDef,
-  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
@@ -64,7 +63,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 import {
   useCreateCallRemark,
@@ -79,6 +77,7 @@ interface CallRemarksSectionProps {
 }
 
 export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
+  const router = useRouter();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -87,8 +86,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const [editRemark, setEditRemark] = useState('');
 
   const [sorting, setSorting] = useState<SortingState>([{ id: 'dateTime', desc: true }]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
 
   const {
     data: callRemarks = [],
@@ -152,6 +149,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const handleAddRemark = () => {
     if (!newRemark.trim()) {
       toast.error('Please enter a remark');
+
       return;
     }
 
@@ -168,6 +166,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const handleEditRemark = () => {
     if (!selectedRemark || !editRemark.trim()) {
       toast.error('Please enter a remark');
+
       return;
     }
 
@@ -184,6 +183,9 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     if (selectedRemark?.id) {
       deleteCallRemark({ id: selectedRemark.id });
     }
+  };
+  const handleAddLead = () => {
+    router.push('/calls/new');
   };
 
   const openEditDialog = (remark: CallRemarkDTO) => {
@@ -221,9 +223,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
         },
         cell: ({ row }) => {
           const dateTime = row.getValue('dateTime') as string;
-          if (!dateTime) return <span className="text-muted-foreground text-xs">No date</span>;
+
+          if (!dateTime) {
+            return <span className="text-muted-foreground text-xs">No date</span>;
+          }
 
           const date = new Date(dateTime);
+
           return (
             <div className="space-y-0.5">
               <div className="text-xs font-medium text-foreground">
@@ -258,7 +264,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
       },
       {
         id: 'actions',
-        header: ({ column }) => {
+        header: () => {
           return <div className="text-right">Actions</div>;
         },
         cell: ({ row }) => {
@@ -305,18 +311,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     data: callRemarks,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     enableColumnResizing: false,
     columnResizeMode: 'onChange',
     state: {
       sorting,
-      columnFilters,
-      globalFilter,
     },
     initialState: {
       pagination: {
@@ -337,30 +338,23 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                 {callRemarks.length}
               </Badge>
             </div>
+            <Button onClick={handleAddLead} size="sm" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add Lead
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between">
             <Button
               onClick={() => setShowAddDialog(true)}
               size="sm"
+              variant="outline"
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
               Add Remark
             </Button>
-          </div>
-
-          {/* Search and filters */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search remarks..."
-                value={globalFilter ?? ''}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {table.getFilteredRowModel().rows.length} of {callRemarks.length} remarks
-            </div>
+            <div className="text-sm text-muted-foreground">{callRemarks.length} remarks</div>
           </div>
         </CardHeader>
 

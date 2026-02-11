@@ -85,7 +85,6 @@ import {
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';
-import { ClickableRolesBadge } from '@/features/user-management/components/ClickableRolesBadge';
 import { ClickableGroupsBadge } from '@/features/user-management/components/ClickableGroupsBadge';
 import { toast } from 'sonner';
 
@@ -510,7 +509,6 @@ function OrganizationUsersContent({
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead>Roles</TableHead>
                   <TableHead>Groups</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
@@ -518,7 +516,7 @@ function OrganizationUsersContent({
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                         Loading users...
@@ -527,7 +525,7 @@ function OrganizationUsersContent({
                   </TableRow>
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex flex-col items-center gap-2">
                         <Users className="h-8 w-8 text-muted-foreground" />
                         <p className="text-muted-foreground">
@@ -580,14 +578,6 @@ function OrganizationUsersContent({
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatDate(user.createdTimestamp)}
-                      </TableCell>
-                      <TableCell>
-                        <ClickableRolesBadge
-                          userId={user.id!}
-                          organizationId={organizationId}
-                          roles={user.assignedRoles || []}
-                          enableProgressiveLoading={false}
-                        />
                       </TableCell>
                       <TableCell>
                         <ClickableGroupsBadge

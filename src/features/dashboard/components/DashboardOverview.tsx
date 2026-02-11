@@ -1,17 +1,16 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   useGetAllCalls,
   useCountCalls,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import {
-  useGetAllProducts,
-  useCountProducts,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useCountProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   Bar,
   BarChart,
@@ -26,14 +25,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
-import { useGetAllCustomers, useCountCustomers } from '@/core/api/generated/spring';
+import { Activity, MapPin, Phone, Search, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { useCountCustomers, useGetAllCustomers } from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
 
 export function DashboardOverview() {
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
-  const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
-  const { data: products = [] } = useGetAllProducts({ size: 1000 });
+  const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
 
   // Get actual counts (not limited to 1000)
   const { data: totalCallsCount = 0 } = useCountCalls();
@@ -41,6 +39,7 @@ export function DashboardOverview() {
   const { data: totalProductsCount = 0 } = useCountProducts();
 
   const [tabValue, setTabValue] = useState('overview');
+  const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
 
   const callStatuses = calls.reduce(
     (acc, call) => {
@@ -158,6 +157,17 @@ export function DashboardOverview() {
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
+  const customersById = customers.reduce(
+    (acc, customer) => {
+      if (customer.id != null) {
+        acc[customer.id] = customer;
+      }
+
+      return acc;
+    },
+    {} as Record<number, (typeof customers)[number]>
+  );
+
   const recentCalls = calls
     .filter((call) => call.callDateTime)
     .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
@@ -175,6 +185,65 @@ export function DashboardOverview() {
       date: new Date(call.callDateTime).toLocaleDateString(),
       time: new Date(call.callDateTime).toLocaleTimeString(),
     }));
+
+  const activeLeads = calls
+    .filter((call) => {
+      const leadStatus = call.callStatus?.name?.toLowerCase() ?? '';
+
+      return (
+        call.status === 'ACTIVE' ||
+        leadStatus.includes('active') ||
+        leadStatus.includes('progress') ||
+        leadStatus.includes('pending')
+      );
+    })
+    .map((call) => {
+      const fullCustomer = call.customer?.id ? customersById[call.customer.id] : undefined;
+      const customerName =
+        call.customer?.customerBusinessName ||
+        fullCustomer?.customerBusinessName ||
+        call.customer?.contactPerson ||
+        fullCustomer?.contactPerson ||
+        'Unknown Customer';
+      const customerEmail = call.customer?.email || fullCustomer?.email || 'N/A';
+      const customerPhone =
+        call.customer?.mobile ||
+        call.customer?.whatsApp ||
+        fullCustomer?.mobile ||
+        fullCustomer?.whatsApp ||
+        'N/A';
+      const leadIdentifier = call.id ?? `${call.leadNo ?? customerName}-${customerPhone}`;
+
+      return {
+        id: leadIdentifier,
+        callId: call.id,
+        leadNo: call.leadNo || '-',
+        customerName,
+        customerEmail,
+        customerPhone,
+        status: call.callStatus?.name || call.status || 'Unknown',
+      };
+    });
+
+  const normalizedActiveLeadSearchTerm = activeLeadSearchTerm.trim().toLowerCase();
+
+  const filteredActiveLeads = activeLeads.filter((lead) => {
+    if (!normalizedActiveLeadSearchTerm) {
+      return true;
+    }
+
+    const searchableFields = [
+      lead.customerName,
+      lead.customerEmail === 'N/A' ? '' : lead.customerEmail,
+      lead.customerPhone === 'N/A' ? '' : lead.customerPhone,
+    ];
+
+    return searchableFields.some((field) =>
+      field.toLowerCase().includes(normalizedActiveLeadSearchTerm)
+    );
+  });
+  const shouldShowLeadDropdown = normalizedActiveLeadSearchTerm.length > 0;
+  const dropdownActiveLeads = filteredActiveLeads.slice(0, 10);
 
   const last30Days = calls.filter((call) => {
     if (!call.callDateTime) return false;
@@ -212,12 +281,61 @@ export function DashboardOverview() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold">CRM Dashboard</h1>
           <p className="text-muted-foreground">
             Complete overview of your customer relationship management
           </p>
+        </div>
+        <div className="relative w-full lg:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={activeLeadSearchTerm}
+            onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
+            placeholder="Search active leads by customer, email, or phone"
+            className="pl-9"
+          />
+          {shouldShowLeadDropdown && (
+            <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-md border bg-background shadow-lg">
+              {dropdownActiveLeads.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  {dropdownActiveLeads.map((lead) => {
+                    if (lead.callId) {
+                      return (
+                        <Link
+                          key={`${lead.id}-${lead.leadNo}`}
+                          href={`/calls/${lead.callId}`}
+                          className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
+                        >
+                          <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerName}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerEmail}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerPhone}</p>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={`${lead.id}-${lead.leadNo}`}
+                        className="border-b p-3 last:border-b-0 text-muted-foreground"
+                      >
+                        <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                        <p className="text-xs">{lead.customerName}</p>
+                        <p className="text-xs">{lead.customerEmail}</p>
+                        <p className="text-xs">{lead.customerPhone}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="p-3 text-sm text-muted-foreground">
+                  No active leads match your search
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -310,7 +428,7 @@ export function DashboardOverview() {
                       <XAxis dataKey="name" stroke="#888888" />
                       <YAxis stroke="#888888" />
                       <Tooltip
-                        formatter={(value, name) => [`${value} calls`, 'Count']}
+                        formatter={(value) => [`${value} calls`, 'Count']}
                         labelFormatter={(label) => `Status: ${label}`}
                       />
                       <Bar dataKey="value" fill="#8884d8" />
@@ -370,7 +488,7 @@ export function DashboardOverview() {
               <CardContent>
                 {topStates.length > 0 ? (
                   <div className="space-y-4">
-                    {topStates.map((state, index) => (
+                    {topStates.map((state) => (
                       <div key={state.name} className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="w-2 h-2 rounded-full bg-primary mr-2"></div>
@@ -584,15 +702,7 @@ export function DashboardOverview() {
                       <Activity className="h-4 w-4 text-blue-500" />
                       <span className="text-sm">Active Calls</span>
                     </div>
-                    <span className="text-lg font-bold">
-                      {
-                        calls.filter(
-                          (call) =>
-                            call.callStatus?.name?.toLowerCase().includes('active') ||
-                            call.callStatus?.name?.toLowerCase().includes('progress')
-                        ).length
-                      }
-                    </span>
+                    <span className="text-lg font-bold">{activeLeads.length}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
