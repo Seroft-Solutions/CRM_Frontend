@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Pencil } from 'lucide-react';
+import { Loader2, Pencil } from 'lucide-react';
 import { handleProductCatalogError, productCatalogToast } from './product-catalog-toast';
 import { productCatalogFormConfig } from './form/product-catalog-form-config';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
+import { ProductVariantManagerWrapper } from '@/app/(protected)/(features)/products/components/variants/ProductVariantManagerWrapper';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -24,6 +25,7 @@ import {
   useDeleteProductCatalog,
   useGetProductCatalog,
 } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
 interface ProductCatalogDetailsProps {
   id: number;
@@ -104,6 +106,30 @@ export function ProductCatalogDetails({ id }: ProductCatalogDetailsProps) {
       enabled: !!id,
     },
   });
+
+  const productId = entity?.product?.id;
+  const shouldFetchProduct = typeof productId === 'number' && !entity?.product?.variantConfig?.id;
+  const { data: productDetails, isLoading: isLoadingProductDetails } = useGetProduct(
+    productId || 0,
+    {
+      query: {
+        enabled: shouldFetchProduct,
+      },
+    }
+  );
+
+  const catalogVariantIds = useMemo(
+    () =>
+      (entity?.variants || [])
+        .map((variant) => variant.id)
+        .filter((variantId): variantId is number => typeof variantId === 'number'),
+    [entity?.variants]
+  );
+
+  const variantConfigId = entity?.product?.variantConfig?.id ?? productDetails?.variantConfig?.id;
+  const productName = entity?.product?.name || entity?.productCatalogName || 'Product';
+  const hasCatalogVariants = typeof productId === 'number' && catalogVariantIds.length > 0;
+  const canRenderVariantsTable = hasCatalogVariants && typeof variantConfigId === 'number';
 
   const { mutate: deleteEntity } = useDeleteProductCatalog({
     mutation: {
@@ -255,6 +281,45 @@ export function ProductCatalogDetails({ id }: ProductCatalogDetailsProps) {
             </div>
           );
         })}
+
+        <div className="border rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-3 pb-2 border-b border-border/50">
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+              {displaySteps.length + 1}
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm text-foreground">Variants</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Product variants linked to this catalog
+              </p>
+            </div>
+          </div>
+
+          {!hasCatalogVariants ? (
+            <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+              No variants are linked to this catalog.
+            </div>
+          ) : !canRenderVariantsTable ? (
+            <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+              {isLoadingProductDetails ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading variant configuration...</span>
+                </div>
+              ) : (
+                'Variant configuration is unavailable for this product.'
+              )}
+            </div>
+          ) : (
+            <ProductVariantManagerWrapper
+              productId={productId}
+              productName={productName}
+              variantConfigId={variantConfigId}
+              variantIdsFilter={catalogVariantIds}
+              isViewMode={true}
+            />
+          )}
+        </div>
       </div>
 
       {/* Action Buttons */}

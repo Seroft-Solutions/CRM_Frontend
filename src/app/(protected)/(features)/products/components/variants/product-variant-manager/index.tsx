@@ -16,6 +16,7 @@ import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/Prod
 import { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTO';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
+import type { GetAllProductVariantsParams } from '@/core/api/generated/spring/schemas/GetAllProductVariantsParams';
 
 import {
   DraftVariantRow,
@@ -67,6 +68,7 @@ interface ProductVariantManagerProps {
   productId?: number;
   productName: string;
   variantConfigId?: number;
+  variantIdsFilter?: number[];
   form?: UseFormReturn<Record<string, unknown>>;
   defaultVariantPrice?: number;
   isViewMode?: boolean;
@@ -85,6 +87,7 @@ export function ProductVariantManager({
   productId,
   productName,
   variantConfigId,
+  variantIdsFilter,
   form,
   defaultVariantPrice,
   isViewMode = false,
@@ -143,12 +146,22 @@ export function ProductVariantManager({
   }, [preSelectedOptionIdsByAttributeId, userSelectedOptionIdsByAttributeId]);
 
   // #region Data Fetching
-  const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants(
-    {
+  const variantQueryParams = useMemo(() => {
+    const params: GetAllProductVariantsParams = {
       'productId.equals': productId!,
       size: 1000,
       sort: ['sku,asc'],
-    },
+    };
+
+    if (variantIdsFilter && variantIdsFilter.length > 0) {
+      params['id.in'] = variantIdsFilter;
+    }
+
+    return params;
+  }, [productId, variantIdsFilter]);
+
+  const { data: variants, isLoading: isLoadingVariants } = useGetAllProductVariants(
+    variantQueryParams,
     {
       query: { enabled: !!productId },
     }

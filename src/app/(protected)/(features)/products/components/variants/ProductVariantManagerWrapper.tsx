@@ -10,6 +10,7 @@ interface ProductVariantManagerWrapperProps {
   // For create mode when productId is not available
   productName?: string;
   variantConfigId?: number;
+  variantIdsFilter?: number[];
   form?: UseFormReturn<Record<string, unknown>>;
   isViewMode?: boolean;
   selection?: VariantTableSelection;
@@ -19,6 +20,7 @@ export function ProductVariantManagerWrapper({
   productId,
   productName: providedProductName,
   variantConfigId: providedVariantConfigId,
+  variantIdsFilter,
   form,
   isViewMode = false,
   selection,
@@ -44,6 +46,7 @@ export function ProductVariantManagerWrapper({
       productId={productId}
       productName={productName}
       variantConfigId={variantConfigId}
+      variantIdsFilter={variantIdsFilter}
       form={form}
       defaultVariantPrice={defaultVariantPrice}
       isViewMode={isViewMode}
