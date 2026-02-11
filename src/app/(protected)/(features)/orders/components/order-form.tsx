@@ -722,6 +722,11 @@ export function OrderForm({
   const validateForm = (): OrderFormErrors => {
     const nextErrors: OrderFormErrors = {};
     const numberPattern = /^-?\d+(\.\d+)?$/;
+    const parsedCustomerId = Number.parseInt(formState.customerId, 10);
+
+    if (!formState.customerId.trim() || !Number.isFinite(parsedCustomerId) || parsedCustomerId <= 0) {
+      nextErrors.customerId = 'Please select a customer.';
+    }
 
     const validateAmount = (
       value: string,
