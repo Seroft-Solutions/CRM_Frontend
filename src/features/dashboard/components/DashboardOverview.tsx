@@ -281,19 +281,32 @@ export function DashboardOverview() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div>
         <div>
           <h1 className="text-3xl font-bold">CRM Dashboard</h1>
           <p className="text-muted-foreground">
             Complete overview of your customer relationship management
           </p>
         </div>
-        <div className="relative w-full lg:max-w-md">
+      </div>
+
+      {/* Quick Action Tiles */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+        <div className="relative mb-4 w-full lg:max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            type="search"
+            name="lead-search"
             value={activeLeadSearchTerm}
             onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
             placeholder="Search active leads by customer, email, or phone"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
             className="pl-9"
           />
           {shouldShowLeadDropdown && (
@@ -337,11 +350,6 @@ export function DashboardOverview() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Quick Action Tiles */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
         <QuickActionTiles />
       </div>
 

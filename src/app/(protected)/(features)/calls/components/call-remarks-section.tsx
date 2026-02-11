@@ -78,7 +78,6 @@ interface CallRemarksSectionProps {
 
 export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const router = useRouter();
-  const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedRemark, setSelectedRemark] = useState<CallRemarkDTO | null>(null);
@@ -107,7 +106,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     mutation: {
       onSuccess: () => {
         toast.success('Call remark added successfully');
-        setShowAddDialog(false);
         setNewRemark('');
         refetch();
       },
@@ -345,15 +343,31 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            <Button
-              onClick={() => setShowAddDialog(true)}
-              size="sm"
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add Remark
-            </Button>
+            <div className="flex-1 max-w-2xl space-y-2">
+              <Label htmlFor="inline-new-remark" className="text-sm">
+                Add Remark
+              </Label>
+              <div className="flex items-start gap-2">
+                <Textarea
+                  id="inline-new-remark"
+                  placeholder="Enter your remark here..."
+                  value={newRemark}
+                  onChange={(e) => setNewRemark(e.target.value)}
+                  rows={2}
+                  className="resize-none"
+                />
+                <Button
+                  onClick={handleAddRemark}
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  disabled={isCreating || !newRemark.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                  {isCreating ? 'Adding...' : 'Add Remark'}
+                </Button>
+              </div>
+            </div>
             <div className="text-sm text-muted-foreground">{callRemarks.length} remarks</div>
           </div>
         </CardHeader>
@@ -467,45 +481,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Add Remark Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Call Remark</DialogTitle>
-            <DialogDescription>
-              Add a new remark to track important information about this call.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-remark">Remark</Label>
-              <Textarea
-                id="new-remark"
-                placeholder="Enter your remark here..."
-                value={newRemark}
-                onChange={(e) => setNewRemark(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAddDialog(false);
-                setNewRemark('');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleAddRemark} disabled={isCreating || !newRemark.trim()}>
-              {isCreating ? 'Adding...' : 'Add Remark'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Remark Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
