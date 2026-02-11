@@ -54,6 +54,8 @@ import {
   useCreatePurchaseOrderShippingDetail as useCreateOrderShippingDetail,
   useUpdatePurchaseOrderShippingDetail as useUpdateOrderShippingDetail,
 } from '@/core/api/purchase-order-shipping-detail';
+import { SaveDraftDialog } from '@/components/form-drafts';
+import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import type { IDiscount } from '../../discounts/types/discount';
 import type {
   AddressFieldsForm,
@@ -129,10 +131,13 @@ export function OrderForm({
 }: OrderFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { registerDraftCheck, unregisterDraftCheck } = useCrossFormNavigation();
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<OrderFormErrors>({});
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
   const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
+  const [showDraftDialog, setShowDraftDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const isEditing = Boolean(initialOrder?.orderId);
   const [formSessionId] = useState(() => {
     const fallbackId = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -241,6 +246,16 @@ export function OrderForm({
   );
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
+  const hasUnsavedChanges =
+    !isEditing &&
+    (
+      JSON.stringify(formState) !== JSON.stringify(defaultState) ||
+      items.some(hasItemData) ||
+      removedItemIds.length > 0 ||
+      hasAddressValues(address.shipTo) ||
+      hasAddressValues(address.billTo) ||
+      address.billToSameFlag
+    );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -369,6 +384,83 @@ export function OrderForm({
       console.error('Failed to process created entity info:', error);
     }
   }, [formSessionId, queryClient]);
+
+  useEffect(() => {
+    if (isEditing) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges, isEditing]);
+
+  useEffect(() => {
+    if (isEditing) return;
+
+    const handleNavigationClick = (event: Event) => {
+      if (!hasUnsavedChanges || showDraftDialog) {
+        return;
+      }
+
+      const target = event.target as Element;
+      const link = target.closest('a[href]') as HTMLAnchorElement | null;
+
+      if (!link) {
+        return;
+      }
+
+      const href = link.getAttribute('href');
+      if (
+        !href ||
+        href.startsWith('http') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:') ||
+        href.startsWith('#')
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setPendingNavigation(() => () => router.push(href));
+      setShowDraftDialog(true);
+    };
+
+    document.addEventListener('click', handleNavigationClick, true);
+    return () => {
+      document.removeEventListener('click', handleNavigationClick, true);
+    };
+  }, [hasUnsavedChanges, isEditing, router, showDraftDialog]);
+
+  useEffect(() => {
+    if (isEditing) return;
+
+    const draftCheckHandler = {
+      formId: 'purchase-orders',
+      checkDrafts: (onProceed: () => void) => {
+        if (hasUnsavedChanges) {
+          setPendingNavigation(() => onProceed);
+          setShowDraftDialog(true);
+          return;
+        }
+        onProceed();
+      },
+    };
+
+    registerDraftCheck(draftCheckHandler);
+    return () => {
+      unregisterDraftCheck('purchase-orders');
+    };
+  }, [hasUnsavedChanges, isEditing, registerDraftCheck, unregisterDraftCheck]);
 
   const selectedCustomerId = formState.customerId.trim()
     ? Number.parseInt(formState.customerId, 10)
@@ -686,6 +778,168 @@ export function OrderForm({
       ? [...shippingMethodOptions, 'Unknown']
       : shippingMethodOptions;
 
+  const saveDraft = async (): Promise<boolean> => {
+    if (isEditing) return false;
+
+    setSubmitting(true);
+
+    const parseAmount = (value: string) => {
+      const parsed = Number.parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const parseInteger = (value: string) => {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const buildAddressPayload = (orderId: number) => {
+      const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
+      return {
+        purchaseOrderId: orderId,
+        shipToFirstName: address.shipTo.firstName || undefined,
+        shipToMiddleName: address.shipTo.middleName || undefined,
+        shipToLastName: address.shipTo.lastName || undefined,
+        shipToAddLine1: address.shipTo.addrLine1 || undefined,
+        shipToAddLine2: address.shipTo.addrLine2 || undefined,
+        shipToCity: address.shipTo.city || undefined,
+        shipToState: address.shipTo.state || undefined,
+        shipToZipcode: address.shipTo.zipcode || undefined,
+        shipToContact: address.shipTo.contact || undefined,
+        shipToCountry: address.shipTo.country || undefined,
+        billToSameFlag: address.billToSameFlag || false,
+        billToFirstName: billTo.firstName || undefined,
+        billToMiddleName: billTo.middleName || undefined,
+        billToLastName: billTo.lastName || undefined,
+        billToAddLine1: billTo.addrLine1 || undefined,
+        billToAddLine2: billTo.addrLine2 || undefined,
+        billToCity: billTo.city || undefined,
+        billToState: billTo.state || undefined,
+        billToZipcode: billTo.zipcode || undefined,
+        billToContact: billTo.contact || undefined,
+        billToCountry: billTo.country || undefined,
+      };
+    };
+
+    try {
+      const itemsTotal = calculateItemsTotal(items);
+      const baseAmount = formState.orderBaseAmount.trim()
+        ? parseAmount(formState.orderBaseAmount)
+        : itemsTotal;
+      const shippingAmount = parseAmount(formState.shippingAmount || '0');
+      const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
+      const taxAmount = (taxRate / 100) * Math.max(baseAmount, 0);
+      const orderTotalAmount = Math.max(baseAmount + shippingAmount + taxAmount, 0);
+
+      const orderStatusCode =
+        getOrderStatusCode(formState.orderStatus) ?? initialOrder?.orderStatusCode ?? 0;
+      const paymentStatusCode =
+        getPaymentStatusCode(formState.paymentStatus) ?? initialOrder?.paymentStatusCode ?? 0;
+      const shippingMethodCode = getShippingMethodCode(formState.shippingMethod || undefined);
+      const sundryCreditorPayload = selectedCustomerId
+        ? ({ id: selectedCustomerId } as CustomerDTO)
+        : undefined;
+
+      const payload: OrderDTO = {
+        orderStatus: orderStatusCode,
+        orderTotalAmount,
+        orderTaxRate: taxRate,
+        sundryCreditor: sundryCreditorPayload,
+        orderBaseAmount: baseAmount,
+        phone: selectedCustomerPhone || undefined,
+        email: selectedCustomerEmail || undefined,
+        paymentStatus: paymentStatusCode,
+        status: 'DRAFT',
+      };
+
+      const result = await createOrder({ data: payload });
+      const orderId = result?.id;
+
+      if (!orderId) {
+        throw new Error('Order ID missing after draft save.');
+      }
+
+      const detailTasks = items
+        .filter((item) => hasItemData(item))
+        .map((item) => {
+          const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
+          const quantity = parseInteger(item.quantity || '0');
+          const itemPrice = parseAmount(item.itemPrice || '0');
+          const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
+          const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
+          const itemStatus = parseInteger(item.itemStatus || '0');
+
+          return createOrderDetail({
+            data: {
+              purchaseOrderId: orderId,
+              productId: isCatalog ? undefined : item.productId || undefined,
+              variantId: isCatalog ? undefined : item.variantId || undefined,
+              productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
+              productName: item.productName || undefined,
+              sku: item.sku || undefined,
+              variantAttributes: item.variantAttributes || undefined,
+              itemStatus,
+              quantity,
+              itemPrice,
+              itemTaxAmount,
+              itemTotalAmount,
+              itemComment: item.itemComment || undefined,
+            },
+          });
+        });
+
+      const addressTasks: Promise<unknown>[] = [];
+      if (shouldSaveAddress(address)) {
+        addressTasks.push(createOrderAddressDetail({ data: buildAddressPayload(orderId) }));
+      }
+
+      const shippingTasks: Promise<unknown>[] = [];
+      const shouldSaveShipping =
+        Boolean(formState.shippingId?.trim()) ||
+        typeof shippingMethodCode === 'number' ||
+        shippingAmount > 0;
+
+      if (shouldSaveShipping) {
+        shippingTasks.push(
+          createOrderShippingDetail({
+            data: {
+              purchaseOrderId: orderId,
+              shippingAmount,
+              shippingMethod: shippingMethodCode,
+              shippingId: formState.shippingId || undefined,
+            },
+          })
+        );
+      }
+
+      const historyTask = createOrderHistory({
+        data: {
+          purchaseOrderId: orderId,
+          status: `Purchase order saved as draft (${formState.orderStatus})`,
+          notificationSent: false,
+        },
+      });
+
+      await Promise.allSettled([...detailTasks, ...addressTasks, ...shippingTasks, historyTask]);
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-address-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-shipping-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-histories'] });
+
+      setRemovedItemIds([]);
+      toast.success('Purchase order draft saved successfully.');
+      return true;
+    } catch (error) {
+      console.error('Failed to save purchase order draft:', error);
+      toast.error('Unable to save purchase order draft.');
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!items.some(hasItemData)) {
@@ -780,6 +1034,7 @@ export function OrderForm({
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
+      status: 'ACTIVE',
     };
 
     try {
@@ -1158,6 +1413,30 @@ export function OrderForm({
           </div>
         </div>
       </form>
+      <SaveDraftDialog
+        open={showDraftDialog}
+        onOpenChange={setShowDraftDialog}
+        entityType="Purchase Order"
+        onSaveDraft={async () => {
+          const success = await saveDraft();
+          if (success && pendingNavigation) {
+            pendingNavigation();
+            setPendingNavigation(null);
+          }
+          return success;
+        }}
+        onDiscardChanges={() => {
+          if (pendingNavigation) {
+            pendingNavigation();
+            setPendingNavigation(null);
+          }
+        }}
+        onCancel={() => {
+          setPendingNavigation(null);
+        }}
+        isDirty={hasUnsavedChanges}
+        formData={formState as Record<string, any>}
+      />
       <AlertDialog open={showEmptyCartDialog} onOpenChange={setShowEmptyCartDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

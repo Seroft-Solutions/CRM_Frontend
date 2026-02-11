@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { InlinePermissionGuard } from '@/core/auth';
 import { OrderTable } from './order-table';
 
-export function OrdersPage() {
+type OrdersPageProps = {
+  draftOnly?: boolean;
+};
+
+export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
   return (
     <div className="space-y-4">
       {/* Modern Centered Header with Sidebar Theme */}
@@ -17,25 +21,33 @@ export function OrdersPage() {
               <ArrowDownToLine className="w-4 h-4 text-sidebar-accent-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-sidebar-foreground">Purchase Orders</h1>
-              <p className="text-sm text-sidebar-foreground/80">Track warehouse inventory intake</p>
+              <h1 className="text-xl font-semibold text-sidebar-foreground">
+                {draftOnly ? 'Purchase Order Drafts' : 'Purchase Orders'}
+              </h1>
+              <p className="text-sm text-sidebar-foreground/80">
+                {draftOnly
+                  ? 'Review and finalize saved draft purchase orders'
+                  : 'Track warehouse inventory intake'}
+              </p>
             </div>
           </div>
 
           {/* Center Section: Prominent New Order Button */}
           <div className="flex-1 flex justify-center">
-            <InlinePermissionGuard requiredPermission="purchase-order:create">
-              <Button
-                asChild
-                size="sm"
-                className="h-10 gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90 hover:scale-105 text-sm font-semibold px-6 shadow-md transition-all duration-200 border-2 border-sidebar-accent/20"
-              >
-                <Link href="/purchase-orders/new">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">New Purchase Order</span>
-                </Link>
-              </Button>
-            </InlinePermissionGuard>
+            {!draftOnly ? (
+              <InlinePermissionGuard requiredPermission="purchase-order:create">
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-10 gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90 hover:scale-105 text-sm font-semibold px-6 shadow-md transition-all duration-200 border-2 border-sidebar-accent/20"
+                >
+                  <Link href="/purchase-orders/new">
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">New Purchase Order</span>
+                  </Link>
+                </Button>
+              </InlinePermissionGuard>
+            ) : null}
           </div>
 
           {/* Right Section: Spacer for balance */}
@@ -43,7 +55,14 @@ export function OrdersPage() {
         </div>
       </div>
 
-      <OrderTable />
+      <OrderTable
+        entityStatus={draftOnly ? 'DRAFT' : 'ACTIVE'}
+        title={draftOnly ? 'Draft Purchase Orders' : 'All Purchase Orders'}
+        subtitle="purchase order"
+        searchPlaceholder={draftOnly ? 'Search draft purchase orders...' : 'Search purchase orders...'}
+        allTabLabel={draftOnly ? 'All Draft Purchase Orders' : 'All Purchase Orders'}
+        showStatusTabs={!draftOnly}
+      />
     </div>
   );
 }

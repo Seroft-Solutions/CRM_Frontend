@@ -104,6 +104,12 @@ export const sidebarItems: SidebarItem[] = [
         path: '/orders/history',
         requiredPermission: 'order:read',
       },
+      {
+        key: 'orderDrafts',
+        label: 'Sale Order Drafts',
+        path: '/orders/drafts',
+        requiredPermission: 'order:read',
+      },
     ],
   },
   {
@@ -129,6 +135,12 @@ export const sidebarItems: SidebarItem[] = [
         key: 'purchaseOrderHistory',
         label: 'Purchase Order History',
         path: '/purchase-orders/history',
+        requiredPermission: 'purchase-order:read',
+      },
+      {
+        key: 'purchaseOrderDrafts',
+        label: 'Purchase Order Drafts',
+        path: '/purchase-orders/drafts',
         requiredPermission: 'purchase-order:read',
       },
     ],

@@ -38,7 +38,25 @@ function formatDateTime(value?: string) {
   return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
-export function OrderTable() {
+type EntityStatus = 'ACTIVE' | 'DRAFT';
+
+type OrderTableProps = {
+  entityStatus?: EntityStatus;
+  title?: string;
+  subtitle?: string;
+  searchPlaceholder?: string;
+  allTabLabel?: string;
+  showStatusTabs?: boolean;
+};
+
+export function OrderTable({
+  entityStatus = 'ACTIVE',
+  title = 'All Orders',
+  subtitle = 'order',
+  searchPlaceholder = 'Search orders...',
+  allTabLabel = 'All Orders',
+  showStatusTabs = true,
+}: OrderTableProps) {
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
@@ -49,6 +67,7 @@ export function OrderTable() {
 
   const filterParams = useMemo<CountOrdersParams>(() => {
     const params: CountOrdersParams = {};
+    (params as Record<string, unknown>)['status.equals'] = entityStatus;
 
     if (statusFilter !== 'All') {
       const statusCode = getOrderStatusCode(statusFilter);
@@ -78,7 +97,7 @@ export function OrderTable() {
     }
 
     return params;
-  }, [accountData?.login, isBusinessPartner, searchTerm, statusFilter]);
+  }, [accountData?.login, entityStatus, isBusinessPartner, searchTerm, statusFilter]);
 
   const apiPage = Math.max(currentPage - 1, 0);
 
@@ -185,10 +204,10 @@ export function OrderTable() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
-        Loading orders...
-      </div>
-    );
+        <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
+        Loading {subtitle}s...
+        </div>
+      );
   }
 
   if (isError) {
@@ -209,9 +228,9 @@ export function OrderTable() {
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">All Orders</h3>
+            <h3 className="font-bold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
-              Search by ID, email, or phone · {totalCount} {totalCount === 1 ? 'order' : 'orders'}
+              Search by ID, email, or phone · {totalCount} {totalCount === 1 ? subtitle : `${subtitle}s`}
             </p>
           </div>
         </div>
@@ -221,7 +240,7 @@ export function OrderTable() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <Input
-              placeholder="Search orders..."
+              placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(event) => handleSearchChange(event.target.value)}
               className="w-full border-slate-300 pl-9 sm:w-72"
@@ -236,31 +255,33 @@ export function OrderTable() {
         </div>
       </div>
 
-      <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
-        <Tabs
-          value={statusFilter}
-          onValueChange={(value) => handleFilterChange(value as OrderStatus | 'All')}
-          className="w-full"
-        >
-          <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
-            <TabsTrigger
-              value="All"
-              className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
-            >
-              All Orders
-            </TabsTrigger>
-            {orderStatusOptions.map((status) => (
+      {showStatusTabs ? (
+        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
+          <Tabs
+            value={statusFilter}
+            onValueChange={(value) => handleFilterChange(value as OrderStatus | 'All')}
+            className="w-full"
+          >
+            <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
               <TabsTrigger
-                key={status}
-                value={status}
-                className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                value="All"
+                className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
               >
-                {status}
+                {allTabLabel}
               </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+              {orderStatusOptions.map((status) => (
+                <TabsTrigger
+                  key={status}
+                  value={status}
+                  className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  {status}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      ) : null}
 
       <div className="table-container overflow-x-auto">
         <Table>

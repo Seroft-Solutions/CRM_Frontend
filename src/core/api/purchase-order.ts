@@ -14,6 +14,7 @@ import type { SundryCreditorDTO } from '@/app/(protected)/(features)/sundry-cred
 export interface PurchaseOrderDTO {
   id?: number;
   orderStatus?: number;
+  status?: 'ACTIVE' | 'DRAFT';
   orderTotalAmount?: number;
   orderTaxRate?: number;
   orderBaseAmount?: number;

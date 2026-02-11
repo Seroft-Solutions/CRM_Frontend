@@ -134,7 +134,7 @@ export function OrderFormFields({
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Sundry Creditor</Label>
+            <Label className="text-xs font-semibold text-slate-600">Sundry Creditor *</Label>
             <PaginatedRelationshipCombobox
               value={formState.customerId ? Number(formState.customerId) : undefined}
               onValueChange={(value) => onChange('customerId', value ? String(value) : '')}

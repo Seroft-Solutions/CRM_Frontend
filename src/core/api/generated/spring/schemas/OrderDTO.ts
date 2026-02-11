@@ -10,6 +10,7 @@ import type { CustomerDTO } from './CustomerDTO';
 export interface OrderDTO {
   id?: number;
   orderStatus?: number;
+  status?: 'ACTIVE' | 'DRAFT';
   /** @minimum 0 */
   orderTotalAmount?: number;
   /**
