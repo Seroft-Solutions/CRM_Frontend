@@ -1,9 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   useGetAllCalls,
   useCountCalls,
@@ -23,9 +25,19 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, Calendar, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import {
+  Activity,
+  Calendar,
+  MapPin,
+  Phone,
+  Search,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import {
   useCountCustomers,
+  useGetAllCustomers,
   useGetAllMeetings,
   useCountMeetings,
   useGetAllUserProfiles,
@@ -45,6 +57,7 @@ export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
 
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
+  const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
   const { data: userProfiles = [] } = useGetAllUserProfiles({ size: 1000 });
   const { organizationId } = useOrganizationContext();
   const { users: organizationUsers = [] } = useOrganizationUsers(organizationId, {
@@ -58,6 +71,7 @@ export function DashboardOverview() {
   const { data: totalProductsCount = 0 } = useCountProducts();
 
   const [tabValue, setTabValue] = useState('overview');
+  const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
   const [staffPeriod, setStaffPeriod] = useState<StaffLeadSummaryPeriod>('DAILY');
   const [selectedStaff, setSelectedStaff] = useState<string>('ALL');
   const [meetingPeriod, setMeetingPeriod] = useState<MeetingPeriod>('DAILY');
@@ -357,6 +371,17 @@ export function DashboardOverview() {
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
+  const customersById = customers.reduce(
+    (acc, customer) => {
+      if (customer.id != null) {
+        acc[customer.id] = customer;
+      }
+
+      return acc;
+    },
+    {} as Record<number, (typeof customers)[number]>
+  );
+
   const recentCalls = calls
     .filter((call) => call.callDateTime)
     .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
@@ -374,6 +399,65 @@ export function DashboardOverview() {
       date: new Date(call.callDateTime).toLocaleDateString(),
       time: new Date(call.callDateTime).toLocaleTimeString(),
     }));
+
+  const activeLeads = calls
+    .filter((call) => {
+      const leadStatus = call.callStatus?.name?.toLowerCase() ?? '';
+
+      return (
+        call.status === 'ACTIVE' ||
+        leadStatus.includes('active') ||
+        leadStatus.includes('progress') ||
+        leadStatus.includes('pending')
+      );
+    })
+    .map((call) => {
+      const fullCustomer = call.customer?.id ? customersById[call.customer.id] : undefined;
+      const customerName =
+        call.customer?.customerBusinessName ||
+        fullCustomer?.customerBusinessName ||
+        call.customer?.contactPerson ||
+        fullCustomer?.contactPerson ||
+        'Unknown Customer';
+      const customerEmail = call.customer?.email || fullCustomer?.email || 'N/A';
+      const customerPhone =
+        call.customer?.mobile ||
+        call.customer?.whatsApp ||
+        fullCustomer?.mobile ||
+        fullCustomer?.whatsApp ||
+        'N/A';
+      const leadIdentifier = call.id ?? `${call.leadNo ?? customerName}-${customerPhone}`;
+
+      return {
+        id: leadIdentifier,
+        callId: call.id,
+        leadNo: call.leadNo || '-',
+        customerName,
+        customerEmail,
+        customerPhone,
+        status: call.callStatus?.name || call.status || 'Unknown',
+      };
+    });
+
+  const normalizedActiveLeadSearchTerm = activeLeadSearchTerm.trim().toLowerCase();
+
+  const filteredActiveLeads = activeLeads.filter((lead) => {
+    if (!normalizedActiveLeadSearchTerm) {
+      return true;
+    }
+
+    const searchableFields = [
+      lead.customerName,
+      lead.customerEmail === 'N/A' ? '' : lead.customerEmail,
+      lead.customerPhone === 'N/A' ? '' : lead.customerPhone,
+    ];
+
+    return searchableFields.some((field) =>
+      field.toLowerCase().includes(normalizedActiveLeadSearchTerm)
+    );
+  });
+  const shouldShowLeadDropdown = normalizedActiveLeadSearchTerm.length > 0;
+  const dropdownActiveLeads = filteredActiveLeads.slice(0, 10);
 
   const last30Days = calls.filter((call) => {
     if (!call.callDateTime) return false;
@@ -472,9 +556,75 @@ export function DashboardOverview() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <div>
+          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
+          <p className="text-muted-foreground">
+            Complete overview of your customer relationship management
+          </p>
+        </div>
+      </div>
+
       {/* Quick Action Tiles */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+        <div className="relative mb-4 w-full lg:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            name="lead-search"
+            value={activeLeadSearchTerm}
+            onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
+            placeholder="Search active leads by customer, email, or phone"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
+            className="pl-9"
+          />
+          {shouldShowLeadDropdown && (
+            <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-md border bg-background shadow-lg">
+              {dropdownActiveLeads.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  {dropdownActiveLeads.map((lead) => {
+                    if (lead.callId) {
+                      return (
+                        <Link
+                          key={`${lead.id}-${lead.leadNo}`}
+                          href={`/calls/${lead.callId}`}
+                          className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
+                        >
+                          <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerName}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerEmail}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerPhone}</p>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={`${lead.id}-${lead.leadNo}`}
+                        className="border-b p-3 last:border-b-0 text-muted-foreground"
+                      >
+                        <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                        <p className="text-xs">{lead.customerName}</p>
+                        <p className="text-xs">{lead.customerEmail}</p>
+                        <p className="text-xs">{lead.customerPhone}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="p-3 text-sm text-muted-foreground">
+                  No active leads match your search
+                </p>
+              )}
+            </div>
+          )}
+        </div>
         <QuickActionTiles />
       </div>
 
