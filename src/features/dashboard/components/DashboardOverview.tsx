@@ -1,16 +1,17 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import {
   useGetAllCalls,
   useCountCalls,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import { useCountProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import {
+  useGetAllProducts,
+  useCountProducts,
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   Bar,
   BarChart,
@@ -25,19 +26,34 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, MapPin, Phone, Search, ShoppingCart, TrendingUp, Users } from 'lucide-react';
-import { useCountCustomers, useGetAllCustomers } from '@/core/api/generated/spring';
-import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
+import { Activity, Calendar, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import {
+  useGetAllCustomers,
+  useCountCustomers,
+  useGetAllMeetings,
+  useCountMeetings,
+  useGetAllUserProfiles,
+} from '@/core/api/generated/spring';
 import { QuickActionTiles } from './QuickActionTiles';
+import {
+  StaffLeadSummaryPeriod,
+  useGetStaffLeadSummary,
+} from '@/core/api/call-analytics';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function DashboardOverview() {
+  type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
+
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
-  const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
-  const { organizationId } = useOrganizationContext();
-  const { users: organizationUsers } = useOrganizationUsers(organizationId, {
-    page: 1,
-    size: 1000,
-  });
+  const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
+  const { data: products = [] } = useGetAllProducts({ size: 1000 });
+  const { data: userProfiles = [] } = useGetAllUserProfiles({ size: 1000 });
 
   // Get actual counts (not limited to 1000)
   const { data: totalCallsCount = 0 } = useCountCalls();
@@ -45,139 +61,95 @@ export function DashboardOverview() {
   const { data: totalProductsCount = 0 } = useCountProducts();
 
   const [tabValue, setTabValue] = useState('overview');
-  const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
+  const [staffPeriod, setStaffPeriod] = useState<StaffLeadSummaryPeriod>('DAILY');
+  const [selectedStaff, setSelectedStaff] = useState<string>('ALL');
+  const [meetingPeriod, setMeetingPeriod] = useState<MeetingPeriod>('DAILY');
 
-  const getCallStatusChartData = (inputCalls: typeof calls) => {
-    const statusBuckets = inputCalls.reduce(
-      (acc, call) => {
-        const status = call.callStatus?.name || 'Unknown';
-
-        acc[status] = (acc[status] || 0) + 1;
-
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    return Object.entries(statusBuckets).map(([name, value]) => ({
-      name,
-      value,
-      percentage: inputCalls.length > 0 ? ((value / inputCalls.length) * 100).toFixed(1) : '0.0',
-    }));
-  };
-
-  const callStatusData = getCallStatusChartData(calls);
-  const userDisplayNameById = useMemo(() => {
-    const map = new Map<string, string>();
-
-    (organizationUsers || []).forEach((user) => {
-      if (!user.id) return;
-
-      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-      const displayName = fullName || user.email || user.username || 'Unknown User';
-
-      map.set(user.id, displayName);
-    });
-
-    return map;
-  }, [organizationUsers]);
-
-  const getAssignedUserChartData = (inputCalls: typeof calls) => {
-    const assigneeBuckets = inputCalls.reduce(
-      (acc, call) => {
-        const assignedUserId = call.assignedTo?.id;
-
-        if (!assignedUserId) {
-          return acc;
-        }
-
-        const assignedUserName =
-          call.assignedTo?.firstName && call.assignedTo?.lastName
-            ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-            : call.assignedTo?.firstName ||
-              userDisplayNameById.get(assignedUserId) ||
-              call.assignedTo?.email ||
-              'Unknown User';
-
-        if (!acc[assignedUserId]) {
-          acc[assignedUserId] = {
-            name: assignedUserName,
-            value: 0,
-          };
-        }
-
-        acc[assignedUserId].value += 1;
-
-        return acc;
-      },
-      {} as Record<string, { name: string; value: number }>
-    );
-
-    return Object.values(assigneeBuckets)
-      .map((bucket) => ({
-        name: bucket.name,
-        value: bucket.value,
-        percentage:
-          inputCalls.length > 0 ? ((bucket.value / inputCalls.length) * 100).toFixed(1) : '0.0',
-      }))
-      .sort((a, b) => b.value - a.value);
-  };
-
-  const salesmanUserIds = useMemo(() => {
-    return new Set(
-      (organizationUsers || [])
-        .filter((user) =>
-          (user.assignedGroups || []).some((group) => {
-            const normalizedGroupName = (group.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-            return normalizedGroupName === 'salesman' || normalizedGroupName === 'salesmen';
-          })
-        )
-        .map((user) => user.id)
-        .filter((userId): userId is string => Boolean(userId))
-    );
-  }, [organizationUsers]);
-
-  const salesManagerUserIds = useMemo(() => {
-    return new Set(
-      (organizationUsers || [])
-        .filter((user) =>
-          (user.assignedGroups || []).some((group) => {
-            const normalizedGroupName = (group.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-
-            return (
-              normalizedGroupName === 'salesmanager' || normalizedGroupName === 'salesmanagers'
-            );
-          })
-        )
-        .map((user) => user.id)
-        .filter((userId): userId is string => Boolean(userId))
-    );
-  }, [organizationUsers]);
-
-  const closedSalesmanCalls = calls.filter((call) => {
-    const assignedUserId = call.assignedTo?.id;
-    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
-
-    return (
-      Boolean(assignedUserId) && callStatusName === 'closed' && salesmanUserIds.has(assignedUserId)
-    );
+  const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
+    period: staffPeriod,
+    assignedUser: selectedStaff === 'ALL' ? undefined : selectedStaff,
   });
 
-  const closedSalesManagerCalls = calls.filter((call) => {
-    const assignedUserId = call.assignedTo?.id;
-    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
+  const getCalendarRange = (period: MeetingPeriod) => {
+    const now = new Date();
+    let start: Date;
+    let end: Date;
 
-    return (
-      Boolean(assignedUserId) &&
-      callStatusName === 'closed' &&
-      salesManagerUserIds.has(assignedUserId)
-    );
+    switch (period) {
+      case 'WEEKLY': {
+        const day = now.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+        end = new Date(start);
+        end.setDate(start.getDate() + 7);
+        break;
+      }
+      case 'MONTHLY':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        break;
+      case 'DAILY':
+      default:
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+    }
+
+    return {
+      start: start.toISOString(),
+      end: end.toISOString(),
+    };
+  };
+
+  const upcomingRange = useMemo(() => {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + 7);
+    return { start: start.toISOString(), end: end.toISOString() };
+  }, []);
+
+  const meetingFiltersBase = useMemo(() => {
+    const range =
+      meetingPeriod === 'OTHERS' ? upcomingRange : getCalendarRange(meetingPeriod);
+
+    return {
+      'meetingDateTime.greaterThanOrEqual': range.start,
+      'meetingDateTime.lessThan': range.end,
+      'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
+    };
+  }, [meetingPeriod, upcomingRange]);
+
+  const { data: scheduledMeetings = [] } = useGetAllMeetings({
+    ...meetingFiltersBase,
+    sort: ['meetingDateTime,asc'],
+    size: 20,
   });
 
-  const salesmanClosedCallsByAssignedUserData = getAssignedUserChartData(closedSalesmanCalls);
-  const salesManagerClosedCallsByAssignedUserData =
-    getAssignedUserChartData(closedSalesManagerCalls);
+  const { data: scheduledMeetingsCount = 0 } = useCountMeetings(meetingFiltersBase);
+
+  const todayRange = useMemo(() => getCalendarRange('DAILY'), []);
+  const { data: meetingsTodayCount = 0 } = useCountMeetings({
+    'meetingDateTime.greaterThanOrEqual': todayRange.start,
+    'meetingDateTime.lessThan': todayRange.end,
+    'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
+  });
+
+  const callStatuses = calls.reduce(
+    (acc, call) => {
+      const status = call.callStatus?.name || 'Unknown';
+
+      acc[status] = (acc[status] || 0) + 1;
+
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const callStatusData = Object.entries(callStatuses).map(([name, value]) => ({
+    name,
+    value,
+    percentage: ((value / calls.length) * 100).toFixed(1),
+  }));
 
   const callCategories = calls.reduce(
     (acc, call) => {
@@ -278,17 +250,6 @@ export function DashboardOverview() {
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
-  const customersById = customers.reduce(
-    (acc, customer) => {
-      if (customer.id != null) {
-        acc[customer.id] = customer;
-      }
-
-      return acc;
-    },
-    {} as Record<number, (typeof customers)[number]>
-  );
-
   const recentCalls = calls
     .filter((call) => call.callDateTime)
     .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
@@ -306,65 +267,6 @@ export function DashboardOverview() {
       date: new Date(call.callDateTime).toLocaleDateString(),
       time: new Date(call.callDateTime).toLocaleTimeString(),
     }));
-
-  const activeLeads = calls
-    .filter((call) => {
-      const leadStatus = call.callStatus?.name?.toLowerCase() ?? '';
-
-      return (
-        call.status === 'ACTIVE' ||
-        leadStatus.includes('active') ||
-        leadStatus.includes('progress') ||
-        leadStatus.includes('pending')
-      );
-    })
-    .map((call) => {
-      const fullCustomer = call.customer?.id ? customersById[call.customer.id] : undefined;
-      const customerName =
-        call.customer?.customerBusinessName ||
-        fullCustomer?.customerBusinessName ||
-        call.customer?.contactPerson ||
-        fullCustomer?.contactPerson ||
-        'Unknown Customer';
-      const customerEmail = call.customer?.email || fullCustomer?.email || 'N/A';
-      const customerPhone =
-        call.customer?.mobile ||
-        call.customer?.whatsApp ||
-        fullCustomer?.mobile ||
-        fullCustomer?.whatsApp ||
-        'N/A';
-      const leadIdentifier = call.id ?? `${call.leadNo ?? customerName}-${customerPhone}`;
-
-      return {
-        id: leadIdentifier,
-        callId: call.id,
-        leadNo: call.leadNo || '-',
-        customerName,
-        customerEmail,
-        customerPhone,
-        status: call.callStatus?.name || call.status || 'Unknown',
-      };
-    });
-
-  const normalizedActiveLeadSearchTerm = activeLeadSearchTerm.trim().toLowerCase();
-
-  const filteredActiveLeads = activeLeads.filter((lead) => {
-    if (!normalizedActiveLeadSearchTerm) {
-      return true;
-    }
-
-    const searchableFields = [
-      lead.customerName,
-      lead.customerEmail === 'N/A' ? '' : lead.customerEmail,
-      lead.customerPhone === 'N/A' ? '' : lead.customerPhone,
-    ];
-
-    return searchableFields.some((field) =>
-      field.toLowerCase().includes(normalizedActiveLeadSearchTerm)
-    );
-  });
-  const shouldShowLeadDropdown = normalizedActiveLeadSearchTerm.length > 0;
-  const dropdownActiveLeads = filteredActiveLeads.slice(0, 10);
 
   const last30Days = calls.filter((call) => {
     if (!call.callDateTime) return false;
@@ -400,77 +302,70 @@ export function DashboardOverview() {
     '#ff7c7c',
   ];
 
+  const staffOptions = useMemo(() => {
+    const unique = new Map<string, string>();
+    userProfiles.forEach((profile) => {
+      if (!profile.email) return;
+      const label =
+        profile.displayName ||
+        `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
+        profile.email;
+      unique.set(profile.email, label);
+    });
+
+    return Array.from(unique.entries()).map(([value, label]) => ({ value, label }));
+  }, [userProfiles]);
+
+  const staffLabelByEmail = useMemo(
+    () => new Map(staffOptions.map((staff) => [staff.value, staff.label])),
+    [staffOptions]
+  );
+
+  const staffTotals = staffLeadSummary.reduce(
+    (acc, item) => {
+      acc.total += item.total || 0;
+      acc.active += item.active || 0;
+      acc.inactive += item.inactive || 0;
+      return acc;
+    },
+    { total: 0, active: 0, inactive: 0 }
+  );
+
+  const selectedSummary =
+    selectedStaff === 'ALL'
+      ? staffTotals
+      : staffLeadSummary.find((item) => item.assignedUser === selectedStaff) || {
+          total: 0,
+          active: 0,
+          inactive: 0,
+        };
+
+  const staffPerformanceChartData = useMemo(() => {
+    if (selectedStaff === 'ALL') {
+      return staffLeadSummary.map((item) => ({
+        name: staffLabelByEmail.get(item.assignedUser || '') || item.assignedUser || 'Unassigned',
+        total: item.total || 0,
+        active: item.active || 0,
+        inactive: item.inactive || 0,
+      }));
+    }
+
+    return [
+      {
+        name: staffLabelByEmail.get(selectedStaff) || selectedStaff,
+        total: selectedSummary.total,
+        active: selectedSummary.active,
+        inactive: selectedSummary.inactive,
+      },
+    ];
+  }, [selectedStaff, selectedSummary, staffLabelByEmail, staffLeadSummary]);
+
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <div>
-          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
-          <p className="text-muted-foreground">
-            Complete overview of your customer relationship management
-          </p>
-        </div>
-      </div>
 
       {/* Quick Action Tiles */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="relative mb-4 w-full lg:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            name="lead-search"
-            value={activeLeadSearchTerm}
-            onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
-            placeholder="Search active leads by customer, email, or phone"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            data-lpignore="true"
-            data-1p-ignore="true"
-            className="pl-9"
-          />
-          {shouldShowLeadDropdown && (
-            <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-md border bg-background shadow-lg">
-              {dropdownActiveLeads.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  {dropdownActiveLeads.map((lead) => {
-                    if (lead.callId) {
-                      return (
-                        <Link
-                          key={`${lead.id}-${lead.leadNo}`}
-                          href={`/calls/${lead.callId}`}
-                          className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
-                        >
-                          <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
-                          <p className="text-xs text-muted-foreground">{lead.customerName}</p>
-                          <p className="text-xs text-muted-foreground">{lead.customerEmail}</p>
-                          <p className="text-xs text-muted-foreground">{lead.customerPhone}</p>
-                        </Link>
-                      );
-                    }
-
-                    return (
-                      <div
-                        key={`${lead.id}-${lead.leadNo}`}
-                        className="border-b p-3 last:border-b-0 text-muted-foreground"
-                      >
-                        <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
-                        <p className="text-xs">{lead.customerName}</p>
-                        <p className="text-xs">{lead.customerEmail}</p>
-                        <p className="text-xs">{lead.customerPhone}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="p-3 text-sm text-muted-foreground">
-                  No active leads match your search
-                </p>
-              )}
-            </div>
-          )}
-        </div>
         <QuickActionTiles />
       </div>
 
@@ -557,7 +452,7 @@ export function DashboardOverview() {
                       <XAxis dataKey="name" stroke="#888888" />
                       <YAxis stroke="#888888" />
                       <Tooltip
-                        formatter={(value) => [`${value} calls`, 'Count']}
+                        formatter={(value, name) => [`${value} calls`, 'Count']}
                         labelFormatter={(label) => `Status: ${label}`}
                       />
                       <Bar dataKey="value" fill="#8884d8" />
@@ -607,68 +502,6 @@ export function DashboardOverview() {
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Salesman Calls</CardTitle>
-                <CardDescription>
-                  Closed calls grouped by assigned user in the Salesman group
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                {salesmanClosedCallsByAssignedUserData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={salesmanClosedCallsByAssignedUserData}>
-                      <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
-                      <Tooltip
-                        formatter={(value) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Assigned User: ${label}`}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">
-                      No closed calls found for Salesman group users
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Sales Manager Calls</CardTitle>
-                <CardDescription>
-                  Closed calls grouped by assigned user in the Sales Manager group
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                {salesManagerClosedCallsByAssignedUserData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={salesManagerClosedCallsByAssignedUserData}>
-                      <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
-                      <Tooltip
-                        formatter={(value) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Assigned User: ${label}`}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">
-                      No closed calls found for Sales Manager group users
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Recent Activity and Geographic Distribution */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
@@ -679,7 +512,7 @@ export function DashboardOverview() {
               <CardContent>
                 {topStates.length > 0 ? (
                   <div className="space-y-4">
-                    {topStates.map((state) => (
+                    {topStates.map((state, index) => (
                       <div key={state.name} className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="w-2 h-2 rounded-full bg-primary mr-2"></div>
@@ -750,6 +583,97 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Scheduled Meetings */}
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <CardTitle>Scheduled Meetings</CardTitle>
+                  <CardDescription>
+                    {meetingPeriod === 'OTHERS'
+                      ? 'Upcoming meetings scheduled in the next 7 days'
+                      : 'View meetings for the selected period and today&apos;s schedule'}
+                  </CardDescription>
+                </div>
+                <Tabs
+                  value={meetingPeriod}
+                  onValueChange={(value) => setMeetingPeriod(value as MeetingPeriod)}
+                >
+                  <TabsList className="grid grid-cols-4">
+                    <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                    <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                    <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    <TabsTrigger value="OTHERS">Others</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+                <div className="rounded-lg border bg-slate-50/60 p-4">
+                  <div className="text-xs text-muted-foreground">
+                    {meetingPeriod === 'OTHERS' ? 'Upcoming meetings' : 'Meetings in period'}
+                  </div>
+                  <div className="text-2xl font-bold">{scheduledMeetingsCount}</div>
+                </div>
+                <div className="rounded-lg border bg-blue-50/60 p-4">
+                  <div className="text-xs text-muted-foreground">Meetings today</div>
+                  <div className="text-2xl font-bold">{meetingsTodayCount}</div>
+                </div>
+              </div>
+
+              {scheduledMeetings.length > 0 ? (
+                <div className="space-y-4 max-h-[360px] overflow-y-auto">
+                  {scheduledMeetings.map((meeting) => {
+                    const meetingDate = new Date(meeting.meetingDateTime);
+                    const organizer =
+                      meeting.organizer?.displayName ||
+                      `${meeting.organizer?.firstName || ''} ${meeting.organizer?.lastName || ''}`.trim() ||
+                      meeting.organizer?.email ||
+                      'Unassigned';
+                    const leadNo = meeting.call?.leadNo || '—';
+                    const customer =
+                      meeting.assignedCustomer?.customerBusinessName || '—';
+
+                    return (
+                      <div
+                        key={meeting.id}
+                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{meeting.title}</p>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                              <span>{organizer}</span>
+                              <span>•</span>
+                              <span>Lead {leadNo}</span>
+                              <span>•</span>
+                              <span>{customer}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline">{meeting.meetingStatus}</Badge>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {meetingDate.toLocaleDateString()} {meetingDate.toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex h-[260px] items-center justify-center">
+                  <p className="text-muted-foreground">No meetings scheduled for this period</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
@@ -840,6 +764,96 @@ export function DashboardOverview() {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6 mt-6">
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <CardTitle>Staff Lead Performance</CardTitle>
+                  <CardDescription>
+                    Leads assigned to staff for the selected period
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Tabs
+                    value={staffPeriod}
+                    onValueChange={(value) => setStaffPeriod(value as StaffLeadSummaryPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-3">
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+                    <SelectTrigger className="min-w-[220px]">
+                      <SelectValue placeholder="Select staff" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Staff</SelectItem>
+                      {staffOptions.map((staff) => (
+                        <SelectItem key={staff.value} value={staff.value}>
+                          {staff.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {staffLeadSummary.length > 0 || selectedSummary.total > 0 ? (
+                <div className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-lg border bg-slate-50/60 p-4">
+                      <div className="text-xs text-muted-foreground">Total Leads</div>
+                      <div className="text-2xl font-bold">{selectedSummary.total}</div>
+                    </div>
+                    <div className="rounded-lg border bg-emerald-50/60 p-4">
+                      <div className="text-xs text-muted-foreground">Active Leads</div>
+                      <div className="text-2xl font-bold">{selectedSummary.active}</div>
+                    </div>
+                    <div className="rounded-lg border bg-rose-50/60 p-4">
+                      <div className="text-xs text-muted-foreground">Inactive Leads</div>
+                      <div className="text-2xl font-bold">{selectedSummary.inactive}</div>
+                    </div>
+                  </div>
+
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={staffPerformanceChartData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar
+                        dataKey="total"
+                        name="Total Leads"
+                        fill={COLORS[0]}
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="active"
+                        name="Active Leads"
+                        fill={COLORS[1]}
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="inactive"
+                        name="Inactive Leads"
+                        fill={COLORS[2]}
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex h-[260px] items-center justify-center">
+                  <p className="text-muted-foreground">No data for this period</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Agent Performance */}
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
@@ -893,7 +907,15 @@ export function DashboardOverview() {
                       <Activity className="h-4 w-4 text-blue-500" />
                       <span className="text-sm">Active Calls</span>
                     </div>
-                    <span className="text-lg font-bold">{activeLeads.length}</span>
+                    <span className="text-lg font-bold">
+                      {
+                        calls.filter(
+                          (call) =>
+                            call.callStatus?.name?.toLowerCase().includes('active') ||
+                            call.callStatus?.name?.toLowerCase().includes('progress')
+                        ).length
+                      }
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
