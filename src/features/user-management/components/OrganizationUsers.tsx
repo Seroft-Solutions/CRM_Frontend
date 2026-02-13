@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   useBulkUserOperations,
+  useAvailableGroups,
   useOrganizationContext,
   useOrganizationUsers,
   useReinviteOrganizationUser,
@@ -112,6 +113,7 @@ function OrganizationUsersContent({
   const { removeUser, isRemoving } = useRemoveUser();
   const { reinviteUserAsync } = useReinviteOrganizationUser();
   const { refreshOrganizationUsers } = useUserManagementRefresh();
+  const { groups: availableGroups } = useAvailableGroups();
   const {
     selectedUsers,
     toggleUserSelection,
@@ -204,7 +206,13 @@ function OrganizationUsersContent({
   };
 
   const hasActiveFilters =
-    filters.search || filters.enabled !== undefined || filters.emailVerified !== undefined;
+    filters.search ||
+    filters.enabled !== undefined ||
+    filters.emailVerified !== undefined ||
+    !!filters.group;
+
+  const selectedGroupLabel =
+    availableGroups.find((group) => group.id === filters.group)?.name || filters.group;
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -329,6 +337,11 @@ function OrganizationUsersContent({
                   Email: {filters.emailVerified ? 'Verified' : 'Unverified'}
                 </Badge>
               )}
+              {filters.group && (
+                <Badge variant="outline" className="text-xs">
+                  Group: {selectedGroupLabel}
+                </Badge>
+              )}
             </div>
           )}
           {hasMultipleOrganizations && (
@@ -407,7 +420,7 @@ function OrganizationUsersContent({
                 <DialogHeader>
                   <DialogTitle>Filter Users</DialogTitle>
                   <DialogDescription>
-                    Filter the user list by status and verification
+                    Filter the user list by status, verification, and group
                   </DialogDescription>
                 </DialogHeader>
 
@@ -484,6 +497,30 @@ function OrganizationUsersContent({
                             Email Unverified
                           </div>
                         </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Group</Label>
+                    <Select
+                      value={filters.group || 'all'}
+                      onValueChange={(value) =>
+                        handleFilterChange('group', value === 'all' ? undefined : value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Groups</SelectItem>
+                        {availableGroups
+                          .filter((group) => !!group.id)
+                          .map((group) => (
+                            <SelectItem key={group.id} value={group.id!}>
+                              {group.name || 'Unnamed Group'}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>

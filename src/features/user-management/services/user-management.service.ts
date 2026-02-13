@@ -119,6 +119,19 @@ export class UserManagementService {
         users = users.filter((user) => user.emailVerified === filters.emailVerified);
       }
 
+      if (filters?.group) {
+        const normalizedGroupFilter = filters.group.trim().toLowerCase();
+
+        users = users.filter((user) =>
+          (user.assignedGroups || []).some((group) => {
+            const groupId = group.id?.toLowerCase();
+            const groupName = group.name?.toLowerCase();
+
+            return groupId === normalizedGroupFilter || groupName === normalizedGroupFilter;
+          })
+        );
+      }
+
       if (filters?.sortBy) {
         const sortDirection = filters.sortDirection === 'asc' ? 1 : -1;
 
