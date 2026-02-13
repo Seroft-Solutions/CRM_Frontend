@@ -85,7 +85,6 @@ import {
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';
-import { ClickableGroupsBadge } from '@/features/user-management/components/ClickableGroupsBadge';
 import { toast } from 'sonner';
 
 interface OrganizationUsersProps {
@@ -580,12 +579,21 @@ function OrganizationUsersContent({
                         {formatDate(user.createdTimestamp)}
                       </TableCell>
                       <TableCell>
-                        <ClickableGroupsBadge
-                          userId={user.id!}
-                          organizationId={organizationId}
-                          groups={user.assignedGroups || []}
-                          enableProgressiveLoading={false}
-                        />
+                        <div className="flex flex-wrap gap-1">
+                          {(user.assignedGroups || []).length > 0 ? (
+                            (user.assignedGroups || []).map((group, index) => (
+                              <Badge
+                                key={group.id || `${group.name || 'group'}-${index}`}
+                                variant="outline"
+                                className="text-xs px-2 py-0.5"
+                              >
+                                {group.name || 'Unnamed Group'}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">No groups</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
