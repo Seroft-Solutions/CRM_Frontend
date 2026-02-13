@@ -813,13 +813,8 @@ export function DashboardOverview() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>Call Status Distribution</CardTitle>
-                    <CardDescription>
-                      Call status breakdown for {callInsightsPeriodLabel[callStatusPeriod]}
-                    </CardDescription>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>Call Status Distribution</CardTitle>
                   <Tabs
                     value={callStatusPeriod}
                     onValueChange={(value) => setCallStatusPeriod(value as CallInsightsPeriod)}
@@ -832,6 +827,9 @@ export function DashboardOverview() {
                     </TabsList>
                   </Tabs>
                 </div>
+                <CardDescription>
+                  Call status breakdown for {callInsightsPeriodLabel[callStatusPeriod]}
+                </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 {callStatusData.length > 0 ? (
@@ -895,14 +893,8 @@ export function DashboardOverview() {
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>Salesman Calls</CardTitle>
-                    <CardDescription>
-                      Closed calls grouped by assigned user in the Salesman group for{' '}
-                      {callInsightsPeriodLabel[salesmanPeriod]}
-                    </CardDescription>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>Salesman Calls</CardTitle>
                   <Tabs
                     value={salesmanPeriod}
                     onValueChange={(value) => setSalesmanPeriod(value as CallInsightsPeriod)}
@@ -915,6 +907,10 @@ export function DashboardOverview() {
                     </TabsList>
                   </Tabs>
                 </div>
+                <CardDescription>
+                  Closed calls grouped by assigned user in the Salesman group for{' '}
+                  {callInsightsPeriodLabel[salesmanPeriod]}
+                </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 {salesmanClosedCallsByAssignedUserData.length > 0 ? (
@@ -942,14 +938,8 @@ export function DashboardOverview() {
 
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>Sales Manager Calls</CardTitle>
-                    <CardDescription>
-                      Closed calls grouped by assigned user in the Sales Manager group for{' '}
-                      {callInsightsPeriodLabel[salesManagerPeriod]}
-                    </CardDescription>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>Sales Manager Calls</CardTitle>
                   <Tabs
                     value={salesManagerPeriod}
                     onValueChange={(value) => setSalesManagerPeriod(value as CallInsightsPeriod)}
@@ -962,6 +952,10 @@ export function DashboardOverview() {
                     </TabsList>
                   </Tabs>
                 </div>
+                <CardDescription>
+                  Closed calls grouped by assigned user in the Sales Manager group for{' '}
+                  {callInsightsPeriodLabel[salesManagerPeriod]}
+                </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 {salesManagerClosedCallsByAssignedUserData.length > 0 ? (
