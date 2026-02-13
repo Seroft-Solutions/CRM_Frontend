@@ -66,6 +66,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Building2,
   CheckCircle,
   Clock,
@@ -127,6 +130,17 @@ function OrganizationUsersContent({
   const [userToRemove, setUserToRemove] = useState<OrganizationUser | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [reinviteUserId, setReinviteUserId] = useState<string | null>(null);
+  const getSortIcon = (column: NonNullable<UserFilters['sortBy']>) => {
+    if (filters.sortBy !== column) {
+      return <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />;
+    }
+
+    return filters.sortDirection === 'asc' ? (
+      <ArrowUp className="h-3.5 w-3.5 text-foreground" />
+    ) : (
+      <ArrowDown className="h-3.5 w-3.5 text-foreground" />
+    );
+  };
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -168,6 +182,25 @@ function OrganizationUsersContent({
       size: 20,
     });
     setSearchTerm('');
+  };
+
+  const handleSort = (column: NonNullable<UserFilters['sortBy']>) => {
+    setFilters((prev) => {
+      if (prev.sortBy === column) {
+        return {
+          ...prev,
+          sortDirection: prev.sortDirection === 'asc' ? 'desc' : 'asc',
+          page: 1,
+        };
+      }
+
+      return {
+        ...prev,
+        sortBy: column,
+        sortDirection: 'asc',
+        page: 1,
+      };
+    });
   };
 
   const hasActiveFilters =
@@ -504,11 +537,66 @@ function OrganizationUsersContent({
                       onCheckedChange={handleSelectAll}
                     />
                   </TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Groups</TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('user')}
+                    >
+                      User
+                      {getSortIcon('user')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('email')}
+                    >
+                      Email
+                      {getSortIcon('email')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('status')}
+                    >
+                      Status
+                      {getSortIcon('status')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('joined')}
+                    >
+                      Joined
+                      {getSortIcon('joined')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('groups')}
+                    >
+                      Groups
+                      {getSortIcon('groups')}
+                    </Button>
+                  </TableHead>
                   <TableHead className="w-[120px] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>

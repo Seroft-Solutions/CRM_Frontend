@@ -119,6 +119,39 @@ export class UserManagementService {
         users = users.filter((user) => user.emailVerified === filters.emailVerified);
       }
 
+      if (filters?.sortBy) {
+        const sortDirection = filters.sortDirection === 'asc' ? 1 : -1;
+
+        users = [...users].sort((a, b) => {
+          const toComparableText = (value?: string) => (value || '').toLowerCase();
+          const compareText = (left?: string, right?: string) =>
+            toComparableText(left).localeCompare(toComparableText(right));
+
+          switch (filters.sortBy) {
+            case 'user': {
+              const leftUserLabel =
+                `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username || a.email || '';
+              const rightUserLabel =
+                `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.username || b.email || '';
+
+              return compareText(leftUserLabel, rightUserLabel) * sortDirection;
+            }
+            case 'email':
+              return compareText(a.email, b.email) * sortDirection;
+            case 'status':
+              return (Number(Boolean(a.enabled)) - Number(Boolean(b.enabled))) * sortDirection;
+            case 'joined':
+              return ((a.createdTimestamp || 0) - (b.createdTimestamp || 0)) * sortDirection;
+            case 'groups':
+              return (
+                ((a.assignedGroups || []).length - (b.assignedGroups || []).length) * sortDirection
+              );
+            default:
+              return 0;
+          }
+        });
+      }
+
       const totalCount = users.length;
       const pageSize = filters?.size || 20;
       const currentPage = filters?.page || 1;
