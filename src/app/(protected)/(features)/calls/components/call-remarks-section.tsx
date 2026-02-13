@@ -350,7 +350,7 @@ export function CallRemarksSection({ callId, customerId }: CallRemarksSectionPro
             </div>
             <Button onClick={handleAddLead} size="sm" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
-              Add Lead
+              Add Lead for existing customer
             </Button>
           </div>
 
