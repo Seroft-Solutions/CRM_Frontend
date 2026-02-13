@@ -968,8 +968,8 @@ export function DashboardOverview() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
-          {/* Channel Analysis */}
-          <div className="grid gap-6">
+          {/* Channel and Call Type Analysis */}
+          <div className="grid gap-6 md:grid-cols-2">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Channel Distribution</CardTitle>
@@ -1002,33 +1002,32 @@ export function DashboardOverview() {
                 )}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Call Types Analysis */}
-          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-            <CardHeader>
-              <CardTitle>Call Types Analysis</CardTitle>
-              <CardDescription>
-                Detailed breakdown of call types across the organization
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {callTypeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={callTypeData}>
-                    <XAxis dataKey="name" stroke="#888888" />
-                    <YAxis stroke="#888888" />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#FFBB28" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-[400px] items-center justify-center">
-                  <p className="text-muted-foreground">No call type data available</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <CardTitle>Call Types Analysis</CardTitle>
+                <CardDescription>
+                  Detailed breakdown of call types across the organization
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {callTypeData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={callTypeData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#FFBB28" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[300px] items-center justify-center">
+                    <p className="text-muted-foreground">No call type data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6 mt-6">
