@@ -354,7 +354,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                   value={newRemark}
                   onChange={(e) => setNewRemark(e.target.value)}
                   rows={2}
-                  className="resize-none"
+                  className="resize-none border-yellow-400 focus-visible:border-yellow-500 focus-visible:ring-yellow-400/30"
                 />
                 <Button
                   onClick={handleAddRemark}
