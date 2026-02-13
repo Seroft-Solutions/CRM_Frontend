@@ -312,22 +312,6 @@ export function DashboardOverview() {
   const salesManagerClosedCallsByAssignedUserData =
     getAssignedUserChartData(closedSalesManagerCalls);
 
-  const callCategories = calls.reduce(
-    (acc, call) => {
-      const category = call.callCategory?.name || 'Uncategorized';
-
-      acc[category] = (acc[category] || 0) + 1;
-
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
-  const callCategoryData = Object.entries(callCategories).map(([name, value]) => ({
-    name,
-    value,
-  }));
-
   const callTypes = calls.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
@@ -984,8 +968,8 @@ export function DashboardOverview() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
-          {/* Channel and Category Analysis */}
-          <div className="grid gap-6 md:grid-cols-2">
+          {/* Channel Analysis */}
+          <div className="grid gap-6">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Channel Distribution</CardTitle>
@@ -1014,29 +998,6 @@ export function DashboardOverview() {
                 ) : (
                   <div className="flex h-[300px] items-center justify-center">
                     <p className="text-muted-foreground">No channel data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Call Categories</CardTitle>
-                <CardDescription>Types of customer interactions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {callCategoryData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={callCategoryData} layout="horizontal">
-                      <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={100} />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#00C49F" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[300px] items-center justify-center">
-                    <p className="text-muted-foreground">No category data available</p>
                   </div>
                 )}
               </CardContent>
