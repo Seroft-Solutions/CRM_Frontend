@@ -55,6 +55,7 @@ import {
 
 export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
+  type CallInsightsPeriod = 'ALL' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
   const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
@@ -75,6 +76,9 @@ export function DashboardOverview() {
   const [staffPeriod, setStaffPeriod] = useState<StaffLeadSummaryPeriod>('DAILY');
   const [selectedStaff, setSelectedStaff] = useState<string>('ALL');
   const [meetingPeriod, setMeetingPeriod] = useState<MeetingPeriod>('DAILY');
+  const [callStatusPeriod, setCallStatusPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [salesmanPeriod, setSalesmanPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [salesManagerPeriod, setSalesManagerPeriod] = useState<CallInsightsPeriod>('ALL');
 
   const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
     period: staffPeriod,
@@ -147,7 +151,40 @@ export function DashboardOverview() {
     'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
   });
 
-  const callStatuses = calls.reduce(
+  const filterCallsByInsightsPeriod = (period: CallInsightsPeriod) => {
+    if (period === 'ALL') {
+      return calls;
+    }
+
+    const range = getCalendarRange(period);
+    const periodStart = new Date(range.start);
+    const periodEnd = new Date(range.end);
+
+    return calls.filter((call) => {
+      if (!call.callDateTime) return false;
+
+      const callDate = new Date(call.callDateTime);
+
+      if (Number.isNaN(callDate.getTime())) return false;
+
+      return callDate >= periodStart && callDate < periodEnd;
+    });
+  };
+
+  const filteredCallsForCallStatus = useMemo(
+    () => filterCallsByInsightsPeriod(callStatusPeriod),
+    [callStatusPeriod, calls]
+  );
+  const filteredCallsForSalesman = useMemo(
+    () => filterCallsByInsightsPeriod(salesmanPeriod),
+    [calls, salesmanPeriod]
+  );
+  const filteredCallsForSalesManager = useMemo(
+    () => filterCallsByInsightsPeriod(salesManagerPeriod),
+    [calls, salesManagerPeriod]
+  );
+
+  const callStatuses = filteredCallsForCallStatus.reduce(
     (acc, call) => {
       const status = call.callStatus?.name || 'Unknown';
 
@@ -161,7 +198,10 @@ export function DashboardOverview() {
   const callStatusData = Object.entries(callStatuses).map(([name, value]) => ({
     name,
     value,
-    percentage: ((value / calls.length) * 100).toFixed(1),
+    percentage:
+      filteredCallsForCallStatus.length > 0
+        ? ((value / filteredCallsForCallStatus.length) * 100).toFixed(1)
+        : '0.0',
   }));
 
   const userDisplayNameById = useMemo(() => {
@@ -248,7 +288,7 @@ export function DashboardOverview() {
     );
   }, [organizationUsers]);
 
-  const closedSalesmanCalls = calls.filter((call) => {
+  const closedSalesmanCalls = filteredCallsForSalesman.filter((call) => {
     const assignedUserId = call.assignedTo?.id;
     const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
 
@@ -257,7 +297,7 @@ export function DashboardOverview() {
     );
   });
 
-  const closedSalesManagerCalls = calls.filter((call) => {
+  const closedSalesManagerCalls = filteredCallsForSalesManager.filter((call) => {
     const assignedUserId = call.assignedTo?.id;
     const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
 
@@ -347,11 +387,6 @@ export function DashboardOverview() {
     {} as Record<string, number>
   );
 
-  const topStates = Object.entries(geoData)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
-    .map(([name, value]) => ({ name, value }));
-
   const agentPerformance = calls.reduce(
     (acc, call) => {
       const agent =
@@ -381,24 +416,6 @@ export function DashboardOverview() {
     },
     {} as Record<number, (typeof customers)[number]>
   );
-
-  const recentCalls = calls
-    .filter((call) => call.callDateTime)
-    .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
-    .slice(0, 10)
-    .map((call) => ({
-      id: call.id,
-      party: call.party?.name || 'Unknown Party',
-      status: call.callStatus?.name || 'Unknown',
-      type: call.callType?.name || 'Unknown',
-      priority: call.priority?.name || 'Normal',
-      agent:
-        call.assignedTo?.firstName && call.assignedTo?.lastName
-          ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-          : 'Unassigned',
-      date: new Date(call.callDateTime).toLocaleDateString(),
-      time: new Date(call.callDateTime).toLocaleTimeString(),
-    }));
 
   const activeLeads = calls
     .filter((call) => {
@@ -513,6 +530,12 @@ export function DashboardOverview() {
     () => new Map(staffOptions.map((staff) => [staff.value, staff.label])),
     [staffOptions]
   );
+  const callInsightsPeriodLabel: Record<CallInsightsPeriod, string> = {
+    ALL: 'all time',
+    DAILY: 'today',
+    WEEKLY: 'this week',
+    MONTHLY: 'this month',
+  };
 
   const staffTotals = staffLeadSummary.reduce(
     (acc, item) => {
@@ -697,214 +720,6 @@ export function DashboardOverview() {
             </Card>
           </div>
 
-          {/* Enhanced Charts Section */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Call Status Distribution</CardTitle>
-                <CardDescription>Real-time status of all calls in the system</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                {callStatusData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={callStatusData}>
-                      <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
-                      <Tooltip
-                        formatter={(value) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Status: ${label}`}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">No call data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="col-span-3 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Priority Distribution</CardTitle>
-                <CardDescription>Call priority breakdown</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {priorityChartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                      <Pie
-                        data={priorityChartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {priorityChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">No priority data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Salesman Calls</CardTitle>
-                <CardDescription>
-                  Closed calls grouped by assigned user in the Salesman group
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                {salesmanClosedCallsByAssignedUserData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={salesmanClosedCallsByAssignedUserData}>
-                      <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
-                      <Tooltip
-                        formatter={(value) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Assigned User: ${label}`}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">
-                      No closed calls found for Salesman group users
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Sales Manager Calls</CardTitle>
-                <CardDescription>
-                  Closed calls grouped by assigned user in the Sales Manager group
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                {salesManagerClosedCallsByAssignedUserData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={salesManagerClosedCallsByAssignedUserData}>
-                      <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
-                      <Tooltip
-                        formatter={(value) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Assigned User: ${label}`}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">
-                      No closed calls found for Sales Manager group users
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Activity and Geographic Distribution */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Top States</CardTitle>
-                <CardDescription>Geographic call distribution</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {topStates.length > 0 ? (
-                  <div className="space-y-4">
-                    {topStates.map((state) => (
-                      <div key={state.name} className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-primary mr-2"></div>
-                          <span className="text-sm">{state.name}</span>
-                        </div>
-                        <span className="text-sm font-medium">{state.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center">
-                    <p className="text-muted-foreground">No geographic data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="col-span-2 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Recent Calls</CardTitle>
-                <CardDescription>Latest call activities with detailed information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {recentCalls.length > 0 ? (
-                  <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                    {recentCalls.map((call) => (
-                      <div
-                        key={call.id}
-                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                            <Phone className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{call.party}</p>
-                            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                              <span>{call.type}</span>
-                              <span>•</span>
-                              <span>{call.agent}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge
-                            variant={
-                              call.status?.toLowerCase().includes('success')
-                                ? 'default'
-                                : call.status?.toLowerCase().includes('pending')
-                                  ? 'secondary'
-                                  : 'outline'
-                            }
-                          >
-                            {call.status}
-                          </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {call.date} {call.time}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[300px] items-center justify-center">
-                    <p className="text-muted-foreground">No recent calls available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Scheduled Meetings */}
           <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
@@ -993,6 +808,185 @@ export function DashboardOverview() {
               )}
             </CardContent>
           </Card>
+
+          {/* Enhanced Charts Section */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>Call Status Distribution</CardTitle>
+                    <CardDescription>
+                      Call status breakdown for {callInsightsPeriodLabel[callStatusPeriod]}
+                    </CardDescription>
+                  </div>
+                  <Tabs
+                    value={callStatusPeriod}
+                    onValueChange={(value) => setCallStatusPeriod(value as CallInsightsPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      <TabsTrigger value="ALL">All</TabsTrigger>
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {callStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={callStatusData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Status: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No call data available for {callInsightsPeriodLabel[callStatusPeriod]}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-3 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <CardTitle>Priority Distribution</CardTitle>
+                <CardDescription>Call priority breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {priorityChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                      <Pie
+                        data={priorityChartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {priorityChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">No priority data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>Salesman Calls</CardTitle>
+                    <CardDescription>
+                      Closed calls grouped by assigned user in the Salesman group for{' '}
+                      {callInsightsPeriodLabel[salesmanPeriod]}
+                    </CardDescription>
+                  </div>
+                  <Tabs
+                    value={salesmanPeriod}
+                    onValueChange={(value) => setSalesmanPeriod(value as CallInsightsPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      <TabsTrigger value="ALL">All</TabsTrigger>
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {salesmanClosedCallsByAssignedUserData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={salesmanClosedCallsByAssignedUserData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Assigned User: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No closed calls found for Salesman group users in{' '}
+                      {callInsightsPeriodLabel[salesmanPeriod]}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>Sales Manager Calls</CardTitle>
+                    <CardDescription>
+                      Closed calls grouped by assigned user in the Sales Manager group for{' '}
+                      {callInsightsPeriodLabel[salesManagerPeriod]}
+                    </CardDescription>
+                  </div>
+                  <Tabs
+                    value={salesManagerPeriod}
+                    onValueChange={(value) => setSalesManagerPeriod(value as CallInsightsPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      <TabsTrigger value="ALL">All</TabsTrigger>
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {salesManagerClosedCallsByAssignedUserData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={salesManagerClosedCallsByAssignedUserData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Assigned User: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No closed calls found for Sales Manager group users in{' '}
+                      {callInsightsPeriodLabel[salesManagerPeriod]}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
