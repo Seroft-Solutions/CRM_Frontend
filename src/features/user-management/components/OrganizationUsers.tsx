@@ -510,7 +510,7 @@ function OrganizationUsersContent({
                   <TableHead>Status</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead>Groups</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="w-[120px] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -587,7 +587,7 @@ function OrganizationUsersContent({
                           enableProgressiveLoading={false}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm">
