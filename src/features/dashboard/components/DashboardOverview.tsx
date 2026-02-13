@@ -427,6 +427,12 @@ export function DashboardOverview() {
         fullCustomer?.mobile ||
         fullCustomer?.whatsApp ||
         'N/A';
+      const productName = call.product?.name || 'N/A';
+      const parsedLeadCreatedDate = call.createdDate ? new Date(call.createdDate) : null;
+      const leadCreatedDate =
+        parsedLeadCreatedDate && !Number.isNaN(parsedLeadCreatedDate.getTime())
+          ? parsedLeadCreatedDate.toLocaleDateString()
+          : 'N/A';
       const leadIdentifier = call.id ?? `${call.leadNo ?? customerName}-${customerPhone}`;
 
       return {
@@ -436,6 +442,8 @@ export function DashboardOverview() {
         customerName,
         customerEmail,
         customerPhone,
+        productName,
+        leadCreatedDate,
         status: call.callStatus?.name || call.status || 'Unknown',
       };
     });
@@ -607,6 +615,12 @@ export function DashboardOverview() {
                           <p className="text-xs text-muted-foreground">{lead.customerName}</p>
                           <p className="text-xs text-muted-foreground">{lead.customerEmail}</p>
                           <p className="text-xs text-muted-foreground">{lead.customerPhone}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Product: {lead.productName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Created: {lead.leadCreatedDate}
+                          </p>
                         </Link>
                       );
                     }
@@ -620,6 +634,8 @@ export function DashboardOverview() {
                         <p className="text-xs">{lead.customerName}</p>
                         <p className="text-xs">{lead.customerEmail}</p>
                         <p className="text-xs">{lead.customerPhone}</p>
+                        <p className="text-xs">Product: {lead.productName}</p>
+                        <p className="text-xs">Created: {lead.leadCreatedDate}</p>
                       </div>
                     );
                   })}
