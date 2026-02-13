@@ -22,6 +22,7 @@ export default function CallPage({ params }: CallPageProps) {
       enabled: !!id,
     },
   });
+
   return (
     <PermissionGuard
       requiredPermission="call:read"
@@ -75,7 +76,7 @@ export default function CallPage({ params }: CallPageProps) {
 
         {/* Call Remarks Section */}
         <div>
-          <CallRemarksSection callId={id} />
+          <CallRemarksSection callId={id} customerId={callData?.customer?.id} />
         </div>
 
         {/* Call Details Section */}

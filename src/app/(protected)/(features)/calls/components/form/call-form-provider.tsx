@@ -3,7 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAccount, useUserAuthorities } from '@/core/auth';
 import {
@@ -31,6 +31,7 @@ interface CallFormProviderProps {
 
 export function CallFormProvider({ children, id, onSuccess, onError }: CallFormProviderProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isNew = !id;
   const baseConfig = callFormConfig;
   const { hasGroup } = useUserAuthorities();
@@ -120,6 +121,15 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
+  const prefilledCustomerId = React.useMemo(() => {
+    const rawCustomerId = searchParams.get('customerId');
+    if (!rawCustomerId) return undefined;
+
+    const parsedCustomerId = Number(rawCustomerId);
+    if (!Number.isInteger(parsedCustomerId) || parsedCustomerId <= 0) return undefined;
+
+    return parsedCustomerId;
+  }, [searchParams]);
 
   const { data: organizations, isLoading: OrganizationLoading } = useUserOrganizations();
 
@@ -149,6 +159,19 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       form.setValue('assignedTo', id);
     }
   }, [isNew, form, tenantData]);
+
+  React.useEffect(() => {
+    if (!isNew || !prefilledCustomerId) {
+      return;
+    }
+
+    const currentCustomer = form.getValues('customer');
+    if (currentCustomer) {
+      return;
+    }
+
+    form.setValue('customer', prefilledCustomerId, { shouldValidate: true });
+  }, [form, isNew, prefilledCustomerId]);
 
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {

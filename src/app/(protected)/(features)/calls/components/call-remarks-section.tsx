@@ -74,9 +74,10 @@ import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRema
 
 interface CallRemarksSectionProps {
   callId: number;
+  customerId?: number;
 }
 
-export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
+export function CallRemarksSection({ callId, customerId }: CallRemarksSectionProps) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -182,8 +183,19 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
       deleteCallRemark({ id: selectedRemark.id });
     }
   };
+
   const handleAddLead = () => {
-    router.push('/calls/new');
+    if (!customerId) {
+      router.push('/calls/new');
+
+      return;
+    }
+
+    const searchParams = new URLSearchParams({
+      customerId: customerId.toString(),
+    });
+
+    router.push(`/calls/new?${searchParams.toString()}`);
   };
 
   const openEditDialog = (remark: CallRemarkDTO) => {
