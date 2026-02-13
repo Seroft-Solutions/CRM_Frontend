@@ -70,6 +70,7 @@ export function DashboardOverview() {
   const { data: totalCallsCount = 0 } = useCountCalls();
   const { data: totalCustomersCount = 0 } = useCountCustomers();
   const { data: totalProductsCount = 0 } = useCountProducts();
+  type DashboardCall = (typeof calls)[number];
 
   const [tabValue, setTabValue] = useState('overview');
   const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
@@ -151,23 +152,63 @@ export function DashboardOverview() {
     'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
   });
 
+  const getCallDate = (call: DashboardCall) => {
+    const rawCallDateTime = (call as Record<string, unknown>)['callDateTime'];
+    const dateValue =
+      typeof rawCallDateTime === 'string' && rawCallDateTime
+        ? rawCallDateTime
+        : call.lastModifiedDate || call.createdDate;
+
+    if (!dateValue) {
+      return null;
+    }
+
+    const parsedDate = new Date(dateValue);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return null;
+    }
+
+    return parsedDate;
+  };
+
+  const getAssigneeIdentifiers = (call: DashboardCall) => {
+    const identifiers = new Set<string>();
+    const assignedTo = call.assignedTo;
+
+    if (assignedTo?.id) {
+      identifiers.add(assignedTo.id.toLowerCase());
+    }
+    if (assignedTo?.email) {
+      identifiers.add(assignedTo.email.toLowerCase());
+    }
+
+    return identifiers;
+  };
+
   const filterCallsByInsightsPeriod = (period: CallInsightsPeriod) => {
     if (period === 'ALL') {
       return calls;
     }
 
-    const range = getCalendarRange(period);
-    const periodStart = new Date(range.start);
-    const periodEnd = new Date(range.end);
+    const periodStart = new Date();
+    const periodEnd = new Date();
+
+    if (period === 'DAILY') {
+      periodStart.setHours(0, 0, 0, 0);
+    } else if (period === 'WEEKLY') {
+      periodStart.setHours(0, 0, 0, 0);
+      periodStart.setDate(periodStart.getDate() - 6);
+    } else if (period === 'MONTHLY') {
+      periodStart.setHours(0, 0, 0, 0);
+      periodStart.setDate(periodStart.getDate() - 29);
+    }
 
     return calls.filter((call) => {
-      if (!call.callDateTime) return false;
+      const callDate = getCallDate(call);
+      if (!callDate) return false;
 
-      const callDate = new Date(call.callDateTime);
-
-      if (Number.isNaN(callDate.getTime())) return false;
-
-      return callDate >= periodStart && callDate < periodEnd;
+      return callDate >= periodStart && callDate <= periodEnd;
     });
   };
 
@@ -204,16 +245,19 @@ export function DashboardOverview() {
         : '0.0',
   }));
 
-  const userDisplayNameById = useMemo(() => {
+  const userDisplayNameByIdentifier = useMemo(() => {
     const map = new Map<string, string>();
 
     organizationUsers.forEach((user) => {
-      if (!user.id) return;
-
       const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
       const displayName = fullName || user.email || user.username || 'Unknown User';
 
-      map.set(user.id, displayName);
+      if (user.id) {
+        map.set(user.id.toLowerCase(), displayName);
+      }
+      if (user.email) {
+        map.set(user.email.toLowerCase(), displayName);
+      }
     });
 
     return map;
@@ -223,27 +267,30 @@ export function DashboardOverview() {
     const assigneeBuckets = inputCalls.reduce(
       (acc, call) => {
         const assignedUserId = call.assignedTo?.id;
+        const assignedUserEmail = call.assignedTo?.email;
+        const assignedUserKey = assignedUserId || assignedUserEmail;
 
-        if (!assignedUserId) {
+        if (!assignedUserKey) {
           return acc;
         }
+        const normalizedAssignedUserKey = assignedUserKey.toLowerCase();
 
         const assignedUserName =
           call.assignedTo?.firstName && call.assignedTo?.lastName
             ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
             : call.assignedTo?.firstName ||
-              userDisplayNameById.get(assignedUserId) ||
+              userDisplayNameByIdentifier.get(normalizedAssignedUserKey) ||
               call.assignedTo?.email ||
               'Unknown User';
 
-        if (!acc[assignedUserId]) {
-          acc[assignedUserId] = {
+        if (!acc[normalizedAssignedUserKey]) {
+          acc[normalizedAssignedUserKey] = {
             name: assignedUserName,
             value: 0,
           };
         }
 
-        acc[assignedUserId].value += 1;
+        acc[normalizedAssignedUserKey].value += 1;
 
         return acc;
       },
@@ -256,22 +303,7 @@ export function DashboardOverview() {
   const normalizeGroupName = (name?: string) =>
     (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  const salesmanUserIds = useMemo(() => {
-    return new Set(
-      organizationUsers
-        .filter((user) =>
-          (user.assignedGroups || []).some((group) => {
-            const normalizedGroupName = normalizeGroupName(group.name);
-
-            return normalizedGroupName === 'salesman' || normalizedGroupName === 'salesmen';
-          })
-        )
-        .map((user) => user.id)
-        .filter((userId): userId is string => Boolean(userId))
-    );
-  }, [organizationUsers]);
-
-  const salesManagerUserIds = useMemo(() => {
+  const salesmanAssigneeIdentifiers = useMemo(() => {
     return new Set(
       organizationUsers
         .filter((user) =>
@@ -279,33 +311,75 @@ export function DashboardOverview() {
             const normalizedGroupName = normalizeGroupName(group.name);
 
             return (
-              normalizedGroupName === 'salesmanager' || normalizedGroupName === 'salesmanagers'
+              normalizedGroupName === 'salesman' ||
+              normalizedGroupName === 'salesmen' ||
+              (normalizedGroupName.includes('salesman') &&
+                !normalizedGroupName.includes('salesmanager'))
             );
           })
         )
-        .map((user) => user.id)
-        .filter((userId): userId is string => Boolean(userId))
+        .flatMap((user) => {
+          const identifiers: string[] = [];
+
+          if (user.id) {
+            identifiers.push(user.id.toLowerCase());
+          }
+          if (user.email) {
+            identifiers.push(user.email.toLowerCase());
+          }
+
+          return identifiers;
+        })
+    );
+  }, [organizationUsers]);
+
+  const salesManagerAssigneeIdentifiers = useMemo(() => {
+    return new Set(
+      organizationUsers
+        .filter((user) =>
+          (user.assignedGroups || []).some((group) => {
+            const normalizedGroupName = normalizeGroupName(group.name);
+
+            return (
+              normalizedGroupName === 'salesmanager' ||
+              normalizedGroupName === 'salesmanagers' ||
+              normalizedGroupName.includes('salesmanager')
+            );
+          })
+        )
+        .flatMap((user) => {
+          const identifiers: string[] = [];
+
+          if (user.id) {
+            identifiers.push(user.id.toLowerCase());
+          }
+          if (user.email) {
+            identifiers.push(user.email.toLowerCase());
+          }
+
+          return identifiers;
+        })
     );
   }, [organizationUsers]);
 
   const closedSalesmanCalls = filteredCallsForSalesman.filter((call) => {
-    const assignedUserId = call.assignedTo?.id;
-    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
-
-    return (
-      Boolean(assignedUserId) && callStatusName === 'closed' && salesmanUserIds.has(assignedUserId)
+    const callStatusName = (call.callStatus?.name || call.status || '').trim().toLowerCase();
+    const isClosed = callStatusName === 'closed' || callStatusName.includes('closed');
+    const isAssignedToSalesman = Array.from(getAssigneeIdentifiers(call)).some((identifier) =>
+      salesmanAssigneeIdentifiers.has(identifier)
     );
+
+    return isClosed && isAssignedToSalesman;
   });
 
   const closedSalesManagerCalls = filteredCallsForSalesManager.filter((call) => {
-    const assignedUserId = call.assignedTo?.id;
-    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
-
-    return (
-      Boolean(assignedUserId) &&
-      callStatusName === 'closed' &&
-      salesManagerUserIds.has(assignedUserId)
+    const callStatusName = (call.callStatus?.name || call.status || '').trim().toLowerCase();
+    const isClosed = callStatusName === 'closed' || callStatusName.includes('closed');
+    const isAssignedToSalesManager = Array.from(getAssigneeIdentifiers(call)).some((identifier) =>
+      salesManagerAssigneeIdentifiers.has(identifier)
     );
+
+    return isClosed && isAssignedToSalesManager;
   });
 
   const salesmanClosedCallsByAssignedUserData = getAssignedUserChartData(closedSalesmanCalls);
@@ -525,8 +599,8 @@ export function DashboardOverview() {
   const callInsightsPeriodLabel: Record<CallInsightsPeriod, string> = {
     ALL: 'all time',
     DAILY: 'today',
-    WEEKLY: 'this week',
-    MONTHLY: 'this month',
+    WEEKLY: 'last 7 days',
+    MONTHLY: 'last 30 days',
   };
 
   const staffTotals = staffLeadSummary.reduce(
