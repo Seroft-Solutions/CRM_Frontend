@@ -585,7 +585,7 @@ function OrganizationUsersContent({
                               <Badge
                                 key={group.id || `${group.name || 'group'}-${index}`}
                                 variant="outline"
-                                className="text-xs px-2 py-0.5"
+                                className="text-xs px-2 py-0.5 border-yellow-300 bg-yellow-100 text-yellow-800"
                               >
                                 {group.name || 'Unnamed Group'}
                               </Badge>
