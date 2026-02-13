@@ -917,7 +917,7 @@ export function DashboardOverview() {
                   <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={salesmanClosedCallsByAssignedUserData}>
                       <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
                       <Tooltip
                         formatter={(value) => [`${value} calls`, 'Count']}
                         labelFormatter={(label) => `Assigned User: ${label}`}
@@ -962,7 +962,7 @@ export function DashboardOverview() {
                   <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={salesManagerClosedCallsByAssignedUserData}>
                       <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
                       <Tooltip
                         formatter={(value) => [`${value} calls`, 'Count']}
                         labelFormatter={(label) => `Assigned User: ${label}`}
