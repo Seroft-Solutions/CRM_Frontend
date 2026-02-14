@@ -76,7 +76,19 @@ export default function CallPage({ params }: CallPageProps) {
 
         {/* Call Remarks Section */}
         <div>
-          <CallRemarksSection callId={id} customerId={callData?.customer?.id} />
+          <CallRemarksSection
+            callId={id}
+            customerId={callData?.customer?.id}
+            sourceId={callData?.source?.id}
+            productId={callData?.product?.id}
+            priorityId={callData?.priority?.id}
+            callTypeId={callData?.callType?.id}
+            subCallTypeId={callData?.subCallType?.id}
+            callStatusId={callData?.callStatus?.id}
+            channelTypeId={callData?.channelType?.id}
+            channelPartiesId={callData?.channelParties?.id}
+            assignedToId={callData?.assignedTo?.id}
+          />
         </div>
 
         {/* Call Details Section */}

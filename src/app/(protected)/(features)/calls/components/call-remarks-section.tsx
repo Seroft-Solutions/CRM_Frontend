@@ -75,9 +75,30 @@ import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRema
 interface CallRemarksSectionProps {
   callId: number;
   customerId?: number;
+  sourceId?: number;
+  productId?: number;
+  priorityId?: number;
+  callTypeId?: number;
+  subCallTypeId?: number;
+  callStatusId?: number;
+  channelTypeId?: number;
+  channelPartiesId?: string;
+  assignedToId?: string;
 }
 
-export function CallRemarksSection({ callId, customerId }: CallRemarksSectionProps) {
+export function CallRemarksSection({
+  callId,
+  customerId,
+  sourceId,
+  productId,
+  priorityId,
+  callTypeId,
+  subCallTypeId,
+  callStatusId,
+  channelTypeId,
+  channelPartiesId,
+  assignedToId,
+}: CallRemarksSectionProps) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -185,15 +206,36 @@ export function CallRemarksSection({ callId, customerId }: CallRemarksSectionPro
   };
 
   const handleAddLead = () => {
-    if (!customerId) {
+    const searchParams = new URLSearchParams();
+    const setNumericParam = (name: string, value?: number) => {
+      if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+        searchParams.set(name, value.toString());
+      }
+    };
+    const setStringParam = (name: string, value?: string) => {
+      const trimmed = value?.trim();
+
+      if (trimmed) {
+        searchParams.set(name, trimmed);
+      }
+    };
+
+    setNumericParam('customerId', customerId);
+    setNumericParam('sourceId', sourceId);
+    setNumericParam('productId', productId);
+    setNumericParam('priorityId', priorityId);
+    setNumericParam('callTypeId', callTypeId);
+    setNumericParam('subCallTypeId', subCallTypeId);
+    setNumericParam('callStatusId', callStatusId);
+    setNumericParam('channelTypeId', channelTypeId);
+    setStringParam('channelPartiesId', channelPartiesId);
+    setStringParam('assignedToId', assignedToId);
+
+    if (!searchParams.toString()) {
       router.push('/calls/new');
 
       return;
     }
-
-    const searchParams = new URLSearchParams({
-      customerId: customerId.toString(),
-    });
 
     router.push(`/calls/new?${searchParams.toString()}`);
   };

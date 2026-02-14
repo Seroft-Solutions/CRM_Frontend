@@ -81,6 +81,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
 
   const [isInsideForm, setIsInsideForm] = useState(false);
+  const hasAppliedUrlPrefillsRef = useRef(false);
 
   const { mutate: createEntity, isPending: isCreating } = useCreateCall();
 
@@ -121,14 +122,36 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
-  const prefilledCustomerId = React.useMemo(() => {
-    const rawCustomerId = searchParams.get('customerId');
-    if (!rawCustomerId) return undefined;
+  const prefilledRelationshipValues = React.useMemo(() => {
+    const parseNumericId = (rawValue: string | null): number | undefined => {
+      if (!rawValue) return undefined;
 
-    const parsedCustomerId = Number(rawCustomerId);
-    if (!Number.isInteger(parsedCustomerId) || parsedCustomerId <= 0) return undefined;
+      const parsedValue = Number(rawValue);
 
-    return parsedCustomerId;
+      if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+        return undefined;
+      }
+
+      return parsedValue;
+    };
+
+    const parseStringId = (rawValue: string | null): string | undefined => {
+      const trimmedValue = rawValue?.trim();
+      return trimmedValue ? trimmedValue : undefined;
+    };
+
+    return {
+      customer: parseNumericId(searchParams.get('customerId')),
+      source: parseNumericId(searchParams.get('sourceId')),
+      product: parseNumericId(searchParams.get('productId')),
+      priority: parseNumericId(searchParams.get('priorityId')),
+      callType: parseNumericId(searchParams.get('callTypeId')),
+      subCallType: parseNumericId(searchParams.get('subCallTypeId')),
+      callStatus: parseNumericId(searchParams.get('callStatusId')),
+      channelType: parseNumericId(searchParams.get('channelTypeId')),
+      channelParties: parseStringId(searchParams.get('channelPartiesId')),
+      assignedTo: parseStringId(searchParams.get('assignedToId')),
+    };
   }, [searchParams]);
 
   const { data: organizations, isLoading: OrganizationLoading } = useUserOrganizations();
@@ -161,17 +184,24 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   }, [isNew, form, tenantData]);
 
   React.useEffect(() => {
-    if (!isNew || !prefilledCustomerId) {
+    if (!isNew || hasAppliedUrlPrefillsRef.current) {
       return;
     }
 
-    const currentCustomer = form.getValues('customer');
-    if (currentCustomer) {
+    const prefilledEntries = Object.entries(prefilledRelationshipValues).filter(
+      ([, value]) => value !== undefined
+    );
+
+    if (prefilledEntries.length === 0) {
       return;
     }
 
-    form.setValue('customer', prefilledCustomerId, { shouldValidate: true });
-  }, [form, isNew, prefilledCustomerId]);
+    prefilledEntries.forEach(([fieldName, value]) => {
+      form.setValue(fieldName as any, value, { shouldValidate: true });
+    });
+
+    hasAppliedUrlPrefillsRef.current = true;
+  }, [form, isNew, prefilledRelationshipValues]);
 
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {
