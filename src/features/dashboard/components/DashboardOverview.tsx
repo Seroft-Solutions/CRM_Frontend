@@ -515,7 +515,23 @@ export function DashboardOverview() {
     {} as Record<string, number>
   );
 
-  const topAgents = Object.entries(agentPerformance)
+  const topPerformerAgentPerformance = allActiveLeads.reduce(
+    (acc, call) => {
+      const assigneeDisplayName = call.assignedTo?.displayName?.trim();
+      const assigneeFullName = `${call.assignedTo?.firstName || ''} ${
+        call.assignedTo?.lastName || ''
+      }`.trim();
+      const assigneeEmail = call.assignedTo?.email?.trim();
+      const agent = assigneeDisplayName || assigneeFullName || assigneeEmail || 'Unassigned';
+
+      acc[agent] = (acc[agent] || 0) + 1;
+
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topAgents = Object.entries(topPerformerAgentPerformance)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));

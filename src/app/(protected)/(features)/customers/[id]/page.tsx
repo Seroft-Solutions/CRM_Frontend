@@ -1,4 +1,5 @@
 import { CustomerDetails } from '../components/customer-details';
+import { CustomerLeadsTable } from '../components/customer-leads-table';
 import { PermissionGuard } from '@/core/auth';
 
 interface CustomerPageProps {
@@ -67,6 +68,10 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
           <CustomerDetails id={id} />
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <CustomerLeadsTable customerId={id} />
         </div>
       </div>
     </PermissionGuard>
