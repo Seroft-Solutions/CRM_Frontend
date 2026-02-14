@@ -442,7 +442,7 @@ export function CallRemarksSection({
           ) : (
             <div className="space-y-4">
               {/* Data Table */}
-              <div className="rounded-md border">
+              <div className="rounded-md border border-yellow-400">
                 <Table className="table-fixed w-full">
                   <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
