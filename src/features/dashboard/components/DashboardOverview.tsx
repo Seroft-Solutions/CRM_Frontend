@@ -501,10 +501,12 @@ export function DashboardOverview() {
 
   const agentPerformance = calls.reduce(
     (acc, call) => {
-      const agent =
-        call.assignedTo?.firstName && call.assignedTo?.lastName
-          ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-          : call.assignedTo?.firstName || 'Unassigned';
+      const assigneeDisplayName = call.assignedTo?.displayName?.trim();
+      const assigneeFullName = `${call.assignedTo?.firstName || ''} ${
+        call.assignedTo?.lastName || ''
+      }`.trim();
+      const assigneeEmail = call.assignedTo?.email?.trim();
+      const agent = assigneeDisplayName || assigneeFullName || assigneeEmail || 'Unassigned';
 
       acc[agent] = (acc[agent] || 0) + 1;
 
