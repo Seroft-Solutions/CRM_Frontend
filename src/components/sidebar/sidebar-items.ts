@@ -1,12 +1,4 @@
-import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  Settings,
-  PhoneCall,
-  Box,
-  ArrowDownToLine,
-} from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Box } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
 // Define the type for sidebar items
@@ -86,6 +78,12 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Invite Users',
         path: '/user-management/invite-users',
         requiredPermission: 'manage:users',
+      },
+      {
+        key: 'manageSalesman',
+        label: 'Manage Salesman',
+        path: '/user-management/manage-salesman',
+        // requiredPermission: 'manage:users',
       },
     ],
   },
