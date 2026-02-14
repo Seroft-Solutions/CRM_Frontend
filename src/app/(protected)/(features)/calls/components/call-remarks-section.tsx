@@ -291,9 +291,9 @@ export function CallRemarksSection({
             </div>
           );
         },
-        size: 90,
-        minSize: 90,
-        maxSize: 90,
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
       },
       {
         accessorKey: 'remark',
