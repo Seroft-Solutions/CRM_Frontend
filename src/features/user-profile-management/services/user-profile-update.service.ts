@@ -20,12 +20,23 @@ export interface UpdatePasswordRequest {
 
 export interface UserProfileData {
   keycloakUser: UserRepresentation | null;
-  springProfile: UserProfileDTO | null;
+  springProfile:
+    | (UserProfileDTO & {
+        profilePicturePath?: string | null;
+        profilePictureUrl?: string | null;
+      })
+    | null;
   sessionUser: {
     id: string;
     email: string | null;
     name: string | null;
   };
+}
+
+export interface UploadProfilePictureResponse {
+  profilePicturePath: string;
+  profilePictureUrl: string;
+  keycloakUpdated?: boolean;
 }
 
 /**
@@ -43,6 +54,7 @@ export async function updateUserBasicInfo(request: UpdateBasicInfoRequest): Prom
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
       throw new Error(errorData.error || 'Failed to update user information');
     }
   } catch (error) {
@@ -70,12 +82,42 @@ export async function updateUserPassword(request: UpdatePasswordRequest): Promis
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
       throw new Error(errorData.error || 'Failed to update password');
     }
   } catch (error) {
     console.error('Error updating user password:', error);
     throw new Error(
       error instanceof Error ? error.message : 'Failed to update password. Please try again.'
+    );
+  }
+}
+
+/**
+ * Upload current user profile picture using server-side API
+ */
+export async function uploadUserProfilePicture(file: File): Promise<UploadProfilePictureResponse> {
+  try {
+    const formData = new FormData();
+
+    formData.append('file', file);
+
+    const response = await fetch('/api/profile/picture', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+
+      throw new Error(errorData.error || 'Failed to upload profile picture');
+    }
+
+    return (await response.json()) as UploadProfilePictureResponse;
+  } catch (error) {
+    console.error('Error uploading profile picture:', error);
+    throw new Error(
+      error instanceof Error ? error.message : 'Failed to upload profile picture. Please try again.'
     );
   }
 }
@@ -90,16 +132,19 @@ export async function getUserProfileData(): Promise<UserProfileData | null> {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
       throw new Error(errorData.error || 'Failed to fetch user profile');
     }
 
     return await response.json();
   } catch (error) {
     console.error('Error getting user profile data:', error);
+
     return null;
   }
 }
@@ -108,12 +153,15 @@ export async function getUserProfileData(): Promise<UserProfileData | null> {
  * @deprecated Use getUserProfileData() instead
  * Get current user profile from Spring backend
  */
-export async function getCurrentUserProfile(keycloakId: string): Promise<UserProfileDTO | null> {
+export async function getCurrentUserProfile(_keycloakId: string): Promise<UserProfileDTO | null> {
   try {
+    void _keycloakId;
     const profileData = await getUserProfileData();
+
     return profileData?.springProfile || null;
   } catch (error) {
     console.error('Error getting current user profile:', error);
+
     return null;
   }
 }
@@ -122,12 +170,15 @@ export async function getCurrentUserProfile(keycloakId: string): Promise<UserPro
  * @deprecated Use getUserProfileData() instead
  * Get current user from Keycloak
  */
-export async function getCurrentKeycloakUser(userId: string): Promise<UserRepresentation | null> {
+export async function getCurrentKeycloakUser(_userId: string): Promise<UserRepresentation | null> {
   try {
+    void _userId;
     const profileData = await getUserProfileData();
+
     return profileData?.keycloakUser || null;
   } catch (error) {
     console.error('Error getting current Keycloak user:', error);
+
     return null;
   }
 }

@@ -9,6 +9,7 @@ import type { Session } from 'next-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Form,
   FormControl,
@@ -17,7 +18,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Loader2, Save, User } from 'lucide-react';
+import { Camera, Loader2, Save, Upload, User } from 'lucide-react';
+import { getAcceptString, validateImageFile } from '@/lib/utils/image-validation';
+import type { UserProfileDTO } from '@/core/api/generated/spring/schemas';
 import { useUserProfileUpdate } from '../hooks/useUserProfileUpdate';
 
 const basicInfoSchema = z.object({
@@ -42,6 +45,7 @@ const basicInfoSchema = z.object({
 });
 
 type BasicInfoFormValues = z.infer<typeof basicInfoSchema>;
+type ProfileWithPicture = UserProfileDTO & { profilePictureUrl?: string | null };
 
 interface BasicInfoUpdateFormProps {
   session: Session;
@@ -49,7 +53,17 @@ interface BasicInfoUpdateFormProps {
 
 export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
   const [isInitializing, setIsInitializing] = useState(true);
-  const { updateBasicInfo, isUpdatingBasicInfo, error, clearError } = useUserProfileUpdate();
+  const [selectedProfileImage, setSelectedProfileImage] = useState<File | null>(null);
+  const [profileImagePreviewUrl, setProfileImagePreviewUrl] = useState<string | null>(null);
+  const {
+    updateBasicInfo,
+    updateProfilePicture,
+    isUpdatingBasicInfo,
+    isUpdatingProfilePicture,
+    profile,
+    keycloakUser,
+    refreshProfile,
+  } = useUserProfileUpdate();
 
   const form = useForm<BasicInfoFormValues>({
     resolver: zodResolver(basicInfoSchema),
@@ -65,12 +79,12 @@ export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
     const initializeForm = async () => {
       try {
         const nameParts = session.user?.name?.split(' ') || [];
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+        const sessionFirstName = nameParts[0] || '';
+        const sessionLastName = nameParts.slice(1).join(' ') || '';
 
         form.reset({
-          firstName,
-          lastName,
+          firstName: sessionFirstName,
+          lastName: sessionLastName,
           email: session.user?.email || '',
           displayName: session.user?.name || '',
         });
@@ -87,9 +101,49 @@ export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
     }
   }, [session, form]);
 
+  useEffect(() => {
+    if (session?.user) {
+      void refreshProfile();
+    }
+  }, [refreshProfile, session]);
+
+  useEffect(() => {
+    if (!session?.user || isInitializing) {
+      return;
+    }
+
+    const nameParts = session.user.name?.split(' ') || [];
+    const sessionFirstName = nameParts[0] || '';
+    const sessionLastName = nameParts.slice(1).join(' ') || '';
+    const firstName = profile?.firstName || keycloakUser?.firstName || sessionFirstName;
+    const lastName = profile?.lastName || keycloakUser?.lastName || sessionLastName;
+    const email = profile?.email || keycloakUser?.email || session.user.email || '';
+    const displayName =
+      profile?.displayName ||
+      [firstName, lastName].filter(Boolean).join(' ') ||
+      session.user.name ||
+      '';
+
+    form.reset({
+      firstName,
+      lastName,
+      email,
+      displayName,
+    });
+  }, [profile, keycloakUser, session, isInitializing, form]);
+
+  useEffect(() => {
+    return () => {
+      if (profileImagePreviewUrl) {
+        URL.revokeObjectURL(profileImagePreviewUrl);
+      }
+    };
+  }, [profileImagePreviewUrl]);
+
   const onSubmit = async (data: BasicInfoFormValues) => {
     if (!session?.user?.id) {
       toast.error('User session not found');
+
       return;
     }
 
@@ -100,9 +154,65 @@ export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
       displayName: data.displayName,
     });
 
-    if (success) {
-    }
+    void success;
   };
+
+  const handleProfileImageSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const validation = await validateImageFile(file);
+
+    if (!validation.valid) {
+      toast.error(validation.errors[0]?.message || 'Invalid image file');
+      event.target.value = '';
+
+      return;
+    }
+
+    if (validation.warnings.length > 0) {
+      toast.warning(validation.warnings[0]?.message || 'Image selected');
+    }
+
+    if (profileImagePreviewUrl) {
+      URL.revokeObjectURL(profileImagePreviewUrl);
+    }
+
+    setSelectedProfileImage(file);
+    setProfileImagePreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleUploadProfilePicture = async () => {
+    if (!selectedProfileImage) {
+      toast.error('Please select an image first');
+
+      return;
+    }
+
+    const success = await updateProfilePicture(selectedProfileImage);
+
+    if (!success) {
+      return;
+    }
+
+    if (profileImagePreviewUrl) {
+      URL.revokeObjectURL(profileImagePreviewUrl);
+    }
+    setProfileImagePreviewUrl(null);
+    setSelectedProfileImage(null);
+  };
+
+  const currentProfileImage =
+    profileImagePreviewUrl ||
+    ((profile as ProfileWithPicture | null)?.profilePictureUrl ?? '') ||
+    keycloakUser?.attributes?.avatar?.[0] ||
+    keycloakUser?.attributes?.picture?.[0] ||
+    session.user?.image ||
+    '';
+  const profileInitials = session.user?.name?.trim().charAt(0)?.toUpperCase() || 'U';
 
   if (isInitializing) {
     return (
@@ -129,6 +239,62 @@ export function BasicInfoUpdateForm({ session }: BasicInfoUpdateFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="rounded-lg border p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <Avatar className="h-24 w-24 border">
+              {currentProfileImage ? (
+                <AvatarImage src={currentProfileImage} alt="Profile picture" />
+              ) : null}
+              <AvatarFallback className="text-xl">{profileInitials}</AvatarFallback>
+            </Avatar>
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium">Profile Picture</p>
+                <p className="text-xs text-muted-foreground">
+                  Upload JPG, PNG, or WEBP up to 5 MB.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  id="profile-picture-input"
+                  type="file"
+                  accept={getAcceptString()}
+                  className="hidden"
+                  onChange={handleProfileImageSelection}
+                  disabled={isUpdatingProfilePicture}
+                />
+                <label
+                  htmlFor="profile-picture-input"
+                  className="inline-flex cursor-pointer items-center rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Camera className="mr-2 h-4 w-4" />
+                  Choose Photo
+                </label>
+
+                <Button
+                  type="button"
+                  onClick={handleUploadProfilePicture}
+                  disabled={!selectedProfileImage || isUpdatingProfilePicture}
+                >
+                  {isUpdatingProfilePicture ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

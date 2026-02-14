@@ -28,16 +28,19 @@ export interface UpdateBasicInfoRequest {
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'No authenticated user found' }, { status: 401 });
     }
 
     const permissionCheck = await keycloakService.verifyAdminPermissions();
+
     if (!permissionCheck.authorized) {
       return NextResponse.json({ error: permissionCheck.error }, { status: 401 });
     }
 
     const realm = keycloakService.getRealm();
+
     if (!realm) {
       throw new Error('Realm configuration missing');
     }
@@ -57,12 +60,13 @@ export async function PUT(request: NextRequest) {
 
     try {
       keycloakUser = await getAdminRealmsRealmUsersUserId(realm, userId);
-    } catch (error) {
+    } catch {
       if (session.user.email) {
         const users = await getAdminRealmsRealmUsers(realm, {
           email: session.user.email,
           exact: true,
         });
+
         if (users && users.length > 0) {
           keycloakUser = users[0];
           userId = keycloakUser.id!;
@@ -86,67 +90,58 @@ export async function PUT(request: NextRequest) {
     await putAdminRealmsRealmUsersUserId(realm, userId, updatedKeycloakUser);
 
     let springUpdateSuccess = false;
+
     try {
-      const accessToken = await keycloakService.getAccessToken();
+      const accessToken = session.access_token;
 
-      const springUserProfilesResponse = await fetch(
-        `${SPRING_API_URL}/api/user-profiles/search?keycloakId=${userId}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      if (!accessToken) {
+        throw new Error('Missing access token in session');
+      }
 
-      if (springUserProfilesResponse.ok) {
-        const profiles = await springUserProfilesResponse.json();
+      const existingProfile = await fetchSpringProfile(accessToken, userId, email);
 
-        if (profiles && profiles.length > 0) {
-          const existingProfile = profiles[0];
+      if (existingProfile) {
+        const updatedProfile: Partial<UserProfileDTO> = {
+          id: existingProfile.id,
+          firstName,
+          lastName,
+          email,
+          displayName: displayName || `${firstName} ${lastName}`,
+        };
 
-          const updatedProfile: Partial<UserProfileDTO> = {
-            firstName,
-            lastName,
-            email,
-            displayName: displayName || `${firstName} ${lastName}`,
-          };
-
-          const updateResponse = await fetch(
-            `${SPRING_API_URL}/api/user-profiles/${existingProfile.id}`,
-            {
-              method: 'PATCH',
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(updatedProfile),
-            }
-          );
-
-          springUpdateSuccess = updateResponse.ok;
-        } else {
-          const newProfile: Partial<UserProfileDTO> = {
-            keycloakId: userId,
-            firstName,
-            lastName,
-            email,
-            displayName: displayName || `${firstName} ${lastName}`,
-            status: 'ACTIVE',
-          };
-
-          const createResponse = await fetch(`${SPRING_API_URL}/api/user-profiles`, {
-            method: 'POST',
+        const updateResponse = await fetch(
+          `${SPRING_API_URL}/api/user-profiles/${existingProfile.id}`,
+          {
+            method: 'PATCH',
             headers: {
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(newProfile),
-          });
+            body: JSON.stringify(updatedProfile),
+          }
+        );
 
-          springUpdateSuccess = createResponse.ok;
-        }
+        springUpdateSuccess = updateResponse.ok;
+      } else {
+        const newProfile: Partial<UserProfileDTO> = {
+          keycloakId: userId,
+          firstName,
+          lastName,
+          email,
+          displayName: displayName || `${firstName} ${lastName}`,
+          status: 'ACTIVE',
+        };
+
+        const createResponse = await fetch(`${SPRING_API_URL}/api/user-profiles`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newProfile),
+        });
+
+        springUpdateSuccess = createResponse.ok;
       }
     } catch (springError) {
       console.warn(
@@ -161,27 +156,113 @@ export async function PUT(request: NextRequest) {
       springUpdated: springUpdateSuccess,
       userId,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Profile basic info update API error:', error);
 
-    if (error.status === 404) {
+    const errorStatus = getErrorStatus(error);
+
+    if (errorStatus === 404) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    if (error.status === 403) {
+    if (errorStatus === 403) {
       return NextResponse.json(
         { error: 'Access denied. Insufficient permissions.' },
         { status: 403 }
       );
     }
 
-    if (error.status === 409) {
+    if (errorStatus === 409) {
       return NextResponse.json({ error: 'Email already exists' }, { status: 409 });
     }
 
     return NextResponse.json(
-      { error: error.message || 'Failed to update user basic information' },
-      { status: error.status || 500 }
+      { error: getErrorMessage(error, 'Failed to update user basic information') },
+      { status: errorStatus }
     );
   }
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+function getErrorStatus(error: unknown): number {
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    const status = (error as { status?: unknown }).status;
+
+    if (typeof status === 'number') {
+      return status;
+    }
+  }
+
+  return 500;
+}
+
+async function fetchSpringProfile(accessToken: string, keycloakId: string, email: string | null) {
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  };
+
+  const byKeycloakIdResponse = await fetch(
+    `${SPRING_API_URL}/api/user-profiles?keycloakId.equals=${encodeURIComponent(keycloakId)}&page=0&size=1`,
+    {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    }
+  );
+
+  if (byKeycloakIdResponse.ok) {
+    const profiles = await byKeycloakIdResponse.json();
+
+    if (profiles && profiles.length > 0) {
+      return profiles[0];
+    }
+  }
+
+  const byIdResponse = await fetch(
+    `${SPRING_API_URL}/api/user-profiles?id.equals=${encodeURIComponent(keycloakId)}&page=0&size=1`,
+    {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    }
+  );
+
+  if (!byIdResponse.ok) {
+    return null;
+  }
+
+  const profilesById = await byIdResponse.json();
+
+  if (profilesById && profilesById.length > 0) {
+    return profilesById[0];
+  }
+
+  if (!email) {
+    return null;
+  }
+
+  const byEmailResponse = await fetch(
+    `${SPRING_API_URL}/api/user-profiles?email.equals=${encodeURIComponent(email)}&page=0&size=1`,
+    {
+      method: 'GET',
+      headers,
+      cache: 'no-store',
+    }
+  );
+
+  if (!byEmailResponse.ok) {
+    return null;
+  }
+
+  const profilesByEmail = await byEmailResponse.json();
+
+  return profilesByEmail && profilesByEmail.length > 0 ? profilesByEmail[0] : null;
 }

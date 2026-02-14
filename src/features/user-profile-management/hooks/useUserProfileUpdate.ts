@@ -10,6 +10,7 @@ import {
   getUserProfileData,
   type UpdateBasicInfoRequest,
   type UpdatePasswordRequest,
+  uploadUserProfilePicture,
   updateUserBasicInfo,
   updateUserPassword,
 } from '../services/user-profile-update.service';
@@ -19,6 +20,7 @@ import type { UserRepresentation } from '@/core/api/generated/keycloak/schemas';
 interface UseUserProfileUpdateState {
   isUpdatingBasicInfo: boolean;
   isUpdatingPassword: boolean;
+  isUpdatingProfilePicture: boolean;
   isLoadingProfile: boolean;
   profile: UserProfileDTO | null;
   keycloakUser: UserRepresentation | null;
@@ -28,6 +30,7 @@ interface UseUserProfileUpdateState {
 interface UseUserProfileUpdateActions {
   updateBasicInfo: (data: UpdateBasicInfoRequest) => Promise<boolean>;
   updatePassword: (data: UpdatePasswordRequest) => Promise<boolean>;
+  updateProfilePicture: (file: File) => Promise<boolean>;
   refreshProfile: () => Promise<void>;
   clearError: () => void;
 }
@@ -42,6 +45,7 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
   const [state, setState] = useState<UseUserProfileUpdateState>({
     isUpdatingBasicInfo: false,
     isUpdatingPassword: false,
+    isUpdatingProfilePicture: false,
     isLoadingProfile: false,
     profile: null,
     keycloakUser: null,
@@ -59,6 +63,7 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
   const refreshProfile = useCallback(async () => {
     if (!session?.user?.id) {
       setError('User session not found');
+
       return;
     }
 
@@ -89,6 +94,7 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
     async (data: UpdateBasicInfoRequest): Promise<boolean> => {
       if (!session?.user?.id) {
         setError('User session not found');
+
         return false;
       }
 
@@ -103,13 +109,16 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
 
         toast.success('Profile updated successfully');
         setState((prev) => ({ ...prev, isUpdatingBasicInfo: false }));
+
         return true;
       } catch (error) {
         console.error('Error updating basic info:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
+
         setError(errorMessage);
         toast.error(errorMessage);
         setState((prev) => ({ ...prev, isUpdatingBasicInfo: false }));
+
         return false;
       }
     },
@@ -120,6 +129,7 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
     async (data: UpdatePasswordRequest): Promise<boolean> => {
       if (!session?.user?.id) {
         setError('User session not found');
+
         return false;
       }
 
@@ -130,23 +140,61 @@ export function useUserProfileUpdate(): UseUserProfileUpdateReturn {
 
         toast.success('Password updated successfully');
         setState((prev) => ({ ...prev, isUpdatingPassword: false }));
+
         return true;
       } catch (error) {
         console.error('Error updating password:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to update password';
+
         setError(errorMessage);
         toast.error(errorMessage);
         setState((prev) => ({ ...prev, isUpdatingPassword: false }));
+
         return false;
       }
     },
     [session?.user?.id, setError]
   );
 
+  const updateProfilePicture = useCallback(
+    async (file: File): Promise<boolean> => {
+      if (!session?.user?.id) {
+        setError('User session not found');
+
+        return false;
+      }
+
+      setState((prev) => ({ ...prev, isUpdatingProfilePicture: true, error: null }));
+
+      try {
+        await uploadUserProfilePicture(file);
+        await updateSession();
+        await refreshProfile();
+
+        toast.success('Profile picture updated successfully');
+        setState((prev) => ({ ...prev, isUpdatingProfilePicture: false }));
+
+        return true;
+      } catch (error) {
+        console.error('Error updating profile picture:', error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to update profile picture';
+
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setState((prev) => ({ ...prev, isUpdatingProfilePicture: false }));
+
+        return false;
+      }
+    },
+    [session?.user?.id, refreshProfile, setError, updateSession]
+  );
+
   return {
     ...state,
     updateBasicInfo,
     updatePassword,
+    updateProfilePicture,
     refreshProfile,
     clearError,
   };
