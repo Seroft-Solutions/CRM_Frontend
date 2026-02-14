@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
+  getAllCalls,
   useGetAllCalls,
   useCountCalls,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
@@ -53,6 +55,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+const ACTIVE_LEADS_PAGE_SIZE = 1000;
+const MAX_ACTIVE_LEADS_PAGES = 200;
+
 export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
   type CallInsightsPeriod = 'ALL' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
@@ -70,7 +75,36 @@ export function DashboardOverview() {
   const { data: totalCallsCount = 0 } = useCountCalls();
   const { data: totalCustomersCount = 0 } = useCountCustomers();
   const { data: totalProductsCount = 0 } = useCountProducts();
+
   type DashboardCall = (typeof calls)[number];
+  const { data: allActiveLeads = [] } = useQuery({
+    queryKey: ['dashboard', 'active-leads', 'all-pages'],
+    queryFn: async () => {
+      const activeLeadCalls: DashboardCall[] = [];
+
+      for (let page = 0; page < MAX_ACTIVE_LEADS_PAGES; page += 1) {
+        const pageData = await getAllCalls({
+          page,
+          size: ACTIVE_LEADS_PAGE_SIZE,
+          sort: ['id,asc'],
+          'status.equals': 'ACTIVE',
+        });
+
+        if (pageData.length === 0) {
+          break;
+        }
+
+        activeLeadCalls.push(...pageData);
+
+        if (pageData.length < ACTIVE_LEADS_PAGE_SIZE) {
+          break;
+        }
+      }
+
+      return activeLeadCalls;
+    },
+    staleTime: 60_000,
+  });
 
   const [tabValue, setTabValue] = useState('overview');
   const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
@@ -206,6 +240,7 @@ export function DashboardOverview() {
 
     return calls.filter((call) => {
       const callDate = getCallDate(call);
+
       if (!callDate) return false;
 
       return callDate >= periodStart && callDate <= periodEnd;
@@ -418,21 +453,40 @@ export function DashboardOverview() {
     value,
   }));
 
-  const channelData = calls.reduce(
-    (acc, call) => {
-      const channel = call.channelType?.name || 'Unknown';
+  const channelChartData = useMemo(() => {
+    const channelCounts = allActiveLeads.reduce(
+      (acc, call) => {
+        const channel = call.channelType?.name?.trim();
 
-      acc[channel] = (acc[channel] || 0) + 1;
+        if (!channel) {
+          return acc;
+        }
 
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+        acc[channel] = (acc[channel] || 0) + 1;
 
-  const channelChartData = Object.entries(channelData).map(([name, value]) => ({
-    name,
-    value,
-  }));
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    return Object.keys(channelCounts)
+      .map((name) => ({
+        name,
+        value: channelCounts[name],
+      }))
+      .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
+  }, [allActiveLeads]);
+
+  const channelColorByName = useMemo(() => {
+    const sortedNames = channelChartData
+      .map((channel) => channel.name)
+      .sort((a, b) => a.localeCompare(b));
+    const total = sortedNames.length || 1;
+
+    return new Map(
+      sortedNames.map((name, index) => [name, `hsl(${((index * 360) / total).toFixed(1)} 72% 48%)`])
+    );
+  }, [channelChartData]);
 
   const geoData = calls.reduce(
     (acc, call) => {
@@ -1063,7 +1117,7 @@ export function DashboardOverview() {
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Channel Distribution</CardTitle>
-                <CardDescription>How customers are reaching us</CardDescription>
+                <CardDescription>How all active leads are reaching us</CardDescription>
               </CardHeader>
               <CardContent>
                 {channelChartData.length > 0 ? (
@@ -1079,7 +1133,12 @@ export function DashboardOverview() {
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {channelChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              channelColorByName.get(entry.name) || COLORS[index % COLORS.length]
+                            }
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
