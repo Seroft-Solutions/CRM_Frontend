@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +55,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useManageSalesman } from '@/features/manage-salesman/hooks/use-manage-salesman';
 
 const ACTIVE_LEADS_PAGE_SIZE = 1000;
 const MAX_ACTIVE_LEADS_PAGES = 200;
@@ -62,6 +63,12 @@ const MAX_ACTIVE_LEADS_PAGES = 200;
 export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
   type CallInsightsPeriod = 'ALL' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  type SalesManagerOption = {
+    id: string;
+    email?: string;
+    label: string;
+    assignedSalesmen: Array<{ id?: string; email?: string }>;
+  };
   const router = useRouter();
 
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
@@ -72,6 +79,7 @@ export function DashboardOverview() {
     page: 1,
     size: 1000,
   });
+  const { data: manageSalesmanData } = useManageSalesman(organizationId);
 
   // Get actual counts (not limited to 1000)
   const { data: totalCallsCount = 0 } = useCountCalls();
@@ -116,6 +124,7 @@ export function DashboardOverview() {
   const [callStatusPeriod, setCallStatusPeriod] = useState<CallInsightsPeriod>('ALL');
   const [salesmanPeriod, setSalesmanPeriod] = useState<CallInsightsPeriod>('ALL');
   const [salesManagerPeriod, setSalesManagerPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [selectedSalesManagerUserId, setSelectedSalesManagerUserId] = useState<string>('');
 
   const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
     period: staffPeriod,
@@ -208,19 +217,20 @@ export function DashboardOverview() {
     return parsedDate;
   };
 
-  const getAssigneeIdentifiers = (call: DashboardCall) => {
+  const getUserIdentifiers = (user?: { id?: string | null; email?: string | null }) => {
     const identifiers = new Set<string>();
-    const assignedTo = call.assignedTo;
 
-    if (assignedTo?.id) {
-      identifiers.add(assignedTo.id.toLowerCase());
+    if (user?.id) {
+      identifiers.add(user.id.toLowerCase());
     }
-    if (assignedTo?.email) {
-      identifiers.add(assignedTo.email.toLowerCase());
+    if (user?.email) {
+      identifiers.add(user.email.toLowerCase());
     }
 
     return identifiers;
   };
+
+  const getAssigneeIdentifiers = (call: DashboardCall) => getUserIdentifiers(call.assignedTo);
 
   const filterCallsByInsightsPeriod = (period: CallInsightsPeriod) => {
     if (period === 'ALL') {
@@ -340,88 +350,140 @@ export function DashboardOverview() {
   const normalizeGroupName = (name?: string) =>
     (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  const salesmanAssigneeIdentifiers = useMemo(() => {
-    return new Set(
-      organizationUsers
-        .filter((user) =>
-          (user.assignedGroups || []).some((group) => {
-            const normalizedGroupName = normalizeGroupName(group.name);
+  const salesManagerOptions = useMemo<SalesManagerOption[]>(() => {
+    const assignedSalesManagers = manageSalesmanData?.salesManagers || [];
 
-            return (
-              normalizedGroupName === 'salesman' ||
-              normalizedGroupName === 'salesmen' ||
-              (normalizedGroupName.includes('salesman') &&
-                !normalizedGroupName.includes('salesmanager'))
-            );
-          })
-        )
-        .flatMap((user) => {
-          const identifiers: string[] = [];
+    if (assignedSalesManagers.length > 0) {
+      return assignedSalesManagers.map((manager) => ({
+        id: manager.id,
+        email: manager.email,
+        label: manager.fullName || manager.email || manager.username || 'Unknown User',
+        assignedSalesmen: manager.assignedSalesmen || [],
+      }));
+    }
 
-          if (user.id) {
-            identifiers.push(user.id.toLowerCase());
-          }
-          if (user.email) {
-            identifiers.push(user.email.toLowerCase());
-          }
+    return organizationUsers
+      .filter((user) =>
+        (user.assignedGroups || []).some((group) => {
+          const groupName = normalizeGroupName(group.name);
 
-          return identifiers;
+          return (
+            groupName === 'salesmanager' ||
+            groupName === 'salesmanagers' ||
+            groupName.includes('salesmanager')
+          );
         })
-    );
-  }, [organizationUsers]);
+      )
+      .map((user) => {
+        const label =
+          `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+          user.email ||
+          user.username ||
+          'Unknown User';
 
-  const salesManagerAssigneeIdentifiers = useMemo(() => {
-    return new Set(
-      organizationUsers
-        .filter((user) =>
-          (user.assignedGroups || []).some((group) => {
-            const normalizedGroupName = normalizeGroupName(group.name);
+        return {
+          id: user.id || '',
+          email: user.email,
+          label,
+          assignedSalesmen: [],
+        };
+      })
+      .filter((manager) => Boolean(manager.id));
+  }, [manageSalesmanData, organizationUsers]);
 
-            return (
-              normalizedGroupName === 'salesmanager' ||
-              normalizedGroupName === 'salesmanagers' ||
-              normalizedGroupName.includes('salesmanager')
-            );
-          })
-        )
-        .flatMap((user) => {
-          const identifiers: string[] = [];
+  useEffect(() => {
+    if (salesManagerOptions.length === 0) {
+      if (selectedSalesManagerUserId) {
+        setSelectedSalesManagerUserId('');
+      }
 
-          if (user.id) {
-            identifiers.push(user.id.toLowerCase());
-          }
-          if (user.email) {
-            identifiers.push(user.email.toLowerCase());
-          }
+      return;
+    }
 
-          return identifiers;
-        })
-    );
-  }, [organizationUsers]);
-
-  const closedSalesmanCalls = filteredCallsForSalesman.filter((call) => {
-    const callStatusName = (call.callStatus?.name || call.status || '').trim().toLowerCase();
-    const isClosed = callStatusName === 'closed' || callStatusName.includes('closed');
-    const isAssignedToSalesman = Array.from(getAssigneeIdentifiers(call)).some((identifier) =>
-      salesmanAssigneeIdentifiers.has(identifier)
+    const selectedManagerStillExists = salesManagerOptions.some(
+      (manager) => manager.id === selectedSalesManagerUserId
     );
 
-    return isClosed && isAssignedToSalesman;
-  });
+    if (!selectedSalesManagerUserId || !selectedManagerStillExists) {
+      setSelectedSalesManagerUserId(salesManagerOptions[0].id);
+    }
+  }, [salesManagerOptions, selectedSalesManagerUserId]);
 
-  const closedSalesManagerCalls = filteredCallsForSalesManager.filter((call) => {
-    const callStatusName = (call.callStatus?.name || call.status || '').trim().toLowerCase();
-    const isClosed = callStatusName === 'closed' || callStatusName.includes('closed');
-    const isAssignedToSalesManager = Array.from(getAssigneeIdentifiers(call)).some((identifier) =>
-      salesManagerAssigneeIdentifiers.has(identifier)
+  const selectedSalesManager = useMemo(
+    () => salesManagerOptions.find((manager) => manager.id === selectedSalesManagerUserId),
+    [salesManagerOptions, selectedSalesManagerUserId]
+  );
+
+  const selectedSalesManagerLabel =
+    selectedSalesManager?.label || selectedSalesManager?.email || 'selected sales manager';
+
+  const selectedSalesManagerIdentifiers = useMemo(
+    () => getUserIdentifiers(selectedSalesManager),
+    [selectedSalesManager]
+  );
+
+  const selectedSalesmanIdentifiers = useMemo(() => {
+    const identifiers = new Set<string>();
+
+    (selectedSalesManager?.assignedSalesmen || []).forEach((salesman) => {
+      getUserIdentifiers(salesman).forEach((identifier) => identifiers.add(identifier));
+    });
+
+    return identifiers;
+  }, [selectedSalesManager]);
+
+  const callIsAssignedToIdentifiers = (call: DashboardCall, identifiers: Set<string>) => {
+    if (identifiers.size === 0) {
+      return false;
+    }
+
+    return Array.from(getAssigneeIdentifiers(call)).some((identifier) =>
+      identifiers.has(identifier)
+    );
+  };
+
+  const isActiveCall = (call: DashboardCall) => call.status === 'ACTIVE';
+  const isClosedCallStatus = (call: DashboardCall) => {
+    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
+
+    return callStatusName === 'closed' || callStatusName.includes('closed');
+  };
+
+  const selectedSalesManagerActiveCalls = filteredCallsForSalesManager.filter(
+    (call) =>
+      isActiveCall(call) && callIsAssignedToIdentifiers(call, selectedSalesManagerIdentifiers)
+  );
+
+  const selectedSalesManagerChildSalesmenActiveClosedCallsForManagerCard =
+    filteredCallsForSalesManager.filter(
+      (call) =>
+        isActiveCall(call) &&
+        isClosedCallStatus(call) &&
+        callIsAssignedToIdentifiers(call, selectedSalesmanIdentifiers)
     );
 
-    return isClosed && isAssignedToSalesManager;
-  });
+  const selectedSalesManagerChildSalesmenActiveClosedCallsForSalesmanCard =
+    filteredCallsForSalesman.filter(
+      (call) =>
+        isActiveCall(call) &&
+        isClosedCallStatus(call) &&
+        callIsAssignedToIdentifiers(call, selectedSalesmanIdentifiers)
+    );
 
-  const salesmanClosedCallsByAssignedUserData = getAssignedUserChartData(closedSalesmanCalls);
-  const salesManagerClosedCallsByAssignedUserData =
-    getAssignedUserChartData(closedSalesManagerCalls);
+  const salesmanClosedCallsByAssignedUserData = getAssignedUserChartData(
+    selectedSalesManagerChildSalesmenActiveClosedCallsForSalesmanCard
+  );
+
+  const salesManagerActiveCallsData = [
+    {
+      name: 'Assigned To Manager',
+      value: selectedSalesManagerActiveCalls.length,
+    },
+    {
+      name: 'Closed By Child Salesmen',
+      value: selectedSalesManagerChildSalesmenActiveClosedCallsForManagerCard.length,
+    },
+  ];
 
   const callTypes = allActiveLeads.reduce(
     (acc, call) => {
@@ -1071,12 +1133,18 @@ export function DashboardOverview() {
                   </Tabs>
                 </div>
                 <CardDescription>
-                  Closed calls grouped by assigned user in the Salesman group for{' '}
-                  {callInsightsPeriodLabel[salesmanPeriod]}
+                  Active calls with closed status for salesmen assigned to{' '}
+                  {selectedSalesManagerLabel} ({callInsightsPeriodLabel[salesmanPeriod]})
                 </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
-                {salesmanClosedCallsByAssignedUserData.length > 0 ? (
+                {!selectedSalesManager ? (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      Select a sales manager to view salesman call data
+                    </p>
+                  </div>
+                ) : salesmanClosedCallsByAssignedUserData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={salesmanClosedCallsByAssignedUserData}>
                       <XAxis dataKey="name" stroke="#888888" />
@@ -1091,8 +1159,8 @@ export function DashboardOverview() {
                 ) : (
                   <div className="flex h-[350px] items-center justify-center">
                     <p className="text-muted-foreground">
-                      No closed calls found for Salesman group users in{' '}
-                      {callInsightsPeriodLabel[salesmanPeriod]}
+                      No active closed calls found for salesmen assigned to{' '}
+                      {selectedSalesManagerLabel} in {callInsightsPeriodLabel[salesmanPeriod]}
                     </p>
                   </div>
                 )}
@@ -1103,43 +1171,60 @@ export function DashboardOverview() {
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <CardTitle>Sales Manager Calls</CardTitle>
-                  <Tabs
-                    value={salesManagerPeriod}
-                    onValueChange={(value) => setSalesManagerPeriod(value as CallInsightsPeriod)}
-                  >
-                    <TabsList className="grid grid-cols-4">
-                      <TabsTrigger value="ALL">All</TabsTrigger>
-                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
-                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
-                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Select
+                      value={selectedSalesManagerUserId || undefined}
+                      onValueChange={setSelectedSalesManagerUserId}
+                    >
+                      <SelectTrigger className="min-w-[240px]">
+                        <SelectValue placeholder="Select Sales Manager" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {salesManagerOptions.map((manager) => (
+                          <SelectItem key={manager.id} value={manager.id}>
+                            {manager.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Tabs
+                      value={salesManagerPeriod}
+                      onValueChange={(value) => setSalesManagerPeriod(value as CallInsightsPeriod)}
+                    >
+                      <TabsList className="grid grid-cols-4">
+                        <TabsTrigger value="ALL">All</TabsTrigger>
+                        <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                        <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                        <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
                 </div>
                 <CardDescription>
-                  Closed calls grouped by assigned user in the Sales Manager group for{' '}
-                  {callInsightsPeriodLabel[salesManagerPeriod]}
+                  Active calls assigned to {selectedSalesManagerLabel}, including active closed
+                  calls by child salesmen ({callInsightsPeriodLabel[salesManagerPeriod]})
                 </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
-                {salesManagerClosedCallsByAssignedUserData.length > 0 ? (
+                {!selectedSalesManager ? (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No sales manager found. Please assign a user to Sales Manager group.
+                    </p>
+                  </div>
+                ) : (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={salesManagerClosedCallsByAssignedUserData}>
+                    <BarChart data={salesManagerActiveCallsData}>
                       <XAxis dataKey="name" stroke="#888888" />
                       <YAxis stroke="#888888" allowDecimals={false} />
                       <Tooltip
                         formatter={(value) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Assigned User: ${label}`}
+                        labelFormatter={(label) => `${selectedSalesManagerLabel}: ${label}`}
                       />
                       <Bar dataKey="value" fill="#8884d8" />
                     </BarChart>
                   </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">
-                      No closed calls found for Sales Manager group users in{' '}
-                      {callInsightsPeriodLabel[salesManagerPeriod]}
-                    </p>
-                  </div>
                 )}
               </CardContent>
             </Card>
