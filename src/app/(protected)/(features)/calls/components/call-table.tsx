@@ -345,12 +345,23 @@ interface DateRange {
   to: Date | undefined;
 }
 
-export function CallTable() {
+interface CallTableProps {
+  initialStatusTab?: string;
+  initialCallTypeFilter?: string;
+}
+
+const isSupportedStatusTab = (tab: string) =>
+  ['crm-leads', 'all', 'business-partners', 'external', 'active', 'draft', 'archived'].includes(
+    tab
+  );
+
+export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTableProps = {}) {
   const queryClient = useQueryClient();
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
-  const isUserGroup = hasGroup('Users') && !isBusinessPartner && !hasGroup('Admins') && !hasGroup('Super Admins');
+  const isUserGroup =
+    hasGroup('Users') && !isBusinessPartner && !hasGroup('Admins') && !hasGroup('Super Admins');
 
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
@@ -363,9 +374,13 @@ export function CallTable() {
   const [statusChangeId, setStatusChangeId] = useState<number | null>(null);
   const [newStatus, setNewStatus] = useState<string | null>(null);
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
-  const [activeStatusTab, setActiveStatusTab] = useState<string>(
-    isBusinessPartner ? 'business-partners' : 'crm-leads'
-  );
+  const [activeStatusTab, setActiveStatusTab] = useState<string>(() => {
+    if (initialStatusTab && isSupportedStatusTab(initialStatusTab)) {
+      return initialStatusTab;
+    }
+
+    return isBusinessPartner ? 'business-partners' : 'crm-leads';
+  });
   const [isArchiveCompleted, setIsArchiveCompleted] = useState(false);
 
   const handleArchiveSuccess = () => {
@@ -377,7 +392,9 @@ export function CallTable() {
       setActiveStatusTab('business-partners');
     }
   }, [isBusinessPartner]);
-  const [filters, setFilters] = useState<FilterState>({});
+  const [filters, setFilters] = useState<FilterState>(() =>
+    initialCallTypeFilter ? { 'callType.name': initialCallTypeFilter } : {}
+  );
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [showBulkArchiveDialog, setShowBulkArchiveDialog] = useState(false);
@@ -396,6 +413,20 @@ export function CallTable() {
   const [externalColumnVisibility, setExternalColumnVisibility] = useState<Record<string, boolean>>(
     {}
   );
+
+  useEffect(() => {
+    if (initialStatusTab && isSupportedStatusTab(initialStatusTab) && !isBusinessPartner) {
+      setActiveStatusTab(initialStatusTab);
+    }
+
+    if (initialCallTypeFilter) {
+      setFilters((prev) => ({
+        ...prev,
+        'callType.name': initialCallTypeFilter,
+      }));
+      resetPagination();
+    }
+  }, [initialStatusTab, initialCallTypeFilter, isBusinessPartner, resetPagination]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -671,8 +702,7 @@ export function CallTable() {
   const assignedToOptions = useMemo(
     () =>
       (userprofileOptions || []).filter(
-        (user: any) =>
-          user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
+        (user: any) => user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
       ),
     [userprofileOptions]
   );
@@ -985,9 +1015,8 @@ export function CallTable() {
 
     // Apply user-specific filtering for Users group members
     if (isUserGroup && accountData?.login) {
-      filtered = filtered.filter((call) =>
-        call.createdBy === accountData.login ||
-        call.assignedTo?.id === accountData.id
+      filtered = filtered.filter(
+        (call) => call.createdBy === accountData.login || call.assignedTo?.id === accountData.id
       );
     }
 
@@ -1059,16 +1088,16 @@ export function CallTable() {
     };
   }, [callIdsForRemarks, remarkBatchSize]);
 
-  const {
-    data: remarkBatchData = [],
-    isFetching: isRemarkBatchFetching,
-  } = useGetAllCallRemarks(remarkBatchParams, {
-    query: {
-      enabled: !!remarkBatchParams,
-      keepPreviousData: true,
-      staleTime: 1000 * 15,
-    },
-  });
+  const { data: remarkBatchData = [], isFetching: isRemarkBatchFetching } = useGetAllCallRemarks(
+    remarkBatchParams,
+    {
+      query: {
+        enabled: !!remarkBatchParams,
+        keepPreviousData: true,
+        staleTime: 1000 * 15,
+      },
+    }
+  );
 
   const baseLatestRemarksMap = useMemo<LatestRemarksMap>(() => {
     const map: LatestRemarksMap = {};

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -61,6 +62,7 @@ const MAX_ACTIVE_LEADS_PAGES = 200;
 export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
   type CallInsightsPeriod = 'ALL' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  const router = useRouter();
 
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
   const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
@@ -421,7 +423,7 @@ export function DashboardOverview() {
   const salesManagerClosedCallsByAssignedUserData =
     getAssignedUserChartData(closedSalesManagerCalls);
 
-  const callTypes = calls.reduce(
+  const callTypes = allActiveLeads.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
 
@@ -436,6 +438,21 @@ export function DashboardOverview() {
     name,
     value,
   }));
+
+  const handleCallTypeBarClick = (entry?: { name?: string; payload?: { name?: string } }) => {
+    const callTypeName = (entry?.name || entry?.payload?.name || '').trim();
+
+    if (!callTypeName) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      statusTab: 'active',
+      callType: callTypeName,
+    });
+
+    router.push(`/calls?${params.toString()}`);
+  };
 
   const priorityData = calls.reduce(
     (acc, call) => {
@@ -1173,9 +1190,7 @@ export function DashboardOverview() {
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Call Types Analysis</CardTitle>
-                <CardDescription>
-                  Detailed breakdown of call types across the organization
-                </CardDescription>
+                <CardDescription>Detailed breakdown of call types for active calls</CardDescription>
               </CardHeader>
               <CardContent>
                 {callTypeData.length > 0 ? (
@@ -1184,7 +1199,12 @@ export function DashboardOverview() {
                       <XAxis dataKey="name" stroke="#888888" />
                       <YAxis stroke="#888888" allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#FFBB28" />
+                      <Bar
+                        dataKey="value"
+                        fill="#FFBB28"
+                        cursor="pointer"
+                        onClick={handleCallTypeBarClick}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (

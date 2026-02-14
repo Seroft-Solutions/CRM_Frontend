@@ -1,17 +1,26 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { CallTable } from '@/app/(protected)/(features)/calls/components/call-table';
 import { InlinePermissionGuard, useUserAuthorities } from '@/core/auth';
 import { MeetingSchedulerDialog } from '@/app/(protected)/(features)/calls/schedule-meeting/components/meeting-scheduler-dialog';
 
+const ALLOWED_STATUS_TABS = new Set([
+  'crm-leads',
+  'all',
+  'business-partners',
+  'external',
+  'active',
+  'draft',
+  'archived',
+]);
+
 export function CallsPageWithMeetingDialog() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { hasGroup } = useUserAuthorities();
   const isBusinessPartner = hasGroup('Business Partners');
   const [showMeetingDialog, setShowMeetingDialog] = useState(false);
@@ -20,6 +29,12 @@ export function CallsPageWithMeetingDialog() {
     customerId?: number;
     assignedUserId?: string;
   }>({});
+  const statusTabFromQuery = searchParams.get('statusTab');
+  const initialStatusTab =
+    statusTabFromQuery && ALLOWED_STATUS_TABS.has(statusTabFromQuery)
+      ? statusTabFromQuery
+      : undefined;
+  const initialCallTypeFilter = searchParams.get('callType') || undefined;
 
   useEffect(() => {
     const created = searchParams.get('created');
@@ -37,6 +52,7 @@ export function CallsPageWithMeetingDialog() {
       setShowMeetingDialog(true);
 
       const newUrl = new URL(window.location.href);
+
       newUrl.searchParams.delete('created');
       newUrl.searchParams.delete('callId');
       newUrl.searchParams.delete('customerId');
@@ -51,8 +67,7 @@ export function CallsPageWithMeetingDialog() {
     setMeetingDialogData({});
   };
 
-  const handleMeetingScheduled = (meetingData: any) => {
-    console.log('Meeting scheduled:', meetingData);
+  const handleMeetingScheduled = () => {
     handleCloseMeetingDialog();
   };
 
@@ -112,7 +127,10 @@ export function CallsPageWithMeetingDialog() {
           </div>
         </div>
 
-        <CallTable />
+        <CallTable
+          initialStatusTab={initialStatusTab}
+          initialCallTypeFilter={initialCallTypeFilter}
+        />
       </div>
 
       {/* Meeting Scheduler Dialog */}
