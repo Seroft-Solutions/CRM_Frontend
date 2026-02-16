@@ -124,6 +124,8 @@ export function DashboardOverview() {
   const [callStatusPeriod, setCallStatusPeriod] = useState<CallInsightsPeriod>('ALL');
   const [salesmanPeriod, setSalesmanPeriod] = useState<CallInsightsPeriod>('ALL');
   const [salesManagerPeriod, setSalesManagerPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [salesManagerComparisonPeriod, setSalesManagerComparisonPeriod] =
+    useState<CallInsightsPeriod>('ALL');
   const [selectedSalesManagerUserId, setSelectedSalesManagerUserId] = useState<string>('');
 
   const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
@@ -277,6 +279,10 @@ export function DashboardOverview() {
   const filteredCallsForSalesManager = useMemo(
     () => filterCallsByInsightsPeriod(salesManagerPeriod),
     [calls, salesManagerPeriod]
+  );
+  const filteredCallsForSalesManagerComparison = useMemo(
+    () => filterCallsByInsightsPeriod(salesManagerComparisonPeriod),
+    [calls, salesManagerComparisonPeriod]
   );
 
   const callStatuses = filteredCallsForCallStatus.reduce(
@@ -505,10 +511,10 @@ export function DashboardOverview() {
             );
           });
 
-          const assignedToManagerCount = filteredCallsForSalesManager.filter(
+          const assignedToManagerCount = filteredCallsForSalesManagerComparison.filter(
             (call) => isActiveCall(call) && callIsAssignedToIdentifiers(call, managerIdentifiers)
           ).length;
-          const childSalesmenClosedCount = filteredCallsForSalesManager.filter(
+          const childSalesmenClosedCount = filteredCallsForSalesManagerComparison.filter(
             (call) =>
               isActiveCall(call) &&
               isClosedCallStatus(call) &&
@@ -524,7 +530,7 @@ export function DashboardOverview() {
           };
         })
         .sort((a, b) => b.value - a.value),
-    [filteredCallsForSalesManager, salesManagerOptions]
+    [filteredCallsForSalesManagerComparison, salesManagerOptions]
   );
 
   const callTypes = allActiveLeads.reduce(
@@ -1274,10 +1280,26 @@ export function DashboardOverview() {
 
           <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
-              <CardTitle>Sales Manager Overall Comparison</CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <CardTitle>Sales Manager Overall Comparison</CardTitle>
+                <Tabs
+                  value={salesManagerComparisonPeriod}
+                  onValueChange={(value) =>
+                    setSalesManagerComparisonPeriod(value as CallInsightsPeriod)
+                  }
+                >
+                  <TabsList className="grid grid-cols-4">
+                    <TabsTrigger value="ALL">All</TabsTrigger>
+                    <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                    <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                    <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
               <CardDescription>
                 One merged bar per sales manager to compare total leads (assigned to manager +
-                closed by child salesmen) for {callInsightsPeriodLabel[salesManagerPeriod]}
+                closed by child salesmen) for{' '}
+                {callInsightsPeriodLabel[salesManagerComparisonPeriod]}
               </CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
@@ -1317,7 +1339,7 @@ export function DashboardOverview() {
                 <div className="flex h-[360px] items-center justify-center">
                   <p className="text-muted-foreground">
                     No sales manager lead data available for{' '}
-                    {callInsightsPeriodLabel[salesManagerPeriod]}
+                    {callInsightsPeriodLabel[salesManagerComparisonPeriod]}
                   </p>
                 </div>
               )}
