@@ -492,6 +492,41 @@ export function DashboardOverview() {
     },
   ];
 
+  const allSalesManagersMergedCallsData = useMemo(
+    () =>
+      salesManagerOptions
+        .map((manager) => {
+          const managerIdentifiers = getUserIdentifiers({ id: manager.id, email: manager.email });
+          const childSalesmenIdentifiers = new Set<string>();
+
+          (manager.assignedSalesmen || []).forEach((salesman) => {
+            getUserIdentifiers(salesman).forEach((identifier) =>
+              childSalesmenIdentifiers.add(identifier)
+            );
+          });
+
+          const assignedToManagerCount = filteredCallsForSalesManager.filter(
+            (call) => isActiveCall(call) && callIsAssignedToIdentifiers(call, managerIdentifiers)
+          ).length;
+          const childSalesmenClosedCount = filteredCallsForSalesManager.filter(
+            (call) =>
+              isActiveCall(call) &&
+              isClosedCallStatus(call) &&
+              callIsAssignedToIdentifiers(call, childSalesmenIdentifiers)
+          ).length;
+
+          return {
+            id: manager.id,
+            name: manager.label,
+            value: assignedToManagerCount + childSalesmenClosedCount,
+            assignedToManager: assignedToManagerCount,
+            childSalesmenClosed: childSalesmenClosedCount,
+          };
+        })
+        .sort((a, b) => b.value - a.value),
+    [filteredCallsForSalesManager, salesManagerOptions]
+  );
+
   const callTypes = allActiveLeads.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
@@ -1236,6 +1271,58 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <CardTitle>Sales Manager Overall Comparison</CardTitle>
+              <CardDescription>
+                One merged bar per sales manager to compare total leads (assigned to manager +
+                closed by child salesmen) for {callInsightsPeriodLabel[salesManagerPeriod]}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+              {allSalesManagersMergedCallsData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={360}>
+                  <BarChart data={allSalesManagersMergedCallsData}>
+                    <XAxis
+                      dataKey="name"
+                      stroke="#888888"
+                      interval={0}
+                      angle={-20}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis stroke="#888888" allowDecimals={false} />
+                    <Tooltip
+                      formatter={(value, name, item) => {
+                        if (name === 'Total Leads') {
+                          const payload = item.payload as {
+                            assignedToManager: number;
+                            childSalesmenClosed: number;
+                          };
+
+                          return [
+                            `${value} total (Manager: ${payload.assignedToManager}, Child Salesmen Closed: ${payload.childSalesmenClosed})`,
+                            'Total Leads',
+                          ];
+                        }
+
+                        return [`${value}`, String(name)];
+                      }}
+                    />
+                    <Bar dataKey="value" name="Total Leads" fill="#22c55e" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-[360px] items-center justify-center">
+                  <p className="text-muted-foreground">
+                    No sales manager lead data available for{' '}
+                    {callInsightsPeriodLabel[salesManagerPeriod]}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
