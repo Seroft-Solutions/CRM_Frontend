@@ -240,14 +240,21 @@ export function DashboardOverview() {
     const periodStart = new Date();
     const periodEnd = new Date();
 
+    periodEnd.setHours(23, 59, 59, 999);
+
     if (period === 'DAILY') {
-      periodStart.setHours(0, 0, 0, 0);
-    } else if (period === 'WEEKLY') {
+      // Last 7 days including today
       periodStart.setHours(0, 0, 0, 0);
       periodStart.setDate(periodStart.getDate() - 6);
-    } else if (period === 'MONTHLY') {
+    } else if (period === 'WEEKLY') {
+      // Last 4 weeks (28 days) including today
       periodStart.setHours(0, 0, 0, 0);
-      periodStart.setDate(periodStart.getDate() - 29);
+      periodStart.setDate(periodStart.getDate() - 27);
+    } else if (period === 'MONTHLY') {
+      // Last 12 months including current month
+      periodStart.setHours(0, 0, 0, 0);
+      periodStart.setDate(1);
+      periodStart.setMonth(periodStart.getMonth() - 11);
     }
 
     return calls.filter((call) => {
@@ -749,9 +756,9 @@ export function DashboardOverview() {
   );
   const callInsightsPeriodLabel: Record<CallInsightsPeriod, string> = {
     ALL: 'all time',
-    DAILY: 'today',
-    WEEKLY: 'last 7 days',
-    MONTHLY: 'last 30 days',
+    DAILY: 'last 7 days',
+    WEEKLY: 'last 4 weeks',
+    MONTHLY: 'last 12 months',
   };
 
   const staffTotals = staffLeadSummary.reduce(
