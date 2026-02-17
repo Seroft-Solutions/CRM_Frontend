@@ -91,10 +91,6 @@ export default function CallPage({ params }: CallPageProps) {
           />
         </div>
 
-        {/* Call Details Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <CallDetails id={id} />
-        </div>
         {/* Call Meetings Section */}
         <div>
           <CallMeetingsSection
@@ -102,6 +98,11 @@ export default function CallPage({ params }: CallPageProps) {
             customerId={callData?.customer?.id}
             assignedUserId={callData?.assignedTo?.id}
           />
+        </div>
+
+        {/* Call Details Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <CallDetails id={id} />
         </div>
       </div>
     </PermissionGuard>
