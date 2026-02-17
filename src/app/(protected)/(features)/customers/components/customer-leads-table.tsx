@@ -119,7 +119,18 @@ export function CustomerLeadsTable({ customerId }: CustomerLeadsTableProps) {
             <TableBody>
               {leads.map((lead) => (
                 <TableRow key={lead.id || `${lead.leadNo}-${lead.createdDate}`}>
-                  <TableCell className="font-medium">{lead.leadNo || '-'}</TableCell>
+                  <TableCell className="font-medium">
+                    {lead.id && lead.leadNo ? (
+                      <Link
+                        href={`/calls/${lead.id}`}
+                        className="text-primary underline-offset-4 hover:underline"
+                      >
+                        {lead.leadNo}
+                      </Link>
+                    ) : (
+                      lead.leadNo || '-'
+                    )}
+                  </TableCell>
                   <TableCell>{lead.callStatus?.name || lead.status || '-'}</TableCell>
                   <TableCell>{lead.callType?.name || '-'}</TableCell>
                   <TableCell>{lead.channelType?.name || '-'}</TableCell>
