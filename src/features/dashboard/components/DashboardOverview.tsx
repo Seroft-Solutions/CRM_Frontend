@@ -801,6 +801,20 @@ export function DashboardOverview() {
     WEEKLY: 'last 4 weeks',
     MONTHLY: 'last 12 months',
   };
+  const leadNoByCallId = useMemo(() => {
+    const map = new Map<number, string>();
+
+    calls.forEach((call) => {
+      const callId = call.id;
+      const leadNo = call.leadNo?.trim();
+
+      if (typeof callId === 'number' && leadNo) {
+        map.set(callId, leadNo);
+      }
+    });
+
+    return map;
+  }, [calls]);
 
   const staffTotals = staffLeadSummary.reduce(
     (acc, item) => {
@@ -1041,14 +1055,17 @@ export function DashboardOverview() {
                       `${meeting.organizer?.firstName || ''} ${meeting.organizer?.lastName || ''}`.trim() ||
                       meeting.organizer?.email ||
                       'Unassigned';
-                    const leadNo = meeting.call?.leadNo || '—';
+                    const leadId = meeting.call?.id;
+                    const leadNo =
+                      meeting.call?.leadNo?.trim() ||
+                      (typeof leadId === 'number' ? leadNoByCallId.get(leadId) : undefined) ||
+                      '—';
                     const customer = meeting.assignedCustomer?.customerBusinessName || '—';
 
-                    return (
-                      <div
-                        key={meeting.id}
-                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
-                      >
+                    const rowClasses =
+                      'flex items-center justify-between p-3 border rounded-lg shadow-sm transition-shadow duration-200 bg-slate-50/50';
+                    const rowContent = (
+                      <>
                         <div className="flex items-center space-x-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100">
                             <Calendar className="h-4 w-4 text-blue-600" />
@@ -1058,7 +1075,12 @@ export function DashboardOverview() {
                             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                               <span>{organizer}</span>
                               <span>•</span>
-                              <span>Lead {leadNo}</span>
+                              <span className="inline-flex items-center gap-1">
+                                <span>Lead No:</span>
+                                <span className={leadId ? 'text-primary underline' : undefined}>
+                                  {leadNo}
+                                </span>
+                              </span>
                               <span>•</span>
                               <span>{customer}</span>
                             </div>
@@ -1070,6 +1092,24 @@ export function DashboardOverview() {
                             {meetingDate.toLocaleDateString()} {meetingDate.toLocaleTimeString()}
                           </p>
                         </div>
+                      </>
+                    );
+
+                    if (leadId) {
+                      return (
+                        <Link
+                          key={meeting.id}
+                          href={`/calls/${leadId}`}
+                          className={`${rowClasses} hover:shadow-md hover:bg-slate-50 cursor-pointer`}
+                        >
+                          {rowContent}
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div key={meeting.id} className={rowClasses}>
+                        {rowContent}
                       </div>
                     );
                   })}
