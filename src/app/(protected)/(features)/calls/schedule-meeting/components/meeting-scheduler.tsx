@@ -100,6 +100,7 @@ export function MeetingScheduler({
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
   const [bookedTimeSlots, setBookedTimeSlots] = useState<string[]>([]);
+  const [showParticipantValidationErrors, setShowParticipantValidationErrors] = useState(false);
 
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -406,6 +407,15 @@ export function MeetingScheduler({
   }, [existingMeetings, selectedDate]);
 
   const scheduleMeeting = async () => {
+    const hasInvalidParticipants = participants.some(
+      (participant) => !participant.email.trim() || !participant.name.trim()
+    );
+
+    if (hasInvalidParticipants) {
+      setShowParticipantValidationErrors(true);
+      return;
+    }
+
     if (!selectedDate || !selectedTime || !assignedUserId || !callId) return;
 
     const meetingDateTime = new Date(selectedDate);
@@ -444,12 +454,7 @@ export function MeetingScheduler({
   };
 
   const canScheduleMeeting = () => {
-    return (
-      selectedDate &&
-      selectedTime &&
-      meetingDetails.title.trim().length > 0 &&
-      participants.every((p) => p.email && p.name)
-    );
+    return selectedDate && selectedTime && meetingDetails.title.trim().length > 0;
   };
 
   if (!!disabled) {
@@ -545,33 +550,71 @@ export function MeetingScheduler({
                       <Input
                         placeholder="email@example.com"
                         value={participant.email}
-                        onChange={(e) => {
-                          const newParticipants = [...participants];
-                          newParticipants[index].email = e.target.value;
-                          setParticipants(newParticipants);
-                        }}
+                        aria-invalid={
+                          showParticipantValidationErrors && !participant.email.trim()
+                            ? 'true'
+                            : 'false'
+                        }
+                        className={
+                          showParticipantValidationErrors && !participant.email.trim()
+                            ? 'border-red-500 focus-visible:ring-red-500'
+                            : ''
+                        }
+                        onChange={(e) =>
+                          setParticipants((prev) =>
+                            prev.map((existingParticipant, participantIndex) =>
+                              participantIndex === index
+                                ? { ...existingParticipant, email: e.target.value }
+                                : existingParticipant
+                            )
+                          )
+                        }
                       />
+                      {showParticipantValidationErrors && !participant.email.trim() && (
+                        <p className="mt-1 text-xs text-red-600">Email is required</p>
+                      )}
                     </div>
                     <div className="col-span-4">
                       <Label>Name</Label>
                       <Input
                         placeholder="Full Name"
                         value={participant.name}
-                        onChange={(e) => {
-                          const newParticipants = [...participants];
-                          newParticipants[index].name = e.target.value;
-                          setParticipants(newParticipants);
-                        }}
+                        aria-invalid={
+                          showParticipantValidationErrors && !participant.name.trim()
+                            ? 'true'
+                            : 'false'
+                        }
+                        className={
+                          showParticipantValidationErrors && !participant.name.trim()
+                            ? 'border-red-500 focus-visible:ring-red-500'
+                            : ''
+                        }
+                        onChange={(e) =>
+                          setParticipants((prev) =>
+                            prev.map((existingParticipant, participantIndex) =>
+                              participantIndex === index
+                                ? { ...existingParticipant, name: e.target.value }
+                                : existingParticipant
+                            )
+                          )
+                        }
                       />
+                      {showParticipantValidationErrors && !participant.name.trim() && (
+                        <p className="mt-1 text-xs text-red-600">Name is required</p>
+                      )}
                     </div>
                     <div className="col-span-2 flex items-center space-x-2">
                       <Checkbox
                         checked={participant.isRequired}
-                        onCheckedChange={(checked) => {
-                          const newParticipants = [...participants];
-                          newParticipants[index].isRequired = checked as boolean;
-                          setParticipants(newParticipants);
-                        }}
+                        onCheckedChange={(checked) =>
+                          setParticipants((prev) =>
+                            prev.map((existingParticipant, participantIndex) =>
+                              participantIndex === index
+                                ? { ...existingParticipant, isRequired: checked as boolean }
+                                : existingParticipant
+                            )
+                          )
+                        }
                       />
                       <Label className="text-xs">Required</Label>
                     </div>

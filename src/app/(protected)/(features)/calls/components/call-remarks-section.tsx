@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import {
   Edit2,
@@ -16,10 +17,8 @@ import {
 import { toast } from 'sonner';
 import {
   ColumnDef,
-  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   SortingState,
@@ -64,7 +63,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 import {
   useCreateCallRemark,
@@ -76,10 +74,32 @@ import type { CallRemarkDTO } from '@/core/api/generated/spring/schemas/CallRema
 
 interface CallRemarksSectionProps {
   callId: number;
+  customerId?: number;
+  sourceId?: number;
+  productId?: number;
+  priorityId?: number;
+  callTypeId?: number;
+  subCallTypeId?: number;
+  callStatusId?: number;
+  channelTypeId?: number;
+  channelPartiesId?: string;
+  assignedToId?: string;
 }
 
-export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
-  const [showAddDialog, setShowAddDialog] = useState(false);
+export function CallRemarksSection({
+  callId,
+  customerId,
+  sourceId,
+  productId,
+  priorityId,
+  callTypeId,
+  subCallTypeId,
+  callStatusId,
+  channelTypeId,
+  channelPartiesId,
+  assignedToId,
+}: CallRemarksSectionProps) {
+  const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedRemark, setSelectedRemark] = useState<CallRemarkDTO | null>(null);
@@ -87,8 +107,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const [editRemark, setEditRemark] = useState('');
 
   const [sorting, setSorting] = useState<SortingState>([{ id: 'dateTime', desc: true }]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState('');
 
   const {
     data: callRemarks = [],
@@ -110,7 +128,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     mutation: {
       onSuccess: () => {
         toast.success('Call remark added successfully');
-        setShowAddDialog(false);
         setNewRemark('');
         refetch();
       },
@@ -152,6 +169,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const handleAddRemark = () => {
     if (!newRemark.trim()) {
       toast.error('Please enter a remark');
+
       return;
     }
 
@@ -168,6 +186,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
   const handleEditRemark = () => {
     if (!selectedRemark || !editRemark.trim()) {
       toast.error('Please enter a remark');
+
       return;
     }
 
@@ -184,6 +203,41 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     if (selectedRemark?.id) {
       deleteCallRemark({ id: selectedRemark.id });
     }
+  };
+
+  const handleAddLead = () => {
+    const searchParams = new URLSearchParams();
+    const setNumericParam = (name: string, value?: number) => {
+      if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+        searchParams.set(name, value.toString());
+      }
+    };
+    const setStringParam = (name: string, value?: string) => {
+      const trimmed = value?.trim();
+
+      if (trimmed) {
+        searchParams.set(name, trimmed);
+      }
+    };
+
+    setNumericParam('customerId', customerId);
+    setNumericParam('sourceId', sourceId);
+    setNumericParam('productId', productId);
+    setNumericParam('priorityId', priorityId);
+    setNumericParam('callTypeId', callTypeId);
+    setNumericParam('subCallTypeId', subCallTypeId);
+    setNumericParam('callStatusId', callStatusId);
+    setNumericParam('channelTypeId', channelTypeId);
+    setStringParam('channelPartiesId', channelPartiesId);
+    setStringParam('assignedToId', assignedToId);
+
+    if (!searchParams.toString()) {
+      router.push('/calls/new');
+
+      return;
+    }
+
+    router.push(`/calls/new?${searchParams.toString()}`);
   };
 
   const openEditDialog = (remark: CallRemarkDTO) => {
@@ -221,9 +275,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
         },
         cell: ({ row }) => {
           const dateTime = row.getValue('dateTime') as string;
-          if (!dateTime) return <span className="text-muted-foreground text-xs">No date</span>;
+
+          if (!dateTime) {
+            return <span className="text-muted-foreground text-xs">No date</span>;
+          }
 
           const date = new Date(dateTime);
+
           return (
             <div className="space-y-0.5">
               <div className="text-xs font-medium text-foreground">
@@ -233,9 +291,9 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
             </div>
           );
         },
-        size: 90,
-        minSize: 90,
-        maxSize: 90,
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
       },
       {
         accessorKey: 'remark',
@@ -258,7 +316,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
       },
       {
         id: 'actions',
-        header: ({ column }) => {
+        header: () => {
           return <div className="text-right">Actions</div>;
         },
         cell: ({ row }) => {
@@ -305,18 +363,13 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
     data: callRemarks,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     enableColumnResizing: false,
     columnResizeMode: 'onChange',
     state: {
       sorting,
-      columnFilters,
-      globalFilter,
     },
     initialState: {
       pagination: {
@@ -337,30 +390,39 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
                 {callRemarks.length}
               </Badge>
             </div>
-            <Button
-              onClick={() => setShowAddDialog(true)}
-              size="sm"
-              className="flex items-center gap-2"
-            >
+            <Button onClick={handleAddLead} size="sm" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
-              Add Remark
+              Add Lead for existing customer
             </Button>
           </div>
 
-          {/* Search and filters */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search remarks..."
-                value={globalFilter ?? ''}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-9"
-              />
+          <div className="flex items-center justify-between">
+            <div className="flex-1 max-w-2xl space-y-2">
+              <Label htmlFor="inline-new-remark" className="text-sm">
+                Add Remark
+              </Label>
+              <div className="flex items-start gap-2">
+                <Textarea
+                  id="inline-new-remark"
+                  placeholder="Enter your remark here..."
+                  value={newRemark}
+                  onChange={(e) => setNewRemark(e.target.value)}
+                  rows={2}
+                  className="resize-none border-yellow-400 focus-visible:border-yellow-500 focus-visible:ring-yellow-400/30"
+                />
+                <Button
+                  onClick={handleAddRemark}
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  disabled={isCreating || !newRemark.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                  {isCreating ? 'Adding...' : 'Add Remark'}
+                </Button>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {table.getFilteredRowModel().rows.length} of {callRemarks.length} remarks
-            </div>
+            <div className="text-sm text-muted-foreground">{callRemarks.length} remarks</div>
           </div>
         </CardHeader>
 
@@ -380,7 +442,7 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           ) : (
             <div className="space-y-4">
               {/* Data Table */}
-              <div className="rounded-md border">
+              <div className="rounded-md border border-yellow-400">
                 <Table className="table-fixed w-full">
                   <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -473,45 +535,6 @@ export function CallRemarksSection({ callId }: CallRemarksSectionProps) {
           )}
         </CardContent>
       </Card>
-
-      {/* Add Remark Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Call Remark</DialogTitle>
-            <DialogDescription>
-              Add a new remark to track important information about this call.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-remark">Remark</Label>
-              <Textarea
-                id="new-remark"
-                placeholder="Enter your remark here..."
-                value={newRemark}
-                onChange={(e) => setNewRemark(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAddDialog(false);
-                setNewRemark('');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleAddRemark} disabled={isCreating || !newRemark.trim()}>
-              {isCreating ? 'Adding...' : 'Add Remark'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Remark Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>

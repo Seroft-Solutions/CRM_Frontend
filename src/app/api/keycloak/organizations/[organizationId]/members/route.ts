@@ -40,15 +40,27 @@ function generateInvitationId(): string {
 
 function createInvitationUserAttributes(invitation: PendingInvitation) {
   return {
-    invitation_id: invitation.id,
-    invitation_status: invitation.status,
-    invitation_invited_by: invitation.invitedBy,
-    invitation_invited_at: invitation.invitedAt.toString(),
-    invitation_organization_id: invitation.organizationId,
-    invitation_selected_groups: JSON.stringify(invitation.selectedGroups.map((g) => g.id)),
-    invitation_note: invitation.invitationNote || '',
-    invitation_expires_at: invitation.expiresAt?.toString() || '',
+    invitation_id: [invitation.id],
+    invitation_status: [invitation.status],
+    invitation_invited_by: [invitation.invitedBy],
+    invitation_invited_at: [invitation.invitedAt.toString()],
+    invitation_organization_id: [invitation.organizationId],
+    invitation_selected_groups: [JSON.stringify(invitation.selectedGroups.map((g) => g.id))],
+    invitation_note: [invitation.invitationNote || ''],
+    invitation_expires_at: [invitation.expiresAt?.toString() || ''],
   };
+}
+
+const INVITE_MANAGED_GROUP_TOKENS = new Set([
+  'user',
+  'users',
+  'salesman',
+  'salesmanager',
+  'admins',
+]);
+
+function normalizeGroupToken(value?: string): string {
+  return (value || '').toLowerCase().replace(/[\s_-]+/g, '');
 }
 
 async function ensureProperGroupAssignment(
@@ -388,11 +400,13 @@ export async function POST(
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added existing user to organization');
 
-        const groupResult = await ensureProperGroupAssignment(realm, userId);
-        groupManagement.usersGroupAssigned =
-          groupResult.usersGroupAssigned || groupManagement.usersGroupAssigned;
-        groupManagement.adminsGroupRemoved =
-          groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        if (!inviteData.selectedGroups || inviteData.selectedGroups.length === 0) {
+          const groupResult = await ensureProperGroupAssignment(realm, userId);
+          groupManagement.usersGroupAssigned =
+            groupResult.usersGroupAssigned || groupManagement.usersGroupAssigned;
+          groupManagement.adminsGroupRemoved =
+            groupResult.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        }
 
         if (inviteData.sendPasswordReset !== false) {
           try {
@@ -436,9 +450,7 @@ export async function POST(
 
             organization_id: [organizationId],
             organization_name: [organization.name || 'Organization'],
-            organization_display_name: [
-              organization.displayName || organization.name || 'Organization',
-            ],
+            organization_display_name: [organization.name || 'Organization'],
 
             user_type: ['user'],
           },
@@ -469,11 +481,13 @@ export async function POST(
           console.warn('Failed to set default password, but continuing with user creation');
         }
 
-        const groupResult1 = await ensureProperGroupAssignment(realm, userId);
-        groupManagement.usersGroupAssigned =
-          groupResult1.usersGroupAssigned || groupManagement.usersGroupAssigned;
-        groupManagement.adminsGroupRemoved =
-          groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        if (!inviteData.selectedGroups || inviteData.selectedGroups.length === 0) {
+          const groupResult1 = await ensureProperGroupAssignment(realm, userId);
+          groupManagement.usersGroupAssigned =
+            groupResult1.usersGroupAssigned || groupManagement.usersGroupAssigned;
+          groupManagement.adminsGroupRemoved =
+            groupResult1.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        }
 
         await postAdminRealmsRealmOrganizationsOrgIdMembers(realm, organizationId, userId);
         console.log('Added user to organization');
@@ -511,22 +525,62 @@ export async function POST(
 
       if (inviteData.selectedGroups && inviteData.selectedGroups.length > 0) {
         for (const group of inviteData.selectedGroups) {
+          if (!group.id) {
+            continue;
+          }
+
           try {
-            await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, group.id!);
+            await putAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, group.id);
             console.log('Assigned group:', group.id);
           } catch (groupError) {
             console.warn('Failed to assign group:', group.id, groupError);
           }
         }
 
-        const groupResult2 = await ensureProperGroupAssignment(realm, userId);
-        groupManagement.usersGroupAssigned =
-          groupResult2.usersGroupAssigned || groupManagement.usersGroupAssigned;
-        groupManagement.adminsGroupRemoved =
-          groupResult2.adminsGroupRemoved || groupManagement.adminsGroupRemoved;
+        const selectedGroupIds = new Set(
+          inviteData.selectedGroups
+            .map((group) => group.id)
+            .filter((groupId): groupId is string => Boolean(groupId))
+        );
+
+        try {
+          const currentUserGroups = await getAdminRealmsRealmUsersUserIdGroups(realm, userId);
+
+          for (const currentGroup of currentUserGroups) {
+            if (!currentGroup.id) {
+              continue;
+            }
+
+            const normalizedGroupToken = normalizeGroupToken(currentGroup.name);
+            const isManagedInviteGroup = INVITE_MANAGED_GROUP_TOKENS.has(normalizedGroupToken);
+            const isSelectedGroup = selectedGroupIds.has(currentGroup.id);
+
+            if (!isManagedInviteGroup || isSelectedGroup) {
+              continue;
+            }
+
+            try {
+              await deleteAdminRealmsRealmUsersUserIdGroupsGroupId(realm, userId, currentGroup.id);
+              console.log('Removed non-selected invite group:', currentGroup.id, currentGroup.name);
+
+              if (normalizedGroupToken === 'admins') {
+                groupManagement.adminsGroupRemoved = true;
+              }
+            } catch (removeGroupError) {
+              console.warn(
+                'Failed to remove non-selected invite group:',
+                currentGroup.id,
+                currentGroup.name,
+                removeGroupError
+              );
+            }
+          }
+        } catch (cleanupError) {
+          console.warn('Failed to cleanup non-selected invite groups:', cleanupError);
+        }
       }
 
-      const invitationId = generateInvitationId();
+      invitationId = generateInvitationId();
       const pendingInvitation: PendingInvitation = {
         id: invitationId,
         email: inviteData.email,
@@ -579,11 +633,14 @@ export async function POST(
       groupManagement: {
         usersGroupAssigned: groupManagement.usersGroupAssigned,
         adminsGroupRemoved: groupManagement.adminsGroupRemoved,
-        message: groupManagement.adminsGroupRemoved
-          ? 'User was removed from Admins group and assigned to Users group'
-          : groupManagement.usersGroupAssigned
-            ? 'User was assigned to Users group'
-            : 'User group assignments unchanged',
+        message:
+          inviteData.selectedGroups && inviteData.selectedGroups.length > 0
+            ? 'User was assigned only to the selected invite group(s)'
+            : groupManagement.adminsGroupRemoved
+              ? 'User was removed from Admins group and assigned to Users group'
+              : groupManagement.usersGroupAssigned
+                ? 'User was assigned to Users group'
+                : 'User group assignments unchanged',
       },
     });
   } catch (error: any) {

@@ -1,17 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
+  getAllCalls,
   useGetAllCalls,
   useCountCalls,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
-import {
-  useGetAllProducts,
-  useCountProducts,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useCountProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   Bar,
   BarChart,
@@ -26,19 +28,26 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, Calendar, MapPin, Phone, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import {
-  useGetAllCustomers,
+  Activity,
+  Calendar,
+  MapPin,
+  Phone,
+  Search,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import {
   useCountCustomers,
+  useGetAllCustomers,
   useGetAllMeetings,
   useCountMeetings,
   useGetAllUserProfiles,
 } from '@/core/api/generated/spring';
+import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
 import { QuickActionTiles } from './QuickActionTiles';
-import {
-  StaffLeadSummaryPeriod,
-  useGetStaffLeadSummary,
-} from '@/core/api/call-analytics';
+import { StaffLeadSummaryPeriod, useGetStaffLeadSummary } from '@/core/api/call-analytics';
 import {
   Select,
   SelectContent,
@@ -46,28 +55,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useManageSalesman } from '@/features/manage-salesman/hooks/use-manage-salesman';
+
+const ACTIVE_LEADS_PAGE_SIZE = 1000;
+const MAX_ACTIVE_LEADS_PAGES = 200;
 
 export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
+  type CallInsightsPeriod = 'ALL' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  type SalesManagerOption = {
+    id: string;
+    email?: string;
+    label: string;
+    assignedSalesmen: Array<{ id?: string; email?: string }>;
+  };
+  const router = useRouter();
 
   const { data: calls = [] } = useGetAllCalls({ size: 1000 });
-  const { data: parties = [] } = useGetAllCustomers({ size: 1000 });
-  const { data: products = [] } = useGetAllProducts({ size: 1000 });
+  const { data: customers = [] } = useGetAllCustomers({ size: 1000 });
   const { data: userProfiles = [] } = useGetAllUserProfiles({ size: 1000 });
+  const { organizationId } = useOrganizationContext();
+  const { users: organizationUsers = [] } = useOrganizationUsers(organizationId, {
+    page: 1,
+    size: 1000,
+  });
+  const { data: manageSalesmanData } = useManageSalesman(organizationId);
 
   // Get actual counts (not limited to 1000)
   const { data: totalCallsCount = 0 } = useCountCalls();
   const { data: totalCustomersCount = 0 } = useCountCustomers();
   const { data: totalProductsCount = 0 } = useCountProducts();
 
+  type DashboardCall = (typeof calls)[number];
+  const { data: allActiveLeads = [] } = useQuery({
+    queryKey: ['dashboard', 'active-leads', 'all-pages'],
+    queryFn: async () => {
+      const activeLeadCalls: DashboardCall[] = [];
+
+      for (let page = 0; page < MAX_ACTIVE_LEADS_PAGES; page += 1) {
+        const pageData = await getAllCalls({
+          page,
+          size: ACTIVE_LEADS_PAGE_SIZE,
+          sort: ['id,asc'],
+          'status.equals': 'ACTIVE',
+        });
+
+        if (pageData.length === 0) {
+          break;
+        }
+
+        activeLeadCalls.push(...pageData);
+
+        if (pageData.length < ACTIVE_LEADS_PAGE_SIZE) {
+          break;
+        }
+      }
+
+      return activeLeadCalls;
+    },
+    staleTime: 60_000,
+  });
+
   const [tabValue, setTabValue] = useState('overview');
+  const [activeLeadSearchTerm, setActiveLeadSearchTerm] = useState('');
   const [staffPeriod, setStaffPeriod] = useState<StaffLeadSummaryPeriod>('DAILY');
   const [selectedStaff, setSelectedStaff] = useState<string>('ALL');
   const [meetingPeriod, setMeetingPeriod] = useState<MeetingPeriod>('DAILY');
+  const [callStatusPeriod, setCallStatusPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [salesmanPeriod, setSalesmanPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [salesManagerPeriod, setSalesManagerPeriod] = useState<CallInsightsPeriod>('ALL');
+  const [salesManagerComparisonPeriod, setSalesManagerComparisonPeriod] =
+    useState<CallInsightsPeriod>('ALL');
+  const [selectedSalesManagerUserId, setSelectedSalesManagerUserId] = useState<string>('');
 
   const { data: staffLeadSummary = [] } = useGetStaffLeadSummary({
     period: staffPeriod,
-    createdBy: selectedStaff === 'ALL' ? undefined : selectedStaff,
+    assignedUser: selectedStaff === 'ALL' ? undefined : selectedStaff,
   });
 
   const getCalendarRange = (period: MeetingPeriod) => {
@@ -79,6 +142,7 @@ export function DashboardOverview() {
       case 'WEEKLY': {
         const day = now.getDay();
         const diff = day === 0 ? -6 : 1 - day;
+
         start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
         end = new Date(start);
         end.setDate(start.getDate() + 7);
@@ -104,13 +168,14 @@ export function DashboardOverview() {
   const upcomingRange = useMemo(() => {
     const start = new Date();
     const end = new Date();
+
     end.setDate(end.getDate() + 7);
+
     return { start: start.toISOString(), end: end.toISOString() };
   }, []);
 
   const meetingFiltersBase = useMemo(() => {
-    const range =
-      meetingPeriod === 'OTHERS' ? upcomingRange : getCalendarRange(meetingPeriod);
+    const range = meetingPeriod === 'OTHERS' ? upcomingRange : getCalendarRange(meetingPeriod);
 
     return {
       'meetingDateTime.greaterThanOrEqual': range.start,
@@ -134,7 +199,93 @@ export function DashboardOverview() {
     'meetingStatus.in': ['SCHEDULED', 'CONFIRMED'],
   });
 
-  const callStatuses = calls.reduce(
+  const getCallDate = (call: DashboardCall) => {
+    const rawCallDateTime = (call as Record<string, unknown>)['callDateTime'];
+    const dateValue =
+      typeof rawCallDateTime === 'string' && rawCallDateTime
+        ? rawCallDateTime
+        : call.lastModifiedDate || call.createdDate;
+
+    if (!dateValue) {
+      return null;
+    }
+
+    const parsedDate = new Date(dateValue);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return null;
+    }
+
+    return parsedDate;
+  };
+
+  const getUserIdentifiers = (user?: { id?: string | null; email?: string | null }) => {
+    const identifiers = new Set<string>();
+
+    if (user?.id) {
+      identifiers.add(user.id.toLowerCase());
+    }
+    if (user?.email) {
+      identifiers.add(user.email.toLowerCase());
+    }
+
+    return identifiers;
+  };
+
+  const getAssigneeIdentifiers = (call: DashboardCall) => getUserIdentifiers(call.assignedTo);
+
+  const filterCallsByInsightsPeriod = (period: CallInsightsPeriod) => {
+    if (period === 'ALL') {
+      return calls;
+    }
+
+    const periodStart = new Date();
+    const periodEnd = new Date();
+
+    periodEnd.setHours(23, 59, 59, 999);
+
+    if (period === 'DAILY') {
+      // Last 7 days including today
+      periodStart.setHours(0, 0, 0, 0);
+      periodStart.setDate(periodStart.getDate() - 6);
+    } else if (period === 'WEEKLY') {
+      // Last 4 weeks (28 days) including today
+      periodStart.setHours(0, 0, 0, 0);
+      periodStart.setDate(periodStart.getDate() - 27);
+    } else if (period === 'MONTHLY') {
+      // Last 12 months including current month
+      periodStart.setHours(0, 0, 0, 0);
+      periodStart.setDate(1);
+      periodStart.setMonth(periodStart.getMonth() - 11);
+    }
+
+    return calls.filter((call) => {
+      const callDate = getCallDate(call);
+
+      if (!callDate) return false;
+
+      return callDate >= periodStart && callDate <= periodEnd;
+    });
+  };
+
+  const filteredCallsForCallStatus = useMemo(
+    () => filterCallsByInsightsPeriod(callStatusPeriod),
+    [callStatusPeriod, calls]
+  );
+  const filteredCallsForSalesman = useMemo(
+    () => filterCallsByInsightsPeriod(salesmanPeriod),
+    [calls, salesmanPeriod]
+  );
+  const filteredCallsForSalesManager = useMemo(
+    () => filterCallsByInsightsPeriod(salesManagerPeriod),
+    [calls, salesManagerPeriod]
+  );
+  const filteredCallsForSalesManagerComparison = useMemo(
+    () => filterCallsByInsightsPeriod(salesManagerComparisonPeriod),
+    [calls, salesManagerComparisonPeriod]
+  );
+
+  const callStatuses = filteredCallsForCallStatus.reduce(
     (acc, call) => {
       const status = call.callStatus?.name || 'Unknown';
 
@@ -148,26 +299,241 @@ export function DashboardOverview() {
   const callStatusData = Object.entries(callStatuses).map(([name, value]) => ({
     name,
     value,
-    percentage: ((value / calls.length) * 100).toFixed(1),
+    percentage:
+      filteredCallsForCallStatus.length > 0
+        ? ((value / filteredCallsForCallStatus.length) * 100).toFixed(1)
+        : '0.0',
   }));
 
-  const callCategories = calls.reduce(
-    (acc, call) => {
-      const category = call.callCategory?.name || 'Uncategorized';
+  const userDisplayNameByIdentifier = useMemo(() => {
+    const map = new Map<string, string>();
 
-      acc[category] = (acc[category] || 0) + 1;
+    organizationUsers.forEach((user) => {
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+      const displayName = fullName || user.email || user.username || 'Unknown User';
 
-      return acc;
-    },
-    {} as Record<string, number>
+      if (user.id) {
+        map.set(user.id.toLowerCase(), displayName);
+      }
+      if (user.email) {
+        map.set(user.email.toLowerCase(), displayName);
+      }
+    });
+
+    return map;
+  }, [organizationUsers]);
+
+  const getAssignedUserChartData = (inputCalls: typeof calls) => {
+    const assigneeBuckets = inputCalls.reduce(
+      (acc, call) => {
+        const assignedUserId = call.assignedTo?.id;
+        const assignedUserEmail = call.assignedTo?.email;
+        const assignedUserKey = assignedUserId || assignedUserEmail;
+
+        if (!assignedUserKey) {
+          return acc;
+        }
+        const normalizedAssignedUserKey = assignedUserKey.toLowerCase();
+
+        const assignedUserName =
+          call.assignedTo?.firstName && call.assignedTo?.lastName
+            ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
+            : call.assignedTo?.firstName ||
+              userDisplayNameByIdentifier.get(normalizedAssignedUserKey) ||
+              call.assignedTo?.email ||
+              'Unknown User';
+
+        if (!acc[normalizedAssignedUserKey]) {
+          acc[normalizedAssignedUserKey] = {
+            name: assignedUserName,
+            value: 0,
+          };
+        }
+
+        acc[normalizedAssignedUserKey].value += 1;
+
+        return acc;
+      },
+      {} as Record<string, { name: string; value: number }>
+    );
+
+    return Object.values(assigneeBuckets).sort((a, b) => b.value - a.value);
+  };
+
+  const normalizeGroupName = (name?: string) =>
+    (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  const salesManagerOptions = useMemo<SalesManagerOption[]>(() => {
+    const assignedSalesManagers = manageSalesmanData?.salesManagers || [];
+
+    if (assignedSalesManagers.length > 0) {
+      return assignedSalesManagers.map((manager) => ({
+        id: manager.id,
+        email: manager.email,
+        label: manager.fullName || manager.email || manager.username || 'Unknown User',
+        assignedSalesmen: manager.assignedSalesmen || [],
+      }));
+    }
+
+    return organizationUsers
+      .filter((user) =>
+        (user.assignedGroups || []).some((group) => {
+          const groupName = normalizeGroupName(group.name);
+
+          return (
+            groupName === 'salesmanager' ||
+            groupName === 'salesmanagers' ||
+            groupName.includes('salesmanager')
+          );
+        })
+      )
+      .map((user) => {
+        const label =
+          `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+          user.email ||
+          user.username ||
+          'Unknown User';
+
+        return {
+          id: user.id || '',
+          email: user.email,
+          label,
+          assignedSalesmen: [],
+        };
+      })
+      .filter((manager) => Boolean(manager.id));
+  }, [manageSalesmanData, organizationUsers]);
+
+  useEffect(() => {
+    if (salesManagerOptions.length === 0) {
+      if (selectedSalesManagerUserId) {
+        setSelectedSalesManagerUserId('');
+      }
+
+      return;
+    }
+
+    const selectedManagerStillExists = salesManagerOptions.some(
+      (manager) => manager.id === selectedSalesManagerUserId
+    );
+
+    if (!selectedSalesManagerUserId || !selectedManagerStillExists) {
+      setSelectedSalesManagerUserId(salesManagerOptions[0].id);
+    }
+  }, [salesManagerOptions, selectedSalesManagerUserId]);
+
+  const selectedSalesManager = useMemo(
+    () => salesManagerOptions.find((manager) => manager.id === selectedSalesManagerUserId),
+    [salesManagerOptions, selectedSalesManagerUserId]
   );
 
-  const callCategoryData = Object.entries(callCategories).map(([name, value]) => ({
-    name,
-    value,
-  }));
+  const selectedSalesManagerLabel =
+    selectedSalesManager?.label || selectedSalesManager?.email || 'selected sales manager';
 
-  const callTypes = calls.reduce(
+  const selectedSalesManagerIdentifiers = useMemo(
+    () => getUserIdentifiers(selectedSalesManager),
+    [selectedSalesManager]
+  );
+
+  const selectedSalesmanIdentifiers = useMemo(() => {
+    const identifiers = new Set<string>();
+
+    (selectedSalesManager?.assignedSalesmen || []).forEach((salesman) => {
+      getUserIdentifiers(salesman).forEach((identifier) => identifiers.add(identifier));
+    });
+
+    return identifiers;
+  }, [selectedSalesManager]);
+
+  const callIsAssignedToIdentifiers = (call: DashboardCall, identifiers: Set<string>) => {
+    if (identifiers.size === 0) {
+      return false;
+    }
+
+    return Array.from(getAssigneeIdentifiers(call)).some((identifier) =>
+      identifiers.has(identifier)
+    );
+  };
+
+  const isActiveCall = (call: DashboardCall) => call.status === 'ACTIVE';
+  const isClosedCallStatus = (call: DashboardCall) => {
+    const callStatusName = (call.callStatus?.name || '').trim().toLowerCase();
+
+    return callStatusName === 'closed' || callStatusName.includes('closed');
+  };
+
+  const selectedSalesManagerActiveCalls = filteredCallsForSalesManager.filter(
+    (call) =>
+      isActiveCall(call) && callIsAssignedToIdentifiers(call, selectedSalesManagerIdentifiers)
+  );
+
+  const selectedSalesManagerChildSalesmenActiveClosedCallsForManagerCard =
+    filteredCallsForSalesManager.filter(
+      (call) =>
+        isActiveCall(call) &&
+        isClosedCallStatus(call) &&
+        callIsAssignedToIdentifiers(call, selectedSalesmanIdentifiers)
+    );
+
+  const selectedSalesManagerChildSalesmenActiveClosedCallsForSalesmanCard =
+    filteredCallsForSalesman.filter(
+      (call) =>
+        isActiveCall(call) &&
+        isClosedCallStatus(call) &&
+        callIsAssignedToIdentifiers(call, selectedSalesmanIdentifiers)
+    );
+
+  const salesmanClosedCallsByAssignedUserData = getAssignedUserChartData(
+    selectedSalesManagerChildSalesmenActiveClosedCallsForSalesmanCard
+  );
+
+  const salesManagerActiveCallsData = [
+    {
+      name: 'Assigned To Manager',
+      value: selectedSalesManagerActiveCalls.length,
+    },
+    {
+      name: 'Closed By Child Salesmen',
+      value: selectedSalesManagerChildSalesmenActiveClosedCallsForManagerCard.length,
+    },
+  ];
+
+  const allSalesManagersMergedCallsData = useMemo(
+    () =>
+      salesManagerOptions
+        .map((manager) => {
+          const managerIdentifiers = getUserIdentifiers({ id: manager.id, email: manager.email });
+          const childSalesmenIdentifiers = new Set<string>();
+
+          (manager.assignedSalesmen || []).forEach((salesman) => {
+            getUserIdentifiers(salesman).forEach((identifier) =>
+              childSalesmenIdentifiers.add(identifier)
+            );
+          });
+
+          const assignedToManagerCount = filteredCallsForSalesManagerComparison.filter(
+            (call) => isActiveCall(call) && callIsAssignedToIdentifiers(call, managerIdentifiers)
+          ).length;
+          const childSalesmenClosedCount = filteredCallsForSalesManagerComparison.filter(
+            (call) =>
+              isActiveCall(call) &&
+              isClosedCallStatus(call) &&
+              callIsAssignedToIdentifiers(call, childSalesmenIdentifiers)
+          ).length;
+
+          return {
+            id: manager.id,
+            name: manager.label,
+            value: assignedToManagerCount + childSalesmenClosedCount,
+            assignedToManager: assignedToManagerCount,
+            childSalesmenClosed: childSalesmenClosedCount,
+          };
+        })
+        .sort((a, b) => b.value - a.value),
+    [filteredCallsForSalesManagerComparison, salesManagerOptions]
+  );
+
+  const callTypes = allActiveLeads.reduce(
     (acc, call) => {
       const type = call.callType?.name || 'Unknown';
 
@@ -182,6 +548,21 @@ export function DashboardOverview() {
     name,
     value,
   }));
+
+  const handleCallTypeBarClick = (entry?: { name?: string; payload?: { name?: string } }) => {
+    const callTypeName = (entry?.name || entry?.payload?.name || '').trim();
+
+    if (!callTypeName) {
+      return;
+    }
+
+    const params = new URLSearchParams({
+      statusTab: 'active',
+      callType: callTypeName,
+    });
+
+    router.push(`/calls?${params.toString()}`);
+  };
 
   const priorityData = calls.reduce(
     (acc, call) => {
@@ -199,21 +580,40 @@ export function DashboardOverview() {
     value,
   }));
 
-  const channelData = calls.reduce(
-    (acc, call) => {
-      const channel = call.channelType?.name || 'Unknown';
+  const channelChartData = useMemo(() => {
+    const channelCounts = allActiveLeads.reduce(
+      (acc, call) => {
+        const channel = call.channelType?.name?.trim();
 
-      acc[channel] = (acc[channel] || 0) + 1;
+        if (!channel) {
+          return acc;
+        }
 
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+        acc[channel] = (acc[channel] || 0) + 1;
 
-  const channelChartData = Object.entries(channelData).map(([name, value]) => ({
-    name,
-    value,
-  }));
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    return Object.keys(channelCounts)
+      .map((name) => ({
+        name,
+        value: channelCounts[name],
+      }))
+      .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
+  }, [allActiveLeads]);
+
+  const channelColorByName = useMemo(() => {
+    const sortedNames = channelChartData
+      .map((channel) => channel.name)
+      .sort((a, b) => a.localeCompare(b));
+    const total = sortedNames.length || 1;
+
+    return new Map(
+      sortedNames.map((name, index) => [name, `hsl(${((index * 360) / total).toFixed(1)} 72% 48%)`])
+    );
+  }, [channelChartData]);
 
   const geoData = calls.reduce(
     (acc, call) => {
@@ -226,17 +626,14 @@ export function DashboardOverview() {
     {} as Record<string, number>
   );
 
-  const topStates = Object.entries(geoData)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
-    .map(([name, value]) => ({ name, value }));
-
   const agentPerformance = calls.reduce(
     (acc, call) => {
-      const agent =
-        call.assignedTo?.firstName && call.assignedTo?.lastName
-          ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-          : call.assignedTo?.firstName || 'Unassigned';
+      const assigneeDisplayName = call.assignedTo?.displayName?.trim();
+      const assigneeFullName = `${call.assignedTo?.firstName || ''} ${
+        call.assignedTo?.lastName || ''
+      }`.trim();
+      const assigneeEmail = call.assignedTo?.email?.trim();
+      const agent = assigneeDisplayName || assigneeFullName || assigneeEmail || 'Unassigned';
 
       acc[agent] = (acc[agent] || 0) + 1;
 
@@ -245,28 +642,104 @@ export function DashboardOverview() {
     {} as Record<string, number>
   );
 
-  const topAgents = Object.entries(agentPerformance)
+  const topPerformerAgentPerformance = allActiveLeads.reduce(
+    (acc, call) => {
+      const assigneeDisplayName = call.assignedTo?.displayName?.trim();
+      const assigneeFullName = `${call.assignedTo?.firstName || ''} ${
+        call.assignedTo?.lastName || ''
+      }`.trim();
+      const assigneeEmail = call.assignedTo?.email?.trim();
+      const agent = assigneeDisplayName || assigneeFullName || assigneeEmail || 'Unassigned';
+
+      acc[agent] = (acc[agent] || 0) + 1;
+
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const topAgents = Object.entries(topPerformerAgentPerformance)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([name, value]) => ({ name, value }));
 
-  const recentCalls = calls
-    .filter((call) => call.callDateTime)
-    .sort((a, b) => new Date(b.callDateTime).getTime() - new Date(a.callDateTime).getTime())
-    .slice(0, 10)
-    .map((call) => ({
-      id: call.id,
-      party: call.party?.name || 'Unknown Party',
-      status: call.callStatus?.name || 'Unknown',
-      type: call.callType?.name || 'Unknown',
-      priority: call.priority?.name || 'Normal',
-      agent:
-        call.assignedTo?.firstName && call.assignedTo?.lastName
-          ? `${call.assignedTo.firstName} ${call.assignedTo.lastName}`
-          : 'Unassigned',
-      date: new Date(call.callDateTime).toLocaleDateString(),
-      time: new Date(call.callDateTime).toLocaleTimeString(),
-    }));
+  const customersById = customers.reduce(
+    (acc, customer) => {
+      if (customer.id != null) {
+        acc[customer.id] = customer;
+      }
+
+      return acc;
+    },
+    {} as Record<number, (typeof customers)[number]>
+  );
+
+  const activeLeads = calls
+    .filter((call) => {
+      const leadStatus = call.callStatus?.name?.toLowerCase() ?? '';
+
+      return (
+        call.status === 'ACTIVE' ||
+        leadStatus.includes('active') ||
+        leadStatus.includes('progress') ||
+        leadStatus.includes('pending')
+      );
+    })
+    .map((call) => {
+      const fullCustomer = call.customer?.id ? customersById[call.customer.id] : undefined;
+      const customerName =
+        call.customer?.customerBusinessName ||
+        fullCustomer?.customerBusinessName ||
+        call.customer?.contactPerson ||
+        fullCustomer?.contactPerson ||
+        'Unknown Customer';
+      const customerEmail = call.customer?.email || fullCustomer?.email || 'N/A';
+      const customerPhone =
+        call.customer?.mobile ||
+        call.customer?.whatsApp ||
+        fullCustomer?.mobile ||
+        fullCustomer?.whatsApp ||
+        'N/A';
+      const productName = call.product?.name || 'N/A';
+      const parsedLeadCreatedDate = call.createdDate ? new Date(call.createdDate) : null;
+      const leadCreatedDate =
+        parsedLeadCreatedDate && !Number.isNaN(parsedLeadCreatedDate.getTime())
+          ? parsedLeadCreatedDate.toLocaleDateString()
+          : 'N/A';
+      const leadIdentifier = call.id ?? `${call.leadNo ?? customerName}-${customerPhone}`;
+
+      return {
+        id: leadIdentifier,
+        callId: call.id,
+        leadNo: call.leadNo || '-',
+        customerName,
+        customerEmail,
+        customerPhone,
+        productName,
+        leadCreatedDate,
+        status: call.callStatus?.name || call.status || 'Unknown',
+      };
+    });
+
+  const normalizedActiveLeadSearchTerm = activeLeadSearchTerm.trim().toLowerCase();
+
+  const filteredActiveLeads = activeLeads.filter((lead) => {
+    if (!normalizedActiveLeadSearchTerm) {
+      return true;
+    }
+
+    const searchableFields = [
+      lead.customerName,
+      lead.customerEmail === 'N/A' ? '' : lead.customerEmail,
+      lead.customerPhone === 'N/A' ? '' : lead.customerPhone,
+    ];
+
+    return searchableFields.some((field) =>
+      field.toLowerCase().includes(normalizedActiveLeadSearchTerm)
+    );
+  });
+  const shouldShowLeadDropdown = normalizedActiveLeadSearchTerm.length > 0;
+  const dropdownActiveLeads = filteredActiveLeads.slice(0, 10);
 
   const last30Days = calls.filter((call) => {
     if (!call.callDateTime) return false;
@@ -304,23 +777,51 @@ export function DashboardOverview() {
 
   const staffOptions = useMemo(() => {
     const unique = new Map<string, string>();
+
     userProfiles.forEach((profile) => {
       if (!profile.email) return;
       const label =
         profile.displayName ||
         `${profile.firstName || ''} ${profile.lastName || ''}`.trim() ||
         profile.email;
+
       unique.set(profile.email, label);
     });
 
     return Array.from(unique.entries()).map(([value, label]) => ({ value, label }));
   }, [userProfiles]);
 
+  const staffLabelByEmail = useMemo(
+    () => new Map(staffOptions.map((staff) => [staff.value, staff.label])),
+    [staffOptions]
+  );
+  const callInsightsPeriodLabel: Record<CallInsightsPeriod, string> = {
+    ALL: 'all time',
+    DAILY: 'last 7 days',
+    WEEKLY: 'last 4 weeks',
+    MONTHLY: 'last 12 months',
+  };
+  const leadNoByCallId = useMemo(() => {
+    const map = new Map<number, string>();
+
+    calls.forEach((call) => {
+      const callId = call.id;
+      const leadNo = call.leadNo?.trim();
+
+      if (typeof callId === 'number' && leadNo) {
+        map.set(callId, leadNo);
+      }
+    });
+
+    return map;
+  }, [calls]);
+
   const staffTotals = staffLeadSummary.reduce(
     (acc, item) => {
       acc.total += item.total || 0;
       acc.active += item.active || 0;
       acc.inactive += item.inactive || 0;
+
       return acc;
     },
     { total: 0, active: 0, inactive: 0 }
@@ -329,39 +830,111 @@ export function DashboardOverview() {
   const selectedSummary =
     selectedStaff === 'ALL'
       ? staffTotals
-      : staffLeadSummary.find((item) => item.createdBy === selectedStaff) || {
+      : staffLeadSummary.find((item) => item.assignedUser === selectedStaff) || {
           total: 0,
           active: 0,
           inactive: 0,
         };
 
-  const staffSummaryChartData = [
-    {
-      name: 'Total',
-      total: selectedSummary.total,
-      active: selectedSummary.active,
-      inactive: selectedSummary.inactive,
-    },
-    {
-      name: 'Active',
-      total: selectedSummary.total,
-      active: selectedSummary.active,
-      inactive: selectedSummary.inactive,
-    },
-    {
-      name: 'Inactive',
-      total: selectedSummary.total,
-      active: selectedSummary.active,
-      inactive: selectedSummary.inactive,
-    },
-  ];
+  const staffPerformanceChartData = useMemo(() => {
+    if (selectedStaff === 'ALL') {
+      return staffLeadSummary.map((item) => ({
+        name: staffLabelByEmail.get(item.assignedUser || '') || item.assignedUser || 'Unassigned',
+        total: item.total || 0,
+        active: item.active || 0,
+        inactive: item.inactive || 0,
+      }));
+    }
+
+    return [
+      {
+        name: staffLabelByEmail.get(selectedStaff) || selectedStaff,
+        total: selectedSummary.total,
+        active: selectedSummary.active,
+        inactive: selectedSummary.inactive,
+      },
+    ];
+  }, [selectedStaff, selectedSummary, staffLabelByEmail, staffLeadSummary]);
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <div>
+          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
+          <p className="text-muted-foreground">
+            Complete overview of your customer relationship management
+          </p>
+        </div>
+      </div>
 
       {/* Quick Action Tiles */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+        <div className="relative mb-4 w-full lg:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            name="lead-search"
+            value={activeLeadSearchTerm}
+            onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
+            placeholder="Search active leads by customer, email, or phone"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
+            className="pl-9"
+          />
+          {shouldShowLeadDropdown && (
+            <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-md border bg-background shadow-lg">
+              {dropdownActiveLeads.length > 0 ? (
+                <div className="max-h-80 overflow-y-auto">
+                  {dropdownActiveLeads.map((lead) => {
+                    if (lead.callId) {
+                      return (
+                        <Link
+                          key={`${lead.id}-${lead.leadNo}`}
+                          href={`/calls/${lead.callId}`}
+                          className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
+                        >
+                          <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerName}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerEmail}</p>
+                          <p className="text-xs text-muted-foreground">{lead.customerPhone}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Product: {lead.productName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Created: {lead.leadCreatedDate}
+                          </p>
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={`${lead.id}-${lead.leadNo}`}
+                        className="border-b p-3 last:border-b-0 text-muted-foreground"
+                      >
+                        <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                        <p className="text-xs">{lead.customerName}</p>
+                        <p className="text-xs">{lead.customerEmail}</p>
+                        <p className="text-xs">{lead.customerPhone}</p>
+                        <p className="text-xs">Product: {lead.productName}</p>
+                        <p className="text-xs">Created: {lead.leadCreatedDate}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="p-3 text-sm text-muted-foreground">
+                  No active leads match your search
+                </p>
+              )}
+            </div>
+          )}
+        </div>
         <QuickActionTiles />
       </div>
 
@@ -434,152 +1007,6 @@ export function DashboardOverview() {
             </Card>
           </div>
 
-          {/* Enhanced Charts Section */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Call Status Distribution</CardTitle>
-                <CardDescription>Real-time status of all calls in the system</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                {callStatusData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={callStatusData}>
-                      <XAxis dataKey="name" stroke="#888888" />
-                      <YAxis stroke="#888888" />
-                      <Tooltip
-                        formatter={(value, name) => [`${value} calls`, 'Count']}
-                        labelFormatter={(label) => `Status: ${label}`}
-                      />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">No call data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="col-span-3 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Priority Distribution</CardTitle>
-                <CardDescription>Call priority breakdown</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {priorityChartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                      <Pie
-                        data={priorityChartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {priorityChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex h-[350px] items-center justify-center">
-                    <p className="text-muted-foreground">No priority data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Activity and Geographic Distribution */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Top States</CardTitle>
-                <CardDescription>Geographic call distribution</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {topStates.length > 0 ? (
-                  <div className="space-y-4">
-                    {topStates.map((state, index) => (
-                      <div key={state.name} className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-2 h-2 rounded-full bg-primary mr-2"></div>
-                          <span className="text-sm">{state.name}</span>
-                        </div>
-                        <span className="text-sm font-medium">{state.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[200px] items-center justify-center">
-                    <p className="text-muted-foreground">No geographic data available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="col-span-2 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-              <CardHeader>
-                <CardTitle>Recent Calls</CardTitle>
-                <CardDescription>Latest call activities with detailed information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {recentCalls.length > 0 ? (
-                  <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                    {recentCalls.map((call) => (
-                      <div
-                        key={call.id}
-                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                            <Phone className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{call.party}</p>
-                            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                              <span>{call.type}</span>
-                              <span>•</span>
-                              <span>{call.agent}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <Badge
-                            variant={
-                              call.status?.toLowerCase().includes('success')
-                                ? 'default'
-                                : call.status?.toLowerCase().includes('pending')
-                                  ? 'secondary'
-                                  : 'outline'
-                            }
-                          >
-                            {call.status}
-                          </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {call.date} {call.time}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-[300px] items-center justify-center">
-                    <p className="text-muted-foreground">No recent calls available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Scheduled Meetings */}
           <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <CardHeader>
@@ -628,15 +1055,17 @@ export function DashboardOverview() {
                       `${meeting.organizer?.firstName || ''} ${meeting.organizer?.lastName || ''}`.trim() ||
                       meeting.organizer?.email ||
                       'Unassigned';
-                    const leadNo = meeting.call?.leadNo || '—';
-                    const customer =
-                      meeting.assignedCustomer?.customerBusinessName || '—';
+                    const leadId = meeting.call?.id;
+                    const leadNo =
+                      meeting.call?.leadNo?.trim() ||
+                      (typeof leadId === 'number' ? leadNoByCallId.get(leadId) : undefined) ||
+                      '—';
+                    const customer = meeting.assignedCustomer?.customerBusinessName || '—';
 
-                    return (
-                      <div
-                        key={meeting.id}
-                        className="flex items-center justify-between p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-slate-50/50"
-                      >
+                    const rowClasses =
+                      'flex items-center justify-between p-3 border rounded-lg shadow-sm transition-shadow duration-200 bg-slate-50/50';
+                    const rowContent = (
+                      <>
                         <div className="flex items-center space-x-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100">
                             <Calendar className="h-4 w-4 text-blue-600" />
@@ -646,7 +1075,12 @@ export function DashboardOverview() {
                             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                               <span>{organizer}</span>
                               <span>•</span>
-                              <span>Lead {leadNo}</span>
+                              <span className="inline-flex items-center gap-1">
+                                <span>Lead No:</span>
+                                <span className={leadId ? 'text-primary underline' : undefined}>
+                                  {leadNo}
+                                </span>
+                              </span>
                               <span>•</span>
                               <span>{customer}</span>
                             </div>
@@ -658,6 +1092,24 @@ export function DashboardOverview() {
                             {meetingDate.toLocaleDateString()} {meetingDate.toLocaleTimeString()}
                           </p>
                         </div>
+                      </>
+                    );
+
+                    if (leadId) {
+                      return (
+                        <Link
+                          key={meeting.id}
+                          href={`/calls/${leadId}`}
+                          className={`${rowClasses} hover:shadow-md hover:bg-slate-50 cursor-pointer`}
+                        >
+                          {rowContent}
+                        </Link>
+                      );
+                    }
+
+                    return (
+                      <div key={meeting.id} className={rowClasses}>
+                        {rowContent}
                       </div>
                     );
                   })}
@@ -670,15 +1122,278 @@ export function DashboardOverview() {
             </CardContent>
           </Card>
 
+          {/* Enhanced Charts Section */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>Call Status Distribution</CardTitle>
+                  <Tabs
+                    value={callStatusPeriod}
+                    onValueChange={(value) => setCallStatusPeriod(value as CallInsightsPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      <TabsTrigger value="ALL">All</TabsTrigger>
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                <CardDescription>
+                  Call status breakdown for {callInsightsPeriodLabel[callStatusPeriod]}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {callStatusData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={callStatusData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Status: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No call data available for {callInsightsPeriodLabel[callStatusPeriod]}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-3 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <CardTitle>Priority Distribution</CardTitle>
+                <CardDescription>Call priority breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {priorityChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                      <Pie
+                        data={priorityChartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {priorityChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">No priority data available</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>Salesman Calls</CardTitle>
+                  <Tabs
+                    value={salesmanPeriod}
+                    onValueChange={(value) => setSalesmanPeriod(value as CallInsightsPeriod)}
+                  >
+                    <TabsList className="grid grid-cols-4">
+                      <TabsTrigger value="ALL">All</TabsTrigger>
+                      <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                      <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                      <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                <CardDescription>
+                  Active calls with closed status for salesmen assigned to{' '}
+                  {selectedSalesManagerLabel} ({callInsightsPeriodLabel[salesmanPeriod]})
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {!selectedSalesManager ? (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      Select a sales manager to view salesman call data
+                    </p>
+                  </div>
+                ) : salesmanClosedCallsByAssignedUserData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={salesmanClosedCallsByAssignedUserData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `Assigned User: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No active closed calls found for salesmen assigned to{' '}
+                      {selectedSalesManagerLabel} in {callInsightsPeriodLabel[salesmanPeriod]}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>Sales Manager Calls</CardTitle>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Select
+                      value={selectedSalesManagerUserId || undefined}
+                      onValueChange={setSelectedSalesManagerUserId}
+                    >
+                      <SelectTrigger className="min-w-[240px]">
+                        <SelectValue placeholder="Select Sales Manager" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {salesManagerOptions.map((manager) => (
+                          <SelectItem key={manager.id} value={manager.id}>
+                            {manager.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Tabs
+                      value={salesManagerPeriod}
+                      onValueChange={(value) => setSalesManagerPeriod(value as CallInsightsPeriod)}
+                    >
+                      <TabsList className="grid grid-cols-4">
+                        <TabsTrigger value="ALL">All</TabsTrigger>
+                        <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                        <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                        <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                </div>
+                <CardDescription>
+                  Active calls assigned to {selectedSalesManagerLabel}, including active closed
+                  calls by child salesmen ({callInsightsPeriodLabel[salesManagerPeriod]})
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pl-2">
+                {!selectedSalesManager ? (
+                  <div className="flex h-[350px] items-center justify-center">
+                    <p className="text-muted-foreground">
+                      No sales manager found. Please assign a user to Sales Manager group.
+                    </p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={salesManagerActiveCallsData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
+                      <Tooltip
+                        formatter={(value) => [`${value} calls`, 'Count']}
+                        labelFormatter={(label) => `${selectedSalesManagerLabel}: ${label}`}
+                      />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
+            <CardHeader>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <CardTitle>Sales Manager Overall Comparison</CardTitle>
+                <Tabs
+                  value={salesManagerComparisonPeriod}
+                  onValueChange={(value) =>
+                    setSalesManagerComparisonPeriod(value as CallInsightsPeriod)
+                  }
+                >
+                  <TabsList className="grid grid-cols-4">
+                    <TabsTrigger value="ALL">All</TabsTrigger>
+                    <TabsTrigger value="DAILY">Daily</TabsTrigger>
+                    <TabsTrigger value="WEEKLY">Weekly</TabsTrigger>
+                    <TabsTrigger value="MONTHLY">Monthly</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              <CardDescription>
+                One merged bar per sales manager to compare total leads (assigned to manager +
+                closed by child salesmen) for{' '}
+                {callInsightsPeriodLabel[salesManagerComparisonPeriod]}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+              {allSalesManagersMergedCallsData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={360}>
+                  <BarChart data={allSalesManagersMergedCallsData}>
+                    <XAxis
+                      dataKey="name"
+                      stroke="#888888"
+                      interval={0}
+                      angle={-20}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis stroke="#888888" allowDecimals={false} />
+                    <Tooltip
+                      formatter={(value, name, item) => {
+                        if (name === 'Total Leads') {
+                          const payload = item.payload as {
+                            assignedToManager: number;
+                            childSalesmenClosed: number;
+                          };
+
+                          return [
+                            `${value} total (Manager: ${payload.assignedToManager}, Child Salesmen Closed: ${payload.childSalesmenClosed})`,
+                            'Total Leads',
+                          ];
+                        }
+
+                        return [`${value}`, String(name)];
+                      }}
+                    />
+                    <Bar dataKey="value" name="Total Leads" fill="#22c55e" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-[360px] items-center justify-center">
+                  <p className="text-muted-foreground">
+                    No sales manager lead data available for{' '}
+                    {callInsightsPeriodLabel[salesManagerComparisonPeriod]}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">
-          {/* Channel and Category Analysis */}
+          {/* Channel and Call Type Analysis */}
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
                 <CardTitle>Channel Distribution</CardTitle>
-                <CardDescription>How customers are reaching us</CardDescription>
+                <CardDescription>How all active leads are reaching us</CardDescription>
               </CardHeader>
               <CardContent>
                 {channelChartData.length > 0 ? (
@@ -694,7 +1409,12 @@ export function DashboardOverview() {
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {channelChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={
+                              channelColorByName.get(entry.name) || COLORS[index % COLORS.length]
+                            }
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -710,53 +1430,32 @@ export function DashboardOverview() {
 
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
               <CardHeader>
-                <CardTitle>Call Categories</CardTitle>
-                <CardDescription>Types of customer interactions</CardDescription>
+                <CardTitle>Call Types Analysis</CardTitle>
+                <CardDescription>Detailed breakdown of call types for active calls</CardDescription>
               </CardHeader>
               <CardContent>
-                {callCategoryData.length > 0 ? (
+                {callTypeData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={callCategoryData} layout="horizontal">
-                      <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={100} />
+                    <BarChart data={callTypeData}>
+                      <XAxis dataKey="name" stroke="#888888" />
+                      <YAxis stroke="#888888" allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#00C49F" />
+                      <Bar
+                        dataKey="value"
+                        fill="#FFBB28"
+                        cursor="pointer"
+                        onClick={handleCallTypeBarClick}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex h-[300px] items-center justify-center">
-                    <p className="text-muted-foreground">No category data available</p>
+                    <p className="text-muted-foreground">No call type data available</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
-
-          {/* Call Types Analysis */}
-          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
-            <CardHeader>
-              <CardTitle>Call Types Analysis</CardTitle>
-              <CardDescription>
-                Detailed breakdown of call types across the organization
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {callTypeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={callTypeData}>
-                    <XAxis dataKey="name" stroke="#888888" />
-                    <YAxis stroke="#888888" />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#FFBB28" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex h-[400px] items-center justify-center">
-                  <p className="text-muted-foreground">No call type data available</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6 mt-6">
@@ -765,9 +1464,7 @@ export function DashboardOverview() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <CardTitle>Staff Lead Performance</CardTitle>
-                  <CardDescription>
-                    Leads created and managed by staff for the selected period
-                  </CardDescription>
+                  <CardDescription>Leads assigned to staff for the selected period</CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <Tabs
@@ -815,37 +1512,31 @@ export function DashboardOverview() {
                     </div>
                   </div>
 
-                  <ResponsiveContainer width="100%" height={260}>
-                    <LineChart data={staffSummaryChartData}>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={staffPerformanceChartData}>
                       <XAxis dataKey="name" stroke="#888888" />
                       <YAxis stroke="#888888" allowDecimals={false} />
                       <Tooltip />
                       <Legend />
-                      <Line
-                        type="monotone"
+                      <Bar
                         dataKey="total"
-                        stroke={COLORS[0]}
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
+                        name="Total Leads"
+                        fill={COLORS[0]}
+                        radius={[4, 4, 0, 0]}
                       />
-                      <Line
-                        type="monotone"
+                      <Bar
                         dataKey="active"
-                        stroke={COLORS[1]}
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
+                        name="Active Leads"
+                        fill={COLORS[1]}
+                        radius={[4, 4, 0, 0]}
                       />
-                      <Line
-                        type="monotone"
+                      <Bar
                         dataKey="inactive"
-                        stroke={COLORS[2]}
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
+                        name="Inactive Leads"
+                        fill={COLORS[2]}
+                        radius={[4, 4, 0, 0]}
                       />
-                    </LineChart>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               ) : (

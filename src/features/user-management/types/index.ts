@@ -68,6 +68,8 @@ export interface UserFilters {
   emailVerified?: boolean;
   role?: string;
   group?: string;
+  sortBy?: 'user' | 'email' | 'status' | 'joined' | 'groups';
+  sortDirection?: 'asc' | 'desc';
   page?: number;
   size?: number;
 }

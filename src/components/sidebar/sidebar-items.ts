@@ -1,15 +1,4 @@
-import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  Settings,
-  PhoneCall,
-  Box,
-  HandCoins,
-  Cog,
-  ShoppingBag,
-  BadgePercent,
-} from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Box } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
 // Define the type for sidebar items
@@ -72,80 +61,6 @@ export const sidebarItems: SidebarItem[] = [
     ],
   },
   {
-    key: 'discount',
-    label: 'Discount',
-    path: '/discounts',
-    icon: BadgePercent,
-    requiredPermission: 'discount:sidebar',
-    expandable: false,
-  },
-  {
-    key: 'salesOrders',
-    label: 'Sale Order',
-    icon: HandCoins,
-    expandable: false,
-    requiredPermission: 'order:sidebar',
-    children: [
-      {
-        key: 'ordersList',
-        label: 'View Sale Orders',
-        path: '/orders',
-        requiredPermission: 'order:read',
-      },
-      {
-        key: 'createOrder',
-        label: 'Create Sale Order',
-        path: '/orders/new',
-        requiredPermission: 'order:create',
-      },
-      {
-        key: 'orderHistory',
-        label: 'Sale Order History',
-        path: '/orders/history',
-        requiredPermission: 'order:read',
-      },
-      {
-        key: 'orderDrafts',
-        label: 'Sale Order Drafts',
-        path: '/orders/drafts',
-        requiredPermission: 'order:read',
-      },
-    ],
-  },
-  {
-    key: 'purchaseOrders',
-    label: 'Purchase Orders',
-    icon: ShoppingBag,
-    expandable: false,
-    requiredPermission: 'purchase-order:read',
-    children: [
-      {
-        key: 'purchaseOrdersList',
-        label: 'View Purchase Orders',
-        path: '/purchase-orders',
-        requiredPermission: 'purchase-order:read',
-      },
-      {
-        key: 'createPurchaseOrder',
-        label: 'Create Purchase Order',
-        path: '/purchase-orders/new',
-        requiredPermission: 'purchase-order:create',
-      },
-      {
-        key: 'purchaseOrderHistory',
-        label: 'Purchase Order History',
-        path: '/purchase-orders/history',
-        requiredPermission: 'purchase-order:read',
-      },
-      {
-        key: 'purchaseOrderDrafts',
-        label: 'Purchase Order Drafts',
-        path: '/purchase-orders/drafts',
-        requiredPermission: 'purchase-order:read',
-      },
-    ],
-  },
-  {
     key: 'userManagement',
     label: 'My Staff',
     icon: Users,
@@ -163,6 +78,12 @@ export const sidebarItems: SidebarItem[] = [
         label: 'Invite Users',
         path: '/user-management/invite-users',
         requiredPermission: 'manage:users',
+      },
+      {
+        key: 'manageSalesman',
+        label: 'Manage Salesman',
+        path: '/user-management/manage-salesman',
+        // requiredPermission: 'manage:users',
       },
     ],
   },
@@ -229,75 +150,15 @@ export const sidebarItems: SidebarItem[] = [
         path: '/channel-types',
         requiredPermission: 'channelType:sidebar',
       },
-
       { key: 'areas', label: 'Areas Master', path: '/areas', requiredPermission: 'area:sidebar' },
     ],
   },
   {
     key: 'CustomerManagement',
     label: 'Customers Management',
+    path: '/customers',
     icon: Users,
-    expandable: false,
     requiredPermission: 'customer:sidebar',
-    children: [
-      {
-        key: 'viewCustomers',
-        label: 'View Customers',
-        path: '/customers',
-        requiredPermission: 'customer:sidebar',
-      },
-      {
-        key: 'createCustomer',
-        label: 'Create Customer',
-        path: '/customers/new',
-        requiredPermission: 'customer:create',
-      },
-      {
-        key: 'importCustomers',
-        label: 'Import Customers',
-        path: '/customers/import',
-        requiredPermission: 'customer:sidebar',
-      },
-      {
-        key: 'importHistory',
-        label: 'Import History',
-        path: '/customers/import/results',
-        requiredPermission: 'customer:sidebar',
-      },
-    ],
-  },
-  {
-    key: 'SundryCreditorManagement',
-    label: 'Sundry Creditors',
-    icon: Users,
-    expandable: false,
-    requiredPermission: 'sundryCreditor:sidebar',
-    children: [
-      {
-        key: 'viewSundryCreditors',
-        label: 'View Creditors',
-        path: '/sundry-creditors',
-        requiredPermission: 'sundryCreditor:sidebar',
-      },
-      {
-        key: 'createSundryCreditor',
-        label: 'Create Creditor',
-        path: '/sundry-creditors/new',
-        requiredPermission: 'sundryCreditor:create',
-      },
-      {
-        key: 'importSundryCreditors',
-        label: 'Import Creditors',
-        path: '/sundry-creditors/import',
-        requiredPermission: 'sundryCreditor:sidebar',
-      },
-      {
-        key: 'importSundryCreditorHistory',
-        label: 'Import History',
-        path: '/sundry-creditors/import/results',
-        requiredPermission: 'sundryCreditor:sidebar',
-      },
-    ],
   },
   {
     key: 'productManagement',
@@ -318,66 +179,10 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'productSubCategory:sidebar',
       },
       {
-        key: 'productCatalog',
-        label: 'Manage Product Catalog',
-        path: '/product-catalogs',
-        requiredPermission: 'productCatalog:sidebar',
-      },
-      {
-        key: 'createProductCatalog',
-        label: 'Create Product Catalog',
-        path: '/product-catalogs/new',
-        requiredPermission: 'productCatalog:create',
-      },
-      {
         key: 'product',
-        label: 'View Products',
+        label: 'Add/View Products',
         path: '/products',
         requiredPermission: 'product:sidebar',
-      },
-      {
-        key: 'addProduct',
-        label: 'Add Products',
-        path: '/products/new',
-        requiredPermission: 'product:create',
-      },
-      {
-        key: 'productImport',
-        label: 'Import Products',
-        path: '/products/import',
-        requiredPermission: 'product:create',
-      },
-      {
-        key: 'productImportHistory',
-        label: 'Import History',
-        path: '/products/import/results',
-        requiredPermission: 'product:create',
-      },
-    ],
-  },
-  {
-    key: 'systemConfiguration',
-    label: 'System Configuration',
-    icon: Cog,
-    expandable: false,
-    children: [
-      {
-        key: 'systemConfig',
-        label: 'System Configs',
-        path: '/system-configs',
-        requiredPermission: 'systemConfig:sidebar',
-      },
-      {
-        key: 'systemConfigAttribute',
-        label: 'Config Attributes',
-        path: '/system-config-attributes',
-        requiredPermission: 'systemConfigAttribute:sidebar',
-      },
-      {
-        key: 'systemConfigAttributeOption',
-        label: 'Attribute Options',
-        path: '/system-config-attribute-options',
-        requiredPermission: 'systemConfigAttributeOption:sidebar',
       },
     ],
   },

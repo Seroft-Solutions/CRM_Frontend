@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   useBulkUserOperations,
+  useAvailableGroups,
   useOrganizationContext,
   useOrganizationUsers,
   useReinviteOrganizationUser,
@@ -66,6 +67,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Building2,
   CheckCircle,
   Clock,
@@ -85,8 +89,6 @@ import {
 import type { OrganizationUser, UserFilters } from '../types';
 import { UserAvatar } from '@/features/user-management/components/UserAvatar';
 import { UserStatusBadge } from '@/features/user-management/components/UserStatusBadge';
-import { ClickableRolesBadge } from '@/features/user-management/components/ClickableRolesBadge';
-import { ClickableGroupsBadge } from '@/features/user-management/components/ClickableGroupsBadge';
 import { toast } from 'sonner';
 
 interface OrganizationUsersProps {
@@ -111,6 +113,7 @@ function OrganizationUsersContent({
   const { removeUser, isRemoving } = useRemoveUser();
   const { reinviteUserAsync } = useReinviteOrganizationUser();
   const { refreshOrganizationUsers } = useUserManagementRefresh();
+  const { groups: availableGroups } = useAvailableGroups();
   const {
     selectedUsers,
     toggleUserSelection,
@@ -129,6 +132,17 @@ function OrganizationUsersContent({
   const [userToRemove, setUserToRemove] = useState<OrganizationUser | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [reinviteUserId, setReinviteUserId] = useState<string | null>(null);
+  const getSortIcon = (column: NonNullable<UserFilters['sortBy']>) => {
+    if (filters.sortBy !== column) {
+      return <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />;
+    }
+
+    return filters.sortDirection === 'asc' ? (
+      <ArrowUp className="h-3.5 w-3.5 text-foreground" />
+    ) : (
+      <ArrowDown className="h-3.5 w-3.5 text-foreground" />
+    );
+  };
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -172,8 +186,33 @@ function OrganizationUsersContent({
     setSearchTerm('');
   };
 
+  const handleSort = (column: NonNullable<UserFilters['sortBy']>) => {
+    setFilters((prev) => {
+      if (prev.sortBy === column) {
+        return {
+          ...prev,
+          sortDirection: prev.sortDirection === 'asc' ? 'desc' : 'asc',
+          page: 1,
+        };
+      }
+
+      return {
+        ...prev,
+        sortBy: column,
+        sortDirection: 'asc',
+        page: 1,
+      };
+    });
+  };
+
   const hasActiveFilters =
-    filters.search || filters.enabled !== undefined || filters.emailVerified !== undefined;
+    filters.search ||
+    filters.enabled !== undefined ||
+    filters.emailVerified !== undefined ||
+    !!filters.group;
+
+  const selectedGroupLabel =
+    availableGroups.find((group) => group.id === filters.group)?.name || filters.group;
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -298,6 +337,11 @@ function OrganizationUsersContent({
                   Email: {filters.emailVerified ? 'Verified' : 'Unverified'}
                 </Badge>
               )}
+              {filters.group && (
+                <Badge variant="outline" className="text-xs">
+                  Group: {selectedGroupLabel}
+                </Badge>
+              )}
             </div>
           )}
           {hasMultipleOrganizations && (
@@ -376,7 +420,7 @@ function OrganizationUsersContent({
                 <DialogHeader>
                   <DialogTitle>Filter Users</DialogTitle>
                   <DialogDescription>
-                    Filter the user list by status and verification
+                    Filter the user list by status, verification, and group
                   </DialogDescription>
                 </DialogHeader>
 
@@ -456,6 +500,30 @@ function OrganizationUsersContent({
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label>Group</Label>
+                    <Select
+                      value={filters.group || 'all'}
+                      onValueChange={(value) =>
+                        handleFilterChange('group', value === 'all' ? undefined : value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Groups</SelectItem>
+                        {availableGroups
+                          .filter((group) => !!group.id)
+                          .map((group) => (
+                            <SelectItem key={group.id} value={group.id!}>
+                              {group.name || 'Unnamed Group'}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <DialogFooter>
@@ -506,19 +574,73 @@ function OrganizationUsersContent({
                       onCheckedChange={handleSelectAll}
                     />
                   </TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Roles</TableHead>
-                  <TableHead>Groups</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('user')}
+                    >
+                      User
+                      {getSortIcon('user')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('email')}
+                    >
+                      Email
+                      {getSortIcon('email')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('status')}
+                    >
+                      Status
+                      {getSortIcon('status')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('joined')}
+                    >
+                      Joined
+                      {getSortIcon('joined')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-1 font-semibold"
+                      onClick={() => handleSort('groups')}
+                    >
+                      Groups
+                      {getSortIcon('groups')}
+                    </Button>
+                  </TableHead>
+                  <TableHead className="w-[120px] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex items-center justify-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                         Loading users...
@@ -527,7 +649,7 @@ function OrganizationUsersContent({
                   </TableRow>
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex flex-col items-center gap-2">
                         <Users className="h-8 w-8 text-muted-foreground" />
                         <p className="text-muted-foreground">
@@ -582,22 +704,23 @@ function OrganizationUsersContent({
                         {formatDate(user.createdTimestamp)}
                       </TableCell>
                       <TableCell>
-                        <ClickableRolesBadge
-                          userId={user.id!}
-                          organizationId={organizationId}
-                          roles={user.assignedRoles || []}
-                          enableProgressiveLoading={false}
-                        />
+                        <div className="flex flex-wrap gap-1">
+                          {(user.assignedGroups || []).length > 0 ? (
+                            (user.assignedGroups || []).map((group, index) => (
+                              <Badge
+                                key={group.id || `${group.name || 'group'}-${index}`}
+                                variant="outline"
+                                className="text-xs px-2 py-0.5 border-yellow-300 bg-yellow-100 text-yellow-800"
+                              >
+                                {group.name || 'Unnamed Group'}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">No groups</span>
+                          )}
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <ClickableGroupsBadge
-                          userId={user.id!}
-                          organizationId={organizationId}
-                          groups={user.assignedGroups || []}
-                          enableProgressiveLoading={false}
-                        />
-                      </TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm">

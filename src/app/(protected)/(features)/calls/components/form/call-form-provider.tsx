@@ -3,7 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAccount, useUserAuthorities } from '@/core/auth';
 import {
@@ -31,6 +31,7 @@ interface CallFormProviderProps {
 
 export function CallFormProvider({ children, id, onSuccess, onError }: CallFormProviderProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isNew = !id;
   const baseConfig = callFormConfig;
   const { hasGroup } = useUserAuthorities();
@@ -80,6 +81,7 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
 
   const [isInsideForm, setIsInsideForm] = useState(false);
+  const hasAppliedUrlPrefillsRef = useRef(false);
 
   const { mutate: createEntity, isPending: isCreating } = useCreateCall();
 
@@ -120,6 +122,37 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
     reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
+  const prefilledRelationshipValues = React.useMemo(() => {
+    const parseNumericId = (rawValue: string | null): number | undefined => {
+      if (!rawValue) return undefined;
+
+      const parsedValue = Number(rawValue);
+
+      if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+        return undefined;
+      }
+
+      return parsedValue;
+    };
+
+    const parseStringId = (rawValue: string | null): string | undefined => {
+      const trimmedValue = rawValue?.trim();
+      return trimmedValue ? trimmedValue : undefined;
+    };
+
+    return {
+      customer: parseNumericId(searchParams.get('customerId')),
+      source: parseNumericId(searchParams.get('sourceId')),
+      product: parseNumericId(searchParams.get('productId')),
+      priority: parseNumericId(searchParams.get('priorityId')),
+      callType: parseNumericId(searchParams.get('callTypeId')),
+      subCallType: parseNumericId(searchParams.get('subCallTypeId')),
+      callStatus: parseNumericId(searchParams.get('callStatusId')),
+      channelType: parseNumericId(searchParams.get('channelTypeId')),
+      channelParties: parseStringId(searchParams.get('channelPartiesId')),
+      assignedTo: parseStringId(searchParams.get('assignedToId')),
+    };
+  }, [searchParams]);
 
   const { data: organizations, isLoading: OrganizationLoading } = useUserOrganizations();
 
@@ -149,6 +182,26 @@ export function CallFormProvider({ children, id, onSuccess, onError }: CallFormP
       form.setValue('assignedTo', id);
     }
   }, [isNew, form, tenantData]);
+
+  React.useEffect(() => {
+    if (!isNew || hasAppliedUrlPrefillsRef.current) {
+      return;
+    }
+
+    const prefilledEntries = Object.entries(prefilledRelationshipValues).filter(
+      ([, value]) => value !== undefined
+    );
+
+    if (prefilledEntries.length === 0) {
+      return;
+    }
+
+    prefilledEntries.forEach(([fieldName, value]) => {
+      form.setValue(fieldName as any, value, { shouldValidate: true });
+    });
+
+    hasAppliedUrlPrefillsRef.current = true;
+  }, [form, isNew, prefilledRelationshipValues]);
 
   useEffect(() => {
     if (isBusinessPartner && accountData && isNew) {

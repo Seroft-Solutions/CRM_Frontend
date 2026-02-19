@@ -23,6 +23,7 @@ export default function CallPage({ params }: CallPageProps) {
       enabled: !!id,
     },
   });
+
   return (
     <PermissionGuard
       requiredPermission="call:read"
@@ -54,13 +55,21 @@ export default function CallPage({ params }: CallPageProps) {
 
         {/* Call Remarks Section */}
         <div>
-          <CallRemarksSection callId={id} />
+          <CallRemarksSection
+            callId={id}
+            customerId={callData?.customer?.id}
+            sourceId={callData?.source?.id}
+            productId={callData?.product?.id}
+            priorityId={callData?.priority?.id}
+            callTypeId={callData?.callType?.id}
+            subCallTypeId={callData?.subCallType?.id}
+            callStatusId={callData?.callStatus?.id}
+            channelTypeId={callData?.channelType?.id}
+            channelPartiesId={callData?.channelParties?.id}
+            assignedToId={callData?.assignedTo?.id}
+          />
         </div>
 
-        {/* Call Details Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <CallDetails id={id} />
-        </div>
         {/* Call Meetings Section */}
         <div>
           <CallMeetingsSection
@@ -68,6 +77,11 @@ export default function CallPage({ params }: CallPageProps) {
             customerId={callData?.customer?.id}
             assignedUserId={callData?.assignedTo?.id}
           />
+        </div>
+
+        {/* Call Details Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <CallDetails id={id} />
         </div>
       </div>
     </PermissionGuard>

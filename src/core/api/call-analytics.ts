@@ -9,7 +9,7 @@ import type {
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
 
 export type CallStaffLeadSummaryDTO = {
-  createdBy: string;
+  assignedUser?: string;
   total: number;
   active: number;
   inactive: number;
@@ -19,13 +19,10 @@ export type StaffLeadSummaryPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
 export type GetStaffLeadSummaryParams = {
   period: StaffLeadSummaryPeriod;
-  createdBy?: string;
+  assignedUser?: string;
 };
 
-export const getStaffLeadSummary = (
-  params: GetStaffLeadSummaryParams,
-  signal?: AbortSignal
-) =>
+export const getStaffLeadSummary = (params: GetStaffLeadSummaryParams, signal?: AbortSignal) =>
   springServiceMutator<CallStaffLeadSummaryDTO[]>({
     url: '/api/calls/staff-lead-summary',
     method: 'GET',
@@ -49,5 +46,6 @@ export const useGetStaffLeadSummary = (
   > & { queryKey: QueryKey };
 
   query.queryKey = queryKey;
+
   return query;
 };

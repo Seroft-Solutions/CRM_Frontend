@@ -16,6 +16,7 @@ import {
   useUserDetails,
 } from '@/features/user-management/hooks';
 import { PermissionGuard } from '@/core/auth';
+import { useUserAuthorities } from '@/core/auth/hooks/use-user-authorities';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +68,11 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
   const { userDetails, isLoading, error, refetch } = useUserDetails(organizationId, userId);
   const { roles: availableRoles } = useAvailableRoles();
   const { groups: availableGroups } = useAvailableGroups();
+  const { groups: currentUserGroups } = useUserAuthorities();
+
+  const canManageRoles = currentUserGroups.some((group) =>
+    group.toLowerCase().replace(/[_-]+/g, ' ').includes('super admin')
+  );
 
   const getInitialTab = (): 'overview' | 'roles' | 'groups' => {
     const tabParam = searchParams.get('tab');
@@ -313,15 +319,17 @@ export function UserDetails({ userId, className }: UserDetailsProps) {
                   <Separator />
 
                   <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start gap-2"
-                      onClick={() => setActiveTab('roles')}
-                    >
-                      <Shield className="h-4 w-4" />
-                      Manage Roles
-                    </Button>
+                    {canManageRoles && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start gap-2"
+                        onClick={() => setActiveTab('roles')}
+                      >
+                        <Shield className="h-4 w-4" />
+                        Manage Roles
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"

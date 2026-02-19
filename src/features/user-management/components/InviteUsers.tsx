@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,10 +28,16 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, ArrowLeft, CheckCircle, Mail, Send, UserPlus, Users, X } from 'lucide-react';
-import type { InviteUserFormDataWithGroups } from '../types';
 import { toast } from 'sonner';
 import { useUserProfilePersistence } from '@/features/user-profile-management';
 
@@ -45,9 +51,34 @@ const inviteUserSchema = z.object({
     .string()
     .min(1, 'Last name is required')
     .min(2, 'Last name must be at least 2 characters'),
+  selectedGroup: z.string().min(1, 'Group is required'),
   selectedGroups: z.array(z.string()).default([]),
   invitationNote: z.string().optional(),
 });
+
+type InviteUserFormValues = z.input<typeof inviteUserSchema>;
+
+const ALLOWED_GROUP_NAMES = new Set(['user', 'users', 'salesman', 'salesmanager']);
+
+function normalizeGroupName(value?: string) {
+  return (value || '').toLowerCase().replace(/[\s_-]+/g, '');
+}
+
+function getGroupDisplayLabel(value?: string) {
+  const normalizedName = normalizeGroupName(value);
+
+  if (normalizedName === 'user' || normalizedName === 'users') {
+    return 'User';
+  }
+  if (normalizedName === 'salesman') {
+    return 'Salesman';
+  }
+  if (normalizedName === 'salesmanager') {
+    return 'Sales Manager';
+  }
+
+  return value || '';
+}
 
 interface InviteUsersProps {
   className?: string;
@@ -56,47 +87,61 @@ interface InviteUsersProps {
 export function InviteUsers({ className }: InviteUsersProps) {
   const router = useRouter();
   const { organizationId, organizationName } = useOrganizationContext();
-  const {
-    inviteUserWithGroups,
-    inviteUserWithGroupsAsync,
-    isInviting: isInvitingWithGroups,
-  } = useInviteUserWithGroups();
+  const { inviteUserWithGroupsAsync, isInviting: isInvitingWithGroups } = useInviteUserWithGroups();
   const { groups } = useAvailableGroups();
-  const { refreshOrganizationUsers, refreshAllUserData } = useUserManagementRefresh();
-  const { createProfileForPartner, isCreating: isCreatingProfile } = useUserProfilePersistence();
+  const { refreshAllUserData } = useUserManagementRefresh();
+  const { createProfileForPartner } = useUserProfilePersistence();
 
   const [invitationStatus, setInvitationStatus] = useState<{
-    sent: InviteUserFormDataWithGroups[];
-    failed: { invitation: InviteUserFormDataWithGroups; error: string }[];
+    sent: InviteUserFormValues[];
+    failed: { invitation: InviteUserFormValues; error: string }[];
   }>({ sent: [], failed: [] });
 
-  const form = useForm<InviteUserFormDataWithGroups>({
+  const form = useForm<InviteUserFormValues>({
     resolver: zodResolver(inviteUserSchema),
     defaultValues: {
       email: '',
       firstName: '',
       lastName: '',
+      selectedGroup: '',
       selectedGroups: [],
       invitationNote: '',
     },
     mode: 'onChange',
   });
+  const selectableGroups = useMemo(
+    () =>
+      groups.filter(
+        (group) => !!group.id && ALLOWED_GROUP_NAMES.has(normalizeGroupName(group.name))
+      ),
+    [groups]
+  );
 
   const watchedValues = form.watch();
   const isFormValid =
     form.formState.isValid &&
     watchedValues.email?.trim() !== '' &&
     watchedValues.firstName?.trim() !== '' &&
-    watchedValues.lastName?.trim() !== '';
+    watchedValues.lastName?.trim() !== '' &&
+    watchedValues.selectedGroup?.trim() !== '';
 
-  const handleInvite = async (data: InviteUserFormDataWithGroups) => {
-    const selectedGroups = groups.filter((g) => data.selectedGroups.includes(g.id!));
+  const handleInvite = async (data: InviteUserFormValues) => {
+    const selectedGroup = selectableGroups.find((group) => group.id === data.selectedGroup);
+
+    if (!selectedGroup) {
+      toast.error('Please select a valid group');
+
+      return;
+    }
 
     try {
       const result = await inviteUserWithGroupsAsync({
-        ...data,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        invitationNote: data.invitationNote,
         organizationId,
-        selectedGroups,
+        selectedGroups: [selectedGroup],
       });
 
       console.log('Invitation result In page haha:', result);
@@ -324,6 +369,41 @@ export function InviteUsers({ className }: InviteUsersProps) {
                               {...field}
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="selectedGroup"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Group *</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={isInvitingWithGroups || selectableGroups.length === 0}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select group" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {selectableGroups.map((group) => (
+                                <SelectItem key={group.id} value={group.id!}>
+                                  {getGroupDisplayLabel(group.name)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {selectableGroups.length === 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              No eligible groups found. Please create one of: User, Salesman, Sales
+                              Manager.
+                            </p>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
