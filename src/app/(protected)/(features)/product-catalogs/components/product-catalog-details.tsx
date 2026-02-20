@@ -190,7 +190,28 @@ export function ProductCatalogDetails({ id }: ProductCatalogDetailsProps) {
     return value || <span className="text-muted-foreground italic">Not set</span>;
   };
 
-  const renderRelationshipValue = (relConfig: any, value: any) => {
+  const renderRelationshipValue = (relationshipName: string, relConfig: any, value: any) => {
+    if (
+      relationshipName === 'product' &&
+      value &&
+      typeof value === 'object' &&
+      typeof value.id === 'number'
+    ) {
+      const productDisplayName =
+        typeof value.name === 'string' && value.name.trim().length > 0
+          ? value.name
+          : `Product ${value.id}`;
+
+      return (
+        <Link
+          href={`/products/${value.id}`}
+          className="text-primary hover:text-primary/80 hover:underline"
+        >
+          {productDisplayName}
+        </Link>
+      );
+    }
+
     return <RelationshipDisplayValue value={value} relConfig={relConfig} />;
   };
 
@@ -272,7 +293,7 @@ export function ProductCatalogDetails({ id }: ProductCatalogDetailsProps) {
                         {relConfig.ui.label}
                       </div>
                       <div className="text-sm font-semibold text-foreground">
-                        {renderRelationshipValue(relConfig, value)}
+                        {renderRelationshipValue(relationshipName, relConfig, value)}
                       </div>
                     </div>
                   );

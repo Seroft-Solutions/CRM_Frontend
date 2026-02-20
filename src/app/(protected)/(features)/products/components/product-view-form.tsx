@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { ProductBasicInfoSection } from './form/sections/ProductBasicInfoSection';
 import { ProductClassificationSection } from './form/sections/ProductClassificationSection';
 
@@ -40,6 +42,15 @@ export function ProductViewForm({ id }: ProductViewFormProps) {
     error,
     refetch,
   } = useGetProduct(id, { query: { enabled: Number.isFinite(id) } });
+  const { data: productCatalogs = [], isLoading: isLoadingProductCatalogs } =
+    useGetAllProductCatalogs(
+      {
+        'productId.equals': id,
+        size: 1000,
+        sort: ['productCatalogName,asc'],
+      },
+      { query: { enabled: Number.isFinite(id) } }
+    );
 
   if (isLoading) {
     return <ProductViewSkeleton />;
@@ -73,7 +84,40 @@ export function ProductViewForm({ id }: ProductViewFormProps) {
 
       {/* Classification Section */}
       <ProductClassificationSection isViewMode={true} product={product} productId={id} />
-
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-2 pt-3 px-4">
+          <h3 className="text-sm font-semibold text-slate-800">Catalogs</h3>
+          <p className="text-[11px] text-muted-foreground">
+            Catalog entries created for this product
+          </p>
+        </CardHeader>
+        <CardContent className="px-4 pb-4">
+          {isLoadingProductCatalogs ? (
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-56" />
+              <Skeleton className="h-8 w-48" />
+            </div>
+          ) : productCatalogs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No catalog entries found for this product.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {productCatalogs
+                .filter((catalog) => typeof catalog.id === 'number')
+                .map((catalog) => (
+                  <Link
+                    key={catalog.id}
+                    href={`/product-catalogs/${catalog.id}`}
+                    className="inline-flex items-center rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 hover:underline"
+                  >
+                    {catalog.productCatalogName}
+                  </Link>
+                ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
