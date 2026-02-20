@@ -26,6 +26,7 @@ interface VariantsTableProps {
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
   editingRowData: ExistingVariantRow | null;
   onEditRow: (row: ExistingVariantRow) => void;
+  onMarkPrimaryExisting: (row: ExistingVariantRow) => void;
   onUpdateEditingRow: (updatedValues: Partial<ExistingVariantRow>) => void;
   onSaveExisting: () => void;
   onCancelEdit: () => void;
@@ -53,6 +54,7 @@ export function VariantsTable({
   onUpdateDraft,
   editingRowData,
   onEditRow,
+  onMarkPrimaryExisting,
   onUpdateEditingRow,
   onSaveExisting,
   onCancelEdit,
@@ -124,6 +126,7 @@ export function VariantsTable({
             ) : totalRowsToDisplay > 0 ? (
               rows.map((item) => {
                 const rowErrors = validationErrors[item.rowKey] || [];
+
                 return (
                   <VariantTableRow
                     key={item.rowKey}
@@ -134,6 +137,7 @@ export function VariantsTable({
                     onUpdateDraft={onUpdateDraft}
                     editingRowData={editingRowData}
                     onEditRow={onEditRow}
+                    onMarkPrimaryExisting={onMarkPrimaryExisting}
                     onUpdateEditingRow={onUpdateEditingRow}
                     onSaveExisting={onSaveExisting}
                     onCancelEdit={onCancelEdit}

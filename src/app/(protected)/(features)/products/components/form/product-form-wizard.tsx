@@ -18,11 +18,14 @@ import { useUploadProductVariantImage } from '@/core/api/generated/spring';
 import {
   getAllProductVariants,
   useCreateProductVariant,
-  useUpdateProductVariant,
+  usePartialUpdateProductVariant,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
 import { handleProductError, productToast } from '../product-toast';
-import { handleProductCatalogError, productCatalogToast } from '@/app/(protected)/(features)/product-catalogs/components/product-catalog-toast';
+import {
+  handleProductCatalogError,
+  productCatalogToast,
+} from '@/app/(protected)/(features)/product-catalogs/components/product-catalog-toast';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUploadImages, useHardDeleteImage, useReorderImages } from '@/features/product-images';
@@ -313,7 +316,7 @@ export function ProductForm({ id }: ProductFormProps) {
 
   // Get mutation functions at component level to avoid hook calls in async callbacks
   const createVariantMutation = useCreateProductVariant();
-  const updateVariantMutation = useUpdateProductVariant();
+  const partialUpdateVariantMutation = usePartialUpdateProductVariant();
   const createSelectionMutation = useCreateProductVariantSelection();
   const uploadVariantImageMutation = useUploadProductVariantImage();
 
@@ -330,11 +333,7 @@ export function ProductForm({ id }: ProductFormProps) {
   }, [queryClient, id]);
 
   const createCatalogForProduct = useCallback(
-    async (
-      productId: number | undefined,
-      catalogName: unknown,
-      catalogPrice: unknown
-    ) => {
+    async (productId: number | undefined, catalogName: unknown, catalogPrice: unknown) => {
       if (!productId) {
         return;
       }
@@ -344,6 +343,7 @@ export function ProductForm({ id }: ProductFormProps) {
 
       if (!resolvedName || Number.isNaN(resolvedPrice)) {
         productCatalogToast.validationError(['productCatalogName', 'productCatalogPrice']);
+
         return;
       }
 
@@ -498,14 +498,10 @@ export function ProductForm({ id }: ProductFormProps) {
           );
 
           for (const variant of otherPrimaries) {
-            await updateVariantMutation.mutateAsync({
+            await partialUpdateVariantMutation.mutateAsync({
               id: variant.id!,
               data: {
                 id: variant.id!,
-                sku: variant.sku,
-                price: variant.price,
-                stockQuantity: variant.stockQuantity,
-                status: variant.status,
                 isPrimary: false,
                 product: { id: productId },
               },
@@ -520,7 +516,7 @@ export function ProductForm({ id }: ProductFormProps) {
       createVariantMutation,
       createSelectionMutation,
       uploadVariantImageMutation,
-      updateVariantMutation,
+      partialUpdateVariantMutation,
     ]
   );
 

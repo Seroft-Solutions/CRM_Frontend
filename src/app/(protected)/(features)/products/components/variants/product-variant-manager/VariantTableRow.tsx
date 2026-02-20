@@ -20,12 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
@@ -55,6 +50,7 @@ interface VariantTableRowProps {
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
   editingRowData: ExistingVariantRow | null;
   onEditRow: (row: ExistingVariantRow) => void;
+  onMarkPrimaryExisting: (row: ExistingVariantRow) => void;
   onUpdateEditingRow: (updatedValues: Partial<ExistingVariantRow>) => void;
   onSaveExisting: () => void;
   onCancelEdit: () => void;
@@ -78,6 +74,7 @@ export function VariantTableRow({
   onUpdateDraft,
   editingRowData,
   onEditRow,
+  onMarkPrimaryExisting,
   onUpdateEditingRow,
   onSaveExisting,
   onCancelEdit,
@@ -89,7 +86,8 @@ export function VariantTableRow({
   const isDraft = item.kind === 'draft';
   const isDuplicate = item.kind === 'duplicate';
   const { row } = item;
-  const isEditing = !isDraft && !isDuplicate && editingRowData?.id === row.id;
+  const isExisting = !isDraft && !isDuplicate;
+  const isEditing = isExisting && editingRowData?.id === row.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [draftFrontImageUrl, setDraftFrontImageUrl] = useState<string | null>(null);
   const [isImageSheetOpen, setIsImageSheetOpen] = useState(false);
@@ -157,10 +155,12 @@ export function VariantTableRow({
 
     if (!row.imageFiles?.front) {
       setDraftFrontImageUrl(null);
+
       return;
     }
 
     const previewUrl = URL.createObjectURL(row.imageFiles.front);
+
     setDraftFrontImageUrl(previewUrl);
 
     return () => URL.revokeObjectURL(previewUrl);
@@ -170,22 +170,31 @@ export function VariantTableRow({
     if (!variantImages || variantImages.length === 0) return null;
     const slots = mapVariantImagesToSlots(variantImages);
     const frontImage = slots.front ?? variantImages[0];
+
     return frontImage?.thumbnailUrl || frontImage?.cdnUrl || null;
   }, [variantImages]);
 
   const imageUrl = draftFrontImageUrl ?? existingImageUrl;
   const draftImageFiles = useMemo<VariantImageSlotMap<File | null>>(() => {
     if (!isDraft && !isDuplicate) {
-      return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
-        acc[slot] = null;
-        return acc;
-      }, {} as VariantImageSlotMap<File | null>);
+      return VARIANT_IMAGE_ORDER.reduce(
+        (acc, slot) => {
+          acc[slot] = null;
+
+          return acc;
+        },
+        {} as VariantImageSlotMap<File | null>
+      );
     }
 
-    return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
-      acc[slot] = row.imageFiles?.[slot] ?? null;
-      return acc;
-    }, {} as VariantImageSlotMap<File | null>);
+    return VARIANT_IMAGE_ORDER.reduce(
+      (acc, slot) => {
+        acc[slot] = row.imageFiles?.[slot] ?? null;
+
+        return acc;
+      },
+      {} as VariantImageSlotMap<File | null>
+    );
   }, [isDraft, isDuplicate, row.imageFiles]);
   const handleDraftImagesSave =
     isDraft || isDuplicate
@@ -196,7 +205,9 @@ export function VariantTableRow({
     attr.name?.toLowerCase() === 'color' || attr.label?.toLowerCase() === 'color';
   const resolveColorCode = (code?: string) => {
     const value = code?.trim();
+
     if (!value) return undefined;
+
     return /^#[0-9a-fA-F]{6}$/.test(value) ? value : undefined;
   };
   const resolveReadableTextColor = (hex: string) => {
@@ -205,14 +216,15 @@ export function VariantTableRow({
     const g = parseInt(value.slice(2, 4), 16);
     const b = parseInt(value.slice(4, 6), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
     return luminance > 0.6 ? '#111827' : '#FFFFFF';
   };
   const isSelectableRow = item.kind === 'existing' && typeof row.id === 'number';
   const isSelected = selection ? (isSelectableRow ? selection.isRowSelected(item) : false) : false;
 
   // Validation error detection
-  const hasPriceError = validationErrors.some(err => err.toLowerCase().includes('price'));
-  const hasStockError = validationErrors.some(err => err.toLowerCase().includes('stock'));
+  const hasPriceError = validationErrors.some((err) => err.toLowerCase().includes('price'));
+  const hasStockError = validationErrors.some((err) => err.toLowerCase().includes('stock'));
   const dataColumnCount = visibleEnumAttributes.length + 6 + (isViewMode ? 0 : 1);
   const columnWidth = selection
     ? `calc((100% - 2.5rem) / ${dataColumnCount})`
@@ -232,9 +244,8 @@ export function VariantTableRow({
                 ? 'bg-gradient-to-r from-blue-50/40 to-indigo-50/30 hover:from-blue-100/50 hover:to-indigo-100/40 border-l-4 border-l-blue-400 hover:shadow-md'
                 : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 hover:shadow-sm',
           {
-            'bg-green-50/50 border-l-4 border-green-400':
-              !isEditing && data.isPrimary,
-          },
+            'bg-green-50/50 border-l-4 border-green-400': !isEditing && data.isPrimary,
+          }
         )}
       >
         {selection && (
@@ -260,7 +271,20 @@ export function VariantTableRow({
                 checked={!!data.isPrimary}
                 onChange={() => handlePrimaryChange(true)}
                 disabled={isViewMode}
-                className={cn('h-4 w-4 accent-primary', isViewMode && 'opacity-50 cursor-not-allowed')}
+                className={cn(
+                  'h-4 w-4 accent-primary',
+                  isViewMode && 'opacity-50 cursor-not-allowed'
+                )}
+              />
+            </div>
+          ) : isExisting && !isViewMode ? (
+            <div className="flex items-center justify-center">
+              <input
+                type="radio"
+                checked={!!data.isPrimary}
+                onChange={() => onMarkPrimaryExisting(row as ExistingVariantRow)}
+                disabled={!!data.isPrimary}
+                className={cn('h-4 w-4 accent-primary', !!data.isPrimary && 'cursor-default')}
               />
             </div>
           ) : data.isPrimary ? (
@@ -283,10 +307,10 @@ export function VariantTableRow({
             : undefined;
           const badgeStyle = colorCode
             ? {
-              backgroundColor: colorCode,
-              borderColor: colorCode,
-              color: resolveReadableTextColor(colorCode),
-            }
+                backgroundColor: colorCode,
+                borderColor: colorCode,
+                color: resolveReadableTextColor(colorCode),
+              }
             : undefined;
 
           return (
@@ -298,18 +322,17 @@ export function VariantTableRow({
               {selection ? (
                 <Badge
                   variant="secondary"
-                  className={`border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 ${colorCode
-                    ? 'bg-transparent'
-                    : 'bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground'
-                    }`}
+                  className={`border-transparent font-medium px-2 py-0.5 text-xs shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 ${
+                    colorCode
+                      ? 'bg-transparent'
+                      : 'bg-gradient-to-r from-sidebar-accent/90 to-sidebar-accent text-sidebar-accent-foreground'
+                  }`}
                   style={badgeStyle}
                 >
                   {selection.optionLabel}
                 </Badge>
               ) : (
-                <span className="text-muted-foreground text-sm font-medium">
-                  —
-                </span>
+                <span className="text-muted-foreground text-sm font-medium">—</span>
               )}
             </TableCell>
           );
@@ -322,9 +345,7 @@ export function VariantTableRow({
               <Input
                 className="h-8 w-full min-w-0 border-2 border-blue-200 focus:border-blue-400 bg-blue-50/50 transition-colors text-sm"
                 value={row.sku}
-                onChange={(e) =>
-                  onUpdateDraft(row.key, { sku: e.target.value })
-                }
+                onChange={(e) => onUpdateDraft(row.key, { sku: e.target.value })}
               />
               {existingSkus.has(row.sku) && (
                 <p className="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded border border-red-200">
@@ -344,10 +365,11 @@ export function VariantTableRow({
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <code
-                      className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block truncate max-w-[150px] ${isDuplicate
-                        ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
-                        : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
-                        }`}
+                      className={`font-bold px-2 py-1 rounded text-sm border shadow-sm inline-block truncate max-w-[150px] ${
+                        isDuplicate
+                          ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300'
+                          : 'bg-gradient-to-r from-primary/10 to-primary/20 text-primary border-primary/20'
+                      }`}
                     >
                       {row.sku}
                       {isDuplicate && <span className="ml-1 text-xs">⚠️</span>}
@@ -368,12 +390,13 @@ export function VariantTableRow({
           {isDraft || isEditing ? (
             <div className="space-y-1">
               <Input
-                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${hasPriceError
-                  ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                  : isDraft
-                    ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                    : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                  }`}
+                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${
+                  hasPriceError
+                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                    : isDraft
+                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                }`}
                 type="number"
                 step="0.01"
                 placeholder="Price"
@@ -381,9 +404,7 @@ export function VariantTableRow({
                 onChange={handlePriceChange}
               />
               {hasPriceError && (
-                <p className="text-xs text-red-600 font-medium">
-                  Price must be greater than 0
-                </p>
+                <p className="text-xs text-red-600 font-medium">Price must be greater than 0</p>
               )}
             </div>
           ) : (
@@ -396,12 +417,13 @@ export function VariantTableRow({
           {isDraft || isEditing ? (
             <div className="space-y-1">
               <Input
-                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${hasStockError
-                  ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                  : isDraft
-                    ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                    : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                  }`}
+                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${
+                  hasStockError
+                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                    : isDraft
+                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                }`}
                 type="number"
                 min="0"
                 placeholder="Quantity"
@@ -426,10 +448,11 @@ export function VariantTableRow({
           {isDraft || isEditing ? (
             <Select value={data.status} onValueChange={handleStatusChange}>
               <SelectTrigger
-                className={`h-8 border-2 transition-colors text-sm ${isDraft
-                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                  }`}
+                className={`h-8 border-2 transition-colors text-sm ${
+                  isDraft
+                    ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                    : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                }`}
               >
                 <SelectValue />
               </SelectTrigger>
@@ -450,20 +473,18 @@ export function VariantTableRow({
             </Select>
           ) : (
             <Badge
-              className={`font-medium px-2 py-0.5 text-xs ${data.status === ProductVariantDTOStatus.ACTIVE
-                ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
-                : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
-                }`}
+              className={`font-medium px-2 py-0.5 text-xs ${
+                data.status === ProductVariantDTOStatus.ACTIVE
+                  ? 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+              }`}
             >
               <div
-                className={`w-1.5 h-1.5 rounded-full mr-1 inline-block ${data.status === ProductVariantDTOStatus.ACTIVE
-                  ? 'bg-green-500'
-                  : 'bg-gray-500'
-                  }`}
+                className={`w-1.5 h-1.5 rounded-full mr-1 inline-block ${
+                  data.status === ProductVariantDTOStatus.ACTIVE ? 'bg-green-500' : 'bg-gray-500'
+                }`}
               ></div>
-              {data.status === ProductVariantDTOStatus.ACTIVE
-                ? 'Active'
-                : 'Inactive'}
+              {data.status === ProductVariantDTOStatus.ACTIVE ? 'Active' : 'Inactive'}
             </Badge>
           )}
         </TableCell>

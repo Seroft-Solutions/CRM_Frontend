@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
   useGetAllProductVariants,
-  useUpdateProductVariant,
+  usePartialUpdateProductVariant,
   useDeleteProductVariant,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useGetAllProductVariantSelections } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
@@ -43,14 +43,17 @@ const sizeRankByToken = (() => {
     ['xxs', '2xs'],
     ['xxxs', '3xs'],
   ];
+
   groups.forEach((tokens, index) => {
     tokens.forEach((token) => map.set(token, index));
   });
+
   return map;
 })();
 const isSizeLabel = (label?: string) => {
   if (!label) return false;
   const normalized = label.toLowerCase().replace(/[^a-z]/g, '');
+
   return normalized === 'size' || normalized.startsWith('size') || normalized.endsWith('size');
 };
 
@@ -107,17 +110,18 @@ export function ProductVariantManager({
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
   const validationErrorsRef = useRef<Record<string, string[]>>({});
 
-
   const createEmptyImageFiles = () =>
     VARIANT_IMAGE_ORDER.reduce(
       (acc, slot) => {
         acc[slot] = null;
+
         return acc;
       },
       {} as Record<(typeof VARIANT_IMAGE_ORDER)[number], File | null>
     );
   const normalizeSku = (value: string, fallback: string) => {
     const sanitized = value.replace(/[^A-Za-z0-9_-]+/g, '');
+
     return sanitized.length > 0 ? sanitized : fallback;
   };
 
@@ -194,9 +198,9 @@ export function ProductVariantManager({
     useGetAllProductVariantSelections(
       variantIds.length > 0
         ? {
-          'variantId.in': variantIds,
-          size: 2000,
-        }
+            'variantId.in': variantIds,
+            size: 2000,
+          }
         : undefined,
       {
         query: { enabled: variantIds.length > 0 },
@@ -348,7 +352,10 @@ export function ProductVariantManager({
   const buildSizeSortKey = (selections: VariantSelection[]) => {
     const sizeSelection = selections.find((selection) => {
       const meta = attributeById.get(selection.attributeId);
-      return isSizeLabel(selection.attributeLabel) || isSizeLabel(meta?.label) || isSizeLabel(meta?.name);
+
+      return (
+        isSizeLabel(selection.attributeLabel) || isSizeLabel(meta?.label) || isSizeLabel(meta?.name)
+      );
     });
 
     if (!sizeSelection) {
@@ -357,16 +364,19 @@ export function ProductVariantManager({
 
     const rawValue = sizeSelection.optionLabel || sizeSelection.optionCode || '';
     const normalized = normalizeSizeToken(rawValue);
+
     if (!normalized) {
       return { rank: Number.MAX_SAFE_INTEGER, label: rawValue };
     }
 
     const rank = sizeRankByToken.get(normalized);
+
     if (rank !== undefined) {
       return { rank, label: rawValue };
     }
 
     const numeric = Number.parseFloat(normalized);
+
     if (!Number.isNaN(numeric)) {
       return { rank: 1000 - numeric, label: rawValue };
     }
@@ -386,7 +396,9 @@ export function ProductVariantManager({
           return a.index - b.index;
         }
         const diff = a.sortKey.rank - b.sortKey.rank;
+
         if (diff !== 0) return diff;
+
         return a.index - b.index;
       })
       .map((item) => item.variant);
@@ -559,11 +571,8 @@ export function ProductVariantManager({
       if (index === sortedAttributes.length) {
         const isColorAttribute = (attributeId: number, attributeLabel?: string) => {
           const attrMeta = attributeById.get(attributeId);
-          const rawName =
-            attrMeta?.name ??
-            attrMeta?.label ??
-            attributeLabel ??
-            '';
+          const rawName = attrMeta?.name ?? attrMeta?.label ?? attributeLabel ?? '';
+
           return rawName.toLowerCase() === 'color';
         };
 
@@ -577,6 +586,7 @@ export function ProductVariantManager({
 
         const cleanToken = (token: string | undefined) => {
           if (!token) return token;
+
           return token.startsWith('#') ? token.substring(1) : token;
         };
         const skuParts = [
@@ -742,6 +752,7 @@ export function ProductVariantManager({
   // #region Combined Logic & UI State
   const primarySelection = useMemo(() => {
     const draftPrimary = newDraftVariants.find((variant) => variant.isPrimary)?.key;
+
     if (draftPrimary) {
       return { kind: 'draft' as const, key: draftPrimary };
     }
@@ -751,6 +762,7 @@ export function ProductVariantManager({
     }
 
     const existingPrimary = displayExistingVariantRows.find((variant) => variant.isPrimary)?.id;
+
     if (existingPrimary) {
       return { kind: 'existing' as const, key: String(existingPrimary) };
     }
@@ -853,6 +865,7 @@ export function ProductVariantManager({
 
     newDraftVariants.forEach((variant) => {
       const validation = validateVariant(variant);
+
       if (!validation.isValid) {
         errors[`draft-${variant.key}`] = validation.errors;
       }
@@ -878,11 +891,13 @@ export function ProductVariantManager({
       form.register('variants', {
         validate: () => {
           const errors = validationErrorsRef.current;
+
           if (Object.keys(errors).length > 0) {
             return `${Object.keys(errors).length} variant(s) have validation errors`;
           }
+
           return true;
-        }
+        },
       });
     }
   }, [form]);
@@ -891,7 +906,7 @@ export function ProductVariantManager({
   // #endregion
 
   // #region Mutations & Handlers (moved up for auto-save useEffect)
-  const updateVariantMutation = useUpdateProductVariant();
+  const partialUpdateVariantMutation = usePartialUpdateProductVariant();
   const deleteVariantMutation = useDeleteProductVariant();
 
   // #region Handle variants for product save
@@ -903,7 +918,7 @@ export function ProductVariantManager({
     // Update ref for validator access
     // We do NOT return early here anymore because we want the validator to handle blocking
     // But we might want to avoid setting invalid data as the value if we prefer?
-    // Actually, setting the value ensures the form has something to validate against, 
+    // Actually, setting the value ensures the form has something to validate against,
     // and the custom validator validator intercepts it regardless of value.
     if (hasValidationErrors) {
       // If we have errors, we can optionally clear the value to be safe, or set it.
@@ -963,7 +978,16 @@ export function ProductVariantManager({
     } else {
       form.setValue('variants', undefined, { shouldValidate: false, shouldDirty: false });
     }
-  }, [isViewMode, newDraftVariants, form, canApplySelections, upgradeCandidate, hasValidationErrors, variantValidationErrors, submitCount]);
+  }, [
+    isViewMode,
+    newDraftVariants,
+    form,
+    canApplySelections,
+    upgradeCandidate,
+    hasValidationErrors,
+    variantValidationErrors,
+    submitCount,
+  ]);
   // #endregion
 
   // #region Mutations & Handlers (continued)
@@ -981,9 +1005,11 @@ export function ProductVariantManager({
     if (updatedValues.isPrimary) {
       setDraftVariantsByKey((prev) => {
         const next: Record<string, DraftVariantRow> = {};
+
         Object.entries(prev).forEach(([key, value]) => {
           next[key] = value.isPrimary ? { ...value, isPrimary: false } : value;
         });
+
         return next;
       });
     }
@@ -999,14 +1025,10 @@ export function ProductVariantManager({
       );
 
       for (const variant of otherPrimaries) {
-        await updateVariantMutation.mutateAsync({
+        await partialUpdateVariantMutation.mutateAsync({
           id: variant.id,
           data: {
             id: variant.id,
-            sku: variant.sku,
-            price: variant.price,
-            stockQuantity: variant.stockQuantity,
-            status: variant.status,
             isPrimary: false,
             product: productId ? { id: productId } : undefined,
           },
@@ -1025,7 +1047,7 @@ export function ProductVariantManager({
     };
 
     toast.promise(
-      updateVariantMutation.mutateAsync({
+      partialUpdateVariantMutation.mutateAsync({
         id: editingRowData.id,
         data: payload,
       }),
@@ -1038,6 +1060,47 @@ export function ProductVariantManager({
           return 'Variant saved successfully.';
         },
         error: (err) => `Failed to save: ${err.message}`,
+      }
+    );
+  };
+
+  const handleMarkPrimaryExisting = async (row: ExistingVariantRow) => {
+    if (row.isPrimary) {
+      return;
+    }
+
+    const otherPrimaries = existingVariantRows.filter(
+      (variant) => variant.isPrimary && variant.id !== row.id
+    );
+
+    toast.promise(
+      (async () => {
+        for (const variant of otherPrimaries) {
+          await partialUpdateVariantMutation.mutateAsync({
+            id: variant.id,
+            data: {
+              id: variant.id,
+              isPrimary: false,
+              product: productId ? { id: productId } : undefined,
+            },
+          });
+        }
+
+        await partialUpdateVariantMutation.mutateAsync({
+          id: row.id,
+          data: {
+            id: row.id,
+            isPrimary: true,
+            product: productId ? { id: productId } : undefined,
+          },
+        });
+
+        await invalidateVariantQueries();
+      })(),
+      {
+        loading: 'Updating primary variant...',
+        success: 'Primary variant updated.',
+        error: (err) => `Failed to update primary variant: ${err.message}`,
       }
     );
   };
@@ -1119,6 +1182,7 @@ export function ProductVariantManager({
         onUpdateDraft={updateDraft}
         editingRowData={editingRowData}
         onEditRow={setEditingRowData}
+        onMarkPrimaryExisting={handleMarkPrimaryExisting}
         onUpdateEditingRow={handleUpdateEditingRow}
         onSaveExisting={handleSaveExisting}
         onCancelEdit={() => setEditingRowData(null)}
