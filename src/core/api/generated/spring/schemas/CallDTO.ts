@@ -20,6 +20,9 @@ export interface CallDTO {
   id?: number;
   leadNo?: string;
   externalId?: string;
+  title?: string;
+  description?: string;
+  dueDate?: string;
   status?: CallDTOStatus;
   /**
    * @minLength 0

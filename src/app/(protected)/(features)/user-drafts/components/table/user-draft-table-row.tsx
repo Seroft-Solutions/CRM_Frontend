@@ -22,6 +22,7 @@ import { UserDraftDTOStatus } from '@/core/api/generated/spring/schemas/UserDraf
 const ENTITY_ROUTES: Record<string, string> = {
   Call: '/calls/new',
   Customer: '/customers/new',
+  SundryCreditor: '/sundry-creditors/new',
   Meeting: '/meetings/new',
   Source: '/sources/new',
   Priority: '/priorities/new',

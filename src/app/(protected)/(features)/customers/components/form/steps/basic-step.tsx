@@ -3,9 +3,8 @@
 import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
+import { AddressListField } from '@/components/address-list-field';
 
 interface CustomerBasicStepProps {
   form: any;
@@ -157,52 +156,12 @@ export function CustomerBasicStep({ form, config, actions, entity }: CustomerBas
         </div>
 
         <div className="space-y-6">
-          <FormField
-            control={form.control}
-            name="area"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  City and Zipcode
-                  <span className="text-red-500 ml-1">*</span>
-                </FormLabel>
-                <FormControl>
-                  <IntelligentLocationField
-                    value={field.value}
-                    onChange={field.onChange}
-                    onError={(error) => {
-                      form.setError('area', { message: error });
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="completeAddress"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Address
-                  <span className="text-red-500 ml-1">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Enter address"
-                    className="resize-none h-10 min-h-[40px] py-2"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e.target.value);
-                      form.trigger('completeAddress');
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <AddressListField
+            form={form}
+            name="addresses"
+            label="Addresses"
+            description="Add one or more addresses and select the default."
+            showLocationFields
           />
         </div>
       </div>

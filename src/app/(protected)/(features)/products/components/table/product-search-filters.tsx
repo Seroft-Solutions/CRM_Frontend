@@ -29,7 +29,7 @@ interface ProductSearchAndFiltersProps {
   searchTerm: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   filters: FilterState;
-  onFilterChange: (column: string, value: any) => void;
+  onFilterChange: (column: string, value: unknown) => void;
   dateRange: DateRange;
   onDateRangeChange: (range: DateRange) => void;
   onClearAll: () => void;
@@ -54,26 +54,27 @@ export function ProductSearchAndFilters({
     (dateRange.from || dateRange.to ? 1 : 0);
 
   const removeFilter = (filterKey: string) => {
-    const newFilters = { ...filters };
-    delete newFilters[filterKey];
     onFilterChange(filterKey, undefined);
   };
 
-  const getFilterDisplayValue = (key: string, value: any) => {
+  const getFilterDisplayValue = (key: string, value: unknown) => {
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (value instanceof Date) return format(value, 'MMM dd, yyyy');
+
     return String(value);
   };
 
   const getFilterDisplayName = (key: string) => {
     if (key.includes('.')) {
       const [relationName] = key.split('.');
+
       if (relationName === 'category') {
         return 'Category';
       }
       if (relationName === 'subCategory') {
         return 'Sub Category';
       }
+
       return relationName;
     }
 
@@ -86,8 +87,8 @@ export function ProductSearchAndFilters({
     if (key === 'name') {
       return 'name';
     }
-    if (key === 'code') {
-      return 'code';
+    if (key === 'barcodeText') {
+      return 'Barcode Text';
     }
     if (key === 'description') {
       return 'description';
@@ -101,8 +102,8 @@ export function ProductSearchAndFilters({
     if (key === 'salePrice') {
       return 'salePrice';
     }
-    if (key === 'articalNumber') {
-      return 'articalNumber';
+    if (key === 'articleNumber') {
+      return 'articleNumber';
     }
     if (key === 'remark') {
       return 'remark';
@@ -116,6 +117,7 @@ export function ProductSearchAndFilters({
     if (key === 'lastModifiedBy') {
       return 'lastModifiedBy';
     }
+
     return key;
   };
 
@@ -256,11 +258,13 @@ export function ProductSearchAndFilters({
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">code</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Barcode Text</label>
                     <Input
-                      placeholder="Filter by code..."
-                      value={(filters['code'] as string) || ''}
-                      onChange={(e) => onFilterChange('code', e.target.value || undefined)}
+                      placeholder="Filter by barcode text..."
+                      value={(filters['barcodeText'] as string) || ''}
+                      onChange={(e) =>
+                        onFilterChange('barcodeText', e.target.value || undefined)
+                      }
                       className="h-8"
                     />
                   </div>
@@ -301,7 +305,9 @@ export function ProductSearchAndFilters({
             <Badge variant="secondary" className="gap-1">
               Search: {searchTerm}
               <button
-                onClick={() => onSearchChange({ target: { value: '' } } as any)}
+                onClick={() =>
+                  onSearchChange({ target: { value: '' } } as React.ChangeEvent<HTMLInputElement>)
+                }
                 className="ml-1 rounded-full hover:bg-secondary-foreground/20"
               >
                 <X className="h-3 w-3" />

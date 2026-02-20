@@ -37,7 +37,7 @@ const productCreationSchema = productFormSchemaBase
     status: true,
   })
   .extend({
-    articalNumber: productFormSchemaBase.shape.articalNumber,
+    articleNumber: productFormSchemaBase.shape.articleNumber,
     categoryHierarchy: productFormSchemaBase
       .pick({
         category: true,
@@ -64,8 +64,8 @@ const productCreationSchema = productFormSchemaBase
 
 type ProductCreationFormData = {
   name: string;
-  code: string;
-  articalNumber?: string;
+  barcodeText: string;
+  articleNumber?: string;
   description?: string;
   basePrice?: string;
   discountedPrice?: string;
@@ -81,12 +81,14 @@ interface ProductCreateSheetProps {
   onSuccess?: (product: ProductDTO) => void;
   trigger?: React.ReactNode;
   isBusinessPartner?: boolean;
+  createPayload?: Partial<ProductDTO>;
 }
 
 export function ProductCreateSheet({
   onSuccess,
   trigger,
   isBusinessPartner = false,
+  createPayload,
 }: ProductCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -95,12 +97,12 @@ export function ProductCreateSheet({
     resolver: zodResolver(productCreationSchema),
     defaultValues: {
       name: '',
-      code: '',
+      barcodeText: '',
       description: '',
       basePrice: '',
       discountedPrice: '',
       salePrice: '',
-      articalNumber: '',
+      articleNumber: '',
       remark: '',
       categoryHierarchy: {
         category: undefined,
@@ -141,8 +143,8 @@ export function ProductCreateSheet({
   const onSubmit = (data: ProductCreationFormData) => {
     const productData: Partial<ProductDTO> = {
       name: data.name,
-      code: data.code,
-      articalNumber: data.articalNumber || undefined,
+      barcodeText: data.barcodeText,
+      articleNumber: data.articleNumber || undefined,
       description: data.description || undefined,
       basePrice: data.basePrice ? Number(data.basePrice) : undefined,
       discountedPrice: data.discountedPrice ? Number(data.discountedPrice) : undefined,
@@ -163,13 +165,13 @@ export function ProductCreateSheet({
             name: '',
             code: '',
             status: ProductDTOStatus.ACTIVE,
-            category: { id: data.categoryHierarchy.category } as any,
+            category: { id: data.categoryHierarchy.category } as { id: number },
           }
         : undefined,
       status: ProductDTOStatus.ACTIVE,
     };
 
-    createProduct({ data: productData });
+    createProduct({ data: { ...productData, ...createPayload } });
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -212,9 +214,7 @@ export function ProductCreateSheet({
               Create New Product
             </SheetTitle>
             <SheetDescription
-              className={`text-sm ${
-                isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'
-              }`}
+              className={`text-sm ${isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'}`}
             >
               Capture catalog information and map the product to the correct category.
             </SheetDescription>
@@ -253,14 +253,16 @@ export function ProductCreateSheet({
                           onChange={(e) => {
                             field.onChange(e);
 
-                            const currentCode = form.getValues('code');
-                            if (!currentCode && e.target.value) {
+                            const currentBarcodeText = form.getValues('barcodeText');
+
+                            if (!currentBarcodeText && e.target.value) {
                               const generatedCode = e.target.value
                                 .replace(/[^a-zA-Z0-9\s]/g, '')
                                 .replace(/\s+/g, '_')
                                 .toUpperCase()
                                 .substring(0, 20);
-                              form.setValue('code', generatedCode);
+
+                              form.setValue('barcodeText', generatedCode);
                             }
                           }}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
@@ -273,16 +275,16 @@ export function ProductCreateSheet({
 
                 <FormField
                   control={form.control}
-                  name="code"
+                  name="barcodeText"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
-                        Product Code
+                        Barcode Text
                         <span className="text-red-500 ml-1">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter product code (auto-generated from name)"
+                          placeholder="Enter barcode text (auto-generated from name)"
                           {...field}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 font-mono"
                         />
@@ -314,7 +316,7 @@ export function ProductCreateSheet({
 
                 <FormField
                   control={form.control}
-                  name="articalNumber"
+                  name="articleNumber"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-slate-700">
@@ -387,6 +389,7 @@ export function ProductCreateSheet({
                               field.onChange(e);
 
                               const salePrice = form.getValues('salePrice');
+
                               if (salePrice) {
                                 form.trigger('salePrice');
                               }
@@ -419,6 +422,7 @@ export function ProductCreateSheet({
                               field.onChange(e);
 
                               const discountedPrice = form.getValues('discountedPrice');
+
                               if (discountedPrice) {
                                 form.trigger('salePrice');
                               }
@@ -453,13 +457,7 @@ export function ProductCreateSheet({
                         Category & Subcategory
                       </FormLabel>
                       <FormControl>
-                        <IntelligentCategoryField
-                          value={field.value}
-                          onChange={field.onChange}
-                          onError={(error) => {
-                            form.setError('categoryHierarchy', { message: error });
-                          }}
-                        />
+                        <IntelligentCategoryField value={field.value} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

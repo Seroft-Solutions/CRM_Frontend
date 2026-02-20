@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,12 @@ import { ClickableId } from '@/components/clickable-id';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
+import {
+  mapVariantImagesToSlots,
+  VARIANT_IMAGE_ORDER,
+} from '@/features/product-variant-images/utils/variant-image-slots';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -34,7 +41,7 @@ function transformEnumValue(enumValue: string): string {
 interface RelationshipConfig {
   name: string;
   displayName: string;
-  options: Array<{ id: number; [key: string]: any }>;
+  options: Array<{ id: number; [key: string]: unknown }>;
   displayField: string;
   isEditable: boolean;
 }
@@ -53,6 +60,7 @@ interface ProductTableRowProps {
   statusOptions: StatusOption[];
   isSelected: boolean;
   onSelect: (id: number) => void;
+  selectionEnabled?: boolean;
   relationshipConfigs?: RelationshipConfig[];
   onRelationshipUpdate?: (
     entityId: number,
@@ -79,20 +87,49 @@ export function ProductTableRow({
   statusOptions,
   isSelected,
   onSelect,
+  selectionEnabled = true,
   relationshipConfigs = [],
   onRelationshipUpdate,
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
-  const currentStatus = product.status;
-  const statusInfo = statusOptions.find(
-    (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
+  const shouldFetchVariants = !product.variants?.length && Boolean(product.id);
+  const { data: fetchedVariants = [] } = useGetAllProductVariants(
+    shouldFetchVariants
+      ? {
+          'productId.equals': product.id!,
+          size: 200,
+          sort: ['id,asc'],
+        }
+      : undefined,
+    {
+      query: { enabled: shouldFetchVariants },
+    }
   );
+  const variants = product.variants?.length ? product.variants : fetchedVariants ?? [];
+  const primaryVariant = variants.find((variant) => variant.isPrimary) ?? variants[0];
+  const primaryVariantId = primaryVariant?.id;
+  const { data: primaryVariantImages = [] } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: { enabled: !!primaryVariantId },
+    }
+  );
+  const primaryVariantImageUrl = useMemo(() => {
+    const slots = mapVariantImagesToSlots(primaryVariantImages);
+    const orderedUrls = VARIANT_IMAGE_ORDER.map((slot) => {
+      const image = slots[slot];
+      return image?.thumbnailUrl || image?.cdnUrl || null;
+    });
+    return orderedUrls.find((url) => url) || null;
+  }, [primaryVariantImages]);
 
+  const currentStatus = product.status;
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
     );
+
     if (!info) return <Badge variant="secondary">{transformEnumValue(status)}</Badge>;
 
     return (
@@ -101,15 +138,20 @@ export function ProductTableRow({
       </Badge>
     );
   };
+
   return (
     <TableRow className="hover:bg-gray-50 transition-colors">
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
-        <Checkbox checked={isSelected} onCheckedChange={() => product.id && onSelect(product.id)} />
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => product.id && onSelect(product.id)}
+          disabled={!selectionEnabled}
+        />
       </TableCell>
-      {visibleColumns.map((column, index) => {
+      {visibleColumns.map((column) => {
         const getColumnClassName = () => {
           if (column.id === 'image') {
-            return 'px-2 sm:px-3 py-2 w-[60px]';
+            return 'px-2 sm:px-3 py-2 w-[140px]';
           }
 
           if (['description', 'remark'].includes(column.id)) {
@@ -149,7 +191,7 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'code') {
+                  if (column.id === 'barcodeText') {
                     return field?.toString() || '';
                   }
 
@@ -173,7 +215,7 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'articalNumber') {
+                  if (column.id === 'articleNumber') {
                     return field?.toString() || '';
                   }
 
@@ -198,26 +240,15 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'id') {
-                    return (
-                      <ClickableId
-                        id={field as string | number}
-                        entityType="products"
-                      />
-                    );
+                    return <ClickableId id={field as string | number} entityType="products" />;
                   }
 
                   if (column.id === 'image') {
-                    const images = (product as any).images as any[] | undefined;
-                    const primaryImageUrl =
-                      images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
-                      images?.[0]?.cdnUrl ||
-                      null;
-
                     return (
                       <ProductImageThumbnail
-                        imageUrl={primaryImageUrl}
+                        imageUrl={primaryVariantImageUrl}
                         productName={product.name || 'Product'}
-                        size={40}
+                        size={32}
                       />
                     );
                   }
@@ -227,6 +258,7 @@ export function ProductTableRow({
               : (() => {
                   if (column.id === 'category') {
                     const cellKey = `${product.id}-category`;
+
                     return (
                       <RelationshipCell
                         entityId={product.id || 0}
@@ -256,6 +288,7 @@ export function ProductTableRow({
 
                   if (column.id === 'subCategory') {
                     const cellKey = `${product.id}-subCategory`;
+
                     return (
                       <RelationshipCell
                         entityId={product.id || 0}

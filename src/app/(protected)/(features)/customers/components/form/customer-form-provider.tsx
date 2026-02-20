@@ -109,6 +109,9 @@ export function CustomerFormProvider({
         case 'enum':
           defaults[field.name] = field.required ? field.options?.[0]?.value : undefined;
           break;
+        case 'custom':
+          defaults[field.name] = [];
+          break;
         default:
           defaults[field.name] = '';
       }
@@ -372,6 +375,10 @@ export function CustomerFormProvider({
         }
       } else if (fieldConfig.type === 'boolean') {
         entityToSave[fieldConfig.name] = Boolean(value);
+      } else if (fieldConfig.type === 'custom') {
+        if (value !== undefined) {
+          entityToSave[fieldConfig.name] = value;
+        }
       } else {
         if (value !== '' && value != null) {
           entityToSave[fieldConfig.name] = String(value);

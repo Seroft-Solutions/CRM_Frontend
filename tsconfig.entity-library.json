@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src/entity-library/**/*",
+    "scripts/entity-library-component-smoke.ts",
+    "scripts/entity-library-schema-smoke.ts",
+    "scripts/entity-library-schema-tests.ts"
+  ],
+  "exclude": ["node_modules", ".next", "src/core/api/generated"]
+}
+

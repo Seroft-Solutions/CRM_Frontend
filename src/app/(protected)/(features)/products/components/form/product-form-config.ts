@@ -14,16 +14,19 @@ export const productFormConfig: FormConfig = {
       description: 'Enter essential details and categorize the product',
       fields: [
         'name',
-        'code',
-        'articalNumber',
+        'barcodeText',
+        'articleNumber',
         'description',
         'remark',
-        'status',
         'basePrice',
         'discountedPrice',
         'salePrice',
+        'saveAsCatalog',
+        'productCatalogName',
+        'productCatalogPrice',
+        'status',
       ],
-      relationships: ['category', 'subCategory'],
+      relationships: ['category', 'subCategory', 'variantConfig'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -68,10 +71,10 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'code',
+      name: 'barcodeText',
       type: 'text',
-      label: 'Code',
-      placeholder: 'Enter code',
+      label: 'Barcode Text',
+      placeholder: 'Enter barcode text',
       required: true,
       validation: {
         required: true,
@@ -82,7 +85,7 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'articalNumber',
+      name: 'articleNumber',
       type: 'text',
       label: 'Article Number',
       placeholder: 'Enter article number',
@@ -151,6 +154,44 @@ export const productFormConfig: FormConfig = {
       },
     },
     {
+      name: 'saveAsCatalog',
+      type: 'boolean',
+      label: 'Save as Catalog',
+      required: false,
+      validation: {
+        required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'productCatalogName',
+      type: 'text',
+      label: 'Product Catalog Name',
+      placeholder: 'Enter catalog name',
+      required: false,
+      validation: {
+        required: false,
+        minLength: 2,
+        maxLength: 100,
+      },
+      ui: {},
+    },
+    {
+      name: 'productCatalogPrice',
+      type: 'number',
+      label: 'Catalog Price',
+      placeholder: 'Enter catalog price',
+      required: false,
+      validation: {
+        required: false,
+        min: 0,
+        max: 999999,
+      },
+      ui: {
+        inputType: 'number',
+      },
+    },
+    {
       name: 'remark',
       type: 'text',
       label: 'Remark',
@@ -195,6 +236,17 @@ export const productFormConfig: FormConfig = {
       accept: 'image/jpeg,image/png,image/webp',
       validation: {
         required: false,
+      },
+      ui: {},
+    },
+    {
+      name: 'status',
+      type: 'enum',
+      label: 'Status',
+      placeholder: 'Product status',
+      required: true,
+      validation: {
+        required: true,
       },
       ui: {},
     },
@@ -251,6 +303,34 @@ export const productFormConfig: FormConfig = {
         label: 'Sub Category',
         placeholder: 'Select sub category',
         icon: '🏷️',
+      },
+    },
+    {
+      name: 'variantConfig',
+      type: 'many-to-one',
+      targetEntity: 'systemConfig',
+      displayField: 'configKey',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'configuration',
+      api: {
+        useGetAllHook: 'useGetAllSystemConfigs',
+        useSearchHook: 'useSearchSystemConfigs',
+        useCountHook: 'useCountSystemConfigs',
+        entityName: 'SystemConfigs',
+      },
+      creation: {
+        canCreate: true,
+        createPath: '/system-configs/new',
+        createPermission: 'systemConfig:create:inline',
+      },
+      ui: {
+        label: 'Variant Configuration',
+        placeholder: 'Select if product has variants (e.g., sizes, colors)',
+        icon: '⚙️',
+        helpText:
+          'Only needed if this product will have variants. You can add this later when creating variants.',
       },
     },
   ],
@@ -321,6 +401,7 @@ export const productFormHelpers = {
     productFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
     const step = productFormConfig.steps.find((s) => s.id === stepId);
+
     return step ? [...step.fields, ...step.relationships] : [];
   },
 };

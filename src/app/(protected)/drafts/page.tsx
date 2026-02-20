@@ -29,6 +29,7 @@ import { useQueryClient } from '@tanstack/react-query';
 const ENTITY_ROUTES: Record<string, string> = {
   Call: '/calls/new',
   Customer: '/customers/new',
+  SundryCreditor: '/sundry-creditors/new',
   Meeting: '/meetings/new',
   Source: '/sources/new',
   Priority: '/priorities/new',

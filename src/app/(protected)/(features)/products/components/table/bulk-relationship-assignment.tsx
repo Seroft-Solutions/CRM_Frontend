@@ -31,7 +31,7 @@ interface BulkRelationshipAssignmentProps {
   relationshipConfigs: Array<{
     name: string;
     displayName: string;
-    options: Array<{ id: number; [key: string]: any }>;
+    options: Array<{ id: number; [key: string]: unknown }>;
     displayField: string;
     isEditable: boolean;
   }>;
@@ -64,6 +64,7 @@ export function BulkRelationshipAssignment({
   const getRelationshipDisplayValue = () => {
     if (!selectedRelationship) return 'Select relationship...';
     const config = currentRelationshipConfig;
+
     return config ? config.displayName : selectedRelationship;
   };
 
@@ -72,12 +73,14 @@ export function BulkRelationshipAssignment({
     if (selectedValue === null) return 'None (clear relationship)';
 
     const option = currentRelationshipConfig.options.find((opt) => opt.id === selectedValue);
+
     return option ? option[currentRelationshipConfig.displayField] : 'Select value...';
   };
 
   const handleBulkUpdate = async () => {
     if (!selectedRelationship) {
       productToast.validationError(['relationship field']);
+
       return;
     }
 

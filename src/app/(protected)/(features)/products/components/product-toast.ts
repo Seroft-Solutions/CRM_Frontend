@@ -141,17 +141,31 @@ export const productToast = {
   },
 };
 
-export const handleProductError = (error: any) => {
-  const errorMessage =
-    error?.response?.data?.message || error?.message || 'An unexpected error occurred';
+export const handleProductError = (error: unknown) => {
+  const errorResponse = (
+    error as {
+      response?: {
+        status?: number;
+        data?: { message?: string; fieldErrors?: Record<string, unknown> };
+      };
+      message?: string;
+      code?: string;
+    }
+  )?.response;
 
-  if (error?.response?.status === 403) {
+  const errorMessage =
+    errorResponse?.data?.message ||
+    (error as { message?: string })?.message ||
+    'An unexpected error occurred';
+
+  if (errorResponse?.status === 403) {
     productToast.permissionError();
-  } else if (error?.response?.status === 422) {
-    const validationErrors = error?.response?.data?.fieldErrors;
+  } else if (errorResponse?.status === 422) {
+    const validationErrors = errorResponse?.data?.fieldErrors;
     const fields = validationErrors ? Object.keys(validationErrors) : [];
+
     productToast.validationError(fields);
-  } else if (error?.code === 'NETWORK_ERROR') {
+  } else if ((error as { code?: string })?.code === 'NETWORK_ERROR') {
     productToast.networkError();
   } else {
     toast.error('❌ Error', {

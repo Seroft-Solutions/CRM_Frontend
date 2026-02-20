@@ -150,7 +150,7 @@ export function BusinessPartnerDashboard() {
       {/* Quick Action Tiles */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <QuickActionTiles />
+        <QuickActionTiles showAddProduct={false} />
       </div>
 
       <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">
