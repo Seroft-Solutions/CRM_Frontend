@@ -9,7 +9,9 @@ import { useAccount, useUserAuthorities } from '@/core/auth';
 import { useEntityForm } from '@/app/(protected)/(features)/calls/components/form/call-form-provider';
 import { UserCheck } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { CallRemark } from '@/app/(protected)/(features)/calls/hooks/use-call-remarks';
+import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 
 interface CallBusinessStepProps {
   form: any;
@@ -125,13 +127,38 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
 
     return {};
   }, [isBusinessPartner, accountData?.login]);
+
+  const selectedCustomerId = form.watch('customer');
+  const numericCustomerId =
+    typeof selectedCustomerId === 'number'
+      ? selectedCustomerId
+      : Number(selectedCustomerId) > 0
+        ? Number(selectedCustomerId)
+        : 0;
+
+  const { data: selectedCustomer } = useGetCustomer(numericCustomerId, {
+    query: {
+      enabled: numericCustomerId > 0,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+
+  useEffect(() => {
+    const customerPhone = selectedCustomer?.mobile || '';
+    form.setValue('customerPhoneNumber', customerPhone, {
+      shouldDirty: false,
+      shouldValidate: false,
+      shouldTouch: false,
+    });
+  }, [selectedCustomer?.mobile, form]);
+
   return (
     <div className="space-y-6">
       {/* First Row: Main Relationship Fields + Business Partner Toggle */}
-      {/* Use 3-column layout for business partners, 4-column for others */}
+      {/* Keep source, customer, customer phone, product, and toggle in one row on desktop */}
       <div
         className={`grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 ${
-          isBusinessPartner ? 'xl:grid-cols-3' : 'xl:grid-cols-4'
+          isBusinessPartner ? 'lg:grid-cols-4' : 'lg:grid-cols-5'
         }`}
       >
         {/* Generated Form Fields */}
@@ -186,7 +213,18 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
               <FormControl>
                 <EnhancedCustomerRelationshipField
                   value={field.value}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    form.setValue('customerPhoneNumber', '', {
+                      shouldDirty: false,
+                      shouldValidate: false,
+                      shouldTouch: false,
+                    });
+
+                    if (!value) {
+                      return;
+                    }
+                  }}
                   placeholder="Select customer"
                   canCreate={true}
                   createPermission="customer:create:inline"
@@ -197,6 +235,27 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                   onCustomerCreated={(customerId) => {
                     console.log('New customer created:', customerId);
                   }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Customer Phone Number - auto-populated from selected customer */}
+        <FormField
+          control={form.control}
+          name="customerPhoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium">Customer Phone Number</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  value={field.value || ''}
+                  readOnly
+                  placeholder="Auto-filled from selected customer"
+                  className="bg-slate-50 text-slate-700"
                 />
               </FormControl>
               <FormMessage />

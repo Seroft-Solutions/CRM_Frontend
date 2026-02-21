@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
+import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import { RelationshipCell } from './relationship-cell';
 import type { CallDTO } from '@/core/api/generated/spring/schemas/CallDTO';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
@@ -98,6 +99,14 @@ export function CallTableRow({
   visibleColumns,
   excludedAssignedToEmail,
 }: CallTableRowProps) {
+  const customerId = Number(call.customer?.id);
+  const shouldFetchCustomerPhone = Number.isFinite(customerId) && !call.customer?.mobile;
+  const { data: customerDetails } = useGetCustomer(customerId || 0, {
+    query: {
+      enabled: shouldFetchCustomerPhone,
+    },
+  });
+
   const currentStatus = call.status;
   const statusInfo = statusOptions.find(
     (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
@@ -333,8 +342,7 @@ export function CallTableRow({
                 relationshipName="channelType"
                 currentValue={call.channelType}
                 options={
-                  relationshipConfigs.find((config) => config.name === 'channelType')?.options ||
-                  []
+                  relationshipConfigs.find((config) => config.name === 'channelType')?.options || []
                 }
                 displayField="name"
                 onUpdate={(entityId, relationshipName, newValue) =>
@@ -343,8 +351,8 @@ export function CallTableRow({
                     : Promise.resolve()
                 }
                 isEditable={
-                  relationshipConfigs.find((config) => config.name === 'channelType')
-                    ?.isEditable || false
+                  relationshipConfigs.find((config) => config.name === 'channelType')?.isEditable ||
+                  false
                 }
                 isLoading={updatingCells.has(cellKey)}
                 className="min-w-[150px]"
@@ -387,8 +395,7 @@ export function CallTableRow({
             const cellKey = `${call.id}-assignedTo`;
             const isExcluded =
               excludedAssignedToEmail &&
-              call.assignedTo?.email?.toLowerCase?.() ===
-                excludedAssignedToEmail.toLowerCase();
+              call.assignedTo?.email?.toLowerCase?.() === excludedAssignedToEmail.toLowerCase();
             const safeAssignedTo = isExcluded ? undefined : call.assignedTo;
             return (
               <RelationshipCell
@@ -396,8 +403,7 @@ export function CallTableRow({
                 relationshipName="assignedTo"
                 currentValue={safeAssignedTo}
                 options={
-                  relationshipConfigs.find((config) => config.name === 'assignedTo')?.options ||
-                  []
+                  relationshipConfigs.find((config) => config.name === 'assignedTo')?.options || []
                 }
                 displayField="email"
                 onUpdate={(entityId, relationshipName, newValue) =>
@@ -427,6 +433,28 @@ export function CallTableRow({
         const renderCellContent = () => {
           if (column.id === 'remarks') {
             return renderRemarksCell();
+          }
+
+          if (column.id === 'customerPhone') {
+            const customerOptions =
+              relationshipConfigs.find((config) => config.name === 'customer')?.options || [];
+            const customerFromOptionsById = Number.isFinite(customerId)
+              ? customerOptions.find((customer) => Number(customer?.id) === customerId)
+              : undefined;
+            const customerFromOptionsByName = call.customer?.customerBusinessName
+              ? customerOptions.find(
+                  (customer) =>
+                    customer?.customerBusinessName === call.customer?.customerBusinessName
+                )
+              : undefined;
+
+            return (
+              call.customer?.mobile ||
+              customerDetails?.mobile ||
+              customerFromOptionsById?.mobile ||
+              customerFromOptionsByName?.mobile ||
+              ''
+            );
           }
 
           if (column.type === 'field') {

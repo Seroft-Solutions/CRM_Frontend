@@ -28,7 +28,10 @@ import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/prior
 import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
 import { useGetAllSubCallTypes } from '@/core/api/generated/spring/endpoints/sub-call-type-resource/sub-call-type-resource.gen';
 import { useGetAllSources } from '@/core/api/generated/spring/endpoints/source-resource/source-resource.gen';
-import { useGetAllCustomers } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import {
+  useGetAllCustomers,
+  useGetCustomer,
+} from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllChannelTypes } from '@/core/api/generated/spring/endpoints/channel-type-resource/channel-type-resource.gen';
 import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
@@ -264,6 +267,15 @@ export function CallDetails({ id }: CallDetailsProps) {
       enabled: !!id,
     },
   });
+  const customerId =
+    typeof entity?.customer?.id === 'number' && entity.customer.id > 0 ? entity.customer.id : 0;
+  const { data: customerDetails } = useGetCustomer(customerId, {
+    query: {
+      enabled: customerId > 0,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const customerPhoneNumber = customerDetails?.mobile || entity?.customer?.mobile || '';
 
   const { mutate: deleteEntity } = useDeleteCall({
     mutation: {
@@ -397,6 +409,20 @@ export function CallDetails({ id }: CallDetailsProps) {
                     </div>
                   );
                 })}
+                {step.id === 'business' && (
+                  <div key="customer-phone-number" className="space-y-1">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Customer Phone Number
+                    </div>
+                    <div className="text-sm font-semibold text-foreground">
+                      {customerPhoneNumber ? (
+                        customerPhoneNumber
+                      ) : (
+                        <span className="text-muted-foreground italic">Not set</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );
