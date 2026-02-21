@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { Camera } from 'lucide-react';
+import { Barcode, Camera, Printer } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -31,6 +32,8 @@ import {
   ORIENTATION_FIELDS,
   mapImagesByOrientation,
 } from '@/features/product-images/utils/orientation';
+import { toast } from 'sonner';
+import { generateProductBarcodeCode, openBarcodePrintDialog } from '../barcode-utils';
 
 function OrientationPreviewCard({
   field,
@@ -234,6 +237,40 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const { config, state, form, actions } = useEntityForm();
   const currentStepConfig = config.steps[state.currentStep];
 
+  const handleGenerateBarcode = () => {
+    const generatedCode = generateProductBarcodeCode(form.getValues('name'));
+
+    form.setValue('code', generatedCode, {
+      shouldDirty: true,
+      shouldValidate: true,
+      shouldTouch: true,
+    });
+
+    toast.success('Barcode generated', {
+      description: `Product code set to ${generatedCode}`,
+    });
+  };
+
+  const handlePrintBarcode = () => {
+    const productCode = form.getValues('code');
+
+    if (!productCode) {
+      toast.error('Product code required', {
+        description: 'Generate or enter a product code before printing.',
+      });
+
+      return;
+    }
+
+    const didOpenPrintDialog = openBarcodePrintDialog(productCode);
+
+    if (!didOpenPrintDialog) {
+      toast.error('Unable to print barcode', {
+        description: 'Please check the product code and allow pop-ups for this site.',
+      });
+    }
+  };
+
   const orientationImageMap = useMemo(() => {
     const result: Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | File | undefined> = {
       frontImage: undefined,
@@ -317,10 +354,36 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         name={fieldConfig.name}
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium">
-              {fieldConfig.label}
-              {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
-            </FormLabel>
+            <div className="flex items-center justify-between gap-2">
+              <FormLabel className="text-sm font-medium">
+                {fieldConfig.label}
+                {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+              </FormLabel>
+              {fieldConfig.name === 'code' && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                    onClick={handleGenerateBarcode}
+                    title="Generate barcode code"
+                  >
+                    <Barcode className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                    onClick={handlePrintBarcode}
+                    title="Print barcode"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
             <FormControl>
               {fieldConfig.type === 'date' ? (
                 <Input

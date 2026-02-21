@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Package, Plus } from 'lucide-react';
+import { Barcode, Loader2, Package, Plus, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -31,6 +31,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
+import { toast } from 'sonner';
+import { generateProductBarcodeCode, openBarcodePrintDialog } from './barcode-utils';
 
 const productCreationSchema = productFormSchemaBase
   .omit({
@@ -179,6 +181,40 @@ export function ProductCreateSheet({
     }
   };
 
+  const handleGenerateBarcode = () => {
+    const generatedCode = generateProductBarcodeCode(form.getValues('name'));
+
+    form.setValue('code', generatedCode, {
+      shouldDirty: true,
+      shouldValidate: true,
+      shouldTouch: true,
+    });
+
+    toast.success('Barcode generated', {
+      description: `Product code set to ${generatedCode}`,
+    });
+  };
+
+  const handlePrintBarcode = () => {
+    const productCode = form.getValues('code');
+
+    if (!productCode) {
+      toast.error('Product code required', {
+        description: 'Generate or enter a product code before printing.',
+      });
+
+      return;
+    }
+
+    const didOpenPrintDialog = openBarcodePrintDialog(productCode);
+
+    if (!didOpenPrintDialog) {
+      toast.error('Unable to print barcode', {
+        description: 'Please check the product code and allow pop-ups for this site.',
+      });
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
@@ -257,7 +293,7 @@ export function ProductCreateSheet({
                             if (!currentCode && e.target.value) {
                               const generatedCode = e.target.value
                                 .replace(/[^a-zA-Z0-9\s]/g, '')
-                                .replace(/\s+/g, '_')
+                                .replace(/\s+/g, '-')
                                 .toUpperCase()
                                 .substring(0, 20);
                               form.setValue('code', generatedCode);
@@ -276,13 +312,37 @@ export function ProductCreateSheet({
                   name="code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        Product Code
-                        <span className="text-red-500 ml-1">*</span>
-                      </FormLabel>
+                      <div className="flex items-center justify-between gap-2">
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Product Code
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                            onClick={handleGenerateBarcode}
+                            title="Generate barcode code"
+                          >
+                            <Barcode className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                            onClick={handlePrintBarcode}
+                            title="Print barcode"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
                       <FormControl>
                         <Input
-                          placeholder="Enter product code (auto-generated from name)"
+                          placeholder="Enter product code (also used as barcode)"
                           {...field}
                           className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 font-mono"
                         />
