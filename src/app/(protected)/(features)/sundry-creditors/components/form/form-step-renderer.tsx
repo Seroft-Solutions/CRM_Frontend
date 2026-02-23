@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
+import { Barcode, Camera, Printer } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -19,12 +22,90 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useEntityForm } from './sundry-creditor-form-provider';
+import { useEntityForm } from './product-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
-import { useGetAllStates } from '@/core/api/generated/spring/endpoints/state-resource/state-resource.gen';
-import { useGetAllDistricts } from '@/core/api/generated/spring/endpoints/district-resource/district-resource.gen';
-import { useGetAllCities } from '@/core/api/generated/spring/endpoints/city-resource/city-resource.gen';
-import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
+import { ProductImagesStep } from './product-images-step';
+import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
+import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import type { ProductImageDTO } from '@/core/api/generated/spring/schemas/ProductImageDTO';
+import {
+  ORIENTATION_FIELDS,
+  mapImagesByOrientation,
+} from '@/features/product-images/utils/orientation';
+import { toast } from 'sonner';
+import { generateProductBarcodeCode, openBarcodePrintDialog } from '../barcode-utils';
+
+function OrientationPreviewCard({
+  field,
+  image,
+}: {
+  field: (typeof ORIENTATION_FIELDS)[number];
+  image?: ProductImageDTO | File;
+}) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!image) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    if (image instanceof File) {
+      const url = URL.createObjectURL(image);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(image.thumbnailUrl || image.cdnUrl || null);
+    }
+  }, [image]);
+
+  const helperText = useMemo(() => {
+    if (!image) return 'No image uploaded';
+
+    if (image instanceof File) {
+      const sizeInMb = (image.size / (1024 * 1024)).toFixed(2);
+      return `${image.name} • ${sizeInMb} MB`;
+    }
+
+    return `${image.originalFilename ?? 'Uploaded image'}${
+      image.fileSizeBytes ? ` • ${(image.fileSizeBytes / 1024).toFixed(1)} KB` : ''
+    }`;
+  }, [image]);
+
+  return (
+    <div className="space-y-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{field.label}</p>
+          <p className="text-xs text-slate-500">{field.description}</p>
+        </div>
+        <Badge variant="outline" className="text-[11px] uppercase tracking-wide">
+          {field.badge}
+        </Badge>
+      </div>
+
+      <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-white border border-slate-200">
+        {previewUrl ? (
+          <img src={previewUrl} alt={`${field.label} preview`} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-slate-400">
+            <Camera className="h-10 w-10" />
+            <span className="text-sm font-medium">No image uploaded</span>
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0">
+        <p
+          className="text-xs font-medium text-slate-600 truncate overflow-hidden whitespace-nowrap text-ellipsis block max-w-[240px] sm:max-w-[320px]"
+          title={helperText}
+        >
+          {helperText}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -41,53 +122,50 @@ interface FormStepRendererProps {
 }
 
 function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value: any }) {
+  // Always call hooks in the same order to avoid React hooks rules violation
+  const { data: categoriesData } = useGetAllProductCategories(
+    { page: 0, size: 1000 },
+    {
+      query: {
+        enabled: relConfig.name === 'category' && !!value,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+
+  const { data: subCategoriesData } = useGetAllProductSubCategories(
+    { page: 0, size: 1000 },
+    {
+      query: {
+        enabled: relConfig.name === 'subCategory' && !!value,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+
   const resolveRelationshipDisplay = () => {
     switch (relConfig.name) {
-      case 'state':
+      case 'category':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllStates}
+            allData={categoriesData}
             displayField="name"
             primaryKey="id"
             multiple={false}
-            label="States"
+            label="ProductCategories"
           />
         );
 
-      case 'district':
+      case 'subCategory':
         return (
           <RelationshipDisplayValue
             value={value}
-            useGetAllHook={useGetAllDistricts}
+            allData={subCategoriesData}
             displayField="name"
             primaryKey="id"
             multiple={false}
-            label="Districts"
-          />
-        );
-
-      case 'city':
-        return (
-          <RelationshipDisplayValue
-            value={value}
-            useGetAllHook={useGetAllCities}
-            displayField="name"
-            primaryKey="id"
-            multiple={false}
-            label="Cities"
-          />
-        );
-
-      case 'area':
-        return (
-          <RelationshipDisplayValue
-            value={value}
-            useGetAllHook={useGetAllAreas}
-            displayField="name"
-            primaryKey="id"
-            multiple={false}
-            label="Areas"
+            label="ProductSubCategories"
           />
         );
 
@@ -101,28 +179,19 @@ function RelationshipValueResolver({ relConfig, value }: { relConfig: any; value
 
 function RelationshipDisplayValue({
   value,
-  useGetAllHook,
+  allData,
   displayField,
   primaryKey,
   multiple,
   label,
 }: {
   value: any;
-  useGetAllHook: any;
+  allData: any;
   displayField: string;
   primaryKey: string;
   multiple: boolean;
   label: string;
 }) {
-  const { data: allData } = useGetAllHook(
-    { page: 0, size: 1000 },
-    {
-      query: {
-        enabled: !!value,
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
 
   if (!value) {
     return <span className="text-muted-foreground italic">Not selected</span>;
@@ -167,6 +236,65 @@ function RelationshipDisplayValue({
 export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const { config, state, form, actions } = useEntityForm();
   const currentStepConfig = config.steps[state.currentStep];
+
+  const handleGenerateBarcode = () => {
+    const generatedCode = generateProductBarcodeCode(form.getValues('name'));
+
+    form.setValue('code', generatedCode, {
+      shouldDirty: true,
+      shouldValidate: true,
+      shouldTouch: true,
+    });
+
+    toast.success('Barcode generated', {
+      description: `Product code set to ${generatedCode}`,
+    });
+  };
+
+  const handlePrintBarcode = () => {
+    const productCode = form.getValues('code');
+
+    if (!productCode) {
+      toast.error('Product code required', {
+        description: 'Generate or enter a product code before printing.',
+      });
+
+      return;
+    }
+
+    const didOpenPrintDialog = openBarcodePrintDialog(productCode);
+
+    if (!didOpenPrintDialog) {
+      toast.error('Unable to print barcode', {
+        description: 'Please check the product code and allow pop-ups for this site.',
+      });
+    }
+  };
+
+  const orientationImageMap = useMemo(() => {
+    const result: Record<(typeof ORIENTATION_FIELDS)[number]['name'], ProductImageDTO | File | undefined> = {
+      frontImage: undefined,
+      backImage: undefined,
+      sideImage: undefined,
+    };
+
+    // During creation/edit, check for uploaded files in individual fields first
+    result.frontImage = form.getValues('frontImage') || undefined;
+    result.backImage = form.getValues('backImage') || undefined;
+    result.sideImage = form.getValues('sideImage') || undefined;
+
+    // If we have existing images (during edit) AND no new file was uploaded for that position, use those instead
+    if (entity?.images?.length) {
+      const existingMap = mapImagesByOrientation(entity.images);
+
+      // Only use existing images if no new file was uploaded for that position
+      if (!result.frontImage && existingMap.frontImage) result.frontImage = existingMap.frontImage;
+      if (!result.backImage && existingMap.backImage) result.backImage = existingMap.backImage;
+      if (!result.sideImage && existingMap.sideImage) result.sideImage = existingMap.sideImage;
+    }
+
+    return result;
+  }, [form.watch('frontImage'), form.watch('backImage'), form.watch('sideImage'), entity?.images]);
 
   useEffect(() => {
     if (entity && !state.isLoading) {
@@ -218,9 +346,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const renderField = (fieldName: string) => {
     const fieldConfig = config.fields.find((f) => f.name === fieldName);
     if (!fieldConfig) return null;
-    if (fieldConfig.type === 'custom') {
-      return null;
-    }
 
     return (
       <FormField
@@ -229,10 +354,36 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
         name={fieldConfig.name}
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium">
-              {fieldConfig.label}
-              {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
-            </FormLabel>
+            <div className="flex items-center justify-between gap-2">
+              <FormLabel className="text-sm font-medium">
+                {fieldConfig.label}
+                {fieldConfig.required && <span className="text-red-500 ml-1">*</span>}
+              </FormLabel>
+              {fieldConfig.name === 'code' && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                    onClick={handleGenerateBarcode}
+                    title="Generate barcode code"
+                  >
+                    <Barcode className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                    onClick={handlePrintBarcode}
+                    title="Print barcode"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
             <FormControl>
               {fieldConfig.type === 'date' ? (
                 <Input
@@ -369,12 +520,17 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const renderCurrentStep = () => {
     if (!currentStepConfig) return null;
 
+    if (currentStepConfig.id === 'images') {
+      return <ProductImagesStep form={form} existingImages={entity?.images} />;
+    }
+
     if (currentStepConfig.id === 'review') {
       return (
         <div className="space-y-6">
           {config.steps.slice(0, -1).map((step, index) => {
             const stepFields = [...step.fields, ...step.relationships];
             if (stepFields.length === 0) return null;
+            const isImagesStep = step.id === 'images';
 
             return (
               <div key={step.id} className="border rounded-lg p-4">
@@ -392,7 +548,18 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     Step {index + 1} of {config.steps.length - 1}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {isImagesStep ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {ORIENTATION_FIELDS.map((field) => (
+                      <OrientationPreviewCard
+                        key={field.name}
+                        field={field}
+                        image={orientationImageMap[field.name]}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {step.fields.map((fieldName) => {
                     const fieldConfig = config.fields.find((f) => f.name === fieldName);
                     if (!fieldConfig) return null;
@@ -420,50 +587,37 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
                       if (fieldConfig.type === 'enum') {
                         const option = fieldConfig.options?.find((opt: any) => opt.value === value);
-                        return option ? option.label : String(value);
+                        return option ? option.label : value;
                       }
 
                       if (fieldConfig.type === 'file') {
+                        // For image files, show preview if available
+                        if (fieldConfig.name?.toLowerCase().includes('image') && value instanceof File) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={URL.createObjectURL(value)}
+                                alt={`${fieldConfig.label} preview`}
+                                className="h-8 w-8 object-cover rounded border"
+                                onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                              />
+                              <span className="text-xs text-muted-foreground">{value.name}</span>
+                            </div>
+                          );
+                        }
                         const fileStr = value && value.name ? value.name : 'No file selected';
                         return fileStr;
                       }
 
-                      if (fieldConfig.type === 'custom') {
-                        if (fieldConfig.name === 'addresses') {
-                          const addressList = Array.isArray(value) ? value : value ? [value] : [];
-                          const summary = addressList
-                            .map((address: any) => {
-                              const title = address?.title?.trim?.();
-                              const addressText = address?.completeAddress?.trim?.();
-                              if (title && addressText) return `${title}: ${addressText}`;
-                              return title || addressText || '';
-                            })
-                            .filter(Boolean);
-                          return summary.length > 0 ? summary.join(' | ') : 'Not set';
-                        }
-                        if (Array.isArray(value)) {
-                          return value.length > 0 ? `${value.length} item(s)` : 'Not set';
-                        }
-                        if (typeof value === 'object') {
-                          return JSON.stringify(value);
-                        }
-                        return String(value);
-                      }
-
                       return String(value);
                     })();
-                    const safeDisplayValue = React.isValidElement(displayValue)
-                      ? displayValue
-                      : typeof displayValue === 'object'
-                        ? JSON.stringify(displayValue)
-                        : displayValue;
 
                     return (
                       <div key={fieldName} className="space-y-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                           {fieldConfig.label}
                         </div>
-                        <div className="text-sm font-semibold text-foreground">{safeDisplayValue}</div>
+                        <div className="text-sm font-semibold text-foreground">{displayValue}</div>
                       </div>
                     );
                   })}
@@ -484,6 +638,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                     );
                   })}
                 </div>
+                )}
               </div>
             );
           })}
@@ -510,7 +665,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
   return (
     <Form {...form}>
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={form.handleSubmit(() => {})}>
         <Card>
           <CardContent className="p-4 sm:p-6">{renderCurrentStep()}</CardContent>
         </Card>

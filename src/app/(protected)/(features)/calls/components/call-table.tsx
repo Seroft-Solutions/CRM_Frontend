@@ -209,6 +209,14 @@ const ALL_COLUMNS: ColumnConfig[] = [
     visible: true,
     sortable: false,
   },
+  {
+    id: 'customerPhone',
+    label: 'Customer Phone Number',
+    accessor: 'customerPhone',
+    type: 'custom',
+    visible: true,
+    sortable: false,
+  },
 
   {
     id: 'product',
@@ -630,6 +638,22 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
               } else {
                 value = '';
               }
+            } else if (col.id === 'customerPhone') {
+              const customerId = Number(item.customer?.id);
+              const customerFromOptionsById = Number.isFinite(customerId)
+                ? customerOptions.find((customer) => Number(customer?.id) === customerId)
+                : undefined;
+              const customerFromOptionsByName = item.customer?.customerBusinessName
+                ? customerOptions.find(
+                    (customer) =>
+                      customer?.customerBusinessName === item.customer?.customerBusinessName
+                  )
+                : undefined;
+              value =
+                item.customer?.mobile ||
+                customerFromOptionsById?.mobile ||
+                customerFromOptionsByName?.mobile ||
+                '';
             }
 
             if (

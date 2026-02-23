@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,6 +15,16 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Form,
   FormControl,
   FormField,
@@ -23,35 +33,15 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { IntelligentLocationField } from './intelligent-location-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
-import type { CustomerDTO } from '@/core/api/generated/spring/schemas';
+import type { AreaDTO, CustomerDTO } from '@/core/api/generated/spring/schemas';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
-import { AddressListField } from '@/components/address-list-field';
-import { createCustomerAddress } from '../api/customer-address';
-
-const toAreaRef = (area: any) => {
-  if (!area) return undefined;
-  if (typeof area === 'number') return { id: area };
-  if (typeof area === 'object') {
-    const id = (area as any).id ?? (area as any).areaId;
-    return id ? { id } : undefined;
-  }
-  return undefined;
-};
-
-const addressSchema = z.object({
-  id: z.number().optional(),
-  completeAddress: z
-    .string({ message: 'Address is required' })
-    .min(1, { message: 'Address is required' })
-    .max(255, { message: 'Please enter no more than 255 characters' }),
-  area: z.any().nullable().refine(val => val !== null, { message: 'Location is required' }),
-  isDefault: z.boolean(),
-});
 
 const customerCreationSchema = z.object({
   customerBusinessName: z
@@ -80,15 +70,18 @@ const customerCreationSchema = z.object({
     .max(100, { message: 'Please enter no more than 100 characters' })
     .optional()
     .or(z.literal('')),
-  addresses: z
-    .array(addressSchema)
-    .min(1, { message: 'At least one address is required' })
-    .refine((addresses) => addresses.some((address) => address.isDefault), {
-      message: 'Select a default address',
-    })
-    .refine((addresses) => addresses.filter((address) => address.isDefault).length === 1, {
-      message: 'Select only one default address',
-    }),
+  completeAddress: z
+    .string({ message: 'Address is required' })
+    .min(1, { message: 'Address is required' })
+    .max(255, { message: 'Please enter no more than 255 characters' }),
+  area: z.custom<AreaDTO>(
+    (val) => {
+      return val && typeof val === 'object' && 'id' in val && 'name' in val;
+    },
+    {
+      message: 'Please select a location',
+    }
+  ),
 });
 
 type CustomerCreationFormData = z.infer<typeof customerCreationSchema>;
@@ -105,9 +98,9 @@ export function CustomerCreateSheet({
   isBusinessPartner = false,
 }: CustomerCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [whatsAppManuallyEdited, setWhatsAppManuallyEdited] = useState(false);
   const queryClient = useQueryClient();
-  const pendingAddressesRef = useRef<CustomerCreationFormData['addresses']>([]);
 
   const form = useForm<CustomerCreationFormData>({
     resolver: zodResolver(customerCreationSchema),
@@ -117,13 +110,14 @@ export function CustomerCreateSheet({
       mobile: '',
       whatsApp: '',
       contactPerson: '',
-      addresses: [],
+      completeAddress: '',
+      area: undefined,
     },
   });
 
   const { mutate: createCustomer, isPending } = useCreateCustomer({
     mutation: {
-      onSuccess: async (data) => {
+      onSuccess: (data) => {
         queryClient.invalidateQueries({
           queryKey: ['getAllCustomers'],
           refetchType: 'active',
@@ -137,29 +131,11 @@ export function CustomerCreateSheet({
           refetchType: 'active',
         });
 
-        const customerId = data?.id;
-        const customerName = data?.customerBusinessName;
-        const addresses = pendingAddressesRef.current;
-
-        if (customerId && Array.isArray(addresses) && addresses.length > 0) {
-          await Promise.all(
-            addresses.map((address) =>
-              createCustomerAddress({
-                completeAddress: address.completeAddress,
-                area: toAreaRef(address.area),
-                isDefault: address.isDefault,
-                customer: { id: customerId, customerBusinessName: customerName },
-              } as any)
-            )
-          );
-        }
-
         customerToast.created();
 
         setIsOpen(false);
         form.reset();
         setWhatsAppManuallyEdited(false);
-        pendingAddressesRef.current = [];
 
         onSuccess?.(data);
       },
@@ -170,269 +146,342 @@ export function CustomerCreateSheet({
   });
 
   const onSubmit = (data: CustomerCreationFormData) => {
-    pendingAddressesRef.current = data.addresses ?? [];
-
-    const customerData = {
+    const customerData: CustomerDTO & { completeAddress?: string } = {
       customerBusinessName: data.customerBusinessName,
       email: data.email || undefined,
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile,
       contactPerson: data.contactPerson || undefined,
+      completeAddress: data.completeAddress || undefined,
+
+      area: data.area,
       status: CustomerDTOStatus.ACTIVE,
-    } as CustomerDTO;
+    };
 
     createCustomer({ data: customerData });
   };
 
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.stopPropagation();
-    return form.handleSubmit(onSubmit)(event);
+  const closeSheetAndReset = () => {
+    setIsOpen(false);
+    form.reset();
+    setWhatsAppManuallyEdited(false);
+  };
+
+  const requestClose = () => {
+    if (isPending) {
+      return;
+    }
+
+    if (form.formState.isDirty) {
+      setShowDiscardDialog(true);
+
+      return;
+    }
+
+    closeSheetAndReset();
   };
 
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (!open) {
-      form.reset();
-      setWhatsAppManuallyEdited(false);
+    if (open) {
+      setIsOpen(true);
+
+      return;
     }
+
+    requestClose();
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
-        {trigger || (
-          <InlinePermissionGuard requiredPermission="customer:create">
-            <Button
-              size="sm"
-              className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Create</span>
-            </Button>
-          </InlinePermissionGuard>
-        )}
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50">
-        <div
-          className={`sticky top-0 z-10 text-white shadow-sm ${isBusinessPartner
-            ? 'bg-bp-primary'
-            : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
+    <>
+      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+        <SheetTrigger asChild>
+          {trigger || (
+            <InlinePermissionGuard requiredPermission="customer:create">
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 bg-white text-blue-600 hover:bg-blue-50 text-xs font-medium"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Create</span>
+              </Button>
+            </InlinePermissionGuard>
+          )}
+        </SheetTrigger>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto p-0 bg-slate-50">
+          <div
+            className={`sticky top-0 z-10 text-white shadow-sm ${
+              isBusinessPartner
+                ? 'bg-bp-primary'
+                : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700'
             }`}
-        >
-          <SheetHeader className="px-6 py-5 space-y-1">
-            <SheetTitle
-              className={`text-lg font-semibold leading-tight ${isBusinessPartner ? 'text-bp-foreground' : 'text-white'
+          >
+            <SheetHeader className="px-6 py-5 space-y-1">
+              <SheetTitle
+                className={`text-lg font-semibold leading-tight ${
+                  isBusinessPartner ? 'text-bp-foreground' : 'text-white'
                 }`}
-            >
-              Create New Customer
-            </SheetTitle>
-            <SheetDescription
-              className={`text-sm ${isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'
-                }`}
-            >
-              Capture core customer details and select their location hierarchy.
-            </SheetDescription>
-          </SheetHeader>
-        </div>
-
-        <div className="px-6 py-5">
-          <Form {...form}>
-            <form
-              id="customer-creation-form"
-              onSubmit={handleFormSubmit}
-              className="space-y-5"
-            >
-              {/* Basic Information Section */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
-                  <p className="text-xs text-slate-500">
-                    Provide the key identifiers used across customer journeys.
-                  </p>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="customerBusinessName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        Business Name
-                        <span className="text-red-500 ml-1">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter business name"
-                          {...field}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="contactPerson"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        Contact Person
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter contact person name"
-                          {...field}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        Email Address
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Enter email address"
-                          {...field}
-                          className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Contact Information Section */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-base font-semibold text-slate-900">Contact Information</h3>
-                  <p className="text-xs text-slate-500">
-                    Phone numbers the team will use for day-to-day communication.
-                  </p>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="mobile"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        Mobile Number
-                        <span className="text-red-500 ml-1">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <PhoneInput
-                          placeholder="Enter mobile number"
-                          value={field.value}
-                          onChange={(value) => {
-                            field.onChange(value);
-
-                            if (!whatsAppManuallyEdited && value) {
-                              setTimeout(() => {
-                                const currentWhatsApp = form.getValues('whatsApp');
-
-                                if (!whatsAppManuallyEdited) {
-                                  form.setValue('whatsApp', value, { shouldValidate: false });
-                                }
-                              }, 50);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="whatsApp"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-semibold text-slate-700">
-                        WhatsApp Number
-                      </FormLabel>
-                      <FormControl>
-                        <PhoneInput
-                          placeholder="Enter WhatsApp number"
-                          value={field.value}
-                          onChange={(value) => {
-                            field.onChange(value);
-
-                            setWhatsAppManuallyEdited(true);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Address Information Section */}
-              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-base font-semibold text-slate-900">Addresses</h3>
-                  <p className="text-xs text-slate-500">
-                    Add one or more locations and select the default.
-                  </p>
-                </div>
-
-                <AddressListField
-                  form={form}
-                  name="addresses"
-                  label="Addresses"
-                  description="Add one or more addresses and select the default."
-                  showLocationFields
-                />
-              </div>
-            </form>
-          </Form>
-        </div>
-
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              form="customer-creation-form"
-              disabled={isPending}
-              className={`min-w-[160px] ${isBusinessPartner
-                ? 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
-                : ''
-                }`}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Customer...
-                </>
-              ) : (
-                'Create Customer'
-              )}
-            </Button>
+              >
+                Create New Customer
+              </SheetTitle>
+              <SheetDescription
+                className={`text-sm ${isBusinessPartner ? 'text-bp-foreground' : 'text-blue-100'}`}
+              >
+                Capture core customer details and select their location hierarchy.
+              </SheetDescription>
+            </SheetHeader>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+
+          <div className="px-6 py-5">
+            <Form {...form}>
+              <form
+                id="customer-creation-form"
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-5"
+              >
+                {/* Basic Information Section */}
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-semibold text-slate-900">Basic Information</h3>
+                    <p className="text-xs text-slate-500">
+                      Provide the key identifiers used across customer journeys.
+                    </p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="customerBusinessName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Business Name
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter business name"
+                            {...field}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="contactPerson"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Contact Person
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter contact person name"
+                            {...field}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Email Address
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Enter email address"
+                            {...field}
+                            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Contact Information Section */}
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-semibold text-slate-900">Contact Information</h3>
+                    <p className="text-xs text-slate-500">
+                      Phone numbers the team will use for day-to-day communication.
+                    </p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="mobile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Mobile Number
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <PhoneInput
+                            placeholder="Enter mobile number"
+                            value={field.value}
+                            onChange={(value) => {
+                              field.onChange(value);
+
+                              if (!whatsAppManuallyEdited && value) {
+                                setTimeout(() => {
+                                  if (!whatsAppManuallyEdited) {
+                                    form.setValue('whatsApp', value, { shouldValidate: false });
+                                  }
+                                }, 50);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="whatsApp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          WhatsApp Number
+                        </FormLabel>
+                        <FormControl>
+                          <PhoneInput
+                            placeholder="Enter WhatsApp number"
+                            value={field.value}
+                            onChange={(value) => {
+                              field.onChange(value);
+
+                              setWhatsAppManuallyEdited(true);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Location Information Section */}
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-semibold text-slate-900">Location</h3>
+                    <p className="text-xs text-slate-500">
+                      Search for the area to automatically attach its full hierarchy.
+                    </p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="area"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          City and Zipcode
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <IntelligentLocationField
+                            value={field.value}
+                            onChange={field.onChange}
+                            onError={(error) => {
+                              form.setError('area', { message: error });
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="completeAddress"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-semibold text-slate-700">
+                          Address
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter address"
+                            {...field}
+                            className="resize-none min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </form>
+            </Form>
+          </div>
+
+          <div className="sticky bottom-0 bg-white/95 backdrop-blur border-t px-6 py-3">
+            <div className="flex items-center justify-end gap-2">
+              <Button type="button" variant="outline" onClick={requestClose} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="customer-creation-form"
+                disabled={isPending}
+                className={`min-w-[160px] ${
+                  isBusinessPartner
+                    ? 'bg-bp-primary hover:bg-bp-primary-hover text-bp-foreground'
+                    : ''
+                }`}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Customer...
+                  </>
+                ) : (
+                  'Create Customer'
+                )}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard customer changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              If you close this form now, all entered customer details will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue editing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowDiscardDialog(false);
+                closeSheetAndReset();
+              }}
+            >
+              Discard and close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
