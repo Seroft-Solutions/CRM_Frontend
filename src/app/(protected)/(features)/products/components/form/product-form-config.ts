@@ -70,8 +70,8 @@ export const productFormConfig: FormConfig = {
     {
       name: 'code',
       type: 'text',
-      label: 'Product Code',
-      placeholder: 'Enter product code',
+      label: 'Code',
+      placeholder: 'Enter code',
       required: true,
       validation: {
         required: true,
