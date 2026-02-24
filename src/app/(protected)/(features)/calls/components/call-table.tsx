@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { callToast, handleCallError } from './call-toast';
 import { CallDTOStatus } from '@/core/api/generated/spring/schemas/CallDTOStatus';
+import { CallRemarkDTOStatus } from '@/core/api/generated/spring/schemas/CallRemarkDTOStatus';
 import type { GetAllCallRemarksParams } from '@/core/api/generated/spring/schemas/GetAllCallRemarksParams';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAccount, useUserAuthorities } from '@/core/auth';
@@ -52,8 +53,10 @@ import {
   useUpdateCall,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
 import {
+  useCreateCallRemark,
   getAllCallRemarks,
   useGetAllCallRemarks,
+  useUpdateCallRemark,
 } from '@/core/api/generated/spring/endpoints/call-remark-resource/call-remark-resource.gen';
 
 import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
@@ -413,6 +416,8 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
   const [fallbackRemarks, setFallbackRemarks] = useState<LatestRemarksMap>({});
   const [isFallbackRemarksLoading, setIsFallbackRemarksLoading] = useState(false);
+  const [savingRemarkCallIds, setSavingRemarkCallIds] = useState<Set<number>>(new Set());
+  const remarkSavesInFlightRef = useRef<Set<number>>(new Set());
 
   const [isColumnVisibilityLoaded, setIsColumnVisibilityLoaded] = useState(false);
   const [isExternalColumnVisibilityLoaded, setIsExternalColumnVisibilityLoaded] = useState(false);
@@ -1135,12 +1140,13 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
       if (
         typeof callId === 'number' &&
         allowedCallIds.has(callId) &&
-        !map[callId] &&
-        remark.remark
+        !map[callId]
       ) {
         map[callId] = {
+          id: remark.id,
           remark: remark.remark,
           dateTime: remark.dateTime,
+          status: remark.status,
         };
       }
     });
@@ -1198,13 +1204,15 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
             const remark = remarks?.[0];
             const callId = missingCallIds[index];
             if (
-              remark?.remark &&
+              remark &&
               typeof callId === 'number' &&
               (!next[callId] || next[callId]?.remark !== remark.remark)
             ) {
               next[callId] = {
+                id: remark.id,
                 remark: remark.remark,
                 dateTime: remark.dateTime,
+                status: remark.status,
               };
               hasChanges = true;
             }
@@ -1242,6 +1250,97 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
   }, [baseLatestRemarksMap, fallbackRemarks]);
 
   const isLatestRemarksLoading = isRemarkBatchFetching || isFallbackRemarksLoading;
+
+  const setRemarkSavingState = useCallback((callId: number, isSaving: boolean) => {
+    setSavingRemarkCallIds((prev) => {
+      const next = new Set(prev);
+      if (isSaving) {
+        next.add(callId);
+      } else {
+        next.delete(callId);
+      }
+      return next;
+    });
+  }, []);
+
+  const { mutateAsync: createCallRemarkAsync } = useCreateCallRemark();
+  const { mutateAsync: updateCallRemarkAsync } = useUpdateCallRemark();
+
+  const handleRemarkAutoSave = useCallback(
+    async (callId: number, remark: string) => {
+      if (remarkSavesInFlightRef.current.has(callId)) {
+        return;
+      }
+
+      const existingRemark = latestRemarksMap[callId];
+      const normalizedIncomingRemark = remark.trim();
+      const normalizedExistingRemark = existingRemark?.remark?.trim() || '';
+
+      if (normalizedIncomingRemark === normalizedExistingRemark) {
+        return;
+      }
+
+      if (!existingRemark?.id && !normalizedIncomingRemark) {
+        return;
+      }
+
+      remarkSavesInFlightRef.current.add(callId);
+      setRemarkSavingState(callId, true);
+
+      try {
+        if (existingRemark?.id) {
+          const updatedRemark = await updateCallRemarkAsync({
+            id: existingRemark.id,
+            data: {
+              id: existingRemark.id,
+              call: { id: callId },
+              remark: normalizedIncomingRemark,
+              dateTime: existingRemark.dateTime || new Date().toISOString(),
+              status:
+                (existingRemark.status as
+                  | (typeof CallRemarkDTOStatus)[keyof typeof CallRemarkDTOStatus]
+                  | undefined) || CallRemarkDTOStatus.ACTIVE,
+            },
+          });
+
+          setFallbackRemarks((prev) => ({
+            ...prev,
+            [callId]: {
+              id: updatedRemark.id,
+              remark: updatedRemark.remark,
+              dateTime: updatedRemark.dateTime,
+              status: updatedRemark.status,
+            },
+          }));
+        } else {
+          const createdRemark = await createCallRemarkAsync({
+            data: {
+              call: { id: callId },
+              remark: normalizedIncomingRemark,
+              dateTime: new Date().toISOString(),
+              status: CallRemarkDTOStatus.ACTIVE,
+            },
+          });
+
+          setFallbackRemarks((prev) => ({
+            ...prev,
+            [callId]: {
+              id: createdRemark.id,
+              remark: createdRemark.remark,
+              dateTime: createdRemark.dateTime,
+              status: createdRemark.status,
+            },
+          }));
+        }
+      } catch (error) {
+        handleCallError(error);
+      } finally {
+        remarkSavesInFlightRef.current.delete(callId);
+        setRemarkSavingState(callId, false);
+      }
+    },
+    [createCallRemarkAsync, latestRemarksMap, setRemarkSavingState, updateCallRemarkAsync]
+  );
 
   const { mutate: updateEntity, isPending: isUpdating } = useUpdateCall({
     mutation: {
@@ -2247,6 +2346,8 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
                       updatingCells={updatingCells}
                       latestRemarksMap={latestRemarksMap}
                       isLatestRemarksLoading={isLatestRemarksLoading}
+                      remarkSavingIds={savingRemarkCallIds}
+                      onRemarkAutoSave={handleRemarkAutoSave}
                       visibleColumns={visibleColumns}
                     />
                   ))

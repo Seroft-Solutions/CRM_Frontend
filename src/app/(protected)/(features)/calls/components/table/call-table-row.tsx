@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,12 +49,114 @@ interface StatusOption {
 export type LatestRemarksMap = Record<
   number,
   {
+    id?: number;
     remark: string;
     dateTime?: string;
+    status?: string;
   }
 >;
 
-const MAX_REMARK_LENGTH = 120;
+const REMARK_AUTOSAVE_DELAY_MS = 800;
+
+interface EditableRemarkCellProps {
+  callId?: number;
+  remarkEntry?: LatestRemarksMap[number];
+  isLatestRemarksLoading: boolean;
+  isSaving: boolean;
+  onAutoSave?: (callId: number, remark: string) => Promise<void>;
+}
+
+function EditableRemarkCell({
+  callId,
+  remarkEntry,
+  isLatestRemarksLoading,
+  isSaving,
+  onAutoSave,
+}: EditableRemarkCellProps) {
+  const savedRemark = remarkEntry?.remark ?? '';
+  const [draftRemark, setDraftRemark] = useState(savedRemark);
+  const [isFocused, setIsFocused] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setDraftRemark(savedRemark);
+    }
+  }, [savedRemark, isFocused]);
+
+  useEffect(
+    () => () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    },
+    []
+  );
+
+  if (!callId) {
+    return isLatestRemarksLoading ? (
+      <span className="text-xs text-muted-foreground">Loading...</span>
+    ) : (
+      <span className="text-muted-foreground">--</span>
+    );
+  }
+
+  if (!onAutoSave) {
+    return savedRemark ? <span className="block max-w-full">{savedRemark}</span> : '--';
+  }
+
+  const saveIfChanged = async (value: string) => {
+    if (isSaving) {
+      return;
+    }
+
+    const normalizedCurrent = value.trim();
+    const normalizedSaved = savedRemark.trim();
+
+    if (normalizedCurrent === normalizedSaved) {
+      return;
+    }
+
+    await onAutoSave(callId, normalizedCurrent);
+  };
+
+  const queueAutosave = (value: string) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      void saveIfChanged(value);
+    }, REMARK_AUTOSAVE_DELAY_MS);
+  };
+
+  return (
+    <div className="min-w-[220px] space-y-1">
+      <Input
+        value={draftRemark}
+        placeholder={isLatestRemarksLoading && !savedRemark ? 'Loading...' : 'Add remark...'}
+        onChange={(event) => {
+          const nextValue = event.target.value;
+          setDraftRemark(nextValue);
+          queueAutosave(nextValue);
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+
+          if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+          }
+
+          void saveIfChanged(draftRemark);
+        }}
+        disabled={isSaving}
+        className="h-8 text-sm"
+      />
+      {isSaving ? <span className="text-[11px] text-muted-foreground">Saving...</span> : null}
+    </div>
+  );
+}
 
 interface CallTableRowProps {
   call: CallDTO;
@@ -72,6 +176,8 @@ interface CallTableRowProps {
   updatingCells?: Set<string>;
   latestRemarksMap: LatestRemarksMap;
   isLatestRemarksLoading: boolean;
+  remarkSavingIds?: Set<number>;
+  onRemarkAutoSave?: (callId: number, remark: string) => Promise<void>;
   visibleColumns: Array<{
     id: string;
     label: string;
@@ -96,6 +202,8 @@ export function CallTableRow({
   updatingCells = new Set(),
   latestRemarksMap,
   isLatestRemarksLoading,
+  remarkSavingIds = new Set(),
+  onRemarkAutoSave,
   visibleColumns,
   excludedAssignedToEmail,
 }: CallTableRowProps) {
@@ -131,39 +239,14 @@ export function CallTableRow({
       </TableCell>
       {visibleColumns.map((column, index) => {
         const renderRemarksCell = () => {
-          const callId = call.id;
-          if (!callId) {
-            return isLatestRemarksLoading ? (
-              <span className="text-xs text-muted-foreground">Loading...</span>
-            ) : (
-              <span className="text-muted-foreground">--</span>
-            );
-          }
-
-          const remarkEntry = latestRemarksMap[callId];
-
-          if (!remarkEntry) {
-            return isLatestRemarksLoading ? (
-              <span className="text-xs text-muted-foreground">Loading...</span>
-            ) : (
-              <span className="text-muted-foreground">--</span>
-            );
-          }
-
-          const trimmedRemark = remarkEntry.remark.trim();
-          if (!trimmedRemark) {
-            return <span className="text-muted-foreground">--</span>;
-          }
-
-          const truncatedRemark =
-            trimmedRemark.length > MAX_REMARK_LENGTH
-              ? `${trimmedRemark.slice(0, MAX_REMARK_LENGTH - 3)}...`
-              : trimmedRemark;
-
           return (
-            <span title={trimmedRemark} className="block max-w-full">
-              {truncatedRemark}
-            </span>
+            <EditableRemarkCell
+              callId={call.id}
+              remarkEntry={call.id ? latestRemarksMap[call.id] : undefined}
+              isLatestRemarksLoading={isLatestRemarksLoading}
+              isSaving={call.id ? remarkSavingIds.has(call.id) : false}
+              onAutoSave={onRemarkAutoSave}
+            />
           );
         };
 
