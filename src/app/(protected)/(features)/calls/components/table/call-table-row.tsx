@@ -170,20 +170,30 @@ export function CallTableRow({
         const renderFieldCell = () => {
           const field = call[column.accessor as keyof typeof call];
 
-          if (column.id === 'leadNo' && call.id) {
+          if (column.id === 'leadNo') {
             const displayValue = field?.toString() || '';
             if (!displayValue) {
               return '';
             }
 
-            return (
-              <Link
-                href={`/calls/${call.id}`}
-                className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+            const leadNoTag = (
+              <Badge
+                variant="secondary"
+                className="border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
               >
                 {displayValue}
-              </Link>
+              </Badge>
             );
+
+            if (call.id) {
+              return (
+                <Link href={`/calls/${call.id}`} className="inline-flex">
+                  {leadNoTag}
+                </Link>
+              );
+            }
+
+            return leadNoTag;
           }
 
           if (column.id === 'status') {

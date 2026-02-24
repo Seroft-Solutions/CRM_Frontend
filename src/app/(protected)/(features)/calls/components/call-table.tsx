@@ -303,7 +303,7 @@ const ALL_COLUMNS: ColumnConfig[] = [
     label: 'Status',
     accessor: 'status',
     type: 'field',
-    visible: true,
+    visible: false,
     sortable: true,
   },
 ];
