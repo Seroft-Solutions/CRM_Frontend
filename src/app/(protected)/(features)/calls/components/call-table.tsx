@@ -2041,9 +2041,9 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
             </TabsTrigger>
             <TabsTrigger
               value="business-partners"
-              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
-              <div className="w-2 h-2 bg-blue-500 data-[state=active]:bg-white rounded-full"></div>
+              <div className="w-2 h-2 bg-yellow-500 data-[state=active]:bg-white rounded-full"></div>
               Business Partner
             </TabsTrigger>
             <TabsTrigger
@@ -2062,9 +2062,9 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
             </TabsTrigger>
             <TabsTrigger
               value="draft"
-              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 data-[state=active]:bg-gray-600 data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
             >
-              <div className="w-2 h-2 bg-yellow-500 data-[state=active]:bg-white rounded-full"></div>
+              <div className="w-2 h-2 bg-gray-500 data-[state=active]:bg-white rounded-full"></div>
               Draft
             </TabsTrigger>
             <TabsTrigger
