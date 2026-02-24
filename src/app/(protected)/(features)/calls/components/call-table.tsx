@@ -1987,7 +1987,7 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
       displayName: 'CallStatus',
       options: callstatusOptions || [],
       displayField: 'name',
-      isEditable: false,
+      isEditable: true,
     },
   ];
 

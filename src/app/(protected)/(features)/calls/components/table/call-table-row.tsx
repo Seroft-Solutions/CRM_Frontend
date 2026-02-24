@@ -434,7 +434,29 @@ export function CallTableRow({
           }
 
           if (column.id === 'callStatus') {
-            return call.callStatus?.name || '';
+            const cellKey = `${call.id}-callStatus`;
+            return (
+              <RelationshipCell
+                entityId={call.id || 0}
+                relationshipName="callStatus"
+                currentValue={call.callStatus}
+                options={
+                  relationshipConfigs.find((config) => config.name === 'callStatus')?.options || []
+                }
+                displayField="name"
+                onUpdate={(entityId, relationshipName, newValue) =>
+                  onRelationshipUpdate
+                    ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
+                    : Promise.resolve()
+                }
+                isEditable={
+                  relationshipConfigs.find((config) => config.name === 'callStatus')?.isEditable ||
+                  false
+                }
+                isLoading={updatingCells.has(cellKey)}
+                className="min-w-[150px]"
+              />
+            );
           }
 
           return null;
