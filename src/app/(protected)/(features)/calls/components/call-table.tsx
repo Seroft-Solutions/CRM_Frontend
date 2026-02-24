@@ -157,12 +157,12 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
-    id: 'status',
-    label: 'Status',
-    accessor: 'status',
-    type: 'field',
+    id: 'remarks',
+    label: 'Remarks',
+    accessor: 'remarks',
+    type: 'custom',
     visible: true,
-    sortable: true,
+    sortable: false,
   },
 
   {
@@ -299,12 +299,12 @@ const ALL_COLUMNS: ColumnConfig[] = [
     sortable: true,
   },
   {
-    id: 'remarks',
-    label: 'Remarks',
-    accessor: 'remarks',
-    type: 'custom',
+    id: 'status',
+    label: 'Status',
+    accessor: 'status',
+    type: 'field',
     visible: true,
-    sortable: false,
+    sortable: true,
   },
 ];
 
