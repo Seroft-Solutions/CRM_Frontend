@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Barcode, Loader2, Package, Plus, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +45,17 @@ import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
 import { toast } from 'sonner';
 import { generateProductBarcodeCode, openBarcodePrintDialog } from './barcode-utils';
 
+const requiredPriceField = (fieldLabel: string) =>
+  z
+    .string({ message: `Please enter ${fieldLabel}` })
+    .trim()
+    .min(1, { message: `Please enter ${fieldLabel}` })
+    .refine((val) => !Number.isNaN(Number(val)), { message: 'Please enter a valid number' })
+    .refine((val) => Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
+    .refine((val) => Number(val) <= 999999, {
+      message: 'Please enter a number 999999 or lower',
+    });
+
 const productCreationSchema = productFormSchemaBase
   .omit({
     status: true,
@@ -56,6 +68,8 @@ const productCreationSchema = productFormSchemaBase
         subCategory: true,
       })
       .partial(),
+    basePrice: requiredPriceField('base price'),
+    salePrice: requiredPriceField('sale price'),
   })
   .refine(
     (data) => {
@@ -79,9 +93,9 @@ type ProductCreationFormData = {
   code: string;
   articalNumber?: string;
   description?: string;
-  basePrice?: string;
+  basePrice: string;
   discountedPrice?: string;
-  salePrice?: string;
+  salePrice: string;
   remark?: string;
   categoryHierarchy?: {
     category?: number;
@@ -448,6 +462,7 @@ export function ProductCreateSheet({
                         <FormItem>
                           <FormLabel className="text-sm font-semibold text-slate-700">
                             Base Price
+                            <span className="text-red-500 ml-1">*</span>
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -505,6 +520,7 @@ export function ProductCreateSheet({
                         <FormItem>
                           <FormLabel className="text-sm font-semibold text-slate-700">
                             Sale Price
+                            <span className="text-red-500 ml-1">*</span>
                           </FormLabel>
                           <FormControl>
                             <Input
