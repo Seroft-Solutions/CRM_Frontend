@@ -119,13 +119,15 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
   }, [callType, form, formActions, config, state.currentStep]);
 
   const customerCustomFilters = useMemo(() => {
+    const filters: Record<string, any> = {
+      'status.equals': 'ACTIVE',
+    };
+
     if (isBusinessPartner && accountData?.login) {
-      return {
-        'createdBy.equals': accountData.login,
-      };
+      filters['createdBy.equals'] = accountData.login;
     }
 
-    return {};
+    return filters;
   }, [isBusinessPartner, accountData?.login]);
 
   const selectedCustomerId = form.watch('customer');
@@ -179,6 +181,9 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                 primaryKey: 'id',
                 required: true,
                 multiple: false,
+                customFilters: {
+                  'status.equals': 'ACTIVE',
+                },
                 api: {
                   useGetAllHook: 'useGetAllSources',
                   useSearchHook: 'useSearchSources',
@@ -280,6 +285,7 @@ export function CallBusinessStep({ form, config, actions, entity }: CallBusiness
                   placeholder="Select product"
                   canCreate={true}
                   createPermission="product:create:inline"
+                  customFilters={{ 'status.equals': 'ACTIVE' }}
                   buttonClassName={
                     callType === 'business-partner' ? 'bg-bp-primary hover:bg-bp-primary-hover' : ''
                   }
