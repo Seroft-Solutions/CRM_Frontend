@@ -26,7 +26,7 @@ export function CallClassificationStep({
   useEffect(() => {
     const setDefaultCallStatus = async () => {
       try {
-        const callStatuses = await getAllCallStatuses();
+        const callStatuses = await getAllCallStatuses({ 'status.equals': 'ACTIVE' });
         const newStatus = callStatuses.find((status: any) => status.name === 'New');
         if (newStatus && !form.getValues('callStatus')) {
           form.setValue('callStatus', newStatus.id);
@@ -41,7 +41,7 @@ export function CallClassificationStep({
   useEffect(() => {
     const setDefaultPriority = async () => {
       try {
-        const priorities = await getAllPriorities();
+        const priorities = await getAllPriorities({ 'status.equals': 'ACTIVE' });
         const mediumPriority = priorities.find((priority: any) => priority.name === 'Medium');
         if (mediumPriority && !form.getValues('priority')) {
           form.setValue('priority', mediumPriority.id);
@@ -71,6 +71,9 @@ export function CallClassificationStep({
                   primaryKey: 'id',
                   required: true,
                   multiple: false,
+                  customFilters: {
+                    'status.equals': 'ACTIVE',
+                  },
                   api: {
                     useGetAllHook: 'useGetAllPriorities',
                     useSearchHook: 'useSearchPriorities',
@@ -106,6 +109,9 @@ export function CallClassificationStep({
                   primaryKey: 'id',
                   required: true,
                   multiple: false,
+                  customFilters: {
+                    'status.equals': 'ACTIVE',
+                  },
                   api: {
                     useGetAllHook: 'useGetAllCallTypes',
                     useSearchHook: 'useSearchCallTypes',
@@ -142,6 +148,9 @@ export function CallClassificationStep({
                   required: false,
                   multiple: false,
                   cascadingFilter: { parentField: 'callType', filterField: 'callType' },
+                  customFilters: {
+                    'status.equals': 'ACTIVE',
+                  },
                   api: {
                     useGetAllHook: 'useGetAllSubCallTypes',
                     useSearchHook: 'useSearchSubCallTypes',
@@ -177,6 +186,9 @@ export function CallClassificationStep({
                   primaryKey: 'id',
                   required: true,
                   multiple: false,
+                  customFilters: {
+                    'status.equals': 'ACTIVE',
+                  },
                   api: {
                     useGetAllHook: 'useGetAllCallStatuses',
                     useSearchHook: 'useSearchCallStatuses',
