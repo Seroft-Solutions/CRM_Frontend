@@ -309,6 +309,18 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'product:sidebar',
       },
       {
+        key: 'warehouses',
+        label: 'Manage Warehouses',
+        path: '/warehouses',
+        requiredPermission: 'warehouse:read',
+      },
+      {
+        key: 'createWarehouse',
+        label: 'Create Warehouse',
+        path: '/warehouses/new',
+        requiredPermission: 'warehouse:create',
+      },
+      {
         key: 'addProduct',
         label: 'Add Products',
         path: '/products/new',
