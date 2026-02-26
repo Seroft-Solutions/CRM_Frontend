@@ -3,14 +3,16 @@
 import * as React from 'react';
 import Link from 'next/link';
 import {
+  AlertTriangle,
+  Archive,
   AlertCircle,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
   Edit,
+  MoreVertical,
   RefreshCw,
-  Search,
-  Trash2,
+  RotateCcw,
 } from 'lucide-react';
 
 import {
@@ -25,14 +27,13 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -41,37 +42,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InlinePermissionGuard } from '@/core/auth';
-import { useDebounce } from '@/hooks/use-debounce';
 import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
+import { useDebounce } from '@/hooks/use-debounce';
 
 import {
-  useDeleteWarehouseMutation,
+  useSearchWarehousesQuery,
   useWarehouseCountQuery,
+  useUpdateWarehouseMutation,
   useWarehousesQuery,
 } from '../actions/warehouse-hooks';
-import {
-  IWarehouse,
-  WarehouseListParams,
-  WarehouseSearchField,
-  WarehouseStatus,
-} from '../types/warehouse';
+import { IWarehouse, WarehouseListParams, WarehouseStatus } from '../types/warehouse';
+import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
+import { WarehouseFilterState, WarehouseSearchAndFilters } from './table/warehouse-search-filters';
 
-const statusOptions: Array<{ value: 'ALL' | WarehouseStatus; label: string }> = [
-  { value: 'ALL', label: 'All Statuses' },
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'INACTIVE', label: 'Inactive' },
-  { value: 'DRAFT', label: 'Draft' },
-  { value: 'ARCHIVED', label: 'Archived' },
-];
-
-const searchFieldOptions: Array<{ value: WarehouseSearchField; label: string }> = [
-  { value: 'name', label: 'Name' },
-  { value: 'code', label: 'Code' },
-  { value: 'address', label: 'Address' },
-];
-
-const pageSizeOptions = [10, 20, 50] as const;
+type WarehouseStatusTab = 'active' | 'inactive' | 'draft' | 'archived' | 'all';
+type SortField = 'name' | 'code' | 'address' | 'capacity' | 'status';
+type SortOrder = 'asc' | 'desc';
 
 const statusBadgeClass: Record<WarehouseStatus, string> = {
   ACTIVE: 'bg-green-100 text-green-700 border-green-200',
@@ -103,8 +91,22 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-type SortField = 'name' | 'code' | 'address' | 'capacity' | 'status';
-type SortOrder = 'asc' | 'desc';
+const getStatusFilterFromTab = (tab: WarehouseStatusTab): Partial<WarehouseListParams> => {
+  switch (tab) {
+    case 'active':
+      return { 'status.equals': 'ACTIVE' };
+    case 'inactive':
+      return { 'status.equals': 'INACTIVE' };
+    case 'draft':
+      return { 'status.equals': 'DRAFT' };
+    case 'archived':
+      return { 'status.equals': 'ARCHIVED' };
+    case 'all':
+      return {};
+    default:
+      return { 'status.equals': 'ACTIVE' };
+  }
+};
 
 interface SortableHeadProps {
   label: string;
@@ -141,39 +143,58 @@ function SortableHead({ label, field, currentSortField, currentOrder, onSort }: 
 }
 
 export function WarehouseTable() {
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState<(typeof pageSizeOptions)[number]>(10);
+  const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
+    usePaginationState(1, 10);
+
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [searchField, setSearchField] = React.useState<WarehouseSearchField>('name');
-  const [status, setStatus] = React.useState<'ALL' | WarehouseStatus>('ACTIVE');
-  const [organizationFilter, setOrganizationFilter] = React.useState<string>('ALL');
+  const [filters, setFilters] = React.useState<WarehouseFilterState>({});
+  const [activeStatusTab, setActiveStatusTab] = React.useState<WarehouseStatusTab>('active');
   const [sortField, setSortField] = React.useState<SortField>('name');
   const [sortOrder, setSortOrder] = React.useState<SortOrder>('asc');
-  const [pendingDelete, setPendingDelete] = React.useState<IWarehouse | null>(null);
+  const [pendingStatusChange, setPendingStatusChange] = React.useState<{
+    warehouse: IWarehouse;
+    status: WarehouseStatus;
+  } | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
-  const criteriaParams = React.useMemo(() => {
-    const params: Omit<WarehouseListParams, 'page' | 'size' | 'sort'> = {};
+  const criteriaParams = React.useMemo<
+    Omit<WarehouseListParams, 'page' | 'size' | 'sort' | 'query'>
+  >(() => {
+    const params: Omit<WarehouseListParams, 'page' | 'size' | 'sort' | 'query'> = {
+      ...getStatusFilterFromTab(activeStatusTab),
+    };
 
-    if (debouncedSearch) {
-      params[`${searchField}.contains`] = debouncedSearch;
+    if (filters.name?.trim()) {
+      params['name.contains'] = filters.name.trim();
     }
 
-    if (status !== 'ALL') {
-      params['status.equals'] = status;
+    if (filters.code?.trim()) {
+      params['code.contains'] = filters.code.trim();
     }
 
-    if (organizationFilter !== 'ALL') {
-      const parsedOrgId = Number.parseInt(organizationFilter, 10);
+    if (filters.address?.trim()) {
+      params['address.contains'] = filters.address.trim();
+    }
 
-      if (Number.isFinite(parsedOrgId)) {
-        params['organizationId.equals'] = parsedOrgId;
+    if (filters.capacity?.trim()) {
+      const capacity = Number.parseInt(filters.capacity, 10);
+
+      if (Number.isFinite(capacity)) {
+        params['capacity.equals'] = capacity;
+      }
+    }
+
+    if (filters.organizationId?.trim()) {
+      const organizationId = Number.parseInt(filters.organizationId, 10);
+
+      if (Number.isFinite(organizationId)) {
+        params['organizationId.equals'] = organizationId;
       }
     }
 
     return params;
-  }, [debouncedSearch, organizationFilter, searchField, status]);
+  }, [activeStatusTab, filters]);
 
   const listParams: WarehouseListParams = React.useMemo(
     () => ({
@@ -185,18 +206,26 @@ export function WarehouseTable() {
     [criteriaParams, page, pageSize, sortField, sortOrder]
   );
 
-  const {
-    data: warehouses = [],
-    isLoading,
-    isError,
-    error,
-    isFetching,
-    refetch,
-  } = useWarehousesQuery(listParams);
+  const listQuery = useWarehousesQuery(listParams, {
+    enabled: !Boolean(debouncedSearch),
+  });
+
+  const searchQuery = useSearchWarehousesQuery(
+    {
+      ...listParams,
+      query: debouncedSearch || '',
+    },
+    {
+      enabled: Boolean(debouncedSearch),
+    }
+  );
+
+  const activeQuery = debouncedSearch ? searchQuery : listQuery;
+
+  const { data: warehouses = [], isLoading, isError, error, isFetching, refetch } = activeQuery;
 
   const { data: totalCount = 0 } = useWarehouseCountQuery(criteriaParams);
-
-  const { mutate: deleteWarehouse, isPending: isDeleting } = useDeleteWarehouseMutation();
+  const { mutate: updateWarehouse, isPending: isUpdatingStatus } = useUpdateWarehouseMutation();
 
   const { data: organizations = [] } = useGetAllOrganizations(
     { page: 0, size: 1000, sort: ['name,asc'] },
@@ -217,128 +246,131 @@ export function WarehouseTable() {
   );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startItem = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, totalCount);
-
-  React.useEffect(() => {
-    setPage(1);
-  }, [criteriaParams, pageSize]);
 
   React.useEffect(() => {
     if (page > totalPages) {
-      setPage(totalPages);
+      handlePageChange(totalPages);
     }
-  }, [page, totalPages]);
+  }, [handlePageChange, page, totalPages]);
 
   const handleSort = (field: SortField) => {
-    setPage(1);
-    setSortField((prevField) => {
-      if (prevField === field) {
-        setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+    setSortField((currentSortField) => {
+      if (currentSortField === field) {
+        setSortOrder((currentSortOrder) => (currentSortOrder === 'asc' ? 'desc' : 'asc'));
 
-        return prevField;
+        return currentSortField;
       }
+
       setSortOrder('asc');
 
       return field;
     });
+    resetPagination();
   };
 
-  const resetFilters = () => {
+  const handleStatusTabChange = (value: string) => {
+    setActiveStatusTab(value as WarehouseStatusTab);
+    resetPagination();
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    resetPagination();
+  };
+
+  const handleFilterChange = (column: keyof WarehouseFilterState, value?: string) => {
+    setFilters((prev) => {
+      const next = { ...prev };
+
+      if (!value || value.trim() === '') {
+        delete next[column];
+      } else {
+        next[column] = value;
+      }
+
+      return next;
+    });
+    resetPagination();
+  };
+
+  const clearAllFilters = () => {
     setSearchTerm('');
-    setSearchField('name');
-    setStatus('ACTIVE');
-    setOrganizationFilter('ALL');
+    setFilters({});
+    setActiveStatusTab('active');
     setSortField('name');
     setSortOrder('asc');
-    setPage(1);
+    resetPagination();
   };
 
-  const handleDelete = () => {
-    if (!pendingDelete?.id) return;
+  const handleStatusChange = (warehouse: IWarehouse, status: WarehouseStatus) => {
+    setPendingStatusChange({ warehouse, status });
+  };
 
-    deleteWarehouse(pendingDelete.id, {
-      onSuccess: () => {
-        setPendingDelete(null);
+  const confirmStatusChange = () => {
+    if (!pendingStatusChange?.warehouse.id) {
+      return;
+    }
+
+    updateWarehouse(
+      {
+        id: pendingStatusChange.warehouse.id,
+        warehouse: {
+          ...pendingStatusChange.warehouse,
+          status: pendingStatusChange.status,
+        },
       },
-    });
+      {
+        onSuccess: () => {
+          setPendingStatusChange(null);
+        },
+      }
+    );
   };
+
+  const hasActiveFilters =
+    activeStatusTab !== 'active' ||
+    Boolean(searchTerm.trim()) ||
+    Object.keys(filters).length > 0 ||
+    sortField !== 'name' ||
+    sortOrder !== 'asc';
 
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-4">
+      <Tabs value={activeStatusTab} onValueChange={handleStatusTabChange}>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="active" className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-green-500" />
+            Active
+          </TabsTrigger>
+          <TabsTrigger value="inactive" className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-yellow-500" />
+            Inactive
+          </TabsTrigger>
+          <TabsTrigger value="archived" className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-red-500" />
+            Archived
+          </TabsTrigger>
+          <TabsTrigger value="draft" className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-slate-500" />
+            Draft
+          </TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <div className="rounded-lg border border-border bg-card p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-4xl lg:grid-cols-4">
-            <div className="relative sm:col-span-2">
-              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                aria-label="Search warehouses"
-                placeholder="Search warehouses"
-                className="pl-9"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-              />
-            </div>
-
-            <Select
-              value={searchField}
-              onValueChange={(value) => setSearchField(value as WarehouseSearchField)}
-            >
-              <SelectTrigger aria-label="Search field">
-                <SelectValue placeholder="Search by" />
-              </SelectTrigger>
-              <SelectContent>
-                {searchFieldOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={organizationFilter}
-              onValueChange={setOrganizationFilter}
-              aria-label="Filter by organization"
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Organization" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">All Organizations</SelectItem>
-                {selectableOrganizations.map((organization) => (
-                  <SelectItem key={organization.id} value={String(organization.id)}>
-                    {organization.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={status}
-              onValueChange={(value) => setStatus(value as 'ALL' | WarehouseStatus)}
-              aria-label="Filter by status"
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button type="button" variant="outline" onClick={resetFilters}>
-            Reset
-          </Button>
-        </div>
+        <WarehouseSearchAndFilters
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearAll={clearAllFilters}
+          hasActiveFilters={hasActiveFilters}
+          organizations={selectableOrganizations}
+        />
       </div>
 
-      <div className="rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
         {isError ? (
           <div className="flex flex-col items-center gap-4 px-6 py-12 text-center">
             <AlertCircle className="h-8 w-8 text-destructive" />
@@ -407,6 +439,11 @@ export function WarehouseTable() {
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       No warehouses found.
+                      {hasActiveFilters && (
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          Try adjusting your filters.
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -444,18 +481,62 @@ export function WarehouseTable() {
                             </Button>
                           </InlinePermissionGuard>
 
-                          <InlinePermissionGuard requiredPermission="warehouse:delete">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => setPendingDelete(warehouse)}
-                              disabled={isDeleting && pendingDelete?.id === warehouse.id}
-                              aria-label={`Delete ${warehouse.name}`}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                          <InlinePermissionGuard requiredPermission="warehouse:update">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  disabled={isUpdatingStatus}
+                                  aria-label={`Status actions for ${warehouse.name}`}
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {warehouse.status !== 'ACTIVE' && (
+                                  <DropdownMenuItem
+                                    onClick={() => handleStatusChange(warehouse, 'ACTIVE')}
+                                    className="text-green-700"
+                                  >
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Set Active
+                                  </DropdownMenuItem>
+                                )}
+                                {warehouse.status !== 'INACTIVE' && (
+                                  <DropdownMenuItem
+                                    onClick={() => handleStatusChange(warehouse, 'INACTIVE')}
+                                    className="text-yellow-700"
+                                  >
+                                    <AlertTriangle className="mr-2 h-4 w-4" />
+                                    Set Inactive
+                                  </DropdownMenuItem>
+                                )}
+                                {warehouse.status !== 'DRAFT' && (
+                                  <DropdownMenuItem
+                                    onClick={() => handleStatusChange(warehouse, 'DRAFT')}
+                                    className="text-slate-700"
+                                  >
+                                    <div className="mr-2 h-4 w-4 rounded border border-current" />
+                                    Set Draft
+                                  </DropdownMenuItem>
+                                )}
+                                {warehouse.status !== 'ARCHIVED' && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      onClick={() => handleStatusChange(warehouse, 'ARCHIVED')}
+                                      className="text-red-700"
+                                    >
+                                      <Archive className="mr-2 h-4 w-4" />
+                                      Archive
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </InlinePermissionGuard>
                         </div>
                       </TableCell>
@@ -468,79 +549,50 @@ export function WarehouseTable() {
         )}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {startItem}-{endItem} of {totalCount}
-          {isFetching ? ' (updating...)' : ''}
-        </p>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          aria-label="Refresh warehouse table"
+        >
+          <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+        </Button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={String(pageSize)}
-            onValueChange={(value) =>
-              setPageSize(Number.parseInt(value, 10) as (typeof pageSizeOptions)[number])
-            }
-            aria-label="Rows per page"
-          >
-            <SelectTrigger className="w-[130px]">
-              <SelectValue placeholder="Rows" />
-            </SelectTrigger>
-            <SelectContent>
-              {pageSizeOptions.map((option) => (
-                <SelectItem key={option} value={String(option)}>
-                  {option} / page
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            aria-label="Refresh table"
-          >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setPage((prevPage) => Math.max(1, prevPage - 1))}
-            disabled={page <= 1}
-          >
-            Previous
-          </Button>
-
-          <span className="min-w-16 text-center text-sm text-muted-foreground" aria-live="polite">
-            Page {page} / {totalPages}
-          </span>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setPage((prevPage) => Math.min(totalPages, prevPage + 1))}
-            disabled={page >= totalPages}
-          >
-            Next
-          </Button>
-        </div>
+        <AdvancedPagination
+          currentPage={page}
+          pageSize={pageSize}
+          totalItems={totalCount}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          isLoading={isLoading || isFetching}
+          pageSizeOptions={[10, 25, 50, 100]}
+          showPageSizeSelector={true}
+          showPageInput={true}
+          showItemsInfo={true}
+          showFirstLastButtons={true}
+          maxPageButtons={7}
+        />
       </div>
 
-      <AlertDialog open={!!pendingDelete} onOpenChange={(open) => !open && setPendingDelete(null)}>
+      <AlertDialog
+        open={!!pendingStatusChange}
+        onOpenChange={(open) => !open && setPendingStatusChange(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete warehouse?</AlertDialogTitle>
+            <AlertDialogTitle>Change warehouse status?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete {pendingDelete?.name || 'this warehouse'}.
+              {pendingStatusChange?.warehouse.name || 'This warehouse'} will be changed to{' '}
+              {pendingStatusChange ? formatStatus(pendingStatusChange.status) : ''}.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : 'Delete'}
+            <AlertDialogAction onClick={confirmStatusChange} disabled={isUpdatingStatus}>
+              {isUpdatingStatus ? 'Updating...' : 'Confirm'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

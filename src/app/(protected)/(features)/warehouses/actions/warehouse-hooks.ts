@@ -5,18 +5,39 @@ import {
   deleteWarehouse,
   getWarehouse,
   getWarehouses,
+  searchWarehouses,
   updateWarehouse,
 } from './warehouse-api';
 import { IWarehouse, WarehouseListParams } from '../types/warehouse';
 import { warehouseToast } from '../components/warehouse-toast';
 
 type WarehouseCountParams = Omit<WarehouseListParams, 'page' | 'size' | 'sort'>;
+type WarehouseSearchParams = WarehouseListParams & { query: string };
+interface WarehouseQueryOptions {
+  enabled?: boolean;
+}
 
-export const useWarehousesQuery = (params: WarehouseListParams) => {
+export const useWarehousesQuery = (
+  params: WarehouseListParams,
+  options?: WarehouseQueryOptions
+) => {
   return useQuery({
     queryKey: ['warehouses', params],
     queryFn: () => getWarehouses(params),
     placeholderData: (previousData) => previousData,
+    enabled: options?.enabled,
+  });
+};
+
+export const useSearchWarehousesQuery = (
+  params: WarehouseSearchParams,
+  options?: WarehouseQueryOptions
+) => {
+  return useQuery({
+    queryKey: ['warehouses-search', params],
+    queryFn: () => searchWarehouses(params),
+    placeholderData: (previousData) => previousData,
+    enabled: options?.enabled,
   });
 };
 
@@ -42,6 +63,7 @@ export const useCreateWarehouseMutation = () => {
     mutationFn: (warehouse: IWarehouse) => createWarehouse(warehouse),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
+      queryClient.invalidateQueries({ queryKey: ['warehouses-search'] });
       queryClient.invalidateQueries({ queryKey: ['warehouses-count'] });
       warehouseToast.created();
     },
@@ -59,6 +81,7 @@ export const useUpdateWarehouseMutation = () => {
       updateWarehouse(id, warehouse),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
+      queryClient.invalidateQueries({ queryKey: ['warehouses-search'] });
       queryClient.invalidateQueries({ queryKey: ['warehouses-count'] });
       queryClient.invalidateQueries({ queryKey: ['warehouse', variables.id] });
       warehouseToast.updated();
@@ -76,6 +99,7 @@ export const useDeleteWarehouseMutation = () => {
     mutationFn: (id: number) => deleteWarehouse(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
+      queryClient.invalidateQueries({ queryKey: ['warehouses-search'] });
       queryClient.invalidateQueries({ queryKey: ['warehouses-count'] });
       warehouseToast.deleted();
     },

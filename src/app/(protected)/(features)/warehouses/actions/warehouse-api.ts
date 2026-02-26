@@ -9,6 +9,14 @@ export const getWarehouses = (params?: WarehouseListParams) => {
   });
 };
 
+export const searchWarehouses = (params: WarehouseListParams & { query: string }) => {
+  return springServiceMutator<IWarehouse[]>({
+    url: '/api/warehouses/_search',
+    method: 'GET',
+    params,
+  });
+};
+
 export const countWarehouses = (params?: Omit<WarehouseListParams, 'page' | 'size' | 'sort'>) => {
   return springServiceMutator<number>({
     url: '/api/warehouses/count',

@@ -21,11 +21,16 @@ export interface WarehouseListParams {
   page?: number;
   size?: number;
   sort?: string[];
+  query?: string;
   'name.contains'?: string;
   'code.contains'?: string;
   'address.contains'?: string;
+  'capacity.equals'?: number;
+  'createdBy.contains'?: string;
+  'lastModifiedBy.contains'?: string;
   'status.equals'?: WarehouseStatus;
   'organizationId.equals'?: number;
+  [key: string]: string | number | string[] | undefined;
 }
 
 export type WarehouseSearchField = 'name' | 'code' | 'address';
