@@ -39,7 +39,9 @@ export function AttributeOptionsSelector({
 
   const resolveColorCode = (option: SystemConfigAttributeOptionDTO) => {
     const code = option.code?.trim();
+
     if (!code) return undefined;
+
     return /^#[0-9a-fA-F]{6}$/.test(code) ? code : undefined;
   };
 
@@ -49,6 +51,7 @@ export function AttributeOptionsSelector({
     const g = parseInt(value.slice(2, 4), 16);
     const b = parseInt(value.slice(4, 6), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
     return luminance > 0.6 ? '#111827' : '#FFFFFF';
   };
 
@@ -101,11 +104,11 @@ export function AttributeOptionsSelector({
               key={optId}
               type="button"
               size="sm"
-              variant={isSelected ? 'default' : 'outline'}
+              variant={isSelected && !colorCode ? 'default' : 'outline'}
               className={`relative overflow-hidden transition-all duration-200 transform hover:scale-105 ${
                 isSelected
                   ? colorCode
-                    ? 'border-transparent shadow-md hover:shadow-lg'
+                    ? 'border-transparent shadow-md hover:shadow-lg ring-2 ring-offset-2 ring-sidebar-accent'
                     : 'bg-gradient-to-r from-sidebar-accent to-sidebar-accent/90 text-sidebar-accent-foreground border-transparent shadow-md hover:shadow-lg hover:from-sidebar-accent/90 hover:to-sidebar-accent'
                   : isDisabled
                     ? 'opacity-50 cursor-not-allowed border-muted text-muted-foreground'
@@ -114,9 +117,9 @@ export function AttributeOptionsSelector({
               style={
                 colorCode
                   ? {
-                      backgroundColor: isSelected ? 'var(--sidebar-accent)' : colorCode,
-                      borderColor: isSelected ? 'var(--sidebar-accent)' : colorCode,
-                      color: isSelected ? 'var(--sidebar-accent-foreground)' : textColor,
+                      backgroundColor: colorCode,
+                      borderColor: colorCode,
+                      color: textColor,
                     }
                   : undefined
               }

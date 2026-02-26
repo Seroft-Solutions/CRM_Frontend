@@ -404,6 +404,19 @@ export function ProductFormProvider({
         }
       });
 
+      // Backward compatibility for older saved drafts/state keys.
+      if (!entityToSave.barcodeText && typeof data.code === 'string' && data.code.trim() !== '') {
+        entityToSave.barcodeText = data.code.trim();
+      }
+
+      if (
+        !entityToSave.articleNumber &&
+        typeof data.articalNumber === 'string' &&
+        data.articalNumber.trim() !== ''
+      ) {
+        entityToSave.articleNumber = data.articalNumber.trim();
+      }
+
       config.relationships.forEach((relConfig) => {
         const value = data[relConfig.name];
 
