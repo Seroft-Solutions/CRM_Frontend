@@ -18,13 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getSelectedOrganizationId } from '@/core/api/services/shared/tenant-helper';
 import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
@@ -34,7 +27,6 @@ import {
   useUpdateWarehouseMutation,
   useWarehouseQuery,
 } from '../actions/warehouse-hooks';
-import { WAREHOUSE_STATUSES, WarehouseStatus } from '../types/warehouse';
 
 const warehouseFormSchema = z.object({
   name: z
@@ -51,9 +43,11 @@ const warehouseFormSchema = z.object({
   address: z
     .string()
     .trim()
+    .min(1, 'Address is required')
     .max(500, 'Address cannot exceed 500 characters')
-    .optional()
-    .or(z.literal('')),
+    .refine((value) => value.length > 0, {
+      message: 'Address is required',
+    }),
   capacity: z
     .string()
     .optional()
@@ -63,8 +57,6 @@ const warehouseFormSchema = z.object({
     .refine((value) => value === undefined || value === '' || Number(value) >= 0, {
       message: 'Capacity must be zero or greater',
     }),
-  status: z.enum(WAREHOUSE_STATUSES),
-  organizationId: z.string().min(1, 'Organization is required'),
 });
 
 type WarehouseFormValues = z.infer<typeof warehouseFormSchema>;
@@ -99,7 +91,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
   const { mutate: createWarehouse, isPending: isCreating } = useCreateWarehouseMutation();
   const { mutate: updateWarehouse, isPending: isUpdating } = useUpdateWarehouseMutation();
 
-  const { data: organizations = [], isLoading: isLoadingOrganizations } = useGetAllOrganizations(
+  const { data: organizations = [] } = useGetAllOrganizations(
     { page: 0, size: 1000, sort: ['name,asc'] },
     {
       query: {
@@ -124,8 +116,6 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       code: '',
       address: '',
       capacity: '',
-      status: 'ACTIVE',
-      organizationId: '',
     },
   });
 
@@ -140,26 +130,26 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       address: existingWarehouse.address || '',
       capacity:
         typeof existingWarehouse.capacity === 'number' ? String(existingWarehouse.capacity) : '',
-      status: existingWarehouse.status,
-      organizationId: String(existingWarehouse.organizationId),
     });
   }, [existingWarehouse, form]);
 
-  React.useEffect(() => {
-    if (id || selectableOrganizations.length === 0) {
-      return;
-    }
-
+  const resolvedOrganizationId = React.useMemo(() => {
     const selectedOrgId = getSelectedOrganizationId();
 
     if (!selectedOrgId) {
-      return;
+      return undefined;
     }
 
-    const currentOrganizationId = form.getValues('organizationId');
+    const numericSelectedOrgId = Number.parseInt(selectedOrgId, 10);
 
-    if (currentOrganizationId) {
-      return;
+    if (Number.isFinite(numericSelectedOrgId)) {
+      const directMatch = selectableOrganizations.find(
+        (organization) => organization.id === numericSelectedOrgId
+      );
+
+      if (directMatch?.id) {
+        return directMatch.id;
+      }
     }
 
     const matchedOrganization = selectableOrganizations.find(
@@ -167,10 +157,8 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
         String(organization.id) === selectedOrgId || organization.keycloakOrgId === selectedOrgId
     );
 
-    if (matchedOrganization?.id) {
-      form.setValue('organizationId', String(matchedOrganization.id), { shouldValidate: true });
-    }
-  }, [form, id, selectableOrganizations]);
+    return matchedOrganization?.id;
+  }, [selectableOrganizations]);
 
   const setFieldErrorsFromServer = (error: unknown) => {
     const message = extractErrorMessage(error).toLowerCase();
@@ -185,22 +173,35 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
     }
 
     if (message.includes('organization')) {
-      form.setError('organizationId', {
+      form.setError('root', {
         type: 'server',
-        message: 'Please select a valid organization.',
+        message:
+          'Unable to determine your organization. Please re-select your organization and try again.',
       });
     }
   };
 
   const onSubmit = (values: WarehouseFormValues) => {
+    if (!resolvedOrganizationId) {
+      form.setError('root', {
+        type: 'manual',
+        message:
+          'Unable to determine your organization. Please re-select your organization and try again.',
+      });
+
+      return;
+    }
+
+    form.clearErrors('root');
+
     const payload = {
       id,
       name: values.name.trim(),
       code: values.code.trim(),
-      address: values.address?.trim() || undefined,
+      address: values.address.trim(),
       capacity: values.capacity ? Number(values.capacity) : undefined,
-      status: values.status as WarehouseStatus,
-      organizationId: Number(values.organizationId),
+      status: 'ACTIVE' as const,
+      organizationId: resolvedOrganizationId,
     };
 
     if (id) {
@@ -279,65 +280,6 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
 
           <FormField
             control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {WAREHOUSE_STATUSES.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status.charAt(0) + status.slice(1).toLowerCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="organizationId"
-            render={({ field }) => (
-              <FormItem className="md:col-span-2">
-                <FormLabel>Organization</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          isLoadingOrganizations
-                            ? 'Loading organizations...'
-                            : 'Select organization'
-                        }
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {selectableOrganizations.map((organization) => (
-                      <SelectItem key={organization.id} value={String(organization.id)}>
-                        {organization.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Defaults to your currently selected organization when available.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="address"
             render={({ field }) => (
               <FormItem className="md:col-span-2">
@@ -350,6 +292,10 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
             )}
           />
         </div>
+
+        {form.formState.errors.root?.message && (
+          <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
+        )}
 
         <div className="flex flex-wrap gap-2">
           <Button type="submit" disabled={isSubmitting} className="min-w-[140px]">
