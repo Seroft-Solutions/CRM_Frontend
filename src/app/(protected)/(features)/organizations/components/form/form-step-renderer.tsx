@@ -381,11 +381,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                         return option ? option.label : value;
                       }
 
-                      if (fieldConfig.type === 'file') {
-                        const fileStr = value && value.name ? value.name : 'No file selected';
-                        return fileStr;
-                      }
-
                       return String(value);
                     })();
 

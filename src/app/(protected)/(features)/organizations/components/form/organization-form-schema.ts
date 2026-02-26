@@ -19,6 +19,7 @@ export const organizationFormSchemaFields = {
     .string()
     .max(150, { message: 'Please enter no more than 150 characters' })
     .optional(),
+  logo: z.string().max(2048, { message: 'Please enter no more than 2048 characters' }).optional(),
   domain: z
     .string()
     .max(100, { message: 'Please enter no more than 100 characters' })
@@ -51,6 +52,7 @@ export const organizationFieldSchemas = {
     .string()
     .max(150, { message: 'Please enter no more than 150 characters' })
     .optional(),
+  logo: z.string().max(2048, { message: 'Please enter no more than 2048 characters' }).optional(),
   domain: z
     .string()
     .max(100, { message: 'Please enter no more than 100 characters' })
@@ -68,12 +70,9 @@ export const organizationStepSchemas = {
     keycloakOrgId: organizationFieldSchemas.keycloakOrgId,
     name: organizationFieldSchemas.name,
     displayName: organizationFieldSchemas.displayName,
+    logo: organizationFieldSchemas.logo,
     domain: organizationFieldSchemas.domain,
     status: organizationFieldSchemas.status,
-    createdBy: organizationFieldSchemas.createdBy,
-    createdDate: organizationFieldSchemas.createdDate,
-    lastModifiedBy: organizationFieldSchemas.lastModifiedBy,
-    lastModifiedDate: organizationFieldSchemas.lastModifiedDate,
   }),
 
   review: organizationFormSchema,
