@@ -49,3 +49,4 @@ export * from './endpoints/product-category-resource/product-category-resource.g
 export * from './endpoints/import-history-resource/import-history-resource.gen';
 export * from './endpoints/product-images/product-images.gen';
 export * from './endpoints/master-data-import-controller/master-data-import-controller.gen';
+export * from './endpoints/contact-controller/contact-controller.gen';
