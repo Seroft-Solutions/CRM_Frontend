@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
 const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false });
@@ -55,21 +56,31 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
                 </li>
               ))}
             </ul>
-            <div className="pt-8 flex flex-col sm:flex-row gap-4">
+            <div className="pt-8 flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  size="lg"
+                  onClick={handleStartBrewing}
+                  className="btn-sidebar-accent px-8 py-6 text-base font-semibold"
+                >
+                  Start Brewing
+                </Button>
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  onClick={handleStartBrewing}
+                  className="bg-white/10 text-white border border-white/30 hover:bg-white/20 px-8 py-6 text-base font-semibold"
+                >
+                  Create Account
+                </Button>
+              </div>
               <Button
-                size="lg"
-                onClick={handleStartBrewing}
-                className="btn-sidebar-accent px-8 py-6 text-base font-semibold"
-              >
-                Start Brewing
-              </Button>
-              <Button
+                asChild
                 size="lg"
                 variant="ghost"
-                onClick={handleStartBrewing}
-                className="bg-white/10 text-white border border-white/30 hover:bg-white/20 px-8 py-6 text-base font-semibold"
+                className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
               >
-                Create Account
+                <Link href="/contact">Contact Us</Link>
               </Button>
             </div>
 
