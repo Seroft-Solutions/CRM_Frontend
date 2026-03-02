@@ -63,4 +63,4 @@ export * from './endpoints/order-address-detail-resource/order-address-detail-re
 export * from './endpoints/sundry-creditor-resource/sundry-creditor-resource.gen';
 export * from './endpoints/order-shipping-detail-resource/order-shipping-detail-resource.gen';
 export * from './endpoints/discount-resource/discount-resource.gen';
-export * from './endpoints/sundry-creditor-bulk-import-controller/sundry-creditor-bulk-import-controller.gen';
+export * from './endpoints/contact-controller/contact-controller.gen';

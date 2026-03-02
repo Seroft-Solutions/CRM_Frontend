@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -18,6 +20,11 @@ export default function Footer() {
             </div>
             <span className="text-xl font-bold tracking-tight">CRM Cup</span>
           </div>
+          <nav className="flex items-center gap-6">
+            <Link href="/contact" className="text-sm text-white/70 hover:text-white transition-colors">
+              Contact Us
+            </Link>
+          </nav>
           <div className="text-sm text-white/70 text-center md:text-right">
             &copy; {currentYear} CRM Cup. All rights reserved.
           </div>

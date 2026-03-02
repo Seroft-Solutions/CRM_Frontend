@@ -28,6 +28,7 @@ export * from './ChannelTypeDTO';
 export * from './ChannelTypeDTOStatus';
 export * from './CityDTO';
 export * from './CityDTOStatus';
+export * from './ContactRequest';
 export * from './CountAreasParams';
 export * from './CountAreasStatusEquals';
 export * from './CountAreasStatusInItem';
