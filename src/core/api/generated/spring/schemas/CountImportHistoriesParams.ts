@@ -100,5 +100,12 @@ export type CountImportHistoriesParams = {
 'remark.specified'?: boolean;
 'remark.in'?: string[];
 'remark.notIn'?: string[];
+'entityName.contains'?: string;
+'entityName.doesNotContain'?: string;
+'entityName.equals'?: string;
+'entityName.notEquals'?: string;
+'entityName.specified'?: boolean;
+'entityName.in'?: string[];
+'entityName.notIn'?: string[];
 distinct?: boolean;
 };

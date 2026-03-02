@@ -17,6 +17,20 @@ import { Badge } from '@/components/ui/badge';
 import { InlinePermissionGuard } from '@/core/auth';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 
+type QueryHookResult<T> = {
+  data?: T[];
+  isLoading?: boolean;
+  isError?: boolean;
+  isFetching?: boolean;
+};
+
+type QueryHook<T> = (
+  params: Record<string, unknown>,
+  options?: Record<string, unknown>
+) => QueryHookResult<T>;
+
+type OptionRecord = Record<string, unknown>;
+
 interface PaginatedRelationshipComboboxProps {
   value?: number | string | number[] | string[];
   onValueChange: (value: number | string | number[] | string[] | undefined) => void;
@@ -25,9 +39,12 @@ interface PaginatedRelationshipComboboxProps {
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
-  useGetAllHook: (params: any, options?: any) => any;
-  useSearchHook?: (params: any, options?: any) => any;
-  useCountHook?: (params: any, options?: any) => any;
+  useGetAllHook: QueryHook<Record<string, unknown>>;
+  useSearchHook?: QueryHook<Record<string, unknown>>;
+  useCountHook?: (
+    params: Record<string, unknown>,
+    options?: Record<string, unknown>
+  ) => { data?: number };
   entityName: string;
   searchField?: string;
   canCreate?: boolean;
@@ -36,8 +53,8 @@ interface PaginatedRelationshipComboboxProps {
   onEntityCreated?: (entityId: number | string) => void;
   parentFilter?: number | string;
   parentField?: string;
-  customFilters?: Record<string, any>;
-  onDataLoaded?: (data: any[]) => void;
+  customFilters?: Record<string, unknown>;
+  onDataLoaded?: (data: Array<Record<string, unknown>>) => void;
 
   referrerForm?: string;
   referrerSessionId?: string;
@@ -53,8 +70,6 @@ export function PaginatedRelationshipCombobox({
   disabled = false,
   className,
   useGetAllHook,
-  useSearchHook,
-  useCountHook,
   entityName,
   searchField = 'name',
   canCreate = false,
@@ -69,11 +84,12 @@ export function PaginatedRelationshipCombobox({
   referrerSessionId,
   referrerField,
 }: PaginatedRelationshipComboboxProps) {
+  const getOptionId = (option: OptionRecord) => (option as { id?: number | string }).id;
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [deferredSearchQuery, setDeferredSearchQuery] = React.useState('');
   const [currentPage, setCurrentPage] = React.useState(0);
-  const [allLoadedData, setAllLoadedData] = React.useState<any[]>([]);
+  const [allLoadedData, setAllLoadedData] = React.useState<OptionRecord[]>([]);
   const [hasMorePages, setHasMorePages] = React.useState(true);
   const pageSize = 20;
 
@@ -83,18 +99,20 @@ export function PaginatedRelationshipCombobox({
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
     }, 300);
+
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   const isQueryEnabled = React.useMemo(() => {
     if (disabled) return false;
     if (parentField && !parentFilter) return false;
+
     return true;
   }, [disabled, parentField, parentFilter]);
 
   const buildFilterParams = React.useCallback(
     (pageParam: number, searchTerm: string) => {
-      const params: any = {
+      const params: Record<string, unknown> = {
         page: pageParam,
         size: pageSize,
         sort: [`${displayField},asc`],
@@ -152,8 +170,17 @@ export function PaginatedRelationshipCombobox({
         setAllLoadedData(dataArray);
       } else {
         setAllLoadedData((prev) => {
-          const existingIds = new Set(prev.map((item) => item.id));
-          const newItems = dataArray.filter((item: any) => !existingIds.has(item.id));
+          const existingIds = new Set(
+            prev
+              .map((item) => getOptionId(item))
+              .filter((id): id is number | string => id !== undefined)
+          );
+          const newItems = dataArray.filter((item) => {
+            const optionId = getOptionId(item as OptionRecord);
+
+            return optionId !== undefined && !existingIds.has(optionId);
+          });
+
           return [...prev, ...newItems];
         });
       }
@@ -187,6 +214,7 @@ export function PaginatedRelationshipCombobox({
 
   const handleSingleSelect = (optionId: number | string) => {
     const newValue = value === optionId ? undefined : optionId;
+
     onValueChange(newValue);
     setOpen(false);
   };
@@ -203,6 +231,7 @@ export function PaginatedRelationshipCombobox({
   const removeItem = (optionId: number | string) => {
     if (Array.isArray(value)) {
       const newValues = value.filter((id) => id !== optionId);
+
       onValueChange(newValues.length > 0 ? newValues : undefined);
     }
   };
@@ -212,20 +241,28 @@ export function PaginatedRelationshipCombobox({
       if (!Array.isArray(value) || value.length === 0) {
         return placeholder;
       }
+
       return `${value.length} item${value.length === 1 ? '' : 's'} selected`;
     } else {
       if (typeof value !== 'number' && typeof value !== 'string') {
         return placeholder;
       }
-      const selectedOption = allLoadedData.find((option: any) => option.id === value);
+      const selectedOption = allLoadedData.find((option) => getOptionId(option) === value);
+
       return selectedOption ? selectedOption[displayField] : placeholder;
     }
   };
 
   const getSelectedOptions = () => {
     if (!multiple || !Array.isArray(value)) return [];
-    return allLoadedData.filter((option: any) => value.includes(option.id));
+
+    return allLoadedData.filter((option) => {
+      const optionId = getOptionId(option);
+
+      return optionId !== undefined && value.includes(optionId);
+    });
   };
+
   const handleCreateNew = () => {
     if (createEntityPath && referrerForm && referrerSessionId && referrerField) {
       navigateWithDraftCheck({
@@ -247,8 +284,10 @@ export function PaginatedRelationshipCombobox({
 
       if (pathParts.length > 0) {
         const lastPart = pathParts[pathParts.length - 1];
+
         if (lastPart === 'new') {
           const originPart = pathParts[pathParts.length - 3];
+
           if (originPart) {
             sourceEntityType = originPart.replace(/-/g, '');
             originEntityName = originPart
@@ -257,6 +296,7 @@ export function PaginatedRelationshipCombobox({
           }
         } else {
           const originPart = pathParts[pathParts.length - 2];
+
           if (originPart) {
             sourceEntityType = originPart.replace(/-/g, '');
             originEntityName = originPart
@@ -294,6 +334,7 @@ export function PaginatedRelationshipCombobox({
 
       if (onEntityCreated) {
         const saveFormEvent = new CustomEvent('saveFormState');
+
         window.dispatchEvent(saveFormEvent);
       }
 
@@ -312,8 +353,10 @@ export function PaginatedRelationshipCombobox({
     if (newEntityId && relationshipInfo && onEntityCreated) {
       try {
         const info = JSON.parse(relationshipInfo);
+
         if (info.entityName === entityName) {
           const entityId = isNaN(Number(newEntityId)) ? newEntityId : parseInt(newEntityId);
+
           onEntityCreated(entityId);
           sessionStorage.removeItem('newlyCreatedEntityId');
           sessionStorage.removeItem('relationshipFieldInfo');
@@ -329,6 +372,7 @@ export function PaginatedRelationshipCombobox({
     if (parentField && !parentFilter) {
       return `Select ${parentField} first`;
     }
+
     return placeholder;
   };
 
@@ -393,17 +437,19 @@ export function PaginatedRelationshipCombobox({
 
                   {isQueryEnabled && allLoadedData.length > 0 && (
                     <CommandGroup>
-                      {allLoadedData.map((option: any, index: number) => {
-                        if (!option || !option.id || !option[displayField]) {
+                      {allLoadedData.map((option, index: number) => {
+                        const optionId = getOptionId(option);
+
+                        if (!option || !optionId || !option[displayField]) {
                           return null;
                         }
 
                         const isSelected = multiple
-                          ? Array.isArray(value) && value.includes(option.id)
-                          : value === option.id;
+                          ? Array.isArray(value) && value.includes(optionId)
+                          : value === optionId;
 
-                        const uniqueKey = `${entityName.toLowerCase()}-item-${option.id}-${index}`;
-                        const uniqueValue = `item-${option.id}`;
+                        const uniqueKey = `${entityName.toLowerCase()}-item-${optionId}-${index}`;
+                        const uniqueValue = `item-${optionId}`;
 
                         return (
                           <CommandItem
@@ -411,9 +457,9 @@ export function PaginatedRelationshipCombobox({
                             value={uniqueValue}
                             onSelect={() => {
                               if (multiple) {
-                                handleMultipleSelect(option.id);
+                                handleMultipleSelect(optionId);
                               } else {
-                                handleSingleSelect(option.id);
+                                handleSingleSelect(optionId);
                               }
                             }}
                           >
@@ -473,21 +519,29 @@ export function PaginatedRelationshipCombobox({
 
       {multiple && Array.isArray(value) && value.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
-          {getSelectedOptions().map((option: any) => (
-            <Badge key={option.id} variant="secondary" className="gap-1">
-              {option[displayField]}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto p-0 text-muted-foreground hover:text-foreground"
-                onClick={() => removeItem(option.id)}
-                type="button"
-              >
-                <X className="h-3 w-3" />
-                <span className="sr-only">Remove</span>
-              </Button>
-            </Badge>
-          ))}
+          {getSelectedOptions().map((option) => {
+            const optionId = getOptionId(option);
+
+            if (!optionId) {
+              return null;
+            }
+
+            return (
+              <Badge key={optionId} variant="secondary" className="gap-1">
+                {option[displayField]}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto p-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => removeItem(optionId)}
+                  type="button"
+                >
+                  <X className="h-3 w-3" />
+                  <span className="sr-only">Remove</span>
+                </Button>
+              </Badge>
+            );
+          })}
         </div>
       )}
     </div>

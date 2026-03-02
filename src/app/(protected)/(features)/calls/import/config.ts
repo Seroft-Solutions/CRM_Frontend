@@ -5,7 +5,7 @@ export const callImportConfig = {
     'If a Customer or Product does not exist, it will be automatically created.',
     'For new customers, Zip Code is required and must be a valid 6-digit area pincode in the system.',
     'Zip Code validation: Must be exactly 6 digits and match an active area in the system.',
-    'All other fields are required except External ID, Customer phone number, Product Code, Sub Call Type, and Remark which are optional. Required fields must match existing master data exactly (no new masters created during import)',
+    'All other fields are required except External ID, Customer phone number, Barcode Text, Sub Call Type, and Remark which are optional. Required fields must match existing master data exactly (no new masters created during import)',
     'Remark field is optional and can contain additional notes about the call (maximum 2000 characters)',
     'Partial import: Only valid rows are added; invalid rows are failed, duplicates are skipped',
     'Failed rows can be edited inline and saved individually after validation',
@@ -48,9 +48,9 @@ export const callImportConfig = {
     },
     {
       column: 'F',
-      header: 'Product Code',
+      header: 'Barcode Text',
       description:
-        'Product code (Optional) - Stored when a new product is created via the import.',
+        'Barcode Text (Optional) - Stored when a new product is created via the import.',
       example: 'PRD-001',
     },
     {

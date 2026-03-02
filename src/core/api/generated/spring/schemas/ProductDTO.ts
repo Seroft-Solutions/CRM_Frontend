@@ -6,9 +6,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { ProductDTOStatus } from './ProductDTOStatus';
+import type { SystemConfigDTO } from './SystemConfigDTO';
 import type { ProductCategoryDTO } from './ProductCategoryDTO';
 import type { ProductSubCategoryDTO } from './ProductSubCategoryDTO';
 import type { ProductImageDTO } from './ProductImageDTO';
+import type { ProductVariantDTO } from './ProductVariantDTO';
 
 export interface ProductDTO {
   id?: number;
@@ -22,7 +24,12 @@ export interface ProductDTO {
    * @maxLength 20
    * @pattern ^[A-Za-z0-9_-]+$
    */
-  code: string;
+  barcodeText: string;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  articleNumber?: string;
   /**
    * @minLength 0
    * @maxLength 100
@@ -53,6 +60,7 @@ export interface ProductDTO {
    * @maxLength 1000
    */
   remark?: string;
+  sundryCreditorProduct?: boolean;
   status: ProductDTOStatus;
   /**
    * @minLength 0
@@ -66,7 +74,9 @@ export interface ProductDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
+  variantConfig?: SystemConfigDTO;
   category?: ProductCategoryDTO;
   subCategory?: ProductSubCategoryDTO;
   images?: ProductImageDTO[];
+  variants?: ProductVariantDTO[];
 }

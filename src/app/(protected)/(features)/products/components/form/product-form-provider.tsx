@@ -3,7 +3,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { FormContextValue } from './form-types';
 import { productFormConfig } from './product-form-config';
@@ -16,7 +15,7 @@ import { DraftRestorationDialog, SaveDraftDialog } from '@/components/form-draft
 const FormContext = createContext<FormContextValue | null>(null);
 
 export interface ProductFormSubmissionPayload {
-  entity: Record<string, any>;
+  entity: Record<string, unknown>;
   attachments: Record<string, File | null | undefined>;
 }
 
@@ -24,7 +23,7 @@ interface ProductFormProviderProps {
   children: React.ReactNode;
   id?: number;
   onSuccess?: (data: ProductFormSubmissionPayload) => void | Promise<void>;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 export function ProductFormProvider({
@@ -33,7 +32,6 @@ export function ProductFormProvider({
   onSuccess,
   onError,
 }: ProductFormProviderProps) {
-  const router = useRouter();
   const isNew = !id;
   const config = productFormConfig;
   const fileFieldNames = useMemo(
@@ -46,15 +44,14 @@ export function ProductFormProvider({
   const urlParams = useNavigationFromUrl();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [confirmSubmission, setConfirmSubmission] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
+  const [, setIsRestoring] = useState(false);
   const [isAutoPopulating, setIsAutoPopulating] = useState(false);
   const [restorationAttempted, setRestorationAttempted] = useState(false);
   const [draftRestorationInProgress, setDraftRestorationInProgress] = useState(false);
 
-  const [allFormData, setAllFormData] = useState<Record<string, any>>({});
+  const [allFormData, setAllFormData] = useState<Record<string, unknown>>({});
 
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [showRestorationDialog, setShowRestorationDialog] = useState(false);
@@ -66,10 +63,8 @@ export function ProductFormProvider({
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
     saveDraft,
-    loadDraft,
     restoreDraft,
     deleteDraft,
-    getLatestDraft,
     isSaving: isSavingDraft,
     isDeleting: isDeletingDraft,
   } = useEntityDrafts({
@@ -84,25 +79,21 @@ export function ProductFormProvider({
     }
 
     const existingSession = sessionStorage.getItem(`${config.entity}_FormSession`);
+
     if (existingSession && isNew) {
       return existingSession;
     }
     const newSessionId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     if (isNew) {
       sessionStorage.setItem(`${config.entity}_FormSession`, newSessionId);
     }
+
     return newSessionId;
   });
 
-  const form = useForm<Record<string, any>>({
-    resolver: zodResolver(productFormSchema),
-    mode: config.validation.mode,
-    revalidateMode: config.validation.revalidateMode,
-    defaultValues: getDefaultValues(),
-  });
-
-  function getDefaultValues() {
-    const defaults: Record<string, any> = {};
+  const defaultValues = useMemo(() => {
+    const defaults: Record<string, unknown> = {};
 
     config.fields.forEach((field) => {
       switch (field.type) {
@@ -127,21 +118,34 @@ export function ProductFormProvider({
       defaults[rel.name] = rel.multiple ? [] : undefined;
     });
 
+    if (Object.prototype.hasOwnProperty.call(defaults, 'status')) {
+      defaults.status = 'ACTIVE';
+    }
+
     return defaults;
-  }
+  }, [config.fields, config.relationships]);
+
+  const form = useForm<Record<string, unknown>>({
+    resolver: zodResolver(productFormSchema),
+    mode: config.validation.mode,
+    revalidateMode: config.validation.revalidateMode,
+    defaultValues,
+  });
 
   const sanitizeFormValues = useCallback(
-    (values: Record<string, any>) => {
+    (values: Record<string, unknown>) => {
       if (!fileFieldNames.length) {
         return { ...values };
       }
 
       const sanitized = { ...values };
+
       fileFieldNames.forEach((fieldName) => {
         if (fieldName in sanitized) {
           delete sanitized[fieldName];
         }
       });
+
       return sanitized;
     },
     [fileFieldNames]
@@ -163,6 +167,7 @@ export function ProductFormProvider({
       };
 
       const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
+
       localStorage.setItem(storageKey, JSON.stringify(formState));
     },
     [form, currentStep, isNew, formSessionId, config, sanitizeFormValues]
@@ -175,6 +180,7 @@ export function ProductFormProvider({
       if (typeof window === 'undefined') return false;
 
       const currentSessionId = sessionStorage.getItem(`${config.entity}_FormSession`);
+
       if (!currentSessionId || currentSessionId !== formSessionId) {
         return false;
       }
@@ -196,8 +202,9 @@ export function ProductFormProvider({
 
             Object.keys(savedState.data).forEach((key) => {
               const value = savedState.data[key];
+
               if (value !== undefined && value !== null) {
-                form.setValue(key as any, value);
+                form.setValue(key as keyof Record<string, unknown>, value);
               }
             });
 
@@ -218,6 +225,7 @@ export function ProductFormProvider({
           localStorage.removeItem(storageKey);
         }
       }
+
       return false;
     },
     [form, isNew, formSessionId, config]
@@ -225,8 +233,10 @@ export function ProductFormProvider({
 
   const clearOldFormStates = useCallback(() => {
     const keysToRemove: string[] = [];
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
+
       if (
         key?.startsWith(config.behavior.persistence.storagePrefix) &&
         !key.endsWith(formSessionId)
@@ -240,19 +250,25 @@ export function ProductFormProvider({
   const handleEntityCreated = useCallback(
     (entityId: number, relationshipName: string, skipValidation = false) => {
       const relationshipConfig = config.relationships.find((rel) => rel.name === relationshipName);
+
       if (!relationshipConfig) return;
 
-      const currentValue = form.getValues(relationshipName as any);
+      const currentValue = form.getValues(relationshipName as keyof Record<string, unknown>);
 
       if (relationshipConfig.multiple) {
         const newValue = Array.isArray(currentValue) ? [...currentValue, entityId] : [entityId];
-        form.setValue(relationshipName as any, newValue, { shouldValidate: !skipValidation });
+
+        form.setValue(relationshipName as keyof Record<string, unknown>, newValue, {
+          shouldValidate: !skipValidation,
+        });
       } else {
-        form.setValue(relationshipName as any, entityId, { shouldValidate: !skipValidation });
+        form.setValue(relationshipName as keyof Record<string, unknown>, entityId, {
+          shouldValidate: !skipValidation,
+        });
       }
 
       if (!skipValidation && !isAutoPopulating) {
-        form.trigger(relationshipName as any);
+        form.trigger(relationshipName as keyof Record<string, unknown>);
       }
     },
     [form, config, isAutoPopulating]
@@ -266,10 +282,12 @@ export function ProductFormProvider({
 
       const targetStep = stepIndex ?? currentStep;
       const stepConfig = config.steps[targetStep];
+
       if (!stepConfig) return true;
 
       const fieldsToValidate = [...stepConfig.fields, ...stepConfig.relationships];
       const result = await form.trigger(fieldsToValidate);
+
       return result;
     },
     [form, currentStep, config, isAutoPopulating]
@@ -277,65 +295,207 @@ export function ProductFormProvider({
 
   const nextStep = useCallback(async (): Promise<boolean> => {
     const currentValues = form.getValues();
+
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
     if (!config.behavior.navigation.validateOnNext) {
       if (currentStep < config.steps.length - 1) {
         setCurrentStep(currentStep + 1);
+
         return true;
       }
+
       return false;
     }
 
     const isValid = await validateStep();
+
     if (isValid && currentStep < config.steps.length - 1) {
       setCurrentStep(currentStep + 1);
+
       return true;
     }
+
     return false;
   }, [currentStep, config, validateStep, form]);
 
   const prevStep = useCallback(() => {
     const currentValues = form.getValues();
+
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
-      if (currentStep === config.steps.length - 1) {
-        setConfirmSubmission(false);
-      }
     }
-  }, [currentStep, config, form]);
+  }, [currentStep, form]);
 
   const goToStep = useCallback(
     async (stepIndex: number): Promise<boolean> => {
       if (stepIndex < 0 || stepIndex >= config.steps.length) return false;
 
       const currentValues = form.getValues();
+
       setAllFormData((prev) => ({ ...prev, ...currentValues }));
 
       if (config.behavior.navigation.allowStepSkipping) {
         setCurrentStep(stepIndex);
+
         return true;
       }
 
       for (let i = 0; i < stepIndex; i++) {
         const isValid = await validateStep(i);
+
         if (!isValid) return false;
       }
 
       setCurrentStep(stepIndex);
+
       return true;
     },
     [config, validateStep, form]
   );
+
+  const transformFormDataForSubmission = useCallback(
+    (data: Record<string, unknown>) => {
+      const entityToSave: Record<string, unknown> = {};
+      const attachmentData: Record<string, File | null | undefined> = {};
+
+      config.fields.forEach((fieldConfig) => {
+        const value = data[fieldConfig.name];
+
+        if (fieldConfig.type === 'file') {
+          attachmentData[fieldConfig.name] =
+            typeof File !== 'undefined' && value instanceof File ? value : (value ?? null);
+
+          return;
+        }
+
+        if (fieldConfig.type === 'number') {
+          if (value !== '' && value != null && !isNaN(Number(value))) {
+            entityToSave[fieldConfig.name] = Number(value);
+          } else if (fieldConfig.required) {
+            entityToSave[fieldConfig.name] = null;
+          }
+        } else if (fieldConfig.type === 'enum') {
+          if (value === '__none__' || value === '' || value == null) {
+            if (fieldConfig.required) {
+              entityToSave[fieldConfig.name] = null;
+            }
+          } else {
+            entityToSave[fieldConfig.name] = value;
+          }
+        } else if (fieldConfig.type === 'date') {
+          if (value && value instanceof Date) {
+            entityToSave[fieldConfig.name] = value.toISOString();
+          } else if (value && typeof value === 'string') {
+            entityToSave[fieldConfig.name] = new Date(value).toISOString();
+          } else if (fieldConfig.required) {
+            entityToSave[fieldConfig.name] = null;
+          }
+        } else if (fieldConfig.type === 'boolean') {
+          entityToSave[fieldConfig.name] = Boolean(value);
+        } else {
+          if (value !== '' && value != null) {
+            entityToSave[fieldConfig.name] = String(value);
+          } else if (fieldConfig.required) {
+            entityToSave[fieldConfig.name] = null;
+          }
+        }
+      });
+
+      // Backward compatibility for older saved drafts/state keys.
+      if (!entityToSave.barcodeText && typeof data.code === 'string' && data.code.trim() !== '') {
+        entityToSave.barcodeText = data.code.trim();
+      }
+
+      if (
+        !entityToSave.articleNumber &&
+        typeof data.articalNumber === 'string' &&
+        data.articalNumber.trim() !== ''
+      ) {
+        entityToSave.articleNumber = data.articalNumber.trim();
+      }
+
+      config.relationships.forEach((relConfig) => {
+        const value = data[relConfig.name];
+
+        if (relConfig.multiple) {
+          if (value && Array.isArray(value) && value.length > 0) {
+            entityToSave[relConfig.name] = value.map((id) => ({ [relConfig.primaryKey]: id }));
+          } else {
+            entityToSave[relConfig.name] = value || [];
+          }
+        } else {
+          if (value) {
+            entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
+          } else {
+            entityToSave[relConfig.name] = null;
+          }
+        }
+      });
+
+      // Handle special fields that are not in config but should be included
+      // Variants are managed by ProductVariantManager and stored in form data
+      if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
+        entityToSave.variants = data.variants;
+      }
+
+      if (typeof data.status === 'string' && data.status.trim() !== '') {
+        entityToSave.status = data.status;
+      } else {
+        entityToSave.status = 'ACTIVE';
+      }
+
+      Object.keys(entityToSave).forEach((key) => {
+        if (entityToSave[key] === undefined) {
+          delete entityToSave[key];
+        }
+      });
+
+      return { entityToSave, attachmentData };
+    },
+    [config.fields, config.relationships]
+  );
+
+  const cleanupFormState = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
+
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(`${config.entity}_FormSession`);
+
+    const keysToRemove: string[] = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+
+      if (key?.startsWith(config.behavior.persistence.storagePrefix)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+    form.reset();
+    setCurrentStep(0);
+  }, [formSessionId, config, form]);
+
+  const resetForm = useCallback(() => {
+    form.reset(defaultValues);
+    setCurrentStep(0);
+  }, [form, defaultValues]);
 
   const submitForm = useCallback(async () => {
     if (isAutoPopulating) {
       return;
     }
 
-    if (currentStep !== config.steps.length - 1) {
+    // Skip step validation for single-page forms
+    if (
+      config.behavior?.rendering?.useGeneratedSteps !== false &&
+      currentStep !== config.steps.length - 1
+    ) {
       return;
     }
 
@@ -366,107 +526,16 @@ export function ProductFormProvider({
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentStep, config, form, onSuccess, onError, isAutoPopulating]);
-
-  function transformFormDataForSubmission(data: Record<string, any>) {
-    const entityToSave: Record<string, any> = {};
-    const attachmentData: Record<string, File | null | undefined> = {};
-
-    config.fields.forEach((fieldConfig) => {
-      const value = data[fieldConfig.name];
-
-      if (fieldConfig.type === 'file') {
-        attachmentData[fieldConfig.name] =
-          typeof File !== 'undefined' && value instanceof File ? value : (value ?? null);
-        return;
-      }
-
-      if (fieldConfig.type === 'number') {
-        if (value !== '' && value != null && !isNaN(Number(value))) {
-          entityToSave[fieldConfig.name] = Number(value);
-        } else if (fieldConfig.required) {
-          entityToSave[fieldConfig.name] = null;
-        }
-      } else if (fieldConfig.type === 'enum') {
-        if (value === '__none__' || value === '' || value == null) {
-          if (fieldConfig.required) {
-            entityToSave[fieldConfig.name] = null;
-          }
-        } else {
-          entityToSave[fieldConfig.name] = value;
-        }
-      } else if (fieldConfig.type === 'date') {
-        if (value && value instanceof Date) {
-          entityToSave[fieldConfig.name] = value.toISOString();
-        } else if (value && typeof value === 'string') {
-          entityToSave[fieldConfig.name] = new Date(value).toISOString();
-        } else if (fieldConfig.required) {
-          entityToSave[fieldConfig.name] = null;
-        }
-      } else if (fieldConfig.type === 'boolean') {
-        entityToSave[fieldConfig.name] = Boolean(value);
-      } else {
-        if (value !== '' && value != null) {
-          entityToSave[fieldConfig.name] = String(value);
-        } else if (fieldConfig.required) {
-          entityToSave[fieldConfig.name] = null;
-        }
-      }
-    });
-
-    config.relationships.forEach((relConfig) => {
-      const value = data[relConfig.name];
-
-      if (relConfig.multiple) {
-        if (value && Array.isArray(value) && value.length > 0) {
-          entityToSave[relConfig.name] = value.map((id) => ({ [relConfig.primaryKey]: id }));
-        } else {
-          entityToSave[relConfig.name] = value || [];
-        }
-      } else {
-        if (value) {
-          entityToSave[relConfig.name] = { [relConfig.primaryKey]: value };
-        } else {
-          entityToSave[relConfig.name] = null;
-        }
-      }
-    });
-
-    Object.keys(entityToSave).forEach((key) => {
-      if (entityToSave[key] === undefined) {
-        delete entityToSave[key];
-      }
-    });
-
-    return { entityToSave, attachmentData };
-  }
-
-  const cleanupFormState = useCallback(() => {
-    if (typeof window === 'undefined') return;
-
-    const storageKey = `${config.behavior.persistence.storagePrefix}${formSessionId}`;
-    localStorage.removeItem(storageKey);
-    sessionStorage.removeItem(`${config.entity}_FormSession`);
-
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(config.behavior.persistence.storagePrefix)) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
-
-    form.reset();
-    setCurrentStep(0);
-    setConfirmSubmission(false);
-  }, [formSessionId, config, form]);
-
-  const resetForm = useCallback(() => {
-    form.reset(getDefaultValues());
-    setCurrentStep(0);
-    setConfirmSubmission(false);
-  }, [form]);
+  }, [
+    currentStep,
+    config,
+    form,
+    onSuccess,
+    onError,
+    isAutoPopulating,
+    cleanupFormState,
+    transformFormDataForSubmission,
+  ]);
 
   useEffect(() => {
     if (!restorationAttempted && isNew) {
@@ -474,6 +543,7 @@ export function ProductFormProvider({
       clearOldFormStates();
 
       const createdEntityInfo = localStorage.getItem('createdEntityInfo');
+
       if (createdEntityInfo) {
         try {
           const info = JSON.parse(createdEntityInfo);
@@ -511,6 +581,7 @@ export function ProductFormProvider({
 
           restoreFormState();
         }
+
         return;
       }
 
@@ -548,6 +619,7 @@ export function ProductFormProvider({
 
           restoreFormState();
         }
+
         return;
       }
 
@@ -573,6 +645,8 @@ export function ProductFormProvider({
     handleEntityCreated,
     clearOldFormStates,
     config,
+    draftRestorationInProgress,
+    formSessionId,
   ]);
 
   const getNavigationProps = useCallback(
@@ -599,6 +673,7 @@ export function ProductFormProvider({
 
   useEffect(() => {
     const currentValues = form.getValues();
+
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
   }, [form]);
 
@@ -621,6 +696,7 @@ export function ProductFormProvider({
     } catch (error) {
       console.error('Failed to save draft:', error);
       toast.error('Failed to save draft');
+
       return false;
     }
   }, [
@@ -641,10 +717,12 @@ export function ProductFormProvider({
 
       try {
         const draftData = await restoreDraft(draftId);
+
         if (!draftData) {
           if (!suppressToast) {
             toast.error('Draft not found or has been deleted');
           }
+
           return false;
         }
 
@@ -664,12 +742,14 @@ export function ProductFormProvider({
         if (!suppressToast) {
           toast.success('Draft restored successfully');
         }
+
         return true;
       } catch (error) {
         console.error('Failed to restore draft:', error);
         if (!suppressToast) {
           toast.error('Failed to restore draft');
         }
+
         return false;
       }
     },
@@ -682,15 +762,18 @@ export function ProductFormProvider({
 
       try {
         const success = await deleteDraft(draftId);
+
         if (success) {
           toast.success('Draft deleted successfully');
         } else {
           toast.error('Failed to delete draft');
         }
+
         return success;
       } catch (error) {
         console.error('Failed to delete draft:', error);
         toast.error('Failed to delete draft');
+
         return false;
       }
     },
@@ -721,10 +804,12 @@ export function ProductFormProvider({
       !draftRestorationInProgress
     ) {
       const draftToRestore = sessionStorage.getItem('draftToRestore');
+
       if (draftToRestore) {
         setDraftRestorationInProgress(true);
         try {
           const restorationData = JSON.parse(draftToRestore);
+
           if (restorationData.entityType === config.entity) {
             handleLoadDraft(restorationData.draftId, true).then((success) => {
               if (success) {
@@ -735,6 +820,7 @@ export function ProductFormProvider({
               }
               setDraftRestorationInProgress(false);
             });
+
             return;
           }
         } catch (error) {
@@ -846,10 +932,12 @@ export function ProductFormProvider({
             entityType={config.entity}
             onSaveDraft={async () => {
               const success = await handleSaveDraft();
+
               if (success && pendingNavigation) {
                 pendingNavigation();
                 setPendingNavigation(null);
               }
+
               return success;
             }}
             onDiscardChanges={() => {
@@ -884,23 +972,28 @@ export function ProductFormProvider({
 
 export function useEntityForm(): FormContextValue {
   const context = useContext(FormContext);
+
   if (!context) {
     throw new Error('useEntityForm must be used within a ProductFormProvider');
   }
+
   return context;
 }
 
 export function useFormConfig() {
   const { config } = useEntityForm();
+
   return config;
 }
 
 export function useFormState() {
   const { state } = useEntityForm();
+
   return state;
 }
 
 export function useFormActions() {
   const { actions } = useEntityForm();
+
   return actions;
 }

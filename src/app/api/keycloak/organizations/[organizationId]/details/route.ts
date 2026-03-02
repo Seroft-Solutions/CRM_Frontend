@@ -5,8 +5,8 @@ import { getAdminRealmsRealmOrganizationsOrgId } from '@/core/api/generated/keyc
 import { auth } from '@/auth';
 
 export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ organizationId: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ organizationId: string }> }
 ) {
     try {
         const session = await auth();

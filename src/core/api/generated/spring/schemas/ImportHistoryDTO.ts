@@ -20,4 +20,7 @@ export interface ImportHistoryDTO {
   callStatus?: string;
   issue?: string;
   remark?: string;
+  entityName?: string;
+  variantSku?: string;
+  variantAttributes?: string;
 }

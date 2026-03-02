@@ -146,9 +146,12 @@ export function CustomerTableRow({
               }
 
               if (column.id === 'completeAddress') {
+                const addresses = customer.addresses || [];
+                const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+                const value = defaultAddr?.completeAddress;
                 return (
                   <div className="whitespace-normal min-w-[200px] max-w-[300px]">
-                    {field?.toString() || '-'}
+                    {value?.toString() || '-'}
                   </div>
                 );
               }
@@ -178,36 +181,29 @@ export function CustomerTableRow({
                 );
               }
 
+              if (column.id === 'defaultAddress') {
+                const addresses = customer.addresses || [];
+                const defaultAddr = addresses.find((a) => a.isDefault) || addresses[0];
+                if (!defaultAddr) return '-';
+
+                const area = defaultAddr.area;
+                if (area) {
+                  const city = (area as any).city?.name || (area as any).cityName;
+                  const state = (area as any).city?.district?.state?.name || (area as any).stateName;
+                  const pincode = area.pincode;
+
+                  const parts = [];
+                  if (city) parts.push(city);
+                  if (state) parts.push(state);
+                  const cityState = parts.join(', ');
+                  return cityState ? `${cityState}${pincode ? ` (${pincode})` : ''}` : pincode || '-';
+                }
+                return '-';
+              }
+
               return field?.toString() || '';
             })()
             : (() => {
-              if (column.id === 'area') {
-                const cellKey = `${customer.id}-area`;
-                return (
-                  <RelationshipCell
-                    entityId={customer.id || 0}
-                    relationshipName="area"
-                    currentValue={customer.area}
-                    options={
-                      relationshipConfigs.find((config) => config.name === 'area')?.options || []
-                    }
-                    displayField="name"
-                    onUpdate={(entityId, relationshipName, newValue) =>
-                      onRelationshipUpdate
-                        ? onRelationshipUpdate(entityId, relationshipName, newValue, false)
-                        : Promise.resolve()
-                    }
-                    isEditable={
-                      relationshipConfigs.find((config) => config.name === 'area')?.isEditable ||
-                      false
-                    }
-                    isLoading={updatingCells.has(cellKey)}
-                    className="min-w-[150px]"
-                    relatedEntityRoute="areas"
-                    showNavigationIcon={true}
-                  />
-                );
-              }
 
               return null;
             })()}

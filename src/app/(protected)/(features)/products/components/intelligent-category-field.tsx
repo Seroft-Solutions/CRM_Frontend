@@ -27,14 +27,12 @@ interface CategoryOption {
 interface IntelligentCategoryFieldProps {
   value: CategoryValue;
   onChange: (value: CategoryValue) => void;
-  onError?: (error: string) => void;
   placeholder?: string;
 }
 
 export function IntelligentCategoryField({
   value,
   onChange,
-  onError,
   placeholder = 'Search for product category or subcategory...',
 }: IntelligentCategoryFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -110,6 +108,7 @@ export function IntelligentCategoryField({
 
   React.useEffect(() => {
     const timer = setTimeout(() => {}, 300);
+
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -119,6 +118,7 @@ export function IntelligentCategoryField({
 
       if (value.category && categories) {
         const category = categories.find((c) => c.id === value.category);
+
         if (category) {
           path.push({
             id: category.id!,
@@ -132,9 +132,11 @@ export function IntelligentCategoryField({
 
       if (value.subCategory && subCategories) {
         const subCategory = subCategories.find((sc) => sc.id === value.subCategory);
+
         if (subCategory) {
           const categoryName =
             path.find((p) => p.type === 'category')?.name || subCategory.category?.name || '';
+
           path.push({
             id: subCategory.id!,
             name: subCategory.name,
@@ -171,6 +173,7 @@ export function IntelligentCategoryField({
 
     subCategoryResults?.forEach((subCategory) => {
       const categoryName = subCategory.category?.name || 'Unknown Category';
+
       results.push({
         id: subCategory.id!,
         name: subCategory.name,
@@ -183,9 +186,11 @@ export function IntelligentCategoryField({
 
     return results.sort((a, b) => {
       const typeOrder = { category: 0, subcategory: 1 };
+
       if (typeOrder[a.type] !== typeOrder[b.type]) {
         return typeOrder[a.type] - typeOrder[b.type];
       }
+
       return a.name.localeCompare(b.name);
     });
   };
@@ -261,7 +266,7 @@ export function IntelligentCategoryField({
       {/* Selected Path Display */}
       {selectedPath.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {selectedPath.map((item, index) => (
+          {selectedPath.map((item) => (
             <Badge
               key={`${item.type}-${item.id}`}
               variant="secondary"
@@ -330,6 +335,7 @@ export function IntelligentCategoryField({
               e.stopPropagation();
               const container = e.currentTarget;
               const delta = e.deltaY;
+
               container.scrollTop += delta;
             }}
           >
@@ -371,7 +377,7 @@ export function IntelligentCategoryField({
 
                 {getSearchResults().length === 0 && (
                   <div className="p-3 text-sm text-muted-foreground text-center">
-                    No categories found matching "{searchQuery}"
+                    No categories found matching &quot;{searchQuery}&quot;
                   </div>
                 )}
               </div>

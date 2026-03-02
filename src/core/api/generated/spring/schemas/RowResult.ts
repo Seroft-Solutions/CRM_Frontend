@@ -9,7 +9,7 @@ import type { RowResultStatus } from './RowResultStatus';
 
 export interface RowResult {
   rowNumber?: number;
-  data?: string[];
+  rowData?: string[];
   status?: RowResultStatus;
   message?: string;
 }

@@ -1,0 +1,90 @@
+{
+  "annotations": {
+    "changelogDate": "20251212141621"
+  },
+  "applications": ["crmBackend"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength", "pattern"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "1",
+      "fieldValidateRulesPattern": "^[a-z][a-z0-9_]*$"
+    },
+    {
+      "fieldName": "label",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "attributeType",
+      "fieldType": "SystemConfigAttributeType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "ENUM,STRING,NUMBER,BOOLEAN"
+    },
+    {
+      "fieldName": "isRequired",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "sortOrder",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required", "min"],
+      "fieldValidateRulesMin": "0"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "DRAFT,ACTIVE,INACTIVE,ARCHIVED"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "lastModifiedBy",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "SystemConfigAttribute",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "systemConfigAttributeOption",
+      "otherEntityRelationshipName": "attribute",
+      "relationshipName": "options",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityField": "configKey",
+      "otherEntityName": "systemConfig",
+      "otherEntityRelationshipName": "attributes",
+      "relationshipName": "systemConfig",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "elasticsearch",
+  "service": "serviceImpl"
+}

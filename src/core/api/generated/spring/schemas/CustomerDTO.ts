@@ -7,6 +7,7 @@
  */
 import type { CustomerDTOStatus } from './CustomerDTOStatus';
 import type { AreaDTO } from './AreaDTO';
+import type { CustomerAddressDTO } from './CustomerAddressDTO';
 
 export interface CustomerDTO {
   id?: number;
@@ -30,6 +31,8 @@ export interface CustomerDTO {
    * @maxLength 100
    */
   contactPerson?: string;
+  /** @maxLength 255 */
+  completeAddress?: string;
   status: CustomerDTOStatus;
   /**
    * @minLength 0
@@ -43,5 +46,7 @@ export interface CustomerDTO {
    */
   lastModifiedBy?: string;
   lastModifiedDate?: string;
-  area: AreaDTO;
+  area?: AreaDTO;
+  defaultAddress?: CustomerAddressDTO;
+  addresses?: CustomerAddressDTO[];
 }

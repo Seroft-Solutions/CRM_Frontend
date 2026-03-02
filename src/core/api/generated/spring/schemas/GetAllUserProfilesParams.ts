@@ -159,6 +159,7 @@ export type GetAllUserProfilesParams = {
 'channelTypeId.in'?: number[];
 'channelTypeId.notIn'?: number[];
 distinct?: boolean;
+searchTerm?: string;
 /**
  * Zero-based page index (0..N)
  */

@@ -9,6 +9,8 @@ export interface OrganizationSetupRequest {
   domain?: string;
   organizationCode?: string;
   organizationEmail?: string;
+  address?: string;
+  logo?: string;
 }
 
 export interface OrganizationSetupResult {
@@ -80,6 +82,7 @@ export class OrganizationSetupService {
       try {
         const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
         console.log('✓ Step 4 completed - Spring org ID:', springOrgId);
+
         console.log('✓ All steps completed successfully');
 
         return {
@@ -262,6 +265,9 @@ export class OrganizationSetupService {
       keycloakOrgId,
       name: request.organizationName,
       displayName: request.organizationName,
+      ...(request.organizationCode && { code: request.organizationCode }),
+      ...(request.address && { address: request.address }),
+      ...(request.logo && { logo: request.logo }),
       status: 'ACTIVE',
       ...(request.domain && { domain: request.domain }),
     };

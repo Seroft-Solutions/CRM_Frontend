@@ -16,10 +16,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { InlinePermissionGuard } from '@/core/auth';
 import { ProductCreateSheet } from './product-create-sheet';
-import {
-  useGetAllProducts,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 
 interface EnhancedProductRelationshipFieldProps {
   value?: number | number[];
@@ -31,8 +30,9 @@ interface EnhancedProductRelationshipFieldProps {
   canCreate?: boolean;
   createPermission?: string;
   onProductCreated?: (productId: number) => void;
-  customFilters?: Record<string, any>;
+  customFilters?: Record<string, unknown>;
   buttonClassName?: string;
+  createPayload?: Partial<ProductDTO>;
 }
 
 export function EnhancedProductRelationshipField({
@@ -47,6 +47,7 @@ export function EnhancedProductRelationshipField({
   onProductCreated,
   customFilters = {},
   buttonClassName = '',
+  createPayload,
 }: EnhancedProductRelationshipFieldProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,6 +59,7 @@ export function EnhancedProductRelationshipField({
     const timer = setTimeout(() => {
       setDeferredSearchQuery(searchQuery);
     }, 300);
+
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -90,6 +92,7 @@ export function EnhancedProductRelationshipField({
     if (deferredSearchQuery.length > 1 && searchResponse) {
       return searchResponse;
     }
+
     return productsResponse || [];
   }, [productsResponse, searchResponse, deferredSearchQuery]);
 
@@ -97,19 +100,22 @@ export function EnhancedProductRelationshipField({
     if (!multiple || !Array.isArray(value)) return [];
 
     const selected: ProductDTO[] = [];
+
     value.forEach((id) => {
       const option = availableOptions.find((opt) => opt.id === id);
+
       if (option) {
         selected.push(option);
       } else {
         selected.push({
           id: id,
           name: `Product #${id}`,
-          code: `PROD_${id}`,
-          status: 'ACTIVE' as any,
+          barcodeText: `PROD_${id}`,
+          status: ProductDTOStatus.ACTIVE,
         });
       }
     });
+
     return selected;
   };
 
@@ -117,24 +123,28 @@ export function EnhancedProductRelationshipField({
     if (multiple || Array.isArray(value)) return null;
 
     const option = availableOptions.find((opt) => opt.id === value);
+
     if (option) {
       return option;
     } else if (value) {
       return {
         id: value,
         name: `Product #${value}`,
-        code: `PROD_${value}`,
-        status: 'ACTIVE' as any,
+        barcodeText: `PROD_${value}`,
+        status: ProductDTOStatus.ACTIVE,
       };
     }
+
     return null;
   };
 
   const handleSelect = (optionId: number) => {
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
+
       if (currentValues.includes(optionId)) {
         const newValues = currentValues.filter((id) => id !== optionId);
+
         onValueChange(newValues.length > 0 ? newValues : undefined);
       } else {
         onValueChange([...currentValues, optionId]);
@@ -149,6 +159,7 @@ export function EnhancedProductRelationshipField({
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : [];
       const newValues = currentValues.filter((id) => id !== optionId);
+
       onValueChange(newValues.length > 0 ? newValues : undefined);
     } else {
       onValueChange(undefined);
@@ -161,6 +172,7 @@ export function EnhancedProductRelationshipField({
 
       if (multiple) {
         const currentValues = Array.isArray(value) ? value : [];
+
         onValueChange([...currentValues, productId]);
       } else {
         onValueChange(productId);
@@ -178,17 +190,22 @@ export function EnhancedProductRelationshipField({
   const getDisplayText = () => {
     if (multiple) {
       const selected = getSelectedOptions();
+
       if (selected.length === 0) return placeholder;
       if (selected.length === 1) {
         const product = selected[0];
+
         return product.name || `Product #${product.id}`;
       }
+
       return `${selected.length} products selected`;
     } else {
       const selected = getSelectedOption();
+
       if (selected) {
         return selected.name || `Product #${selected.id}`;
       }
+
       return placeholder;
     }
   };
@@ -203,8 +220,8 @@ export function EnhancedProductRelationshipField({
           {getSelectedOptions().map((option) => (
             <Badge key={option.id} variant="secondary" className="text-xs flex items-center gap-1">
               {option.name || `Product #${option.id}`}
-              {option.code && option.code !== `PROD_${option.id}` && (
-                <span className="text-muted-foreground">({option.code})</span>
+              {option.barcodeText && option.barcodeText !== `PROD_${option.id}` && (
+                <span className="text-muted-foreground">({option.barcodeText})</span>
               )}
               {option.name?.startsWith('Product #') && (
                 <span className="text-green-600 text-xs">✓ New</span>
@@ -300,6 +317,7 @@ export function EnhancedProductRelationshipField({
             <ProductCreateSheet
               onSuccess={handleProductCreated}
               isBusinessPartner={isBusinessPartner}
+              createPayload={createPayload}
               trigger={
                 <Button
                   type="button"

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useGetImportProgress } from '@/core/api/generated/spring';
+import { useGetImportProgress1 as useGetImportProgress } from '@/core/api/generated/spring';
 import { CallImportJobDTO, CallImportJobDTOStatus } from '@/core/api/generated/spring/schemas';
 import { CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';

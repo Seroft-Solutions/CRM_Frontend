@@ -11,8 +11,16 @@ export const customerFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['customerBusinessName', 'email', 'mobile', 'whatsApp', 'contactPerson', 'completeAddress', 'status'],
-      relationships: ['area'],
+      fields: [
+        'customerBusinessName',
+        'email',
+        'mobile',
+        'whatsApp',
+        'contactPerson',
+        'status',
+        'addresses',
+      ],
+      relationships: [],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -96,47 +104,19 @@ export const customerFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'completeAddress',
-      type: 'textarea',
-      label: 'Address',
-      placeholder: 'Enter address',
+      name: 'addresses',
+      type: 'custom',
+      label: 'Addresses',
+      placeholder: 'e.g. street address and home',
       required: true,
       validation: {
         required: true,
-        maxLength: 255,
       },
       ui: {},
     },
   ],
 
-  relationships: [
-    {
-      name: 'area',
-      type: 'many-to-one',
-      targetEntity: 'area',
-      displayField: 'name',
-      primaryKey: 'id',
-      required: true,
-      multiple: false,
-      category: 'geographic',
-      api: {
-        useGetAllHook: 'useGetAllAreas',
-        useSearchHook: 'useSearchGeography',
-        useCountHook: 'useCountAreas',
-        entityName: 'Areas',
-      },
-      creation: {
-        canCreate: true,
-        createPath: '/areas/new',
-        createPermission: 'area:create:inline',
-      },
-      ui: {
-        label: 'City and Zipcode',
-        placeholder: 'Search for location...',
-        icon: '📍',
-      },
-    },
-  ],
+  relationships: [],
 
   validation: {
     mode: 'onBlur',

@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/breadcrumb';
 
 const formatSegmentText = (segment: string): string => {
+  if (segment === 'dashboard') {
+    return 'CRM Cup Dashboard';
+  }
   return segment
     .replace(/-/g, ' ')
     .split(' ')

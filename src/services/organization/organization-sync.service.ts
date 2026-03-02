@@ -102,11 +102,14 @@ export class OrganizationSyncService {
       if (!keycloakOrg) {
         return { synced: false, error: 'Organization not found in Keycloak' };
       }
+      const attributes = keycloakOrg.attributes as Record<string, string[] | undefined> | undefined;
 
       const organizationDTO: OrganizationDTO = {
         keycloakOrgId: sessionOrg.id,
         name: keycloakOrg.name || sessionOrg.name,
         displayName: keycloakOrg.displayName || sessionOrg.name,
+        code: attributes?.organizationCode?.[0],
+        address: attributes?.warehouseAddress?.[0],
         domain: keycloakOrg.domains?.[0]?.name,
         status: 'ACTIVE',
         createdDate: new Date().toISOString(),

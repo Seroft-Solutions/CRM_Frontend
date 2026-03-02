@@ -1,5 +1,6 @@
 import { PriorityForm } from '../../components/priority-form';
 import { PermissionGuard } from '@/core/auth';
+import { Edit, AlertTriangle } from 'lucide-react';
 
 interface EditPriorityPageProps {
   params: Promise<{
@@ -22,41 +23,25 @@ export default async function EditPriorityPage({ params }: EditPriorityPageProps
       unauthorizedDescription="You don't have permission to edit priority records."
     >
       <div className="space-y-6">
-        {/* Professional Header with Dotted Background */}
-        <div className="feature-header bg-[oklch(0.45_0.06_243)] rounded-lg p-6 shadow-lg relative overflow-hidden">
-          {/* Dotted background pattern */}
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
-            }}
-          ></div>
-
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-4">
-              {/* Icon */}
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center border border-white/30">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
+        {/* Modern Centered Header for Edit Page */}
+        <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
+          <div className="flex items-center justify-center">
+            {/* Left Section: Icon and Title */}
+            <div className="flex items-center gap-3 flex-1">
+              <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
+                <Edit className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
-
-              <div className="text-white">
-                <h1 className="text-2xl font-bold">Edit Priority</h1>
-                <p className="text-blue-100">Update the information for this priority</p>
+              <div>
+                <h1 className="text-xl font-semibold text-sidebar-foreground">Edit Priority</h1>
+                <p className="text-sm text-sidebar-foreground/80">Update priority information</p>
               </div>
             </div>
+
+            {/* Center Section: Empty for balance */}
+            <div className="flex-1"></div>
+
+            {/* Right Section: Spacer for balance */}
+            <div className="flex-1"></div>
           </div>
         </div>
 

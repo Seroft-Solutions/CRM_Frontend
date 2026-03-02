@@ -50,7 +50,6 @@ import {
   useUpdateCustomer,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 
-import { useGetAllAreas } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { CustomerTableHeader } from './table/customer-table-header';
 import { CustomerTableRow } from './table/customer-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
@@ -184,14 +183,14 @@ const ALL_COLUMNS: ColumnConfig[] = [
     accessor: 'completeAddress',
     type: 'field',
     visible: true,
-    sortable: true,
+    sortable: false,
   },
 
   {
-    id: 'area',
-    label: 'City and Zipcode',
-    accessor: 'area',
-    type: 'relationship',
+    id: 'defaultAddress',
+    label: 'Location',
+    accessor: 'defaultAddress',
+    type: 'field',
     visible: true,
     sortable: false,
   },
@@ -378,11 +377,27 @@ export function CustomerTable() {
             if (col.type === 'field') {
               const fieldValue = item[col.accessor as keyof typeof item];
               value = fieldValue !== null && fieldValue !== undefined ? String(fieldValue) : '';
-            } else if (col.type === 'relationship') {
-              const relationship = item[col.accessor as keyof typeof item] as any;
 
-              if (col.id === 'area' && relationship) {
-                value = relationship.name || '';
+              if (col.id === 'defaultAddress') {
+                const addresses = (item as any).addresses || [];
+                const defaultAddr = addresses.find((a: any) => a.isDefault) || addresses[0];
+                if (defaultAddr) {
+                  const area = defaultAddr.area;
+                  const pincode = area?.pincode;
+                  const city = area?.city?.name || area?.cityName;
+                  const state = area?.city?.district?.state?.name || area?.stateName;
+
+                  const parts = [];
+                  if (city) parts.push(city);
+                  if (state) parts.push(state);
+                  const cityState = parts.join(', ');
+                  value = cityState ? `${cityState}${pincode ? ` (${pincode})` : ''}` : pincode || '';
+                }
+              }
+              if (col.id === 'completeAddress') {
+                const addresses = (item as any).addresses || [];
+                const defaultAddr = addresses.find((a: any) => a.isDefault) || addresses[0];
+                value = defaultAddr?.completeAddress ? String(defaultAddr.completeAddress) : '';
               }
             }
 
@@ -412,18 +427,6 @@ export function CustomerTable() {
   };
 
   const apiPage = page - 1;
-
-  const { data: areaOptions = [] } = useGetAllAreas(
-    { page: 0, size: 1000 },
-    { query: { enabled: true } }
-  );
-
-  const findEntityIdByName = (entities: any[], name: string, displayField: string = 'name') => {
-    const entity = entities?.find((e) =>
-      e[displayField]?.toLowerCase().includes(name.toLowerCase())
-    );
-    return entity?.id;
-  };
 
   const statusOptions = [
     {
@@ -470,27 +473,9 @@ export function CustomerTable() {
       ...getStatusFilter(),
     };
 
-    const relationshipMappings: Record<string, { apiParam: string; options: any[]; displayField: string }> = {
-      'area.name': {
-        apiParam: 'areaId.equals',
-        options: areaOptions as any[],
-        displayField: 'name',
-      },
-    };
-
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
-        if (relationshipMappings[key]) {
-          const mapping = relationshipMappings[key];
-          const entityId = findEntityIdByName(
-            mapping.options,
-            value as string,
-            mapping.displayField
-          );
-          if (entityId) {
-            params[mapping.apiParam] = entityId;
-          }
-        } else if (key === 'createdDate') {
+        if (key === 'createdDate') {
           if (value instanceof Date) {
             params['createdDate.equals'] = value.toISOString().split('T')[0];
           } else if (typeof value === 'string' && value.trim() !== '') {
@@ -1274,15 +1259,7 @@ export function CustomerTable() {
     }
   };
 
-  const relationshipConfigs = [
-    {
-      name: 'area',
-      displayName: 'Area',
-      options: areaOptions || [],
-      displayField: 'name',
-      isEditable: false,
-    },
-  ];
+  const relationshipConfigs: any[] = [];
 
   const hasActiveFilters =
     Object.keys(filters).length > 0 ||

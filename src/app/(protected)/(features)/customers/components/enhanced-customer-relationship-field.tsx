@@ -308,6 +308,9 @@ export function EnhancedCustomerRelationshipField({
                       >
                         <div className="flex-1">
                           <div className="font-medium">{option.customerBusinessName}</div>
+                          {option.email && (
+                            <div className="text-xs text-muted-foreground">{option.email}</div>
+                          )}
                         </div>
                         {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </CommandItem>
@@ -333,7 +336,7 @@ export function EnhancedCustomerRelationshipField({
                   className={cn(
                     'shrink-0',
                     buttonClassName ||
-                      'bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500'
+                    'bg-blue-600 border-blue-600 hover:bg-blue-500 hover:border-blue-500'
                   )}
                   title="Create new customer"
                 >
