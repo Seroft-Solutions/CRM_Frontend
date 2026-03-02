@@ -20,7 +20,13 @@ export default function Footer() {
             </div>
             <span className="text-xl font-bold tracking-tight">CRM Cup</span>
           </div>
-          <nav className="flex items-center gap-6">
+          <nav className="flex flex-wrap items-center gap-6">
+            <Link href="/about" className="text-sm text-white/70 hover:text-white transition-colors">
+              About Us
+            </Link>
+            <Link href="/pricing" className="text-sm text-white/70 hover:text-white transition-colors">
+              Pricing
+            </Link>
             <Link href="/contact" className="text-sm text-white/70 hover:text-white transition-colors">
               Contact Us
             </Link>
