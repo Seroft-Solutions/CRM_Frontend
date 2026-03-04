@@ -202,6 +202,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
+    id: 'stockQuantity',
+    label: 'Stock',
+    accessor: 'stockQuantity',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
     id: 'remark',
     label: 'Remark',
     accessor: 'remark',
@@ -610,6 +619,12 @@ export function ProductTable() {
         } else if (key === 'salePrice') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['salePrice.contains'] = value;
+          }
+        } else if (key === 'stockQuantity') {
+          const parsed = Number(value);
+
+          if (!Number.isNaN(parsed)) {
+            params['stockQuantity.equals'] = parsed;
           }
         } else if (key === 'remark') {
           if (typeof value === 'string' && value.trim() !== '') {

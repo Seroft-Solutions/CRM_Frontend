@@ -22,6 +22,7 @@ export const productFormConfig: FormConfig = {
         'basePrice',
         'discountedPrice',
         'salePrice',
+        'stockQuantity',
       ],
       relationships: ['category', 'subCategory', 'variantConfig'],
       validation: {
@@ -148,6 +149,22 @@ export const productFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
+      },
+    },
+    {
+      name: 'stockQuantity',
+      type: 'number',
+      label: 'Stock',
+      placeholder: 'Auto-calculated from variants',
+      required: false,
+      validation: {
+        required: false,
+        min: 0,
+        max: 999999,
+      },
+      ui: {
+        inputType: 'number',
+        readonly: true,
       },
     },
     {

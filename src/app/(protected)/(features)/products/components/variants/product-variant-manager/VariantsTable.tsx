@@ -6,6 +6,7 @@ import {
   DraftVariantRow,
   ExistingVariantRow,
   VariantTableSelection,
+  VariantWarehouseOption,
 } from './types';
 import { VariantsTableHeader } from './VariantsTableHeader';
 import { VariantTableRow } from './VariantTableRow';
@@ -31,6 +32,7 @@ interface VariantsTableProps {
   onSaveExisting: () => void;
   onCancelEdit: () => void;
   onDeleteRow: (row: ExistingVariantRow) => void;
+  warehouses: VariantWarehouseOption[];
   isLoading?: boolean;
   isViewMode?: boolean;
   selection?: VariantTableSelection;
@@ -59,6 +61,7 @@ export function VariantsTable({
   onSaveExisting,
   onCancelEdit,
   onDeleteRow,
+  warehouses,
   isLoading,
   isViewMode = false,
   selection,
@@ -85,7 +88,7 @@ export function VariantsTable({
   }
 
   const totalColumnCount =
-    visibleEnumAttributes.length + (isViewMode ? 6 : 7) + (selection ? 1 : 0);
+    visibleEnumAttributes.length + (isViewMode ? 7 : 8) + (selection ? 1 : 0);
 
   return (
     <div className="rounded-lg border bg-card">
@@ -142,6 +145,7 @@ export function VariantsTable({
                     onSaveExisting={onSaveExisting}
                     onCancelEdit={onCancelEdit}
                     onDeleteRow={onDeleteRow}
+                    warehouses={warehouses}
                     isViewMode={isViewMode}
                     selection={selection}
                     validationErrors={rowErrors}

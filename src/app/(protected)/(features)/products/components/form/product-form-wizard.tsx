@@ -159,9 +159,10 @@ function ProductFormContent({
   React.useEffect(() => {
     if (entity && !state.isLoading) {
       const formValues: Record<string, unknown> = {};
+      const entityRecord = entity as Record<string, unknown>;
 
       config.fields.forEach((fieldConfig) => {
-        const value = (entity as any)[fieldConfig.name];
+        const value = entityRecord[fieldConfig.name];
 
         if (fieldConfig.type === 'date') {
           if (value) {
@@ -192,14 +193,23 @@ function ProductFormContent({
       });
 
       config.relationships.forEach((relConfig) => {
-        const value = (entity as any)[relConfig.name];
+        const value = entityRecord[relConfig.name];
 
         if (relConfig.multiple) {
-          formValues[relConfig.name] = value
-            ? value.map((item: Record<string, unknown>) => item[relConfig.primaryKey])
+          formValues[relConfig.name] = Array.isArray(value)
+            ? value
+                .map((item) =>
+                  item && typeof item === 'object'
+                    ? (item as Record<string, unknown>)[relConfig.primaryKey]
+                    : undefined
+                )
+                .filter((id) => id !== undefined)
             : [];
         } else {
-          formValues[relConfig.name] = value ? value[relConfig.primaryKey] : undefined;
+          formValues[relConfig.name] =
+            value && typeof value === 'object'
+              ? (value as Record<string, unknown>)[relConfig.primaryKey]
+              : undefined;
         }
       });
 
@@ -419,11 +429,17 @@ export function ProductForm({ id }: ProductFormProps) {
 
       for (const variantData of variants) {
         try {
+          const warehouseId =
+            typeof variantData.warehouseId === 'number'
+              ? variantData.warehouseId
+              : (variantData.warehouse as { id?: number } | undefined)?.id;
+
           // Create the variant
           const variantPayload = {
             sku: normalizeSku(String(variantData.sku ?? ''), 'PROD'),
             price: variantData.price,
             stockQuantity: variantData.stockQuantity,
+            warehouse: typeof warehouseId === 'number' ? { id: warehouseId } : undefined,
             status: variantData.status,
             isPrimary: variantData.isPrimary ?? false,
             product: { id: productId },

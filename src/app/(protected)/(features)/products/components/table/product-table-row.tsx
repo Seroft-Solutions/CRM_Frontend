@@ -106,7 +106,15 @@ export function ProductTableRow({
       query: { enabled: shouldFetchVariants },
     }
   );
-  const variants = product.variants?.length ? product.variants : fetchedVariants ?? [];
+  const variants = product.variants?.length ? product.variants : (fetchedVariants ?? []);
+  const productStockQuantity = (product as ProductDTO & { stockQuantity?: number }).stockQuantity;
+  const resolvedStockQuantity = useMemo(() => {
+    if (typeof productStockQuantity === 'number') {
+      return productStockQuantity;
+    }
+
+    return variants.reduce((sum, variant) => sum + (variant.stockQuantity ?? 0), 0);
+  }, [productStockQuantity, variants]);
   const primaryVariant = variants.find((variant) => variant.isPrimary) ?? variants[0];
   const primaryVariantId = primaryVariant?.id;
   const { data: primaryVariantImages = [] } = useGetAllProductVariantImagesByVariant(
@@ -119,8 +127,10 @@ export function ProductTableRow({
     const slots = mapVariantImagesToSlots(primaryVariantImages);
     const orderedUrls = VARIANT_IMAGE_ORDER.map((slot) => {
       const image = slots[slot];
+
       return image?.thumbnailUrl || image?.cdnUrl || null;
     });
+
     return orderedUrls.find((url) => url) || null;
   }, [primaryVariantImages]);
 
@@ -162,7 +172,7 @@ export function ProductTableRow({
             return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis';
           }
 
-          if (['basePrice', 'discountedPrice', 'salePrice'].includes(column.id)) {
+          if (['basePrice', 'discountedPrice', 'salePrice', 'stockQuantity'].includes(column.id)) {
             return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
           }
 
@@ -209,6 +219,10 @@ export function ProductTableRow({
 
                   if (column.id === 'salePrice') {
                     return field?.toString() || '';
+                  }
+
+                  if (column.id === 'stockQuantity') {
+                    return resolvedStockQuantity.toString();
                   }
 
                   if (column.id === 'remark') {

@@ -54,6 +54,8 @@ export function ProductBasicInfoSection({
   const viewBasePrice = product?.basePrice || 0;
   const viewDiscountedPrice = product?.discountedPrice || 0;
   const viewSalePrice = product?.salePrice || 0;
+  const viewStockQuantity =
+    (product as ProductDTO & { stockQuantity?: number })?.stockQuantity || 0;
 
   const viewPriceValidation = useMemo(() => {
     if (!viewDiscountedPrice && !viewSalePrice) {
@@ -155,7 +157,7 @@ export function ProductBasicInfoSection({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {/* Remark */}
             <div className="space-y-1 md:col-span-1">
               <div className="text-xs font-semibold text-slate-600">Remark / Notes</div>
@@ -185,6 +187,14 @@ export function ProductBasicInfoSection({
               <div className="text-xs font-semibold text-slate-600">Sale Price</div>
               <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
                 {viewSalePrice ? `₹${viewSalePrice}` : 'Not set'}
+              </div>
+            </div>
+
+            {/* Stock */}
+            <div className="space-y-1">
+              <div className="text-xs font-semibold text-slate-600">Stock</div>
+              <div className="text-sm font-medium text-slate-800 bg-white px-3 py-2 rounded-md border border-primary/20">
+                {viewStockQuantity}
               </div>
             </div>
           </div>
@@ -341,7 +351,7 @@ export function ProductBasicInfoSection({
           />
         </div>
 
-        <div className="grid gap-3 grid-cols-1 md:grid-cols-4">
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-5">
           {/* Remark */}
           <FormField
             control={form.control}
@@ -404,43 +414,43 @@ export function ProductBasicInfoSection({
               </FormItem>
             )}
           />
-            {/* Sale Price */}
-            <FormField
-                control={form.control}
-                name="salePrice"
-                render={({ field }) => (
-                    <FormItem className="space-y-1">
-                        <FormLabel className="text-xs font-semibold text-slate-600">Sale Price</FormLabel>
-                        <FormControl>
-                            <div className="relative">
+          {/* Sale Price */}
+          <FormField
+            control={form.control}
+            name="salePrice"
+            render={({ field }) => (
+              <FormItem className="space-y-1">
+                <FormLabel className="text-xs font-semibold text-slate-600">Sale Price</FormLabel>
+                <FormControl>
+                  <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                       ₹
                     </span>
-                                <Input
-                                    {...field}
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={field.value || ''}
-                                    placeholder="0.00"
-                                    className={cn(
-                                        'h-9 pl-8',
-                                        errors.salePrice && 'border-rose-500 focus-visible:ring-rose-500'
-                                    )}
-                                    onChange={(e) => {
-                                        field.onChange(e.target.value);
-                                        form.trigger('salePrice');
-                                        form.trigger('discountedPrice');
-                                    }}
-                                />
-                            </div>
-                        </FormControl>
-                        {errors.salePrice && (
-                            <p className="text-xs text-rose-600">{String(errors.salePrice.message)}</p>
-                        )}
-                    </FormItem>
+                    <Input
+                      {...field}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={field.value || ''}
+                      placeholder="0.00"
+                      className={cn(
+                        'h-9 pl-8',
+                        errors.salePrice && 'border-rose-500 focus-visible:ring-rose-500'
+                      )}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        form.trigger('salePrice');
+                        form.trigger('discountedPrice');
+                      }}
+                    />
+                  </div>
+                </FormControl>
+                {errors.salePrice && (
+                  <p className="text-xs text-rose-600">{String(errors.salePrice.message)}</p>
                 )}
-            />
+              </FormItem>
+            )}
+          />
           {/* Discounted Price */}
           <FormField
             control={form.control}
@@ -475,15 +485,35 @@ export function ProductBasicInfoSection({
                   </div>
                 </FormControl>
                 {errors.discountedPrice && (
-                  <p className="text-xs text-rose-600">
-                    {String(errors.discountedPrice.message)}
-                  </p>
+                  <p className="text-xs text-rose-600">{String(errors.discountedPrice.message)}</p>
                 )}
               </FormItem>
             )}
           />
 
-
+          {/* Stock (Auto-calculated from variants) */}
+          <FormField
+            control={form.control}
+            name="stockQuantity"
+            render={({ field }) => (
+              <FormItem className="space-y-1">
+                <FormLabel className="text-xs font-semibold text-slate-600">Stock</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    min="0"
+                    value={field.value || '0'}
+                    readOnly
+                    disabled
+                    placeholder="0"
+                    className="h-9 bg-slate-50 text-slate-700"
+                  />
+                </FormControl>
+                <p className="text-[10px] text-muted-foreground">Auto-calculated from variants</p>
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -524,8 +554,7 @@ export function ProductBasicInfoSection({
                       placeholder="Enter catalog name"
                       className={cn(
                         'h-9',
-                        errors.productCatalogName &&
-                          'border-rose-500 focus-visible:ring-rose-500'
+                        errors.productCatalogName && 'border-rose-500 focus-visible:ring-rose-500'
                       )}
                       onChange={(e) => {
                         field.onChange(e.target.value);

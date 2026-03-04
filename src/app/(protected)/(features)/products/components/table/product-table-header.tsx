@@ -78,7 +78,9 @@ export function ProductTableHeader({
             if (column.id === 'name') {
               return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap';
             }
-            if (['basePrice', 'discountedPrice', 'salePrice'].includes(column.id)) {
+            if (
+              ['basePrice', 'discountedPrice', 'salePrice', 'stockQuantity'].includes(column.id)
+            ) {
               return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
             }
             if (column.id === 'id') {
@@ -129,7 +131,9 @@ export function ProductTableHeader({
             if (column.id === 'name') {
               return 'px-2 sm:px-3 py-2 max-w-[150px]';
             }
-            if (['basePrice', 'discountedPrice', 'salePrice'].includes(column.id)) {
+            if (
+              ['basePrice', 'discountedPrice', 'salePrice', 'stockQuantity'].includes(column.id)
+            ) {
               return 'px-2 sm:px-3 py-2';
             }
             if (column.id === 'id') {
@@ -211,6 +215,21 @@ export function ProductTableHeader({
                           className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
                           value={(filters['salePrice'] as string) || ''}
                           onChange={(e) => onFilterChange('salePrice', e.target.value || undefined)}
+                        />
+                      );
+                    }
+
+                    if (column.accessor === 'stockQuantity') {
+                      return (
+                        <Input
+                          type="number"
+                          min="0"
+                          placeholder="Filter..."
+                          className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                          value={(filters['stockQuantity'] as string) || ''}
+                          onChange={(e) =>
+                            onFilterChange('stockQuantity', e.target.value || undefined)
+                          }
                         />
                       );
                     }

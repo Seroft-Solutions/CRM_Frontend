@@ -46,6 +46,13 @@ export const productFormSchemaFields = {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
+  stockQuantity: z
+    .string()
+    .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
+    .refine((val) => !val || Number(val) <= 999999, {
+      message: 'Please enter a number 999999 or lower',
+    })
+    .optional(),
   saveAsCatalog: z.boolean().optional(),
   productCatalogName: z
     .string()
@@ -115,6 +122,7 @@ export const productFormSchema = productFormSchemaBase.superRefine((data, ctx) =
       });
     } else {
       const catalogPrice = Number(rawCatalogPrice);
+
       if (Number.isNaN(catalogPrice)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -139,25 +147,36 @@ export const productFormSchema = productFormSchemaBase.superRefine((data, ctx) =
 
   // Validate variants if present
   if (data.variants && Array.isArray(data.variants) && data.variants.length > 0) {
-    data.variants.forEach((variant: any, index: number) => {
+    data.variants.forEach((variant, index) => {
+      const variantRecord =
+        variant && typeof variant === 'object' ? (variant as Record<string, unknown>) : {};
+      const variantSku =
+        typeof variantRecord.sku === 'string' && variantRecord.sku.trim() !== ''
+          ? variantRecord.sku
+          : 'Unknown';
+      const variantPrice =
+        variantRecord.price === undefined || variantRecord.price === null
+          ? null
+          : Number(variantRecord.price);
+      const variantStock =
+        variantRecord.stockQuantity === undefined || variantRecord.stockQuantity === null
+          ? null
+          : Number(variantRecord.stockQuantity);
+
       // Price validation
-      if (variant.price === undefined || variant.price === null || variant.price <= 0) {
+      if (variantPrice === null || Number.isNaN(variantPrice) || variantPrice <= 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Variant ${index + 1} (${variant.sku || 'Unknown'}): Price is required and must be greater than 0`,
+          message: `Variant ${index + 1} (${variantSku}): Price is required and must be greater than 0`,
           path: ['variants'],
         });
       }
 
       // Stock validation
-      if (
-        variant.stockQuantity === undefined ||
-        variant.stockQuantity === null ||
-        variant.stockQuantity < 0
-      ) {
+      if (variantStock === null || Number.isNaN(variantStock) || variantStock < 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Variant ${index + 1} (${variant.sku || 'Unknown'}): Stock quantity is required and cannot be negative`,
+          message: `Variant ${index + 1} (${variantSku}): Stock quantity is required and cannot be negative`,
           path: ['variants'],
         });
       }
@@ -208,6 +227,13 @@ export const productFieldSchemas = {
       message: 'Please enter a number 999999 or lower',
     })
     .optional(),
+  stockQuantity: z
+    .string()
+    .refine((val) => !val || Number(val) >= 0, { message: 'Please enter a number 0 or higher' })
+    .refine((val) => !val || Number(val) <= 999999, {
+      message: 'Please enter a number 999999 or lower',
+    })
+    .optional(),
   saveAsCatalog: z.boolean().optional(),
   productCatalogName: z
     .string()
@@ -239,6 +265,7 @@ export const productStepSchemas = {
       basePrice: productFieldSchemas.basePrice,
       discountedPrice: productFieldSchemas.discountedPrice,
       salePrice: productFieldSchemas.salePrice,
+      stockQuantity: productFieldSchemas.stockQuantity,
       saveAsCatalog: productFieldSchemas.saveAsCatalog,
       productCatalogName: productFieldSchemas.productCatalogName,
       productCatalogPrice: productFieldSchemas.productCatalogPrice,

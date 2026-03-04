@@ -102,6 +102,9 @@ export function ProductSearchAndFilters({
     if (key === 'salePrice') {
       return 'salePrice';
     }
+    if (key === 'stockQuantity') {
+      return 'Stock';
+    }
     if (key === 'articleNumber') {
       return 'articleNumber';
     }
@@ -262,9 +265,7 @@ export function ProductSearchAndFilters({
                     <Input
                       placeholder="Filter by barcode text..."
                       value={(filters['barcodeText'] as string) || ''}
-                      onChange={(e) =>
-                        onFilterChange('barcodeText', e.target.value || undefined)
-                      }
+                      onChange={(e) => onFilterChange('barcodeText', e.target.value || undefined)}
                       className="h-8"
                     />
                   </div>

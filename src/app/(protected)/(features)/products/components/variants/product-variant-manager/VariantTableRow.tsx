@@ -30,6 +30,7 @@ import {
   DraftVariantRow,
   ExistingVariantRow,
   VariantTableSelection,
+  VariantWarehouseOption,
 } from './types';
 import { VariantImagesSheet } from './VariantImagesSheet';
 import {
@@ -55,6 +56,7 @@ interface VariantTableRowProps {
   onSaveExisting: () => void;
   onCancelEdit: () => void;
   onDeleteRow: (row: ExistingVariantRow) => void;
+  warehouses: VariantWarehouseOption[];
   isViewMode?: boolean;
   selection?: VariantTableSelection;
   validationErrors?: string[];
@@ -79,6 +81,7 @@ export function VariantTableRow({
   onSaveExisting,
   onCancelEdit,
   onDeleteRow,
+  warehouses,
   isViewMode = false,
   selection,
   validationErrors = [],
@@ -137,6 +140,21 @@ export function VariantTableRow({
       onUpdateDraft(row.key, { status: v });
     } else if (isEditing) {
       onUpdateEditingRow({ status: v });
+    }
+  };
+
+  const handleWarehouseChange = (warehouseValue: string) => {
+    const selectedWarehouse =
+      warehouseValue === '__none__'
+        ? undefined
+        : warehouses.find((warehouse) => warehouse.id === Number(warehouseValue));
+    const nextWarehouseId = selectedWarehouse?.id;
+    const nextWarehouseName = selectedWarehouse?.name;
+
+    if (isDraft) {
+      onUpdateDraft(row.key, { warehouseId: nextWarehouseId, warehouseName: nextWarehouseName });
+    } else if (isEditing) {
+      onUpdateEditingRow({ warehouseId: nextWarehouseId, warehouseName: nextWarehouseName });
     }
   };
 
@@ -225,7 +243,8 @@ export function VariantTableRow({
   // Validation error detection
   const hasPriceError = validationErrors.some((err) => err.toLowerCase().includes('price'));
   const hasStockError = validationErrors.some((err) => err.toLowerCase().includes('stock'));
-  const dataColumnCount = visibleEnumAttributes.length + 6 + (isViewMode ? 0 : 1);
+  const hasWarehouseError = validationErrors.some((err) => err.toLowerCase().includes('warehouse'));
+  const dataColumnCount = visibleEnumAttributes.length + 7 + (isViewMode ? 0 : 1);
   const columnWidth = selection
     ? `calc((100% - 2.5rem) / ${dataColumnCount})`
     : `calc(100% / ${dataColumnCount})`;
@@ -443,12 +462,52 @@ export function VariantTableRow({
           )}
         </TableCell>
 
+        {/* Warehouse Column */}
+        <TableCell className="py-2 overflow-hidden" style={{ width: columnWidth }}>
+          {isDraft || isEditing ? (
+            <div className="space-y-1">
+              <Select
+                value={data.warehouseId ? String(data.warehouseId) : '__none__'}
+                onValueChange={handleWarehouseChange}
+              >
+                <SelectTrigger
+                  className={`h-8 w-full min-w-0 border-2 transition-colors text-sm [&>span]:truncate ${
+                    hasWarehouseError
+                      ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                      : isDraft
+                        ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                        : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                  }`}
+                >
+                  <SelectValue placeholder="Select warehouse" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Select warehouse</SelectItem>
+                  {warehouses.map((warehouse) => (
+                    <SelectItem key={warehouse.id} value={String(warehouse.id)}>
+                      {warehouse.name}
+                      {warehouse.code ? ` (${warehouse.code})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {hasWarehouseError && (
+                <p className="text-xs text-red-600 font-medium">Warehouse selection is required</p>
+              )}
+            </div>
+          ) : (
+            <span className="font-medium text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 text-sm">
+              {data.warehouseName || '—'}
+            </span>
+          )}
+        </TableCell>
+
         {/* Status Column */}
-        <TableCell className="py-2" style={{ width: columnWidth }}>
+        <TableCell className="py-2 overflow-hidden" style={{ width: columnWidth }}>
           {isDraft || isEditing ? (
             <Select value={data.status} onValueChange={handleStatusChange}>
               <SelectTrigger
-                className={`h-8 border-2 transition-colors text-sm ${
+                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm [&>span]:truncate ${
                   isDraft
                     ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
                     : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'

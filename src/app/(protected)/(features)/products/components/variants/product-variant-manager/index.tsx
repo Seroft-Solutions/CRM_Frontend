@@ -17,12 +17,15 @@ import { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
 import type { GetAllProductVariantsParams } from '@/core/api/generated/spring/schemas/GetAllProductVariantsParams';
+import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
+import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 
 import {
   DraftVariantRow,
   ExistingVariantRow,
   VariantSelection,
   VariantTableSelection,
+  VariantWarehouseOption,
 } from './types';
 import { VARIANT_IMAGE_ORDER } from '@/features/product-variant-images/utils/variant-image-slots';
 import { NoVariantConfigPlaceholder } from './NoVariantConfigPlaceholder';
@@ -50,6 +53,14 @@ const sizeRankByToken = (() => {
 
   return map;
 })();
+
+type ProductVariantWithWarehouse = ProductVariantDTO & {
+  warehouse?: {
+    id?: number;
+    name?: string;
+    code?: string;
+  } | null;
+};
 const isSizeLabel = (label?: string) => {
   if (!label) return false;
   const normalized = label.toLowerCase().replace(/[^a-z]/g, '');
@@ -206,6 +217,37 @@ export function ProductVariantManager({
         query: { enabled: variantIds.length > 0 },
       }
     );
+
+  const warehouseQueryParams = useMemo(
+    () => ({
+      page: 0,
+      size: 1000,
+      sort: ['name,asc'],
+      'status.equals': 'ACTIVE' as const,
+    }),
+    []
+  );
+
+  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
+
+  const warehouses: VariantWarehouseOption[] = useMemo(
+    () =>
+      (warehouseRows as IWarehouse[])
+        .filter(
+          (warehouse): warehouse is IWarehouse & { id: number } => typeof warehouse.id === 'number'
+        )
+        .map((warehouse) => ({
+          id: warehouse.id,
+          name: warehouse.name,
+          code: warehouse.code,
+        })),
+    [warehouseRows]
+  );
+
+  const warehouseById = useMemo(
+    () => new Map(warehouses.map((warehouse) => [warehouse.id, warehouse])),
+    [warehouses]
+  );
 
   const enumAttributes = useMemo(
     () =>
@@ -408,6 +450,8 @@ export function ProductVariantManager({
     return (variants ?? [])
       .filter((v) => typeof v.id === 'number')
       .map((variant) => {
+        const warehouse = (variant as ProductVariantWithWarehouse).warehouse;
+        const warehouseId = typeof warehouse?.id === 'number' ? warehouse.id : undefined;
         const selections = selectionsByVariantId[variant.id!] ?? [];
         const rowSelections: VariantSelection[] = selections
           .filter((s) => typeof s.attribute?.id === 'number' && typeof s.option?.id === 'number')
@@ -432,12 +476,15 @@ export function ProductVariantManager({
           sku: variant.sku,
           price: variant.price,
           stockQuantity: variant.stockQuantity,
+          warehouseId,
+          warehouseName:
+            warehouse?.name ?? (warehouseId ? warehouseById.get(warehouseId)?.name : undefined),
           status: variant.status,
           isPrimary: variant.isPrimary,
           selections: rowSelections,
         };
       });
-  }, [variants, selectionsByVariantId, optionLabelById, attributeById]);
+  }, [variants, selectionsByVariantId, optionLabelById, attributeById, warehouseById]);
 
   const upgradeCandidate = useMemo(() => {
     if (!productId) return null;
@@ -546,6 +593,7 @@ export function ProductVariantManager({
 
     const basePrefixRaw = (productName.substring(0, 4) || 'PROD').toUpperCase();
     const basePrefix = normalizeSku(basePrefixRaw, 'PROD');
+    const defaultWarehouse = warehouses[0];
 
     const selectionsForCrossProduct = enumAttributeOptions
       .map(({ attribute, options }) => ({
@@ -603,6 +651,8 @@ export function ProductVariantManager({
           sku,
           price: defaultVariantPrice ?? 0,
           stockQuantity: 0,
+          warehouseId: defaultWarehouse?.id,
+          warehouseName: defaultWarehouse?.name,
           status: defaultGeneratedStatus,
           isPrimary: false,
           imageFiles: createEmptyImageFiles(),
@@ -651,6 +701,7 @@ export function ProductVariantManager({
     optionById,
     buildCombinationKey,
     defaultVariantPrice,
+    warehouses,
   ]);
 
   useEffect(() => {
@@ -854,6 +905,10 @@ export function ProductVariantManager({
       errors.push('Stock cannot be negative');
     }
 
+    if (variant.warehouseId === undefined || variant.warehouseId === null) {
+      errors.push('Warehouse is required');
+    }
+
     return { isValid: errors.length === 0, errors };
   };
 
@@ -876,6 +931,34 @@ export function ProductVariantManager({
 
   const hasValidationErrors = Object.keys(variantValidationErrors).length > 0;
   // #endregion
+
+  const mergedExistingRowsForStock = useMemo(() => {
+    return existingVariantRows.map((row) =>
+      editingRowData && editingRowData.id === row.id ? editingRowData : row
+    );
+  }, [existingVariantRows, editingRowData]);
+
+  const totalStockQuantity = useMemo(() => {
+    const existingStock = mergedExistingRowsForStock.reduce(
+      (sum, variant) => sum + (Number(variant.stockQuantity) || 0),
+      0
+    );
+    const draftStock = newDraftVariants.reduce(
+      (sum, variant) => sum + (Number(variant.stockQuantity) || 0),
+      0
+    );
+
+    return existingStock + draftStock;
+  }, [mergedExistingRowsForStock, newDraftVariants]);
+
+  useEffect(() => {
+    if (isViewMode || !form) return;
+
+    form.setValue('stockQuantity', String(totalStockQuantity), {
+      shouldValidate: false,
+      shouldDirty: false,
+    });
+  }, [form, isViewMode, totalStockQuantity]);
 
   // #region Form Validator Registration
   useEffect(() => {
@@ -939,6 +1022,9 @@ export function ProductVariantManager({
           sku: variant.sku,
           price: variant.price,
           stockQuantity: variant.stockQuantity,
+          warehouse: variant.warehouseId
+            ? ({ id: variant.warehouseId } as Record<string, unknown>)
+            : undefined,
           status: 'ACTIVE',
           isPrimary: variant.isPrimary ?? false,
           imageFiles: variant.imageFiles,
@@ -957,6 +1043,9 @@ export function ProductVariantManager({
         sku: upgradeCandidate.sku,
         price: upgradeCandidate.price,
         stockQuantity: upgradeCandidate.stockQuantity,
+        warehouse: upgradeCandidate.warehouseId
+          ? ({ id: upgradeCandidate.warehouseId } as Record<string, unknown>)
+          : undefined,
         status: upgradeCandidate.status,
         isPrimary: upgradeCandidate.isPrimary ?? false,
         selections: upgradeCandidate.selections.map((sel) => ({
@@ -996,7 +1085,11 @@ export function ProductVariantManager({
     return queryClient.invalidateQueries({
       predicate: (query) =>
         query.queryKey[0] === '/api/product-variants' ||
-        query.queryKey[0] === '/api/product-variant-selections',
+        query.queryKey[0] === '/api/product-variant-selections' ||
+        query.queryKey[0] === '/api/products' ||
+        query.queryKey[0] === 'getAllProducts' ||
+        query.queryKey[0] === 'searchProducts' ||
+        query.queryKey[0] === 'get-product',
     });
   };
 
@@ -1036,11 +1129,14 @@ export function ProductVariantManager({
       }
     }
 
-    const payload: ProductVariantDTO = {
+    const payload: ProductVariantDTO & { warehouse?: Record<string, unknown> } = {
       id: editingRowData.id,
       sku: normalizeSku(editingRowData.sku, 'PROD'),
       price: editingRowData.price,
       stockQuantity: editingRowData.stockQuantity,
+      warehouse: editingRowData.warehouseId
+        ? ({ id: editingRowData.warehouseId } as Record<string, unknown>)
+        : undefined,
       status: editingRowData.status,
       isPrimary: editingRowData.isPrimary ?? false,
       product: productId ? { id: productId } : undefined,
@@ -1187,6 +1283,7 @@ export function ProductVariantManager({
         onSaveExisting={handleSaveExisting}
         onCancelEdit={() => setEditingRowData(null)}
         onDeleteRow={handleDeleteRow}
+        warehouses={warehouses}
         isLoading={isLoadingVariants || isLoadingSelections}
         isViewMode={isViewMode}
         selection={selection}
