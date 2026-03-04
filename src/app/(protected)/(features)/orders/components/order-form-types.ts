@@ -25,6 +25,7 @@ export type OrderItemForm = {
   productId?: number;
   variantId?: number;
   productCatalogId?: number;
+  availableQuantity?: number;
   productName?: string;
   sku?: string;
   variantAttributes?: string;

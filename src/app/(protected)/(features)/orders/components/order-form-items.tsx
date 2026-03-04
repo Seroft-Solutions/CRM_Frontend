@@ -26,11 +26,13 @@ import {
 } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { Plus } from 'lucide-react';
-import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import type { ProductCatalogDTO, ProductDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
+
+type ProductWithStock = ProductDTO & { stockQuantity?: number };
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -82,6 +84,11 @@ function ProductVariantSelector({
   const variants = variantsData || [];
 
   const getProductQuantity = (product: ProductDTO) => {
+    const productWithStock = product as ProductWithStock;
+    if (typeof productWithStock.stockQuantity === 'number') {
+      return Math.max(0, productWithStock.stockQuantity);
+    }
+
     if (!product.variants?.length) return 0;
     return product.variants.reduce(
       (total, variant) => total + (variant.stockQuantity ?? 0),
@@ -100,6 +107,7 @@ function ProductVariantSelector({
     onItemChange(index, 'productId', product.id);
     onItemChange(index, 'productName', product.name);
     onItemChange(index, 'sku', product.articleNumber ?? product.articalNumber);
+    onItemChange(index, 'availableQuantity', getProductQuantity(product));
     onItemChange(index, 'variantAttributes', undefined);
     onItemChange(index, 'variantId', undefined);
 
@@ -121,6 +129,7 @@ function ProductVariantSelector({
     onItemChange(index, 'itemType', 'product');
     onItemChange(index, 'variantId', variant.id);
     onItemChange(index, 'sku', variant.sku);
+    onItemChange(index, 'availableQuantity', Math.max(0, variant.stockQuantity ?? 0));
 
     // Build variant attributes string
     // Note: We'd need to fetch variant selections to get full attribute details
@@ -137,6 +146,25 @@ function ProductVariantSelector({
 
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
+  const effectiveQuantity =
+    selectedVariant
+      ? Math.max(0, selectedVariant.stockQuantity ?? 0)
+      : selectedProduct
+        ? getProductQuantity(selectedProduct)
+        : undefined;
+
+  useEffect(() => {
+    if (item.itemType !== 'product') {
+      if (item.availableQuantity !== undefined) {
+        onItemChange(index, 'availableQuantity', undefined);
+      }
+      return;
+    }
+
+    if (effectiveQuantity !== item.availableQuantity) {
+      onItemChange(index, 'availableQuantity', effectiveQuantity);
+    }
+  }, [effectiveQuantity, index, item.availableQuantity, item.itemType, onItemChange]);
 
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
@@ -298,6 +326,7 @@ function ProductCatalogSelector({
     onItemChange(index, 'productCatalogId', catalog.id);
     onItemChange(index, 'productId', undefined);
     onItemChange(index, 'variantId', undefined);
+    onItemChange(index, 'availableQuantity', undefined);
     onItemChange(index, 'sku', undefined);
     onItemChange(index, 'productName', catalog.productCatalogName);
     onItemChange(index, 'variantAttributes', buildCatalogAttributes(catalog));
@@ -505,6 +534,38 @@ export function OrderFormItems({
           <div className="divide-y divide-slate-200">
             {items.map((item, index) => {
               const itemTotal = calculateItemTotal(item);
+              const availableQuantity =
+                item.itemType === 'product' && typeof item.availableQuantity === 'number'
+                  ? Math.max(0, item.availableQuantity)
+                  : undefined;
+              const parsedQuantity = Number.parseInt(item.quantity, 10);
+              const isQuantityExceeded =
+                availableQuantity !== undefined &&
+                Number.isFinite(parsedQuantity) &&
+                parsedQuantity > availableQuantity;
+              const stockScopeLabel = item.variantId ? 'variant' : 'product';
+              const liveQuantityError = isQuantityExceeded
+                ? `Quantity cannot be greater than available ${stockScopeLabel} stock (${availableQuantity}).`
+                : undefined;
+              const quantityErrorMessage = itemErrors?.[index]?.quantity || liveQuantityError;
+              const handleQuantityChange = (value: string) => {
+                if (value.trim() === '') {
+                  onItemChange(index, 'quantity', value);
+                  return;
+                }
+
+                const parsed = Number.parseInt(value, 10);
+                if (
+                  availableQuantity !== undefined &&
+                  Number.isFinite(parsed) &&
+                  parsed > availableQuantity
+                ) {
+                  onItemChange(index, 'quantity', String(availableQuantity));
+                  return;
+                }
+
+                onItemChange(index, 'quantity', value);
+              };
 
               return (
                 <div key={`item-${index}`} className="hover:bg-slate-50/50 transition-colors">
@@ -570,12 +631,18 @@ export function OrderFormItems({
                       <Input
                         type="number"
                         min={0}
+                        max={availableQuantity}
                         placeholder="0"
                         value={item.quantity}
-                        onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                        onChange={(event) => handleQuantityChange(event.target.value)}
                         className="h-9 border-slate-300"
                       />
-                      <FieldError message={itemErrors?.[index]?.quantity} />
+                      {availableQuantity !== undefined && (
+                        <p className="mt-1 text-[11px] text-slate-500">
+                          Available {stockScopeLabel} stock: {availableQuantity}
+                        </p>
+                      )}
+                      <FieldError message={quantityErrorMessage} />
                     </div>
 
                     {/* Price */}
@@ -697,12 +764,18 @@ export function OrderFormItems({
                         <Input
                           type="number"
                           min={0}
+                          max={availableQuantity}
                           placeholder="0"
                           value={item.quantity}
-                          onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                          onChange={(event) => handleQuantityChange(event.target.value)}
                           className="h-9 border-slate-300"
                         />
-                        <FieldError message={itemErrors?.[index]?.quantity} />
+                        {availableQuantity !== undefined && (
+                          <p className="text-[11px] text-slate-500">
+                            Available {stockScopeLabel} stock: {availableQuantity}
+                          </p>
+                        )}
+                        <FieldError message={quantityErrorMessage} />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-600">Price</Label>

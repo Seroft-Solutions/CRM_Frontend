@@ -901,6 +901,20 @@ export function OrderForm({
 
       if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
         nextItemErrors[index].quantity = 'Use a whole number.';
+      } else if (item.itemType === 'product' && item.quantity.trim()) {
+        const parsedQuantity = Number.parseInt(item.quantity.trim(), 10);
+        const availableQuantity =
+          typeof item.availableQuantity === 'number' ? Math.max(0, item.availableQuantity) : null;
+
+        if (
+          Number.isFinite(parsedQuantity) &&
+          availableQuantity !== null &&
+          parsedQuantity > availableQuantity
+        ) {
+          const stockScopeLabel = item.variantId ? 'variant' : 'product';
+          nextItemErrors[index].quantity =
+            `Quantity cannot be greater than available ${stockScopeLabel} stock (${availableQuantity}).`;
+        }
       }
 
       if (item.itemPrice.trim()) {
