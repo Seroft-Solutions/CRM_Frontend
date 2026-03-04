@@ -1,8 +1,17 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
+import {
+  AlertTriangle,
+  Archive,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  MoreVertical,
+  Pencil,
+  RotateCcw,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -14,11 +23,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
 import { ClickableId } from '@/components/clickable-id';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
+import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
@@ -36,6 +47,29 @@ function transformEnumValue(enumValue: string): string {
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+function getVariantDescription(variant: ProductVariantDTO): string {
+  const selections = variant.selections ?? [];
+  const summary = selections
+    .map((selection) => {
+      const attributeLabel = selection.attribute?.label || selection.attribute?.name;
+      const optionLabel = selection.option?.label || selection.option?.code || selection.rawValue;
+
+      if (attributeLabel && optionLabel) {
+        return `${attributeLabel}: ${optionLabel}`;
+      }
+
+      return optionLabel || attributeLabel || '';
+    })
+    .filter(Boolean)
+    .join(' • ');
+
+  if (summary) {
+    return summary;
+  }
+
+  return `Status: ${transformEnumValue(variant.status || 'ACTIVE')}`;
 }
 
 interface RelationshipConfig {
@@ -93,6 +127,7 @@ export function ProductTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
+  const [isStockDetailsOpen, setIsStockDetailsOpen] = useState(false);
   const shouldFetchVariants = !product.variants?.length && Boolean(product.id);
   const { data: fetchedVariants = [] } = useGetAllProductVariants(
     shouldFetchVariants
@@ -222,7 +257,68 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'stockQuantity') {
-                    return resolvedStockQuantity.toString();
+                    return (
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="tabular-nums font-medium">{resolvedStockQuantity}</span>
+                        {variants.length > 0 && (
+                          <Popover open={isStockDetailsOpen} onOpenChange={setIsStockDetailsOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                aria-label="Show variant stock details"
+                              >
+                                {isStockDetailsOpen ? (
+                                  <ChevronUp className="h-3.5 w-3.5" />
+                                ) : (
+                                  <ChevronDown className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-[340px] p-0">
+                              <div className="border-b px-3 py-2">
+                                <p className="text-sm font-semibold">Stock Details</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {product.name || 'Product'} • Total {resolvedStockQuantity}
+                                </p>
+                              </div>
+                              <div className="max-h-64 overflow-y-auto">
+                                {variants.map((variant) => (
+                                  <div
+                                    key={variant.id ?? variant.sku}
+                                    className="flex items-start justify-between gap-3 border-b px-3 py-2 last:border-b-0"
+                                  >
+                                    <div className="min-w-0">
+                                      <p className="truncate text-xs font-semibold">
+                                        {variant.sku}
+                                      </p>
+                                      <p className="truncate text-xs text-muted-foreground">
+                                        {getVariantDescription(variant)}
+                                      </p>
+                                    </div>
+                                    <div className="shrink-0 text-right">
+                                      <p className="text-xs font-semibold tabular-nums">
+                                        {variant.stockQuantity ?? 0}
+                                      </p>
+                                      {variant.isPrimary ? (
+                                        <Badge
+                                          variant="outline"
+                                          className="mt-1 border-blue-200 bg-blue-50 text-[10px] text-blue-700"
+                                        >
+                                          Primary
+                                        </Badge>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
+                    );
                   }
 
                   if (column.id === 'remark') {
