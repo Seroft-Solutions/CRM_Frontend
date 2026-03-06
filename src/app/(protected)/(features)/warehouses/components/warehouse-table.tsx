@@ -31,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -58,7 +59,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 import { WarehouseFilterState, WarehouseSearchAndFilters } from './table/warehouse-search-filters';
 
 type WarehouseStatusTab = 'active' | 'inactive' | 'draft' | 'archived' | 'all';
-type SortField = 'name' | 'code' | 'address' | 'capacity' | 'status';
+type SortField = 'name' | 'code' | 'address' | 'status';
 type SortOrder = 'asc' | 'desc';
 
 const statusBadgeClass: Record<WarehouseStatus, string> = {
@@ -175,14 +176,6 @@ export function WarehouseTable() {
 
     if (filters.address?.trim()) {
       params['address.contains'] = filters.address.trim();
-    }
-
-    if (filters.capacity?.trim()) {
-      const capacity = Number.parseInt(filters.capacity, 10);
-
-      if (Number.isFinite(capacity)) {
-        params['capacity.equals'] = capacity;
-      }
     }
 
     if (filters.organizationId?.trim()) {
@@ -411,13 +404,7 @@ export function WarehouseTable() {
                     onSort={handleSort}
                   />
                   <TableHead>Organization</TableHead>
-                  <SortableHead
-                    label="Capacity"
-                    field="capacity"
-                    currentSortField={sortField}
-                    currentOrder={sortOrder}
-                    onSort={handleSort}
-                  />
+                  <TableHead>Areas</TableHead>
                   <SortableHead
                     label="Status"
                     field="status"
@@ -459,7 +446,41 @@ export function WarehouseTable() {
                         {warehouse.address || '—'}
                       </TableCell>
                       <TableCell>{warehouse.organizationName || '—'}</TableCell>
-                      <TableCell>{warehouse.capacity ?? '—'}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="h-8 border border-yellow-400 bg-yellow-400 text-black hover:border-yellow-500 hover:bg-yellow-500"
+                            >
+                              View Areas
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="start"
+                            className="w-72 max-h-64 overflow-y-auto"
+                          >
+                            <DropdownMenuLabel>Areas & Capacity</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {warehouse.areas && warehouse.areas.length > 0 ? (
+                              warehouse.areas.map((area) => (
+                                <div
+                                  key={`${warehouse.id}-${area.id ?? area.name}`}
+                                  className="flex items-center justify-between px-2 py-1.5 text-sm"
+                                >
+                                  <span className="truncate pr-2">{area.name}</span>
+                                  <span className="text-muted-foreground">{area.capacity}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                No areas configured.
+                              </div>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={statusBadgeClass[warehouse.status]}>
                           {formatStatus(warehouse.status)}

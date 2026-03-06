@@ -28,7 +28,7 @@ export default function WarehousePage() {
               <div>
                 <h1 className="text-xl font-semibold text-sidebar-foreground">Warehouses</h1>
                 <p className="text-sm text-sidebar-foreground/80">
-                  Manage storage locations and capacity
+                  Manage warehouse storage locations
                 </p>
               </div>
             </div>

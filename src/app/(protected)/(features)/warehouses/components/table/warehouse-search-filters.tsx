@@ -24,7 +24,6 @@ export interface WarehouseFilterState {
   name?: string;
   code?: string;
   address?: string;
-  capacity?: string;
   organizationId?: string;
 }
 
@@ -42,7 +41,6 @@ const filterLabels: Record<keyof WarehouseFilterState, string> = {
   name: 'Name',
   code: 'Code',
   address: 'Address',
-  capacity: 'Capacity',
   organizationId: 'Organization',
 };
 
@@ -141,20 +139,6 @@ export function WarehouseSearchAndFilters({
                       value={filters.address || ''}
                       onChange={(event) =>
                         onFilterChange('address', event.target.value || undefined)
-                      }
-                      className="h-8"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs text-muted-foreground">Capacity</label>
-                    <Input
-                      type="number"
-                      min={0}
-                      placeholder="Filter by exact capacity..."
-                      value={filters.capacity || ''}
-                      onChange={(event) =>
-                        onFilterChange('capacity', event.target.value || undefined)
                       }
                       className="h-8"
                     />

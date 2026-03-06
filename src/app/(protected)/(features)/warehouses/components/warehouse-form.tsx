@@ -4,8 +4,8 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Save } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { getSelectedOrganizationId } from '@/core/api/services/shared/tenant-helper';
 import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
@@ -27,6 +26,25 @@ import {
   useUpdateWarehouseMutation,
   useWarehouseQuery,
 } from '../actions/warehouse-hooks';
+import type { IWarehouseArea } from '../types/warehouse';
+
+const warehouseAreaSchema = z.object({
+  id: z.number().optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Area name is required')
+    .max(120, 'Area name cannot exceed 120 characters'),
+  capacity: z
+    .string()
+    .min(1, 'Area capacity is required')
+    .refine((value) => /^\d+$/.test(value), {
+      message: 'Area capacity must be a whole number',
+    })
+    .refine((value) => Number(value) >= 0, {
+      message: 'Area capacity must be zero or greater',
+    }),
+});
 
 const warehouseFormSchema = z.object({
   name: z
@@ -38,7 +56,7 @@ const warehouseFormSchema = z.object({
     .string()
     .trim()
     .min(2, 'Code must be at least 2 characters')
-    .max(30, 'Code cannot exceed 30 characters')
+    .max(5, 'Code cannot exceed 5 characters')
     .regex(/^[A-Za-z0-9_-]+$/, 'Code can contain only letters, numbers, underscore, and hyphen'),
   address: z
     .string()
@@ -48,15 +66,7 @@ const warehouseFormSchema = z.object({
     .refine((value) => value.length > 0, {
       message: 'Address is required',
     }),
-  capacity: z
-    .string()
-    .optional()
-    .refine((value) => value === undefined || value === '' || /^\d+$/.test(value), {
-      message: 'Capacity must be a whole number',
-    })
-    .refine((value) => value === undefined || value === '' || Number(value) >= 0, {
-      message: 'Capacity must be zero or greater',
-    }),
+  areas: z.array(warehouseAreaSchema),
 });
 
 type WarehouseFormValues = z.infer<typeof warehouseFormSchema>;
@@ -115,8 +125,18 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       name: '',
       code: '',
       address: '',
-      capacity: '',
+      areas: [],
     },
+  });
+
+  const {
+    fields: areaFields,
+    append: appendArea,
+    remove: removeArea,
+  } = useFieldArray({
+    control: form.control,
+    name: 'areas',
+    keyName: 'fieldId',
   });
 
   React.useEffect(() => {
@@ -128,8 +148,11 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       name: existingWarehouse.name,
       code: existingWarehouse.code,
       address: existingWarehouse.address || '',
-      capacity:
-        typeof existingWarehouse.capacity === 'number' ? String(existingWarehouse.capacity) : '',
+      areas: (existingWarehouse.areas || []).map((area) => ({
+        id: area.id,
+        name: area.name || '',
+        capacity: typeof area.capacity === 'number' ? String(area.capacity) : '',
+      })),
     });
   }, [existingWarehouse, form]);
 
@@ -194,12 +217,18 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
 
     form.clearErrors('root');
 
+    const areas: IWarehouseArea[] = values.areas.map((area) => ({
+      ...(typeof area.id === 'number' ? { id: area.id } : {}),
+      name: area.name.trim(),
+      capacity: Number(area.capacity),
+    }));
+
     const payload = {
       id,
       name: values.name.trim(),
       code: values.code.trim(),
       address: values.address.trim(),
-      capacity: values.capacity ? Number(values.capacity) : undefined,
+      areas,
       status: 'ACTIVE' as const,
       organizationId: resolvedOrganizationId,
     };
@@ -235,7 +264,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
   return (
     <Form {...form}>
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)} noValidate>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <FormField
             control={form.control}
             name="name"
@@ -257,21 +286,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
               <FormItem>
                 <FormLabel>Code</FormLabel>
                 <FormControl>
-                  <Input placeholder="WH-001" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="capacity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Capacity</FormLabel>
-                <FormControl>
-                  <Input type="number" min={0} placeholder="1000" {...field} />
+                  <Input placeholder="WH001" maxLength={5} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -282,15 +297,89 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
             control={form.control}
             name="address"
             render={({ field }) => (
-              <FormItem className="md:col-span-2">
+              <FormItem>
                 <FormLabel>Address</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Warehouse address" className="min-h-[96px]" {...field} />
+                  <Input placeholder="Warehouse address" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="space-y-4 rounded-lg border p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-medium">Areas</h3>
+              <p className="text-xs text-muted-foreground">
+                Define warehouse areas and their capacities.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => appendArea({ name: '', capacity: '' })}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              Add Area
+            </Button>
+          </div>
+
+          {areaFields.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No areas added yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {areaFields.map((areaField, index) => (
+                <div
+                  key={areaField.fieldId}
+                  className="grid grid-cols-1 gap-3 rounded-md border p-3 md:grid-cols-5"
+                >
+                  <FormField
+                    control={form.control}
+                    name={`areas.${index}.name` as const}
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-3">
+                        <FormLabel>Area Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="First Floor" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`areas.${index}.capacity` as const}
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-1">
+                        <FormLabel>Area Capacity</FormLabel>
+                        <FormControl>
+                          <Input type="number" min={0} placeholder="500" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex items-end md:col-span-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => removeArea(index)}
+                      aria-label={`Remove area ${index + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {form.formState.errors.root?.message && (

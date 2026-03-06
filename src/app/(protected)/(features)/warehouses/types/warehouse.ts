@@ -2,12 +2,18 @@ export const WAREHOUSE_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'] as
 
 export type WarehouseStatus = (typeof WAREHOUSE_STATUSES)[number];
 
+export interface IWarehouseArea {
+  id?: number;
+  name: string;
+  capacity: number;
+}
+
 export interface IWarehouse {
   id?: number;
   name: string;
   code: string;
   address?: string;
-  capacity?: number;
+  areas?: IWarehouseArea[];
   status: WarehouseStatus;
   organizationId: number;
   organizationName?: string;
@@ -25,7 +31,6 @@ export interface WarehouseListParams {
   'name.contains'?: string;
   'code.contains'?: string;
   'address.contains'?: string;
-  'capacity.equals'?: number;
   'createdBy.contains'?: string;
   'lastModifiedBy.contains'?: string;
   'status.equals'?: WarehouseStatus;
