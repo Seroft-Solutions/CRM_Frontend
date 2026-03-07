@@ -171,7 +171,7 @@ export function OrderForm({
 
   const defaultState: OrderFormState = useMemo(() => {
     return {
-      orderStatus: initialOrder?.orderStatus || 'Pending',
+      orderStatus: initialOrder?.orderStatus || 'Created',
       paymentStatus: initialOrder?.paymentStatus || 'Pending',
       orderBaseAmount: initialOrder ? initialOrder.orderBaseAmount.toString() : '',
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',

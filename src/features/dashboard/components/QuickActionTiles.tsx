@@ -16,7 +16,6 @@ type QuickActionTilesProps = {
   showAddProduct?: boolean;
 };
 
-type TileTone = 'sidebar' | 'accent';
 type TileAction = 'add' | 'view';
 
 type QuickActionTile = {
@@ -25,7 +24,6 @@ type QuickActionTile = {
   title: string;
   description: string;
   icon: LucideIcon;
-  tone: TileTone;
   action: TileAction;
   patternPosition: string;
 };
@@ -45,7 +43,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Add Lead',
       description: 'Capture prospect details',
       icon: Plus,
-      tone: 'sidebar',
       action: 'add',
       patternPosition: '20% 20%',
     },
@@ -55,7 +52,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Manage Leads',
       description: 'View and manage leads',
       icon: Users,
-      tone: 'accent',
       action: 'view',
       patternPosition: '80% 80%',
     },
@@ -68,7 +64,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Add Customer',
       description: 'Register a new customer',
       icon: Plus,
-      tone: 'accent',
       action: 'add',
       patternPosition: '20% 20%',
     },
@@ -78,7 +73,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Manage Customers',
       description: 'View customer database',
       icon: UserCircle,
-      tone: 'sidebar',
       action: 'view',
       patternPosition: '20% 80%',
     },
@@ -91,7 +85,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Add Product',
       description: 'Add a new product',
       icon: Plus,
-      tone: 'accent',
       action: 'add',
       patternPosition: '35% 18%',
     },
@@ -101,7 +94,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Manage Products',
       description: 'View product catalog',
       icon: ShoppingCart,
-      tone: 'sidebar',
       action: 'view',
       patternPosition: '80% 20%',
     },
@@ -114,7 +106,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Add Sale Order',
       description: 'Create a new sale order',
       icon: Plus,
-      tone: 'accent',
       action: 'add',
       patternPosition: '70% 20%',
     },
@@ -124,7 +115,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Manage Sale Orders',
       description: 'View and manage sales',
       icon: HandCoins,
-      tone: 'sidebar',
       action: 'view',
       patternPosition: '85% 35%',
     },
@@ -137,7 +127,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Add Purchase Order',
       description: 'Create a new purchase order',
       icon: Plus,
-      tone: 'accent',
       action: 'add',
       patternPosition: '25% 65%',
     },
@@ -147,7 +136,6 @@ const quickActionPairs: QuickActionPair[] = [
       title: 'Manage Purchase Orders',
       description: 'Track purchase order flow',
       icon: ShoppingBag,
-      tone: 'sidebar',
       action: 'view',
       patternPosition: '70% 75%',
     },
@@ -156,7 +144,7 @@ const quickActionPairs: QuickActionPair[] = [
 
 function QuickActionTileCard({ tile }: { tile: QuickActionTile }) {
   const Icon = tile.icon;
-  const isSidebarTone = tile.tone === 'sidebar';
+  const isAddTile = tile.action === 'add';
   const actionLabel = tile.action === 'add' ? 'Add' : 'View';
 
   return (
@@ -164,7 +152,7 @@ function QuickActionTileCard({ tile }: { tile: QuickActionTile }) {
       <Card
         className="relative h-full min-h-[72px] cursor-pointer overflow-hidden border-0 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg"
         style={{
-          backgroundColor: isSidebarTone ? 'var(--sidebar)' : 'var(--feature-header-accent)',
+          backgroundColor: isAddTile ? 'var(--feature-header-accent)' : 'var(--sidebar)',
         }}
       >
         <div className="absolute inset-0 bg-white/5 opacity-30">
@@ -181,24 +169,22 @@ function QuickActionTileCard({ tile }: { tile: QuickActionTile }) {
           <div className="flex w-full items-center gap-2.5">
             <div
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border backdrop-blur-sm ${
-                isSidebarTone ? 'bg-white/20 border-white/30' : 'bg-black/10 border-black/10'
+                isAddTile ? 'bg-black/10 border-black/15' : 'bg-white/20 border-white/30'
               }`}
             >
-              <Icon className={`h-4 w-4 ${isSidebarTone ? 'text-white' : 'text-slate-900'}`} />
+              <Icon className={`h-4 w-4 ${isAddTile ? 'text-slate-900' : 'text-white'}`} />
             </div>
 
             <div className="min-w-0 flex-1">
               <h3
                 className={`truncate text-sm font-semibold ${
-                  isSidebarTone ? 'text-white' : 'text-slate-900'
+                  isAddTile ? 'text-slate-900' : 'text-white'
                 }`}
               >
                 {tile.title}
               </h3>
               <p
-                className={`truncate text-[11px] ${
-                  isSidebarTone ? 'text-blue-100' : 'text-slate-800'
-                }`}
+                className={`truncate text-[11px] ${isAddTile ? 'text-slate-800' : 'text-blue-100'}`}
               >
                 {tile.description}
               </p>
@@ -206,7 +192,7 @@ function QuickActionTileCard({ tile }: { tile: QuickActionTile }) {
 
             <div
               className={`flex h-6 shrink-0 items-center rounded-md px-2 text-xs font-medium ${
-                isSidebarTone ? 'bg-white text-blue-600' : 'bg-white text-slate-900'
+                isAddTile ? 'bg-white text-slate-900' : 'bg-white text-blue-700'
               }`}
             >
               {tile.action === 'add' ? (

@@ -7,7 +7,7 @@ import type { PurchaseOrderDTO } from '@/core/api/purchase-order';
 const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [
-  'Pending',
+  'Created',
   'Processing',
   'Shipped',
   'Delivered',
@@ -310,4 +310,3 @@ export const mapOrderDetails = (details?: PurchaseOrderDetailDTO[]) =>
 
 export const mapOrderHistoryEntries = (entries?: PurchaseOrderHistoryDTO[]) =>
   entries ? entries.map(mapOrderHistoryDto) : [];
-

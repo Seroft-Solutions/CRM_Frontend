@@ -9,7 +9,7 @@ import type { OrderShippingDetailDTO } from '@/core/api/order-shipping-detail';
 const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [
-  'Pending',
+  'Created',
   'Processing',
   'Shipped',
   'Delivered',
