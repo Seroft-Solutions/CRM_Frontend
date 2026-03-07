@@ -39,6 +39,7 @@ export interface OrderDetailItem {
   itemStatusCode?: number;
   itemTotalAmount: number;
   quantity: number;
+  backOrderQuantity: number;
   itemPrice: number;
   itemTaxAmount: number;
   itemComment?: string;
@@ -229,6 +230,7 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
     itemStatusCode,
     itemTotalAmount: detail.itemTotalAmount ?? 0,
     quantity: detail.quantity ?? 0,
+    backOrderQuantity: detail.backOrderQuantity ?? 0,
     itemPrice: detail.itemPrice ?? 0,
     itemTaxAmount: 0,
     itemComment: undefined,

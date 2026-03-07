@@ -23,9 +23,13 @@ export type OrderItemForm = {
   id?: number;
   itemType: 'product' | 'catalog';
   productId?: number;
+  initialProductId?: number;
   variantId?: number;
+  initialVariantId?: number;
   productCatalogId?: number;
   availableQuantity?: number;
+  existingQuantity?: number;
+  existingBackOrderQuantity?: number;
   productName?: string;
   sku?: string;
   variantAttributes?: string;

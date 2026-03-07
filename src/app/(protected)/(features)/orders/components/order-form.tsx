@@ -25,6 +25,7 @@ import {
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -68,6 +69,7 @@ import { OrderFormFooter } from './order-form-footer';
 import { OrderFormFields } from './order-form-fields';
 import { OrderFormItems } from './order-form-items';
 import { FieldError } from './order-form-field-error';
+import { getOrderItemBillingBreakdown } from './order-item-stock';
 
 interface OrderFormProps {
   initialOrder?: OrderRecord;
@@ -89,14 +91,16 @@ const emptyOrderItem = (itemType: OrderItemForm['itemType'] = 'product'): OrderI
 
 const calculateItemsTotal = (items: OrderItemForm[]) =>
   items.reduce((sum, item) => {
-    const qty = Number.parseInt(item.quantity, 10) || 0;
+    const breakdown = getOrderItemBillingBreakdown(item);
+    const qty = breakdown.billableQuantity;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
     return sum + Math.max(qty * price + tax, 0);
   }, 0);
 
 const calculateItemTotal = (item: OrderItemForm) => {
-  const qty = Number.parseInt(item.quantity, 10) || 0;
+  const breakdown = getOrderItemBillingBreakdown(item);
+  const qty = breakdown.billableQuantity;
   const price = Number.parseFloat(item.itemPrice) || 0;
   const tax = Number.parseFloat(item.itemTaxAmount) || 0;
   return Math.max(qty * price + tax, 0);
@@ -133,6 +137,11 @@ export function OrderForm({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<OrderFormErrors>({});
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
+  const [showBackOrderResolutionDialog, setShowBackOrderResolutionDialog] = useState(false);
+  const [backOrderResolutionPrompted, setBackOrderResolutionPrompted] = useState(false);
+  const [backOrderResolutionCandidates, setBackOrderResolutionCandidates] = useState<
+    { index: number; name: string; fulfillableQuantity: number; existingBackOrderQuantity: number }[]
+  >([]);
   const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
@@ -196,13 +205,17 @@ export function OrderForm({
       id: item.orderDetailId || undefined,
       itemType: item.productCatalogId ? 'catalog' : 'product',
       productId: item.productId || undefined,
+      initialProductId: item.productId || undefined,
       variantId: item.variantId || undefined,
+      initialVariantId: item.variantId || undefined,
       productCatalogId: item.productCatalogId || undefined,
+      existingQuantity: Math.max(item.quantity || 0, 0),
+      existingBackOrderQuantity: Math.max(item.backOrderQuantity || 0, 0),
       productName: item.productName || undefined,
       sku: item.sku || undefined,
       variantAttributes: item.variantAttributes || undefined,
       itemStatus: item.itemStatusCode?.toString() || parseItemStatusValue(item.itemStatus),
-      quantity: item.quantity ? item.quantity.toString() : '',
+      quantity: Math.max((item.quantity || 0) + (item.backOrderQuantity || 0), 0).toString(),
       itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
       itemTaxAmount: item.itemTaxAmount ? item.itemTaxAmount.toString() : '',
       itemComment: item.itemComment || '',
@@ -630,6 +643,82 @@ export function OrderForm({
     });
   };
 
+  useEffect(() => {
+    if (!isEditing || backOrderResolutionPrompted) {
+      return;
+    }
+
+    const candidates = items
+      .map((item, index) => {
+        const existingBackOrderQuantity = Math.max(item.existingBackOrderQuantity || 0, 0);
+        if (item.itemType !== 'product' || existingBackOrderQuantity <= 0) {
+          return null;
+        }
+
+        const breakdown = getOrderItemBillingBreakdown(item);
+        const fulfillableQuantity = Math.max(existingBackOrderQuantity - breakdown.backOrderQuantity, 0);
+        if (fulfillableQuantity <= 0) {
+          return null;
+        }
+
+        const name = item.productName || item.sku || `Item ${index + 1}`;
+
+        return { index, name, fulfillableQuantity, existingBackOrderQuantity };
+      })
+      .filter((candidate): candidate is {
+        index: number;
+        name: string;
+        fulfillableQuantity: number;
+        existingBackOrderQuantity: number;
+      } => candidate !== null);
+
+    if (candidates.length === 0) {
+      return;
+    }
+
+    setBackOrderResolutionCandidates(candidates);
+    setShowBackOrderResolutionDialog(true);
+    setBackOrderResolutionPrompted(true);
+  }, [backOrderResolutionPrompted, isEditing, items]);
+
+  const handleCancelBackOrders = () => {
+    const quantityByIndex = new Map(
+      backOrderResolutionCandidates.map((candidate) => [candidate.index, candidate.existingBackOrderQuantity])
+    );
+
+    setItems((prev) =>
+      prev.map((item, index) => {
+        const existingBackOrderQuantity = quantityByIndex.get(index);
+        if (!existingBackOrderQuantity) {
+          return item;
+        }
+
+        const currentRequestedQuantity = Number.parseInt(item.quantity, 10);
+        const normalizedCurrentRequestedQuantity = Number.isFinite(currentRequestedQuantity)
+          ? Math.max(currentRequestedQuantity, 0)
+          : 0;
+        const nextRequestedQuantity = Math.max(
+          normalizedCurrentRequestedQuantity - existingBackOrderQuantity,
+          0
+        );
+
+        return {
+          ...item,
+          quantity: String(nextRequestedQuantity),
+          existingBackOrderQuantity: 0,
+        };
+      })
+    );
+
+    setShowBackOrderResolutionDialog(false);
+    toast.info('Back order quantities removed. Save the order to apply cancellation.');
+  };
+
+  const handleProceedBackOrders = () => {
+    setShowBackOrderResolutionDialog(false);
+    toast.info('Proceed selected. Save the order to bill available back-order quantity.');
+  };
+
   const handleAddressChange = (
     section: 'shipTo' | 'billTo',
     key: keyof AddressFieldsForm,
@@ -901,20 +990,6 @@ export function OrderForm({
 
       if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
         nextItemErrors[index].quantity = 'Use a whole number.';
-      } else if (item.itemType === 'product' && item.quantity.trim()) {
-        const parsedQuantity = Number.parseInt(item.quantity.trim(), 10);
-        const availableQuantity =
-          typeof item.availableQuantity === 'number' ? Math.max(0, item.availableQuantity) : null;
-
-        if (
-          Number.isFinite(parsedQuantity) &&
-          availableQuantity !== null &&
-          parsedQuantity > availableQuantity
-        ) {
-          const stockScopeLabel = item.variantId ? 'variant' : 'product';
-          nextItemErrors[index].quantity =
-            `Quantity cannot be greater than available ${stockScopeLabel} stock (${availableQuantity}).`;
-        }
       }
 
       if (item.itemPrice.trim()) {
@@ -1040,7 +1115,9 @@ export function OrderForm({
         .filter((item) => hasItemData(item))
         .map((item) => {
           const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
-          const quantity = parseInteger(item.quantity || '0');
+          const breakdown = getOrderItemBillingBreakdown(item);
+          const quantity = breakdown.billableQuantity;
+          const backOrderQuantity = breakdown.backOrderQuantity;
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
@@ -1057,6 +1134,7 @@ export function OrderForm({
               variantAttributes: item.variantAttributes || undefined,
               itemStatus,
               quantity,
+              backOrderQuantity,
               itemPrice,
               itemTaxAmount,
               itemTotalAmount,
@@ -1064,6 +1142,9 @@ export function OrderForm({
             },
           });
         });
+      const totalBackOrderUnits = items
+        .filter((item) => hasItemData(item))
+        .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
       const addressTasks: Promise<unknown>[] = [];
       if (shouldSaveAddress(address)) {
@@ -1097,7 +1178,24 @@ export function OrderForm({
         },
       });
 
-      await Promise.allSettled([...detailTasks, ...addressTasks, ...shippingTasks, historyTask]);
+      const backOrderHistoryTask =
+        totalBackOrderUnits > 0
+          ? createOrderHistory({
+              data: {
+                orderId,
+                status: `Back order created: ${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'}`,
+                notificationSent: false,
+              },
+            })
+          : null;
+
+      await Promise.allSettled([
+        ...detailTasks,
+        ...addressTasks,
+        ...shippingTasks,
+        historyTask,
+        ...(backOrderHistoryTask ? [backOrderHistoryTask] : []),
+      ]);
 
       await queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
@@ -1107,6 +1205,9 @@ export function OrderForm({
 
       setRemovedItemIds([]);
       toast.success('Order draft saved successfully.');
+      if (totalBackOrderUnits > 0) {
+        toast.info(`${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'} moved to Back Order.`);
+      }
       return true;
     } catch (error) {
       console.error('Failed to save order draft:', error);
@@ -1245,7 +1346,9 @@ export function OrderForm({
         })
         .map((item) => {
           const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
-          const quantity = parseInteger(item.quantity || '0');
+          const breakdown = getOrderItemBillingBreakdown(item);
+          const quantity = breakdown.billableQuantity;
+          const backOrderQuantity = breakdown.backOrderQuantity;
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
@@ -1262,6 +1365,7 @@ export function OrderForm({
             variantAttributes: item.variantAttributes || undefined,
             itemStatus,
             quantity,
+            backOrderQuantity,
             itemPrice,
             itemTaxAmount,
             itemTotalAmount,
@@ -1272,6 +1376,19 @@ export function OrderForm({
             ? updateOrderDetail({ id: item.id, data: detailPayload })
             : createOrderDetail({ data: detailPayload });
         });
+      const totalBackOrderUnits = items
+        .filter((item) => {
+          const hasData =
+            item.productId ||
+            item.variantId ||
+            item.productCatalogId ||
+            item.quantity?.trim() ||
+            item.itemPrice?.trim() ||
+            item.itemTaxAmount?.trim() ||
+            item.itemComment?.trim();
+          return hasData;
+        })
+        .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
       const deleteTasks = removedItemIds.map((id) => deleteOrderDetail({ id }));
 
@@ -1322,6 +1439,16 @@ export function OrderForm({
           notificationSent: false,
         },
       });
+      const backOrderHistoryTask =
+        totalBackOrderUnits > 0
+          ? createOrderHistory({
+              data: {
+                orderId,
+                status: `Back order created: ${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'}`,
+                notificationSent: false,
+              },
+            })
+          : null;
 
       const results = await Promise.allSettled([
         ...itemTasks,
@@ -1329,6 +1456,7 @@ export function OrderForm({
         ...addressTasks,
         ...shippingTasks,
         historyTask,
+        ...(backOrderHistoryTask ? [backOrderHistoryTask] : []),
       ]);
 
       const failed = results.filter((entry) => entry.status === 'rejected');
@@ -1353,6 +1481,9 @@ export function OrderForm({
       toast.success(isEditing ? 'Order updated' : 'Order created', {
         description: isEditing ? 'Changes saved successfully.' : 'New order is now available.',
       });
+      if (totalBackOrderUnits > 0) {
+        toast.info(`${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'} moved to Back Order.`);
+      }
 
       setRemovedItemIds([]);
 
@@ -1399,6 +1530,7 @@ export function OrderForm({
   const itemSummaries = items
     .filter(hasItemData)
     .map((item, index) => {
+      const breakdown = getOrderItemBillingBreakdown(item);
       const name =
         item.itemType === 'catalog'
           ? item.productName
@@ -1409,7 +1541,9 @@ export function OrderForm({
       return {
         key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
         name,
-        quantity: Number.parseInt(item.quantity, 10) || 0,
+        quantity: breakdown.requestedQuantity,
+        billableQuantity: breakdown.billableQuantity,
+        backOrderQuantity: breakdown.backOrderQuantity,
         total: calculateItemTotal(item),
       };
     });
@@ -1509,7 +1643,9 @@ export function OrderForm({
                           <div key={item.key} className="flex items-center justify-between text-slate-700">
                             <span className="truncate">{item.name}</span>
                             <span className="font-semibold text-slate-800">
-                              Qty {item.quantity} • ₹{item.total.toFixed(2)}
+                              Qty {item.quantity}
+                              {item.backOrderQuantity > 0 ? ` (${item.billableQuantity} billed, ${item.backOrderQuantity} back order)` : ''}
+                              {' '}• ₹{item.total.toFixed(2)}
                             </span>
                           </div>
                         ))}
@@ -1630,6 +1766,39 @@ export function OrderForm({
         isDirty={hasUnsavedChanges}
         formData={formState as Record<string, any>}
       />
+      <AlertDialog
+        open={showBackOrderResolutionDialog}
+        onOpenChange={setShowBackOrderResolutionDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Back order stock is now available</AlertDialogTitle>
+            <AlertDialogDescription>
+              Additional stock has arrived for one or more back-ordered items.
+              Do you want to cancel this back order or proceed with payment for the additional items?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <p className="font-semibold">Eligible items</p>
+            <ul className="mt-1 list-disc pl-4">
+              {backOrderResolutionCandidates.map((candidate) => (
+                <li key={`${candidate.index}-${candidate.name}`}>
+                  {candidate.name}: {candidate.fulfillableQuantity} item
+                  {candidate.fulfillableQuantity === 1 ? '' : 's'} ready now
+                </li>
+              ))}
+            </ul>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelBackOrders}>
+              Cancel Back Order
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleProceedBackOrders}>
+              Proceed With Payment
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog open={showEmptyCartDialog} onOpenChange={setShowEmptyCartDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

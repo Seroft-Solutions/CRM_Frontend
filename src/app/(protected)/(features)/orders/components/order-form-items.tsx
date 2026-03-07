@@ -29,6 +29,7 @@ import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
+import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -418,7 +419,8 @@ export function OrderFormItems({
   }, [queryClient]);
 
   const calculateItemTotal = (item: OrderItemForm) => {
-    const qty = Number.parseInt(item.quantity, 10) || 0;
+    const breakdown = getOrderItemBillingBreakdown(item);
+    const qty = breakdown.billableQuantity;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
     return Math.max(qty * price + tax, 0);
@@ -534,38 +536,13 @@ export function OrderFormItems({
           <div className="divide-y divide-slate-200">
             {items.map((item, index) => {
               const itemTotal = calculateItemTotal(item);
-              const availableQuantity =
-                item.itemType === 'product' && typeof item.availableQuantity === 'number'
-                  ? Math.max(0, item.availableQuantity)
+              const breakdown = getOrderItemBillingBreakdown(item);
+              const availableQuantity = breakdown.availableQuantity ?? undefined;
+              const quantityErrorMessage = itemErrors?.[index]?.quantity;
+              const backOrderMessage =
+                breakdown.backOrderQuantity > 0
+                  ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
                   : undefined;
-              const parsedQuantity = Number.parseInt(item.quantity, 10);
-              const isQuantityExceeded =
-                availableQuantity !== undefined &&
-                Number.isFinite(parsedQuantity) &&
-                parsedQuantity > availableQuantity;
-              const stockScopeLabel = item.variantId ? 'variant' : 'product';
-              const liveQuantityError = isQuantityExceeded
-                ? `Quantity cannot be greater than available ${stockScopeLabel} stock (${availableQuantity}).`
-                : undefined;
-              const quantityErrorMessage = itemErrors?.[index]?.quantity || liveQuantityError;
-              const handleQuantityChange = (value: string) => {
-                if (value.trim() === '') {
-                  onItemChange(index, 'quantity', value);
-                  return;
-                }
-
-                const parsed = Number.parseInt(value, 10);
-                if (
-                  availableQuantity !== undefined &&
-                  Number.isFinite(parsed) &&
-                  parsed > availableQuantity
-                ) {
-                  onItemChange(index, 'quantity', String(availableQuantity));
-                  return;
-                }
-
-                onItemChange(index, 'quantity', value);
-              };
 
               return (
                 <div key={`item-${index}`} className="hover:bg-slate-50/50 transition-colors">
@@ -631,16 +608,18 @@ export function OrderFormItems({
                       <Input
                         type="number"
                         min={0}
-                        max={availableQuantity}
                         placeholder="0"
                         value={item.quantity}
-                        onChange={(event) => handleQuantityChange(event.target.value)}
+                        onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
                         className="h-9 border-slate-300"
                       />
                       {availableQuantity !== undefined && (
                         <p className="mt-1 text-[11px] text-slate-500">
-                          Available {stockScopeLabel} stock: {availableQuantity}
+                          Available {breakdown.stockScopeLabel} stock: {availableQuantity}
                         </p>
+                      )}
+                      {backOrderMessage && (
+                        <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
                       )}
                       <FieldError message={quantityErrorMessage} />
                     </div>
@@ -764,16 +743,18 @@ export function OrderFormItems({
                         <Input
                           type="number"
                           min={0}
-                          max={availableQuantity}
                           placeholder="0"
                           value={item.quantity}
-                          onChange={(event) => handleQuantityChange(event.target.value)}
+                          onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
                           className="h-9 border-slate-300"
                         />
                         {availableQuantity !== undefined && (
                           <p className="text-[11px] text-slate-500">
-                            Available {stockScopeLabel} stock: {availableQuantity}
+                            Available {breakdown.stockScopeLabel} stock: {availableQuantity}
                           </p>
+                        )}
+                        {backOrderMessage && (
+                          <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
                         )}
                         <FieldError message={quantityErrorMessage} />
                       </div>

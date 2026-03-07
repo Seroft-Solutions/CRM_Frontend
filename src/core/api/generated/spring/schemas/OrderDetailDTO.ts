@@ -30,6 +30,7 @@ export interface OrderDetailDTO {
   /** @minimum 0 */
   itemTotalAmount?: number;
   quantity?: number;
+  backOrderQuantity?: number;
   /** @minimum 0 */
   itemPrice?: number;
   /**

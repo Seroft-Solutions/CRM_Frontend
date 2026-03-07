@@ -249,7 +249,14 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold text-slate-800">{item.quantity}</TableCell>
+                    <TableCell className="font-semibold text-slate-800">
+                      <div>{item.quantity}</div>
+                      {item.backOrderQuantity > 0 && (
+                        <div className="text-xs font-medium text-amber-700">
+                          + {item.backOrderQuantity} back order
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemPrice)}</TableCell>
                     <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemTaxAmount)}</TableCell>
                     <TableCell className="font-bold text-slate-900">
