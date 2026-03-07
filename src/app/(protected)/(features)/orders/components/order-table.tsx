@@ -220,6 +220,34 @@ export function OrderTable({
 
   return (
     <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
+      {showStatusTabs ? (
+        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
+          <Tabs
+            value={statusFilter}
+            onValueChange={(value) => handleFilterChange(value as OrderStatus | 'All')}
+            className="w-full"
+          >
+            <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
+              <TabsTrigger
+                value="All"
+                className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
+              >
+                {allTabLabel}
+              </TabsTrigger>
+              {orderStatusOptions.map((status) => (
+                <TabsTrigger
+                  key={status}
+                  value={status}
+                  className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  {status}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-600">
@@ -254,34 +282,6 @@ export function OrderTable({
           </Button>
         </div>
       </div>
-
-      {showStatusTabs ? (
-        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
-          <Tabs
-            value={statusFilter}
-            onValueChange={(value) => handleFilterChange(value as OrderStatus | 'All')}
-            className="w-full"
-          >
-            <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
-              <TabsTrigger
-                value="All"
-                className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
-              >
-                {allTabLabel}
-              </TabsTrigger>
-              {orderStatusOptions.map((status) => (
-                <TabsTrigger
-                  key={status}
-                  value={status}
-                  className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
-                >
-                  {status}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-      ) : null}
 
       <div className="table-container overflow-x-auto">
         <Table>
