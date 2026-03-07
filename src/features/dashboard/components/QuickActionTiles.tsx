@@ -1,277 +1,245 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Users, ShoppingCart, UserCircle } from 'lucide-react';
+import {
+  HandCoins,
+  Plus,
+  ShoppingBag,
+  ShoppingCart,
+  type LucideIcon,
+  UserCircle,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 
 type QuickActionTilesProps = {
   showAddProduct?: boolean;
 };
 
-export function QuickActionTiles({ showAddProduct = true }: QuickActionTilesProps) {
+type TileTone = 'sidebar' | 'accent';
+type TileAction = 'add' | 'view';
+
+type QuickActionTile = {
+  key: string;
+  href: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  tone: TileTone;
+  action: TileAction;
+  patternPosition: string;
+};
+
+type QuickActionPair = {
+  key: string;
+  add: QuickActionTile;
+  manage: QuickActionTile;
+};
+
+const quickActionPairs: QuickActionPair[] = [
+  {
+    key: 'lead',
+    add: {
+      key: 'add-lead',
+      href: '/calls/new',
+      title: 'Add Lead',
+      description: 'Capture prospect details',
+      icon: Plus,
+      tone: 'sidebar',
+      action: 'add',
+      patternPosition: '20% 20%',
+    },
+    manage: {
+      key: 'manage-leads',
+      href: '/calls',
+      title: 'Manage Leads',
+      description: 'View and manage leads',
+      icon: Users,
+      tone: 'accent',
+      action: 'view',
+      patternPosition: '80% 80%',
+    },
+  },
+  {
+    key: 'customer',
+    add: {
+      key: 'add-customer',
+      href: '/customers/new',
+      title: 'Add Customer',
+      description: 'Register a new customer',
+      icon: Plus,
+      tone: 'accent',
+      action: 'add',
+      patternPosition: '20% 20%',
+    },
+    manage: {
+      key: 'manage-customers',
+      href: '/customers',
+      title: 'Manage Customers',
+      description: 'View customer database',
+      icon: UserCircle,
+      tone: 'sidebar',
+      action: 'view',
+      patternPosition: '20% 80%',
+    },
+  },
+  {
+    key: 'product',
+    add: {
+      key: 'add-product',
+      href: '/products/new',
+      title: 'Add Product',
+      description: 'Add a new product',
+      icon: Plus,
+      tone: 'accent',
+      action: 'add',
+      patternPosition: '35% 18%',
+    },
+    manage: {
+      key: 'manage-products',
+      href: '/products',
+      title: 'Manage Products',
+      description: 'View product catalog',
+      icon: ShoppingCart,
+      tone: 'sidebar',
+      action: 'view',
+      patternPosition: '80% 20%',
+    },
+  },
+  {
+    key: 'sale-order',
+    add: {
+      key: 'add-sale-order',
+      href: '/orders/new',
+      title: 'Add Sale Order',
+      description: 'Create a new sale order',
+      icon: Plus,
+      tone: 'accent',
+      action: 'add',
+      patternPosition: '70% 20%',
+    },
+    manage: {
+      key: 'manage-sale-orders',
+      href: '/orders',
+      title: 'Manage Sale Orders',
+      description: 'View and manage sales',
+      icon: HandCoins,
+      tone: 'sidebar',
+      action: 'view',
+      patternPosition: '85% 35%',
+    },
+  },
+  {
+    key: 'purchase-order',
+    add: {
+      key: 'add-purchase-order',
+      href: '/purchase-orders/new',
+      title: 'Add Purchase Order',
+      description: 'Create a new purchase order',
+      icon: Plus,
+      tone: 'accent',
+      action: 'add',
+      patternPosition: '25% 65%',
+    },
+    manage: {
+      key: 'manage-purchase-orders',
+      href: '/purchase-orders',
+      title: 'Manage Purchase Orders',
+      description: 'Track purchase order flow',
+      icon: ShoppingBag,
+      tone: 'sidebar',
+      action: 'view',
+      patternPosition: '70% 75%',
+    },
+  },
+];
+
+function QuickActionTileCard({ tile }: { tile: QuickActionTile }) {
+  const Icon = tile.icon;
+  const isSidebarTone = tile.tone === 'sidebar';
+  const actionLabel = tile.action === 'add' ? 'Add' : 'View';
+
   return (
-    <div className="grid gap-4 grid-rows-1 md:grid-cols-2 lg:grid-cols-3">
-      {/* Add Lead Tile */}
-      <Link href="/calls/new" className="block">
-        <Card
-          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer h-full min-h-[80px]"
-          style={{ backgroundColor: 'var(--sidebar)' }}
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-white/5 opacity-30">
+    <Link href={tile.href} className="block">
+      <Card
+        className="relative h-full min-h-[72px] cursor-pointer overflow-hidden border-0 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg"
+        style={{
+          backgroundColor: isSidebarTone ? 'var(--sidebar)' : 'var(--feature-header-accent)',
+        }}
+      >
+        <div className="absolute inset-0 bg-white/5 opacity-30">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `radial-gradient(circle at ${tile.patternPosition}, white 0.5px, transparent 0.5px)`,
+              backgroundSize: '18px 18px',
+            }}
+          />
+        </div>
+
+        <CardContent className="relative flex h-full items-center p-2.5">
+          <div className="flex w-full items-center gap-2.5">
             <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 20% 20%, white 0.5px, transparent 0.5px)',
-                backgroundSize: '20px 20px',
-              }}
-            />
-          </div>
-
-          <CardContent className="relative p-3 h-full flex items-center">
-            <div className="flex items-center space-x-4">
-              {/* Icon Container */}
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-colors duration-300 flex-shrink-0">
-                <Plus className="h-5 w-5 text-white" />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">New Lead</h3>
-                <p className="text-blue-100 text-xs">Capture prospect details</p>
-              </div>
-
-              {/* Action Button - Now just visual indicator */}
-              <div className="flex-shrink-0">
-                <div className="bg-white text-blue-600 border-0 font-medium px-3 py-1.5 h-7 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
-                  <Plus className="mr-1 h-3 w-3" />
-                  Add
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-
-      {/* Manage Leads Tile */}
-      <Link href="/calls" className="block">
-        <Card
-          className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer h-full min-h-[80px]"
-          style={{ backgroundColor: 'var(--feature-header-accent)' }}
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-white/5 opacity-30">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 80% 80%, white 0.5px, transparent 0.5px)',
-                backgroundSize: '20px 20px',
-              }}
-            />
-          </div>
-
-          <CardContent className="relative p-3 h-full flex items-center">
-            <div className="flex items-center space-x-4">
-              {/* Icon Container */}
-              <div className="w-10 h-10 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-black/10 group-hover:bg-black/20 transition-colors duration-300 flex-shrink-0">
-                <Users className="h-5 w-5 text-slate-900" />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">Manage Leads</h3>
-                <p className="text-slate-800 text-xs">View and manage leads</p>
-              </div>
-
-              {/* Action Button - Now just visual indicator */}
-              <div className="flex-shrink-0">
-                <div className="bg-white text-slate-900 border-0 font-medium px-3 py-1.5 h-7 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
-                  <Users className="mr-1 h-3 w-3" />
-                  View
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-
-      {/* Manage Customers Tile */}
-      <Link href="/customers" className="block">
-        <Card
-          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer h-full min-h-[80px]"
-          style={{ backgroundColor: 'var(--sidebar)' }}
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-white/5 opacity-30">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 20% 80%, white 0.5px, transparent 0.5px)',
-                backgroundSize: '20px 20px',
-              }}
-            />
-          </div>
-
-          <CardContent className="relative p-3 h-full flex items-center">
-            <div className="flex items-center space-x-4">
-              {/* Icon Container */}
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-colors duration-300 flex-shrink-0">
-                <UserCircle className="h-5 w-5 text-white" />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">Manage Customers</h3>
-                <p className="text-blue-100 text-xs">View customer database</p>
-              </div>
-
-              {/* Action Button - Now just visual indicator */}
-              <div className="flex-shrink-0">
-                <div className="bg-white text-blue-600 border-0 font-medium px-3 py-1.5 h-7 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
-                  <UserCircle className="mr-1 h-3 w-3" />
-                  View
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-
-      {/* Add Customer Tile */}
-      <Link href="/customers/new" className="block">
-        <Card
-          className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer h-full min-h-[80px]"
-          style={{ backgroundColor: 'var(--feature-header-accent)' }}
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-white/5 opacity-30">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 20% 20%, white 0.5px, transparent 0.5px)',
-                backgroundSize: '20px 20px',
-              }}
-            />
-          </div>
-
-          <CardContent className="relative p-3 h-full flex items-center">
-            <div className="flex items-center space-x-4">
-              {/* Icon Container */}
-              <div className="w-10 h-10 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-black/10 group-hover:bg-black/20 transition-colors duration-300 flex-shrink-0">
-                <Plus className="h-5 w-5 text-slate-900" />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">Add Customer</h3>
-                <p className="text-slate-800 text-xs">Register a new customer</p>
-              </div>
-
-              {/* Action Button - Now just visual indicator */}
-              <div className="flex-shrink-0">
-                <div className="bg-white text-slate-900 border-0 font-medium px-3 py-1.5 h-7 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
-                  <Plus className="mr-1 h-3 w-3" />
-                  Add
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-
-      {/* Manage Products Tile */}
-      <Link href="/products" className="block">
-        <Card
-          className="relative overflow-hidden border-0 text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-110 group cursor-pointer h-full min-h-[80px]"
-          style={{ backgroundColor: 'var(--sidebar)' }}
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-white/5 opacity-30">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 80% 20%, white 0.5px, transparent 0.5px)',
-                backgroundSize: '20px 20px',
-              }}
-            />
-          </div>
-
-          <CardContent className="relative p-3 h-full flex items-center">
-            <div className="flex items-center space-x-4">
-              {/* Icon Container */}
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-white/30 group-hover:bg-white/30 transition-colors duration-300 flex-shrink-0">
-                <ShoppingCart className="h-5 w-5 text-white" />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">Manage Products</h3>
-                <p className="text-blue-100 text-xs">View product catalog</p>
-              </div>
-
-              {/* Action Button - Now just visual indicator */}
-              <div className="flex-shrink-0">
-                <div className="bg-white text-blue-600 border-0 font-medium px-3 py-1.5 h-7 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
-                  <ShoppingCart className="mr-1 h-3 w-3" />
-                  View
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-
-      {showAddProduct ? (
-        <>
-          {/* Add Product Tile */}
-          <Link href="/products/new" className="block">
-            <Card
-              className="relative overflow-hidden border-0 text-slate-900 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:brightness-105 group cursor-pointer h-full min-h-[80px]"
-              style={{ backgroundColor: 'var(--feature-header-accent)' }}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border backdrop-blur-sm ${
+                isSidebarTone ? 'bg-white/20 border-white/30' : 'bg-black/10 border-black/10'
+              }`}
             >
-              {/* Background Pattern */}
-              <div className="absolute inset-0 bg-white/5 opacity-30">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage:
-                      'radial-gradient(circle at 20% 20%, white 0.5px, transparent 0.5px)',
-                    backgroundSize: '20px 20px',
-                  }}
-                />
-              </div>
+              <Icon className={`h-4 w-4 ${isSidebarTone ? 'text-white' : 'text-slate-900'}`} />
+            </div>
 
-              <CardContent className="relative p-3 h-full flex items-center">
-                <div className="flex items-center space-x-4">
-                  {/* Icon Container */}
-                  <div className="w-10 h-10 bg-black/10 rounded-lg flex items-center justify-center backdrop-blur-sm border border-black/10 group-hover:bg-black/20 transition-colors duration-300 flex-shrink-0">
-                    <Plus className="h-5 w-5 text-slate-900" />
-                  </div>
+            <div className="min-w-0 flex-1">
+              <h3
+                className={`truncate text-sm font-semibold ${
+                  isSidebarTone ? 'text-white' : 'text-slate-900'
+                }`}
+              >
+                {tile.title}
+              </h3>
+              <p
+                className={`truncate text-[11px] ${
+                  isSidebarTone ? 'text-blue-100' : 'text-slate-800'
+                }`}
+              >
+                {tile.description}
+              </p>
+            </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold mb-0.5">Add Product</h3>
-                    <p className="text-slate-800 text-xs">Add a new product to catalog</p>
-                  </div>
+            <div
+              className={`flex h-6 shrink-0 items-center rounded-md px-2 text-xs font-medium ${
+                isSidebarTone ? 'bg-white text-blue-600' : 'bg-white text-slate-900'
+              }`}
+            >
+              {tile.action === 'add' ? (
+                <Plus className="mr-1 h-3 w-3" />
+              ) : (
+                <Icon className="mr-1 h-3 w-3" />
+              )}
+              {actionLabel}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
-                  {/* Action Button - Now just visual indicator */}
-                  <div className="flex-shrink-0">
-                    <div className="bg-white text-slate-900 border-0 font-medium px-3 py-1.5 h-7 rounded-md text-sm group-hover:shadow-md transition-all duration-300 flex items-center">
-                      <Plus className="mr-1 h-3 w-3" />
-                      Add
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        </>
-      ) : null}
+export function QuickActionTiles({ showAddProduct = true }: QuickActionTilesProps) {
+  const pairs = showAddProduct
+    ? quickActionPairs
+    : quickActionPairs.filter((pair) => pair.key !== 'product');
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        {pairs.map((pair) => (
+          <QuickActionTileCard key={pair.add.key} tile={pair.add} />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        {pairs.map((pair) => (
+          <QuickActionTileCard key={pair.manage.key} tile={pair.manage} />
+        ))}
+      </div>
     </div>
   );
 }
