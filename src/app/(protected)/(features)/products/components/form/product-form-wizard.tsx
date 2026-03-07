@@ -429,17 +429,40 @@ export function ProductForm({ id }: ProductFormProps) {
 
       for (const variantData of variants) {
         try {
-          const warehouseId =
-            typeof variantData.warehouseId === 'number'
-              ? variantData.warehouseId
-              : (variantData.warehouse as { id?: number } | undefined)?.id;
+          const variantStocksInput = Array.isArray(variantData.variantStocks)
+            ? (variantData.variantStocks as Array<Record<string, unknown>>)
+            : [];
+          const normalizedVariantStocks = variantStocksInput
+            .map((variantStock) => {
+              const warehouseId =
+                typeof variantStock.warehouseId === 'number'
+                  ? variantStock.warehouseId
+                  : (variantStock.warehouse as { id?: number } | undefined)?.id;
+              const stockQuantity = Number(variantStock.stockQuantity) || 0;
+
+              return { warehouseId, stockQuantity };
+            })
+            .filter(
+              (variantStock): variantStock is { warehouseId: number; stockQuantity: number } =>
+                typeof variantStock.warehouseId === 'number'
+            );
+          const totalVariantStock =
+            normalizedVariantStocks.length > 0
+              ? normalizedVariantStocks.reduce(
+                  (sum, variantStock) => sum + (Number(variantStock.stockQuantity) || 0),
+                  0
+                )
+              : Number(variantData.stockQuantity) || 0;
 
           // Create the variant
           const variantPayload = {
             sku: normalizeSku(String(variantData.sku ?? ''), 'PROD'),
             price: variantData.price,
-            stockQuantity: variantData.stockQuantity,
-            warehouse: typeof warehouseId === 'number' ? { id: warehouseId } : undefined,
+            stockQuantity: totalVariantStock,
+            variantStocks: normalizedVariantStocks.map((variantStock) => ({
+              stockQuantity: variantStock.stockQuantity,
+              warehouse: { id: variantStock.warehouseId },
+            })),
             status: variantData.status,
             isPrimary: variantData.isPrimary ?? false,
             product: { id: productId },

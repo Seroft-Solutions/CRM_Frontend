@@ -25,6 +25,7 @@ import {
   ExistingVariantRow,
   VariantSelection,
   VariantTableSelection,
+  VariantWarehouseStock,
   VariantWarehouseOption,
 } from './types';
 import { VARIANT_IMAGE_ORDER } from '@/features/product-variant-images/utils/variant-image-slots';
@@ -54,12 +55,21 @@ const sizeRankByToken = (() => {
   return map;
 })();
 
-type ProductVariantWithWarehouse = ProductVariantDTO & {
+type ProductVariantWithStocks = ProductVariantDTO & {
   warehouse?: {
     id?: number;
     name?: string;
     code?: string;
   } | null;
+  variantStocks?: Array<{
+    id?: number;
+    stockQuantity?: number;
+    warehouse?: {
+      id?: number;
+      name?: string;
+      code?: string;
+    } | null;
+  }>;
 };
 const isSizeLabel = (label?: string) => {
   if (!label) return false;
@@ -450,8 +460,42 @@ export function ProductVariantManager({
     return (variants ?? [])
       .filter((v) => typeof v.id === 'number')
       .map((variant) => {
-        const warehouse = (variant as ProductVariantWithWarehouse).warehouse;
-        const warehouseId = typeof warehouse?.id === 'number' ? warehouse.id : undefined;
+        const variantWithStocks = variant as ProductVariantWithStocks;
+        const fallbackWarehouse = variantWithStocks.warehouse;
+        const mappedVariantStocks: VariantWarehouseStock[] = (variantWithStocks.variantStocks ?? [])
+          .map((variantStock) => {
+            const warehouse = variantStock.warehouse;
+            const warehouseId = typeof warehouse?.id === 'number' ? warehouse.id : undefined;
+
+            return {
+              id: variantStock.id,
+              warehouseId,
+              warehouseName:
+                warehouse?.name ?? (warehouseId ? warehouseById.get(warehouseId)?.name : undefined),
+              stockQuantity: Number(variantStock.stockQuantity) || 0,
+            };
+          })
+          .filter((variantStock) => typeof variantStock.warehouseId === 'number');
+        const variantStocks =
+          mappedVariantStocks.length > 0
+            ? mappedVariantStocks
+            : typeof fallbackWarehouse?.id === 'number'
+              ? [
+                  {
+                    warehouseId: fallbackWarehouse.id,
+                    warehouseName:
+                      fallbackWarehouse.name ?? warehouseById.get(fallbackWarehouse.id)?.name,
+                    stockQuantity: Number(variant.stockQuantity) || 0,
+                  },
+                ]
+              : [];
+        const stockQuantity =
+          variantStocks.length > 0
+            ? variantStocks.reduce(
+                (sum, variantStock) => sum + (Number(variantStock.stockQuantity) || 0),
+                0
+              )
+            : Number(variant.stockQuantity) || 0;
         const selections = selectionsByVariantId[variant.id!] ?? [];
         const rowSelections: VariantSelection[] = selections
           .filter((s) => typeof s.attribute?.id === 'number' && typeof s.option?.id === 'number')
@@ -475,10 +519,8 @@ export function ProductVariantManager({
           id: variant.id!,
           sku: variant.sku,
           price: variant.price,
-          stockQuantity: variant.stockQuantity,
-          warehouseId,
-          warehouseName:
-            warehouse?.name ?? (warehouseId ? warehouseById.get(warehouseId)?.name : undefined),
+          stockQuantity,
+          variantStocks,
           status: variant.status,
           isPrimary: variant.isPrimary,
           selections: rowSelections,
@@ -651,8 +693,13 @@ export function ProductVariantManager({
           sku,
           price: defaultVariantPrice ?? 0,
           stockQuantity: 0,
-          warehouseId: defaultWarehouse?.id,
-          warehouseName: defaultWarehouse?.name,
+          variantStocks: [
+            {
+              warehouseId: defaultWarehouse?.id,
+              warehouseName: defaultWarehouse?.name,
+              stockQuantity: 0,
+            },
+          ],
           status: defaultGeneratedStatus,
           isPrimary: false,
           imageFiles: createEmptyImageFiles(),
@@ -898,15 +945,31 @@ export function ProductVariantManager({
       errors.push('Price must be greater than 0');
     }
 
-    // Stock validation: must be defined and non-negative
-    if (variant.stockQuantity === undefined || variant.stockQuantity === null) {
-      errors.push('Stock is required');
-    } else if (variant.stockQuantity < 0) {
-      errors.push('Stock cannot be negative');
-    }
+    if (!Array.isArray(variant.variantStocks) || variant.variantStocks.length === 0) {
+      errors.push('At least one warehouse stock row is required');
+    } else {
+      const seenWarehouseIds = new Set<number>();
 
-    if (variant.warehouseId === undefined || variant.warehouseId === null) {
-      errors.push('Warehouse is required');
+      variant.variantStocks.forEach((variantStock, stockIndex) => {
+        if (typeof variantStock.warehouseId !== 'number') {
+          errors.push(`Warehouse is required for row ${stockIndex + 1}`);
+
+          return;
+        }
+
+        if (seenWarehouseIds.has(variantStock.warehouseId)) {
+          errors.push('Warehouse must be unique per variant');
+        }
+        seenWarehouseIds.add(variantStock.warehouseId);
+
+        if (
+          variantStock.stockQuantity === undefined ||
+          variantStock.stockQuantity === null ||
+          Number(variantStock.stockQuantity) < 0
+        ) {
+          errors.push(`Stock must be 0 or greater for row ${stockIndex + 1}`);
+        }
+      });
     }
 
     return { isValid: errors.length === 0, errors };
@@ -1022,9 +1085,14 @@ export function ProductVariantManager({
           sku: variant.sku,
           price: variant.price,
           stockQuantity: variant.stockQuantity,
-          warehouse: variant.warehouseId
-            ? ({ id: variant.warehouseId } as Record<string, unknown>)
-            : undefined,
+          variantStocks: (variant.variantStocks ?? []).map((variantStock) => ({
+            id: variantStock.id,
+            stockQuantity: Number(variantStock.stockQuantity) || 0,
+            warehouse:
+              typeof variantStock.warehouseId === 'number'
+                ? ({ id: variantStock.warehouseId } as Record<string, unknown>)
+                : undefined,
+          })),
           status: 'ACTIVE',
           isPrimary: variant.isPrimary ?? false,
           imageFiles: variant.imageFiles,
@@ -1043,9 +1111,14 @@ export function ProductVariantManager({
         sku: upgradeCandidate.sku,
         price: upgradeCandidate.price,
         stockQuantity: upgradeCandidate.stockQuantity,
-        warehouse: upgradeCandidate.warehouseId
-          ? ({ id: upgradeCandidate.warehouseId } as Record<string, unknown>)
-          : undefined,
+        variantStocks: (upgradeCandidate.variantStocks ?? []).map((variantStock) => ({
+          id: variantStock.id,
+          stockQuantity: Number(variantStock.stockQuantity) || 0,
+          warehouse:
+            typeof variantStock.warehouseId === 'number'
+              ? ({ id: variantStock.warehouseId } as Record<string, unknown>)
+              : undefined,
+        })),
         status: upgradeCandidate.status,
         isPrimary: upgradeCandidate.isPrimary ?? false,
         selections: upgradeCandidate.selections.map((sel) => ({
@@ -1129,14 +1202,19 @@ export function ProductVariantManager({
       }
     }
 
-    const payload: ProductVariantDTO & { warehouse?: Record<string, unknown> } = {
+    const payload: ProductVariantDTO & { variantStocks?: Array<Record<string, unknown>> } = {
       id: editingRowData.id,
       sku: normalizeSku(editingRowData.sku, 'PROD'),
       price: editingRowData.price,
       stockQuantity: editingRowData.stockQuantity,
-      warehouse: editingRowData.warehouseId
-        ? ({ id: editingRowData.warehouseId } as Record<string, unknown>)
-        : undefined,
+      variantStocks: (editingRowData.variantStocks ?? []).map((variantStock) => ({
+        id: variantStock.id,
+        stockQuantity: Number(variantStock.stockQuantity) || 0,
+        warehouse:
+          typeof variantStock.warehouseId === 'number'
+            ? ({ id: variantStock.warehouseId } as Record<string, unknown>)
+            : undefined,
+      })),
       status: editingRowData.status,
       isPrimary: editingRowData.isPrimary ?? false,
       product: productId ? { id: productId } : undefined,

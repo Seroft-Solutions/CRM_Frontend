@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
-import { Image, Pencil, Save, Trash2, X } from 'lucide-react';
+import { Image, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import {
   CombinedVariantRow,
   DraftVariantRow,
@@ -125,13 +125,23 @@ export function VariantTableRow({
     }
   };
 
-  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value) || 0;
+  const getVariantStocks = () => data.variantStocks ?? [];
+  const calculateTotalStock = (variantStocks: Array<{ stockQuantity: number }>) =>
+    variantStocks.reduce((sum, variantStock) => sum + (Number(variantStock.stockQuantity) || 0), 0);
+  const updateVariantStocks = (
+    variantStocks: Array<{
+      id?: number;
+      warehouseId?: number;
+      warehouseName?: string;
+      stockQuantity: number;
+    }>
+  ) => {
+    const stockQuantity = calculateTotalStock(variantStocks);
 
     if (isDraft) {
-      onUpdateDraft(row.key, { stockQuantity: value });
+      onUpdateDraft(row.key, { variantStocks, stockQuantity });
     } else if (isEditing) {
-      onUpdateEditingRow({ stockQuantity: value });
+      onUpdateEditingRow({ variantStocks, stockQuantity });
     }
   };
 
@@ -143,19 +153,114 @@ export function VariantTableRow({
     }
   };
 
-  const handleWarehouseChange = (warehouseValue: string) => {
-    const selectedWarehouse =
-      warehouseValue === '__none__'
-        ? undefined
-        : warehouses.find((warehouse) => warehouse.id === Number(warehouseValue));
-    const nextWarehouseId = selectedWarehouse?.id;
-    const nextWarehouseName = selectedWarehouse?.name;
+  const handleWarehouseChange = (stockIndex: number, warehouseValue: string) => {
+    const nextStocks = getVariantStocks().map((variantStock, index) => {
+      if (index !== stockIndex) {
+        return variantStock;
+      }
 
-    if (isDraft) {
-      onUpdateDraft(row.key, { warehouseId: nextWarehouseId, warehouseName: nextWarehouseName });
-    } else if (isEditing) {
-      onUpdateEditingRow({ warehouseId: nextWarehouseId, warehouseName: nextWarehouseName });
+      const selectedWarehouse =
+        warehouseValue === '__none__'
+          ? undefined
+          : warehouses.find((warehouse) => warehouse.id === Number(warehouseValue));
+
+      return {
+        ...variantStock,
+        warehouseId: selectedWarehouse?.id,
+        warehouseName: selectedWarehouse?.name,
+      };
+    });
+
+    updateVariantStocks(nextStocks);
+  };
+
+  const handleWarehouseStockChange = (stockIndex: number, stockValue: string) => {
+    const parsedStock = Number.parseInt(stockValue, 10);
+    const stockQuantity = Number.isNaN(parsedStock) ? 0 : Math.max(0, parsedStock);
+    const nextStocks = getVariantStocks().map((variantStock, index) => {
+      if (index !== stockIndex) {
+        return variantStock;
+      }
+
+      return {
+        ...variantStock,
+        stockQuantity,
+      };
+    });
+
+    updateVariantStocks(nextStocks);
+  };
+
+  const handleAddWarehouseStock = () => {
+    const selectedWarehouseIds = new Set(
+      getVariantStocks()
+        .map((variantStock) => variantStock.warehouseId)
+        .filter((warehouseId): warehouseId is number => typeof warehouseId === 'number')
+    );
+    const firstAvailableWarehouse = warehouses.find(
+      (warehouse) => !selectedWarehouseIds.has(warehouse.id)
+    );
+
+    if (!firstAvailableWarehouse) {
+      return;
     }
+
+    const nextStocks = [
+      ...getVariantStocks(),
+      {
+        warehouseId: firstAvailableWarehouse.id,
+        warehouseName: firstAvailableWarehouse.name,
+        stockQuantity: 0,
+      },
+    ];
+
+    updateVariantStocks(nextStocks);
+  };
+
+  const handleRemoveWarehouseStock = (stockIndex: number) => {
+    const currentStocks = getVariantStocks();
+
+    if (currentStocks.length <= 1) {
+      return;
+    }
+
+    const nextStocks = currentStocks.filter((_, index) => index !== stockIndex);
+
+    updateVariantStocks(nextStocks);
+  };
+
+  const resolveWarehouseLabel = (warehouseId?: number, warehouseName?: string) => {
+    if (warehouseName) {
+      return warehouseName;
+    }
+    if (typeof warehouseId !== 'number') {
+      return undefined;
+    }
+
+    const selectedWarehouse =
+      warehouses.find((warehouse) => warehouse.id === warehouseId) ?? undefined;
+
+    return selectedWarehouse?.name;
+  };
+
+  const selectedWarehouseIds = new Set(
+    getVariantStocks()
+      .map((variantStock) => variantStock.warehouseId)
+      .filter((warehouseId): warehouseId is number => typeof warehouseId === 'number')
+  );
+  const canAddMoreWarehouseRows = warehouses.some(
+    (warehouse) => !selectedWarehouseIds.has(warehouse.id)
+  );
+  const getAvailableWarehousesForRow = (stockIndex: number) => {
+    const currentWarehouseId = getVariantStocks()[stockIndex]?.warehouseId;
+
+    return warehouses.filter((warehouse) => {
+      if (warehouse.id === currentWarehouseId) {
+        return true;
+      }
+
+      return !selectedWarehouseIds.has(warehouse.id);
+    });
   };
 
   const handlePrimaryChange = (isPrimary: boolean) => {
@@ -245,9 +350,11 @@ export function VariantTableRow({
   const hasStockError = validationErrors.some((err) => err.toLowerCase().includes('stock'));
   const hasWarehouseError = validationErrors.some((err) => err.toLowerCase().includes('warehouse'));
   const dataColumnCount = visibleEnumAttributes.length + 7 + (isViewMode ? 0 : 1);
+  const warehouseColumnWidth = '280px';
+  const nonWarehouseColumnCount = dataColumnCount - 1;
   const columnWidth = selection
-    ? `calc((100% - 2.5rem) / ${dataColumnCount})`
-    : `calc(100% / ${dataColumnCount})`;
+    ? `calc((100% - 2.5rem - ${warehouseColumnWidth}) / ${nonWarehouseColumnCount})`
+    : `calc((100% - ${warehouseColumnWidth}) / ${nonWarehouseColumnCount})`;
 
   return (
     <>
@@ -433,72 +540,133 @@ export function VariantTableRow({
           )}
         </TableCell>
         <TableCell className="py-2" style={{ width: columnWidth }}>
-          {isDraft || isEditing ? (
-            <div className="space-y-1">
-              <Input
-                className={`h-8 w-full min-w-0 border-2 transition-colors text-sm ${
-                  hasStockError
-                    ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                    : isDraft
-                      ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                      : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                }`}
-                type="number"
-                min="0"
-                placeholder="Quantity"
-                value={data.stockQuantity ?? ''}
-                onChange={handleStockChange}
-              />
-              {hasStockError && (
-                <p className="text-xs text-red-600 font-medium">
-                  Stock is required and cannot be negative
-                </p>
-              )}
-            </div>
-          ) : (
-            <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200 text-sm">
-              {data.stockQuantity}
-            </span>
+          <span
+            className={cn(
+              'font-semibold px-2 py-1 rounded border text-sm inline-flex',
+              hasStockError && (isDraft || isEditing)
+                ? 'text-red-700 bg-red-50 border-red-300'
+                : 'text-blue-700 bg-blue-50 border-blue-200'
+            )}
+          >
+            {data.stockQuantity}
+          </span>
+          {hasStockError && (isDraft || isEditing) && (
+            <p className="text-xs text-red-600 font-medium mt-1">
+              Please enter valid stock for each warehouse
+            </p>
           )}
         </TableCell>
 
         {/* Warehouse Column */}
-        <TableCell className="py-2 overflow-hidden" style={{ width: columnWidth }}>
+        <TableCell
+          className="py-2 overflow-hidden"
+          style={{ width: warehouseColumnWidth, minWidth: warehouseColumnWidth }}
+        >
           {isDraft || isEditing ? (
-            <div className="space-y-1">
-              <Select
-                value={data.warehouseId ? String(data.warehouseId) : '__none__'}
-                onValueChange={handleWarehouseChange}
-              >
-                <SelectTrigger
-                  className={`h-8 w-full min-w-0 border-2 transition-colors text-sm [&>span]:truncate ${
-                    hasWarehouseError
-                      ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                      : isDraft
-                        ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                        : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                  }`}
+            <div className="space-y-2 min-w-[260px]">
+              {getVariantStocks().map((variantStock, stockIndex) => (
+                <div
+                  key={`${item.rowKey}-stock-${stockIndex}`}
+                  className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-center gap-2"
                 >
-                  <SelectValue placeholder="Select warehouse" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Select warehouse</SelectItem>
-                  {warehouses.map((warehouse) => (
-                    <SelectItem key={warehouse.id} value={String(warehouse.id)}>
-                      {warehouse.name}
-                      {warehouse.code ? ` (${warehouse.code})` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  {(() => {
+                    const availableWarehouses = getAvailableWarehousesForRow(stockIndex);
+
+                    return (
+                      <Select
+                        value={
+                          variantStock.warehouseId ? String(variantStock.warehouseId) : '__none__'
+                        }
+                        onValueChange={(warehouseValue) =>
+                          handleWarehouseChange(stockIndex, warehouseValue)
+                        }
+                      >
+                        <SelectTrigger
+                          className={`h-8 w-full border-2 transition-colors text-sm [&>span]:truncate ${
+                            hasWarehouseError
+                              ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                              : isDraft
+                                ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                                : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                          }`}
+                        >
+                          <SelectValue placeholder="Select warehouse" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Select warehouse</SelectItem>
+                          {availableWarehouses.map((warehouse) => (
+                            <SelectItem key={warehouse.id} value={String(warehouse.id)}>
+                              {warehouse.name}
+                              {warehouse.code ? ` (${warehouse.code})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()}
+                  <Input
+                    className={`h-8 w-full border-2 transition-colors text-sm ${
+                      hasStockError
+                        ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                        : isDraft
+                          ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                          : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                    }`}
+                    type="number"
+                    min="0"
+                    placeholder="Qty"
+                    value={variantStock.stockQuantity}
+                    onChange={(event) => handleWarehouseStockChange(stockIndex, event.target.value)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => handleRemoveWarehouseStock(stockIndex)}
+                    disabled={getVariantStocks().length <= 1}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                className="h-7 w-full justify-start text-xs"
+                onClick={handleAddWarehouseStock}
+                disabled={!canAddMoreWarehouseRows}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                {canAddMoreWarehouseRows ? 'Add warehouse' : 'All warehouses added'}
+              </Button>
               {hasWarehouseError && (
-                <p className="text-xs text-red-600 font-medium">Warehouse selection is required</p>
+                <p className="text-xs text-red-600 font-medium">
+                  Add at least one warehouse and select a warehouse for each row
+                </p>
               )}
             </div>
           ) : (
-            <span className="font-medium text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 text-sm">
-              {data.warehouseName || '—'}
-            </span>
+            <div className="flex flex-col gap-1">
+              {(data.variantStocks ?? []).length > 0 ? (
+                (data.variantStocks ?? []).map((variantStock, stockIndex) => (
+                  <span
+                    key={`${item.rowKey}-warehouse-${stockIndex}`}
+                    className="font-medium text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 text-xs truncate"
+                  >
+                    {`${
+                      resolveWarehouseLabel(variantStock.warehouseId, variantStock.warehouseName) ??
+                      '—'
+                    }: ${variantStock.stockQuantity}`}
+                  </span>
+                ))
+              ) : (
+                <span className="font-medium text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 text-sm">
+                  —
+                </span>
+              )}
+            </div>
           )}
         </TableCell>
 

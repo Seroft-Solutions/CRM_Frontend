@@ -36,8 +36,7 @@ export interface DraftVariantRow {
   sku: string;
   price?: number;
   stockQuantity: number;
-  warehouseId?: number;
-  warehouseName?: string;
+  variantStocks: VariantWarehouseStock[];
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
   isDuplicate?: boolean;
@@ -61,8 +60,7 @@ export interface ExistingVariantRow {
   sku: string;
   price?: number;
   stockQuantity: number;
-  warehouseId?: number;
-  warehouseName?: string;
+  variantStocks: VariantWarehouseStock[];
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
   isPrimary?: boolean;
@@ -72,6 +70,13 @@ export interface VariantWarehouseOption {
   id: number;
   name: string;
   code?: string;
+}
+
+export interface VariantWarehouseStock {
+  id?: number;
+  warehouseId?: number;
+  warehouseName?: string;
+  stockQuantity: number;
 }
 
 /**
