@@ -28,12 +28,27 @@ import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/
 import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO } from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
-import type { ItemErrors, OrderItemForm } from './order-form-types';
+import type { ItemErrors, OrderItemForm, WarehouseStockEntry } from './order-form-types';
 import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 type ProductWithStock = ProductDTO & { stockQuantity?: number };
+type ProductVariantWithWarehouseStocks = {
+  id?: number;
+  sku: string;
+  price?: number;
+  stockQuantity?: number;
+  variantStocks?: {
+    id?: number;
+    stockQuantity?: number;
+    warehouse?: {
+      id?: number;
+      name?: string;
+      code?: string;
+    };
+  }[];
+};
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -41,7 +56,11 @@ type OrderFormItemsProps = {
   onAddItem: () => void;
   onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
-  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  onItemChange: (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | WarehouseStockEntry[] | undefined
+  ) => void;
   referrerForm?: string;
   referrerSessionId?: string;
   referrerField?: string;
@@ -56,7 +75,11 @@ function ProductVariantSelector({
 }: {
   item: OrderItemForm;
   index: number;
-  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  onItemChange: (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | WarehouseStockEntry[] | undefined
+  ) => void;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
@@ -82,7 +105,28 @@ function ProductVariantSelector({
   );
 
   const products = productsData || [];
-  const variants = variantsData || [];
+  const variants = (variantsData || []) as ProductVariantWithWarehouseStocks[];
+
+  const mapVariantWarehouseStocks = (
+    variant?: ProductVariantWithWarehouseStocks
+  ): WarehouseStockEntry[] => {
+    if (!variant?.variantStocks?.length) {
+      return [];
+    }
+
+    return variant.variantStocks
+      .map((entry) => ({
+        warehouseId: entry.warehouse?.id,
+        warehouseName: entry.warehouse?.name,
+        warehouseCode: entry.warehouse?.code,
+        stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+      }))
+      .sort((a, b) => {
+        const aName = (a.warehouseName || a.warehouseCode || '').toLowerCase();
+        const bName = (b.warehouseName || b.warehouseCode || '').toLowerCase();
+        return aName.localeCompare(bName);
+      });
+  };
 
   const getProductQuantity = (product: ProductDTO) => {
     const productWithStock = product as ProductWithStock;
@@ -109,6 +153,7 @@ function ProductVariantSelector({
     onItemChange(index, 'productName', product.name);
     onItemChange(index, 'sku', product.articleNumber ?? product.articalNumber);
     onItemChange(index, 'availableQuantity', getProductQuantity(product));
+    onItemChange(index, 'warehouseStocks', undefined);
     onItemChange(index, 'variantAttributes', undefined);
     onItemChange(index, 'variantId', undefined);
 
@@ -131,6 +176,7 @@ function ProductVariantSelector({
     onItemChange(index, 'variantId', variant.id);
     onItemChange(index, 'sku', variant.sku);
     onItemChange(index, 'availableQuantity', Math.max(0, variant.stockQuantity ?? 0));
+    onItemChange(index, 'warehouseStocks', mapVariantWarehouseStocks(variant));
 
     // Build variant attributes string
     // Note: We'd need to fetch variant selections to get full attribute details
@@ -153,11 +199,18 @@ function ProductVariantSelector({
       : selectedProduct
         ? getProductQuantity(selectedProduct)
         : undefined;
+  const effectiveWarehouseStocks =
+    selectedVariant && selectedVariant.variantStocks?.length
+      ? mapVariantWarehouseStocks(selectedVariant)
+      : undefined;
 
   useEffect(() => {
     if (item.itemType !== 'product') {
       if (item.availableQuantity !== undefined) {
         onItemChange(index, 'availableQuantity', undefined);
+      }
+      if (item.warehouseStocks !== undefined) {
+        onItemChange(index, 'warehouseStocks', undefined);
       }
       return;
     }
@@ -165,7 +218,33 @@ function ProductVariantSelector({
     if (effectiveQuantity !== item.availableQuantity) {
       onItemChange(index, 'availableQuantity', effectiveQuantity);
     }
-  }, [effectiveQuantity, index, item.availableQuantity, item.itemType, onItemChange]);
+    const toComparableWarehouseStocks = (stocks?: WarehouseStockEntry[]) =>
+      JSON.stringify(
+        (stocks ?? []).map((entry) => ({
+          warehouseId: entry.warehouseId ?? null,
+          warehouseCode: entry.warehouseCode ?? '',
+          warehouseName: entry.warehouseName ?? '',
+          stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+        }))
+      );
+
+    const nextWarehouseStocks =
+      effectiveWarehouseStocks && effectiveWarehouseStocks.length > 0
+        ? effectiveWarehouseStocks
+        : undefined;
+
+    if (toComparableWarehouseStocks(item.warehouseStocks) !== toComparableWarehouseStocks(nextWarehouseStocks)) {
+      onItemChange(index, 'warehouseStocks', nextWarehouseStocks);
+    }
+  }, [
+    effectiveQuantity,
+    effectiveWarehouseStocks,
+    index,
+    item.availableQuantity,
+    item.itemType,
+    item.warehouseStocks,
+    onItemChange,
+  ]);
 
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
@@ -249,26 +328,39 @@ function ProductVariantSelector({
                 <CommandList>
                   <CommandEmpty>No variant found.</CommandEmpty>
                   <CommandGroup>
-                    {variants.map((variant) => (
-                      <CommandItem
-                        key={variant.id}
-                        value={variant.sku}
-                        onSelect={() => handleVariantSelect(variant.id!)}
-                      >
-                        <div className="flex flex-1 flex-col">
-                          <span className="font-medium text-sm">{variant.sku}</span>
-                          <span className="text-xs text-muted-foreground">
-                            Stock: {variant.stockQuantity ?? 0} • ₹{variant.price ?? 0}
-                          </span>
-                        </div>
-                        <Check
-                          className={cn(
-                            'ml-2 h-4 w-4',
-                            item.variantId === variant.id ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                      </CommandItem>
-                    ))}
+                    {variants.map((variant) => {
+                      const variantWarehouseStocks = mapVariantWarehouseStocks(variant);
+                      const warehousePreview = variantWarehouseStocks
+                        .map((entry) => entry.warehouseCode || entry.warehouseName || `W${entry.warehouseId ?? ''}`)
+                        .filter((entry) => entry)
+                        .join(', ');
+
+                      return (
+                        <CommandItem
+                          key={variant.id}
+                          value={variant.sku}
+                          onSelect={() => handleVariantSelect(variant.id!)}
+                        >
+                          <div className="flex flex-1 flex-col">
+                            <span className="font-medium text-sm">{variant.sku}</span>
+                            <span className="text-xs text-muted-foreground">
+                              Stock: {variant.stockQuantity ?? 0} • ₹{variant.price ?? 0}
+                            </span>
+                            {warehousePreview ? (
+                              <span className="text-[11px] text-slate-500">
+                                Warehouses: {warehousePreview}
+                              </span>
+                            ) : null}
+                          </div>
+                          <Check
+                            className={cn(
+                              'ml-2 h-4 w-4',
+                              item.variantId === variant.id ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
+                        </CommandItem>
+                      );
+                    })}
                   </CommandGroup>
                 </CommandList>
               </Command>
@@ -303,7 +395,11 @@ function ProductCatalogSelector({
 }: {
   item: OrderItemForm;
   index: number;
-  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  onItemChange: (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | WarehouseStockEntry[] | undefined
+  ) => void;
 }) {
   const [catalogOpen, setCatalogOpen] = useState(false);
 
@@ -328,6 +424,7 @@ function ProductCatalogSelector({
     onItemChange(index, 'productId', undefined);
     onItemChange(index, 'variantId', undefined);
     onItemChange(index, 'availableQuantity', undefined);
+    onItemChange(index, 'warehouseStocks', undefined);
     onItemChange(index, 'sku', undefined);
     onItemChange(index, 'productName', catalog.productCatalogName);
     onItemChange(index, 'variantAttributes', buildCatalogAttributes(catalog));
@@ -539,6 +636,15 @@ export function OrderFormItems({
               const breakdown = getOrderItemBillingBreakdown(item);
               const availableQuantity = breakdown.availableQuantity ?? undefined;
               const quantityErrorMessage = itemErrors?.[index]?.quantity;
+              const warehouseStocks = (item.warehouseStocks ?? [])
+                .map((entry) => ({
+                  ...entry,
+                  stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+                }));
+              const showWarehouseStocks =
+                item.itemType === 'product' &&
+                Boolean(item.variantId) &&
+                warehouseStocks.length > 0;
               const backOrderMessage =
                 breakdown.backOrderQuantity > 0
                   ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
@@ -617,6 +723,23 @@ export function OrderFormItems({
                         <p className="mt-1 text-[11px] text-slate-500">
                           Available {breakdown.stockScopeLabel} stock: {availableQuantity}
                         </p>
+                      )}
+                      {showWarehouseStocks && (
+                        <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                          <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
+                          <div className="mt-0.5 space-y-0.5">
+                            {warehouseStocks.map((entry, entryIndex) => (
+                              <p
+                                key={`${entry.warehouseId ?? entry.warehouseCode ?? entryIndex}`}
+                                className="text-[11px] text-slate-600"
+                              >
+                                {entry.warehouseName ||
+                                  entry.warehouseCode ||
+                                  `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}: {entry.stockQuantity}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
                       )}
                       {backOrderMessage && (
                         <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
@@ -752,6 +875,23 @@ export function OrderFormItems({
                           <p className="text-[11px] text-slate-500">
                             Available {breakdown.stockScopeLabel} stock: {availableQuantity}
                           </p>
+                        )}
+                        {showWarehouseStocks && (
+                          <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                            <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
+                            <div className="mt-0.5 space-y-0.5">
+                              {warehouseStocks.map((entry, entryIndex) => (
+                                <p
+                                  key={`${entry.warehouseId ?? entry.warehouseCode ?? entryIndex}`}
+                                  className="text-[11px] text-slate-600"
+                                >
+                                  {entry.warehouseName ||
+                                    entry.warehouseCode ||
+                                    `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}: {entry.stockQuantity}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
                         )}
                         {backOrderMessage && (
                           <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>

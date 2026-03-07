@@ -28,6 +28,7 @@ export type OrderItemForm = {
   initialVariantId?: number;
   productCatalogId?: number;
   availableQuantity?: number;
+  warehouseStocks?: WarehouseStockEntry[];
   existingQuantity?: number;
   existingBackOrderQuantity?: number;
   productName?: string;
@@ -38,6 +39,13 @@ export type OrderItemForm = {
   itemPrice: string;
   itemTaxAmount: string;
   itemComment?: string;
+};
+
+export type WarehouseStockEntry = {
+  warehouseId?: number;
+  warehouseName?: string;
+  warehouseCode?: string;
+  stockQuantity: number;
 };
 
 export type AddressFieldsForm = {

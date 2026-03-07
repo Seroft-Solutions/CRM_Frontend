@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Plus } from 'lucide-react';
+import * as RPNInput from 'react-phone-number-input';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -82,6 +83,83 @@ interface CustomerCreateSheetProps {
   isBusinessPartner?: boolean;
 }
 
+const detectDefaultCountry = (): RPNInput.Country | undefined => {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const localeCandidates = new Set<string>();
+
+  if (navigator.language) {
+    localeCandidates.add(navigator.language);
+  }
+
+  navigator.languages?.forEach((locale) => {
+    if (locale) {
+      localeCandidates.add(locale);
+    }
+  });
+
+  const intlLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+  if (intlLocale) {
+    localeCandidates.add(intlLocale);
+  }
+
+  for (const locale of localeCandidates) {
+    const normalizedLocale = locale.replace('_', '-');
+    const localeParts = normalizedLocale.split('-');
+    const region = localeParts[localeParts.length - 1]?.toUpperCase();
+
+    if (region && /^[A-Z]{2}$/.test(region) && RPNInput.isSupportedCountry(region as RPNInput.Country)) {
+      return region as RPNInput.Country;
+    }
+  }
+
+  return undefined;
+};
+
+const getCurrentPosition = (): Promise<GeolocationPosition> => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      reject(new Error('Geolocation API is not available'));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 300000,
+    });
+  });
+};
+
+const detectCountryFromLocation = async (): Promise<RPNInput.Country | undefined> => {
+  const position = await getCurrentPosition();
+  const latitude = position.coords.latitude;
+  const longitude = position.coords.longitude;
+
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=3&addressdetails=1`
+  );
+
+  if (!response.ok) {
+    return undefined;
+  }
+
+  const data = (await response.json()) as {
+    address?: {
+      country_code?: string;
+    };
+  };
+
+  const countryCode = data.address?.country_code?.toUpperCase();
+  if (countryCode && RPNInput.isSupportedCountry(countryCode as RPNInput.Country)) {
+    return countryCode as RPNInput.Country;
+  }
+
+  return undefined;
+};
+
 export function CustomerCreateSheet({
                                       onSuccess,
                                       trigger,
@@ -89,6 +167,7 @@ export function CustomerCreateSheet({
                                     }: CustomerCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [whatsAppManuallyEdited, setWhatsAppManuallyEdited] = useState(false);
+  const [defaultPhoneCountry, setDefaultPhoneCountry] = useState<RPNInput.Country | undefined>(undefined);
   const queryClient = useQueryClient();
 
   const form = useForm<CustomerCreationFormData>({
@@ -157,6 +236,37 @@ export function CustomerCreateSheet({
       setWhatsAppManuallyEdited(false);
     }
   };
+
+  useEffect(() => {
+    if (!isOpen || defaultPhoneCountry) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const resolveDefaultCountry = async () => {
+      try {
+        const locationCountry = await detectCountryFromLocation();
+        if (isMounted && locationCountry) {
+          setDefaultPhoneCountry(locationCountry);
+          return;
+        }
+      } catch {
+        // If location permission is denied or lookup fails, fallback below.
+      }
+
+      const localeCountry = detectDefaultCountry();
+      if (isMounted && localeCountry) {
+        setDefaultPhoneCountry(localeCountry);
+      }
+    };
+
+    void resolveDefaultCountry();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [defaultPhoneCountry, isOpen]);
 
   return (
       <Sheet open={isOpen} onOpenChange={handleOpenChange}>
@@ -295,8 +405,10 @@ export function CustomerCreateSheet({
                             </FormLabel>
                             <FormControl>
                               <PhoneInput
+                                  key={`customer-mobile-${defaultPhoneCountry ?? 'auto'}`}
                                   placeholder="Enter mobile number"
                                   value={field.value}
+                                  defaultCountry={defaultPhoneCountry}
                                   onChange={(value) => {
                                     field.onChange(value);
 
@@ -327,8 +439,10 @@ export function CustomerCreateSheet({
                             </FormLabel>
                             <FormControl>
                               <PhoneInput
+                                  key={`customer-whatsapp-${defaultPhoneCountry ?? 'auto'}`}
                                   placeholder="Enter WhatsApp number"
                                   value={field.value}
+                                  defaultCountry={defaultPhoneCountry}
                                   onChange={(value) => {
                                     field.onChange(value);
 

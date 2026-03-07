@@ -63,6 +63,7 @@ import type {
   OrderFormErrors,
   OrderFormState,
   OrderItemForm,
+  WarehouseStockEntry,
 } from './order-form-types';
 import { OrderFormAddress } from './order-form-address';
 import { OrderFormFooter } from './order-form-footer';
@@ -608,7 +609,11 @@ export function OrderForm({
     handleChange('orderTaxRate', value);
   };
 
-  const handleItemChange = (index: number, key: keyof OrderItemForm, value: string | number | undefined) => {
+  const handleItemChange = (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | WarehouseStockEntry[] | undefined
+  ) => {
     setItems((prev) =>
       prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
     );
