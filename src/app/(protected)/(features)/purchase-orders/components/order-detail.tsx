@@ -25,6 +25,11 @@ function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 }
 
+function normalizeHistoryStatus(status?: string) {
+  if (!status) return '—';
+  return status.trim().toLowerCase() === 'pending' ? 'Created' : status;
+}
+
 interface OrderDetailProps {
   order: OrderRecord;
 }
@@ -168,7 +173,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <TableHeader>
               <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
                 <TableHead className="font-bold text-slate-700">Item</TableHead>
-                <TableHead className="font-bold text-slate-700">Status</TableHead>
                 <TableHead className="font-bold text-slate-700">Quantity</TableHead>
                 <TableHead className="font-bold text-slate-700">Price</TableHead>
                 <TableHead className="font-bold text-slate-700">Tax</TableHead>
@@ -220,11 +224,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="border-slate-300 bg-slate-50 text-slate-700">
-                        {item.itemStatus}
-                      </Badge>
-                    </TableCell>
                     <TableCell className="font-semibold text-slate-800">{item.quantity}</TableCell>
                     <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemPrice)}</TableCell>
                     <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemTaxAmount)}</TableCell>
@@ -235,7 +234,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center">
+                  <TableCell colSpan={5} className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
                         <svg className="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,7 +280,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
               </div>
               <div className="flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-800">{entry.status}</span>
+                  <span className="font-bold text-slate-800">{normalizeHistoryStatus(entry.status)}</span>
                   {entry.itemStatus ? (
                     <Badge variant="outline" className="border-cyan-300 bg-cyan-50 text-xs text-cyan-900">
                       Item: {entry.itemStatus}
