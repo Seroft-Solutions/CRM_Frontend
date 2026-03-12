@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Box } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Settings, PhoneCall, Box, Clock3 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
 // Define the type for sidebar items
@@ -159,6 +159,12 @@ export const sidebarItems: SidebarItem[] = [
     path: '/customers',
     icon: Users,
     requiredPermission: 'customer:sidebar',
+  },
+  {
+    key: 'attendance',
+    label: 'Attendance',
+    path: '/attendance',
+    icon: Clock3,
   },
   {
     key: 'productManagement',
