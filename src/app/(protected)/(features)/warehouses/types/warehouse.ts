@@ -2,10 +2,16 @@ export const WAREHOUSE_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'] as
 
 export type WarehouseStatus = (typeof WAREHOUSE_STATUSES)[number];
 
-export interface IWarehouseArea {
+export interface IWarehouseShelf {
   id?: number;
   name: string;
   capacity: number;
+}
+
+export interface IWarehouseArea {
+  id?: number;
+  name: string;
+  shelves?: IWarehouseShelf[];
 }
 
 export interface IWarehouse {

@@ -47,6 +47,7 @@ import {
 } from '@/core/api/generated/spring';
 import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
 import { QuickActionTiles } from './QuickActionTiles';
+import { InventoryReportPanel } from './InventoryReportPanel';
 import { StaffLeadSummaryPeriod, useGetStaffLeadSummary } from '@/core/api/call-analytics';
 import {
   Select,
@@ -1006,6 +1007,8 @@ export function DashboardOverview() {
               </CardContent>
             </Card>
           </div>
+
+          <InventoryReportPanel />
 
           {/* Scheduled Meetings */}
           <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">

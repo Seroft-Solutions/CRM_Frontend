@@ -461,16 +461,32 @@ export function WarehouseTable() {
                             align="start"
                             className="w-72 max-h-64 overflow-y-auto"
                           >
-                            <DropdownMenuLabel>Areas & Capacity</DropdownMenuLabel>
+                            <DropdownMenuLabel>Areas & Shelves</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {warehouse.areas && warehouse.areas.length > 0 ? (
                               warehouse.areas.map((area) => (
                                 <div
                                   key={`${warehouse.id}-${area.id ?? area.name}`}
-                                  className="flex items-center justify-between px-2 py-1.5 text-sm"
+                                  className="px-2 py-1.5 text-sm"
                                 >
-                                  <span className="truncate pr-2">{area.name}</span>
-                                  <span className="text-muted-foreground">{area.capacity}</span>
+                                  <p className="truncate font-medium">{area.name}</p>
+                                  {area.shelves && area.shelves.length > 0 ? (
+                                    <div className="mt-1 space-y-1">
+                                      {area.shelves.map((shelf) => (
+                                        <div
+                                          key={`${warehouse.id}-${area.id ?? area.name}-${shelf.id ?? shelf.name}`}
+                                          className="flex items-center justify-between text-xs text-muted-foreground"
+                                        >
+                                          <span className="truncate pr-2">{shelf.name}</span>
+                                          <span>{shelf.capacity}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                      No shelves configured.
+                                    </p>
+                                  )}
                                 </div>
                               ))
                             ) : (

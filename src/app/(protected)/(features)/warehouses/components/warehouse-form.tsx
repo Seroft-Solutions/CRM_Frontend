@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, type Control, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,25 @@ import {
   useUpdateWarehouseMutation,
   useWarehouseQuery,
 } from '../actions/warehouse-hooks';
-import type { IWarehouseArea } from '../types/warehouse';
+import type { IWarehouseArea, IWarehouseShelf } from '../types/warehouse';
+
+const warehouseShelfSchema = z.object({
+  id: z.number().optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Shelf name is required')
+    .max(120, 'Shelf name cannot exceed 120 characters'),
+  capacity: z
+    .string()
+    .min(1, 'Shelf capacity is required')
+    .refine((value) => /^\d+$/.test(value), {
+      message: 'Shelf capacity must be a whole number',
+    })
+    .refine((value) => Number(value) >= 0, {
+      message: 'Shelf capacity must be zero or greater',
+    }),
+});
 
 const warehouseAreaSchema = z.object({
   id: z.number().optional(),
@@ -35,15 +53,7 @@ const warehouseAreaSchema = z.object({
     .trim()
     .min(1, 'Area name is required')
     .max(120, 'Area name cannot exceed 120 characters'),
-  capacity: z
-    .string()
-    .min(1, 'Area capacity is required')
-    .refine((value) => /^\d+$/.test(value), {
-      message: 'Area capacity must be a whole number',
-    })
-    .refine((value) => Number(value) >= 0, {
-      message: 'Area capacity must be zero or greater',
-    }),
+  shelves: z.array(warehouseShelfSchema).min(1, 'At least one shelf is required for each area'),
 });
 
 const warehouseFormSchema = z.object({
@@ -74,6 +84,136 @@ type WarehouseFormValues = z.infer<typeof warehouseFormSchema>;
 interface WarehouseFormProps {
   id?: number;
 }
+
+interface AreaShelvesProps {
+  areaIndex: number;
+  form: UseFormReturn<WarehouseFormValues>;
+  control: Control<WarehouseFormValues>;
+  onRemoveArea: () => void;
+}
+
+const createEmptyShelf = () => ({ name: '', capacity: '' });
+
+const AreaShelvesFields = ({ areaIndex, form, control, onRemoveArea }: AreaShelvesProps) => {
+  const {
+    fields: shelfFields,
+    append: appendShelf,
+    remove: removeShelf,
+  } = useFieldArray({
+    control,
+    name: `areas.${areaIndex}.shelves`,
+    keyName: 'fieldId',
+  });
+
+  const areaShelfError = form.formState.errors.areas?.[areaIndex]?.shelves;
+
+  return (
+    <div className="space-y-3 rounded-md border p-3">
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-sm font-medium">Area {areaIndex + 1}</h4>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-destructive hover:text-destructive"
+          onClick={onRemoveArea}
+          aria-label={`Remove area ${areaIndex + 1}`}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <FormField
+        control={control}
+        name={`areas.${areaIndex}.name` as const}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Area Name</FormLabel>
+            <FormControl>
+              <Input placeholder="First Floor" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <h5 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Shelves
+          </h5>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => appendShelf(createEmptyShelf())}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Add Shelf
+          </Button>
+        </div>
+
+        {shelfFields.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No shelves added yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {shelfFields.map((shelfField, shelfIndex) => (
+              <div
+                key={shelfField.fieldId}
+                className="grid grid-cols-1 gap-3 rounded-md border p-3 md:grid-cols-6"
+              >
+                <FormField
+                  control={control}
+                  name={`areas.${areaIndex}.shelves.${shelfIndex}.name` as const}
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-3">
+                      <FormLabel>Shelf Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Shelf A1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={control}
+                  name={`areas.${areaIndex}.shelves.${shelfIndex}.capacity` as const}
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Shelf Capacity</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={0} placeholder="250" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-end md:col-span-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => removeShelf(shelfIndex)}
+                    aria-label={`Remove shelf ${shelfIndex + 1}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {typeof areaShelfError?.message === 'string' && (
+          <p className="text-sm text-destructive">{areaShelfError.message}</p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const extractErrorMessage = (error: unknown): string => {
   if (typeof error === 'object' && error !== null) {
@@ -148,11 +288,31 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       name: existingWarehouse.name,
       code: existingWarehouse.code,
       address: existingWarehouse.address || '',
-      areas: (existingWarehouse.areas || []).map((area) => ({
-        id: area.id,
-        name: area.name || '',
-        capacity: typeof area.capacity === 'number' ? String(area.capacity) : '',
-      })),
+      areas: (existingWarehouse.areas || []).map((area) => {
+        const legacyArea = area as IWarehouseArea & { capacity?: number };
+        const mappedShelves = (area.shelves || []).map((shelf) => ({
+          id: shelf.id,
+          name: shelf.name || '',
+          capacity: typeof shelf.capacity === 'number' ? String(shelf.capacity) : '',
+        }));
+
+        if (mappedShelves.length === 0 && typeof legacyArea.capacity === 'number') {
+          mappedShelves.push({
+            name: 'Shelf 1',
+            capacity: String(legacyArea.capacity),
+          });
+        }
+
+        if (mappedShelves.length === 0) {
+          mappedShelves.push(createEmptyShelf());
+        }
+
+        return {
+          id: area.id,
+          name: area.name || '',
+          shelves: mappedShelves,
+        };
+      }),
     });
   }, [existingWarehouse, form]);
 
@@ -220,7 +380,13 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
     const areas: IWarehouseArea[] = values.areas.map((area) => ({
       ...(typeof area.id === 'number' ? { id: area.id } : {}),
       name: area.name.trim(),
-      capacity: Number(area.capacity),
+      shelves: area.shelves.map(
+        (shelf): IWarehouseShelf => ({
+          ...(typeof shelf.id === 'number' ? { id: shelf.id } : {}),
+          name: shelf.name.trim(),
+          capacity: Number(shelf.capacity),
+        })
+      ),
     }));
 
     const payload = {
@@ -313,14 +479,14 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
             <div>
               <h3 className="text-sm font-medium">Areas</h3>
               <p className="text-xs text-muted-foreground">
-                Define warehouse areas and their capacities.
+                Define warehouse areas and shelf capacities.
               </p>
             </div>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => appendArea({ name: '', capacity: '' })}
+              onClick={() => appendArea({ name: '', shelves: [createEmptyShelf()] })}
             >
               <Plus className="mr-1 h-4 w-4" />
               Add Area
@@ -332,51 +498,13 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
           ) : (
             <div className="space-y-3">
               {areaFields.map((areaField, index) => (
-                <div
+                <AreaShelvesFields
                   key={areaField.fieldId}
-                  className="grid grid-cols-1 gap-3 rounded-md border p-3 md:grid-cols-5"
-                >
-                  <FormField
-                    control={form.control}
-                    name={`areas.${index}.name` as const}
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-3">
-                        <FormLabel>Area Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="First Floor" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`areas.${index}.capacity` as const}
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-1">
-                        <FormLabel>Area Capacity</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} placeholder="500" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex items-end md:col-span-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => removeArea(index)}
-                      aria-label={`Remove area ${index + 1}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                  areaIndex={index}
+                  form={form}
+                  control={form.control}
+                  onRemoveArea={() => removeArea(index)}
+                />
               ))}
             </div>
           )}

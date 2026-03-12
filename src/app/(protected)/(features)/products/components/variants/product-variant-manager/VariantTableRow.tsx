@@ -248,6 +248,8 @@ export function VariantTableRow({
       .map((variantStock) => variantStock.warehouseId)
       .filter((warehouseId): warehouseId is number => typeof warehouseId === 'number')
   );
+  const hasSingleWarehouse = warehouses.length === 1;
+  const singleWarehouse = hasSingleWarehouse ? warehouses[0] : undefined;
   const canAddMoreWarehouseRows = warehouses.some(
     (warehouse) => !selectedWarehouseIds.has(warehouse.id)
   );
@@ -262,6 +264,37 @@ export function VariantTableRow({
       return !selectedWarehouseIds.has(warehouse.id);
     });
   };
+
+  useEffect(() => {
+    if (!singleWarehouse || (!isDraft && !isEditing)) {
+      return;
+    }
+
+    const currentStocks = getVariantStocks();
+    const totalStock = calculateTotalStock(currentStocks);
+    const firstStock = currentStocks[0];
+    const firstStockQuantity = Number(firstStock?.stockQuantity) || 0;
+    const requiresNormalization =
+      currentStocks.length !== 1 ||
+      firstStock?.warehouseId !== singleWarehouse.id ||
+      firstStock?.warehouseName !== singleWarehouse.name ||
+      firstStockQuantity !== totalStock;
+
+    if (!requiresNormalization) {
+      return;
+    }
+
+    const normalizedStocks = [
+      {
+        id: firstStock?.id,
+        warehouseId: singleWarehouse.id,
+        warehouseName: singleWarehouse.name,
+        stockQuantity: totalStock,
+      },
+    ];
+
+    updateVariantStocks(normalizedStocks);
+  }, [singleWarehouse, isDraft, isEditing, data.variantStocks]);
 
   const handlePrimaryChange = (isPrimary: boolean) => {
     if (isDraft) {
@@ -569,41 +602,60 @@ export function VariantTableRow({
                   key={`${item.rowKey}-stock-${stockIndex}`}
                   className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-center gap-2"
                 >
-                  {(() => {
-                    const availableWarehouses = getAvailableWarehousesForRow(stockIndex);
+                  {hasSingleWarehouse ? (
+                    <div
+                      className={cn(
+                        'h-8 w-full rounded-md border-2 px-3 text-sm font-medium flex items-center truncate',
+                        isDraft
+                          ? 'border-blue-200 bg-blue-50/50'
+                          : 'border-amber-200 bg-amber-50/50'
+                      )}
+                      title={
+                        singleWarehouse?.code
+                          ? `${singleWarehouse.name} (${singleWarehouse.code})`
+                          : singleWarehouse?.name
+                      }
+                    >
+                      {singleWarehouse?.name}
+                      {singleWarehouse?.code ? ` (${singleWarehouse.code})` : ''}
+                    </div>
+                  ) : (
+                    (() => {
+                      const availableWarehouses = getAvailableWarehousesForRow(stockIndex);
 
-                    return (
-                      <Select
-                        value={
-                          variantStock.warehouseId ? String(variantStock.warehouseId) : '__none__'
-                        }
-                        onValueChange={(warehouseValue) =>
-                          handleWarehouseChange(stockIndex, warehouseValue)
-                        }
-                      >
-                        <SelectTrigger
-                          className={`h-8 w-full border-2 transition-colors text-sm [&>span]:truncate ${
-                            hasWarehouseError
-                              ? 'border-red-300 focus:border-red-500 bg-red-50/50'
-                              : isDraft
-                                ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
-                                : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
-                          }`}
+                      return (
+                        <Select
+                          value={
+                            variantStock.warehouseId ? String(variantStock.warehouseId) : '__none__'
+                          }
+                          onValueChange={(warehouseValue) =>
+                            handleWarehouseChange(stockIndex, warehouseValue)
+                          }
                         >
-                          <SelectValue placeholder="Select warehouse" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">Select warehouse</SelectItem>
-                          {availableWarehouses.map((warehouse) => (
-                            <SelectItem key={warehouse.id} value={String(warehouse.id)}>
-                              {warehouse.name}
-                              {warehouse.code ? ` (${warehouse.code})` : ''}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    );
-                  })()}
+                          <SelectTrigger
+                            className={`h-8 w-full border-2 transition-colors text-sm [&>span]:truncate ${
+                              hasWarehouseError
+                                ? 'border-red-300 focus:border-red-500 bg-red-50/50'
+                                : isDraft
+                                  ? 'border-blue-200 focus:border-blue-400 bg-blue-50/50'
+                                  : 'border-amber-200 focus:border-amber-400 bg-amber-50/50'
+                            }`}
+                          >
+                            <SelectValue placeholder="Select warehouse" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">Select warehouse</SelectItem>
+                            {availableWarehouses.map((warehouse) => (
+                              <SelectItem key={warehouse.id} value={String(warehouse.id)}>
+                                {warehouse.name}
+                                {warehouse.code ? ` (${warehouse.code})` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      );
+                    })()
+                  )}
                   <Input
                     className={`h-8 w-full border-2 transition-colors text-sm ${
                       hasStockError
@@ -630,20 +682,24 @@ export function VariantTableRow({
                   </Button>
                 </div>
               ))}
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                className="h-7 w-full justify-start text-xs"
-                onClick={handleAddWarehouseStock}
-                disabled={!canAddMoreWarehouseRows}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                {canAddMoreWarehouseRows ? 'Add warehouse' : 'All warehouses added'}
-              </Button>
+              {!hasSingleWarehouse && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="h-7 w-full justify-start text-xs"
+                  onClick={handleAddWarehouseStock}
+                  disabled={!canAddMoreWarehouseRows}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  {canAddMoreWarehouseRows ? 'Add warehouse' : 'All warehouses added'}
+                </Button>
+              )}
               {hasWarehouseError && (
                 <p className="text-xs text-red-600 font-medium">
-                  Add at least one warehouse and select a warehouse for each row
+                  {hasSingleWarehouse
+                    ? 'Add at least one warehouse stock row'
+                    : 'Add at least one warehouse and select a warehouse for each row'}
                 </p>
               )}
             </div>
