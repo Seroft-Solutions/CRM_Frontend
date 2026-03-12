@@ -47,6 +47,7 @@ import {
 } from '@/core/api/generated/spring';
 import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
 import { QuickActionTiles } from './QuickActionTiles';
+import { QuickLinks } from './QuickLinks';
 import { InventoryReportPanel } from './InventoryReportPanel';
 import { StaffLeadSummaryPeriod, useGetStaffLeadSummary } from '@/core/api/call-analytics';
 import {
@@ -937,6 +938,7 @@ export function DashboardOverview() {
           )}
         </div>
         <QuickActionTiles />
+        <QuickLinks />
       </div>
 
       <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">

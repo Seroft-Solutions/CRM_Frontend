@@ -9,6 +9,7 @@ import {
   Cog,
   ShoppingBag,
   BadgePercent,
+    Clock3
 } from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 
@@ -304,6 +305,12 @@ export const sidebarItems: SidebarItem[] = [
         requiredPermission: 'sundryCreditor:sidebar',
       },
     ],
+  },
+  {
+    key: 'attendance',
+    label: 'Attendance',
+    path: '/attendance',
+    icon: Clock3,
   },
   {
     key: 'productManagement',

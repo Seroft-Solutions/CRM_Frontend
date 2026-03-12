@@ -21,6 +21,7 @@ import {
 import { Activity, Phone, TrendingUp, Users } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { QuickActionTiles } from './QuickActionTiles';
+import { QuickLinks } from './QuickLinks';
 
 export function BusinessPartnerDashboard() {
   const { data: session } = useSession();
@@ -150,7 +151,8 @@ export function BusinessPartnerDashboard() {
       {/* Quick Action Tiles */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <QuickActionTiles showAddProduct={false} />
+        <QuickActionTiles />
+        <QuickLinks />
       </div>
 
       <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">

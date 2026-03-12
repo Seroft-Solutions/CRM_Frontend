@@ -74,14 +74,32 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
                   Create Account
                 </Button>
               </div>
-              <Button
-                asChild
-                size="lg"
-                variant="ghost"
-                className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
-              >
-                <Link href="/contact">Contact Us</Link>
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  asChild
+                  size="lg"
+                  variant="ghost"
+                  className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
+                >
+                  <Link href="/about">About Us</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="ghost"
+                  className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
+                >
+                  <Link href="/pricing">Pricing</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="ghost"
+                  className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
+                >
+                  <Link href="/contact">Contact Us</Link>
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-6">
