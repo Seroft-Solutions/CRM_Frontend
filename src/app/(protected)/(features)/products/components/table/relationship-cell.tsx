@@ -20,8 +20,8 @@ import { toast } from 'sonner';
 interface RelationshipCellProps {
   entityId: number;
   relationshipName: string;
-  currentValue?: any;
-  options: Array<{ id: number; [key: string]: any }>;
+  currentValue?: unknown;
+  options: Array<{ id: number; [key: string]: unknown }>;
   displayField: string;
   onUpdate: (entityId: number, relationshipName: string, newValue: number | null) => Promise<void>;
   isEditable?: boolean;
@@ -65,6 +65,7 @@ export function RelationshipCell({
 
     if (typeof valueToUse === 'object' && valueToUse.id) {
       const option = options.find((opt) => opt.id === valueToUse.id);
+
       return option ? option[displayField] : `ID: ${valueToUse.id}`;
     }
 
@@ -81,6 +82,7 @@ export function RelationshipCell({
     setOpen(false);
 
     const selectedOption = optionId ? options.find((opt) => opt.id === optionId) : null;
+
     setOptimisticValue(selectedOption);
 
     try {
@@ -119,6 +121,7 @@ export function RelationshipCell({
     }
 
     const currentId = optimisticValue?.id || optimisticValue;
+
     if (relatedEntityRoute && currentId) {
       return (
         <div className={cn('h-6 flex items-center px-1', className)}>
@@ -151,7 +154,9 @@ export function RelationshipCell({
                     <span className="font-medium text-slate-700 group-hover:text-blue-700">
                       {currentDisplayValue}
                     </span>
-                    <ExternalLink className="h-2.5 w-2.5 text-slate-400 group-hover:text-blue-500 opacity-60" />
+                    {showNavigationIcon && (
+                      <ExternalLink className="h-2.5 w-2.5 text-slate-400 group-hover:text-blue-500 opacity-60" />
+                    )}
                   </Link>
                 </Button>
               </TooltipTrigger>

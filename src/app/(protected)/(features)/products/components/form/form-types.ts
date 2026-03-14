@@ -53,7 +53,7 @@ export interface RelationshipConfig {
     | 'other';
   cascadingFilter?: CascadingFilter;
   autoPopulate?: AutoPopulateConfig;
-  customFilters?: Record<string, any>;
+  customFilters?: Record<string, unknown>;
   api: RelationshipAPI;
   creation: CreationConfig;
   ui: RelationshipUIConfig;
@@ -62,7 +62,7 @@ export interface RelationshipConfig {
 export interface ConditionalRule {
   field: string;
   operator: 'equals' | 'notEquals' | 'contains' | 'exists';
-  value: any;
+  value: unknown;
   logic?: 'and' | 'or';
   rules?: ConditionalRule[];
 }
@@ -199,19 +199,22 @@ export interface DraftsConfig {
   showRestorationDialog: boolean;
 }
 
-export type ValidationFunction = (value: any, allValues: Record<string, any>) => string | undefined;
+export type ValidationFunction = (
+  value: unknown,
+  allValues: Record<string, unknown>
+) => string | undefined;
 
 export interface FormState {
   currentStep: number;
   isLoading: boolean;
   isSubmitting: boolean;
   isDirty: boolean;
-  errors: Record<string, any>;
-  values: Record<string, any>;
+  errors: Record<string, unknown>;
+  values: Record<string, unknown>;
   touchedFields: Record<string, boolean>;
   isAutoPopulating: boolean;
 
-  drafts: any[];
+  drafts: unknown[];
   isLoadingDrafts: boolean;
   isSavingDraft: boolean;
   isDeletingDraft: boolean;
@@ -251,14 +254,14 @@ export interface NavigationInfo {
     field?: string;
     returnUrl?: string;
   };
-  navigationState: any;
+  navigationState: unknown;
 }
 
 export interface FormContextValue {
   config: FormConfig;
   state: FormState;
   actions: FormActions;
-  form: any;
+  form: unknown;
   navigation: NavigationInfo;
 }
 
@@ -270,17 +273,17 @@ export interface StepComponentProps {
 
 export interface FieldComponentProps {
   fieldConfig: FieldConfig;
-  value: any;
-  onChange: (value: any) => void;
+  value: unknown;
+  onChange: (value: unknown) => void;
   error?: string;
   disabled?: boolean;
 }
 
 export interface RelationshipComponentProps {
   relationshipConfig: RelationshipConfig;
-  value: any;
-  onChange: (value: any) => void;
+  value: unknown;
+  onChange: (value: unknown) => void;
   error?: string;
   disabled?: boolean;
-  parentFilter?: any;
+  parentFilter?: unknown;
 }

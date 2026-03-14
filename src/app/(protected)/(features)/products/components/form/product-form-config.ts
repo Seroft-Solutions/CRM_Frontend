@@ -14,16 +14,17 @@ export const productFormConfig: FormConfig = {
       description: 'Enter essential details and categorize the product',
       fields: [
         'name',
-        'code',
-        'articalNumber',
+        'barcodeText',
+        'articleNumber',
         'description',
         'remark',
         'status',
         'basePrice',
         'discountedPrice',
         'salePrice',
+        'stockQuantity',
       ],
-      relationships: ['category', 'subCategory'],
+      relationships: ['category', 'subCategory', 'variantConfig'],
       validation: {
         mode: 'onBlur',
         validateOnNext: true,
@@ -68,10 +69,10 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'code',
+      name: 'barcodeText',
       type: 'text',
-      label: 'Product Code',
-      placeholder: 'Enter product code',
+      label: 'Barcode Text',
+      placeholder: 'Enter barcode text',
       required: true,
       validation: {
         required: true,
@@ -82,7 +83,7 @@ export const productFormConfig: FormConfig = {
       ui: {},
     },
     {
-      name: 'articalNumber',
+      name: 'articleNumber',
       type: 'text',
       label: 'Article Number',
       placeholder: 'Enter article number',
@@ -148,6 +149,22 @@ export const productFormConfig: FormConfig = {
       },
       ui: {
         inputType: 'number',
+      },
+    },
+    {
+      name: 'stockQuantity',
+      type: 'number',
+      label: 'Stock',
+      placeholder: 'Auto-calculated from variants',
+      required: false,
+      validation: {
+        required: false,
+        min: 0,
+        max: 999999,
+      },
+      ui: {
+        inputType: 'number',
+        readonly: true,
       },
     },
     {
@@ -253,6 +270,33 @@ export const productFormConfig: FormConfig = {
         icon: '🏷️',
       },
     },
+    {
+      name: 'variantConfig',
+      type: 'many-to-one',
+      targetEntity: 'systemConfig',
+      displayField: 'configKey',
+      primaryKey: 'id',
+      required: false,
+      multiple: false,
+      category: 'classification',
+      customFilters: {
+        'status.equals': 'ACTIVE',
+      },
+      api: {
+        useGetAllHook: 'useGetAllSystemConfigs',
+        useSearchHook: 'useSearchSystemConfigs',
+        useCountHook: 'useCountSystemConfigs',
+        entityName: 'SystemConfigs',
+      },
+      creation: {
+        canCreate: false,
+      },
+      ui: {
+        label: 'Variant Configuration',
+        placeholder: 'Select variant configuration',
+        icon: '⚙️',
+      },
+    },
   ],
 
   validation: {
@@ -321,6 +365,7 @@ export const productFormHelpers = {
     productFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
     const step = productFormConfig.steps.find((s) => s.id === stepId);
+
     return step ? [...step.fields, ...step.relationships] : [];
   },
 };

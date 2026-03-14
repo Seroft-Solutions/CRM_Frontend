@@ -111,7 +111,7 @@ export function FailedCallsTable() {
     'Customer Phone Number': 'phoneNumber',
     'Zip Code': 'zipCode',
     'Product Name': 'productName',
-    'Product Code': 'productCode',
+    'Barcode Text': 'productCode',
     'External Id': 'externalId',
     'Call Type': 'callType',
     'Sub Call Type': 'subCallType',

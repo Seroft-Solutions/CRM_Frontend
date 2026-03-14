@@ -1,7 +1,17 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Archive, Eye, MoreVertical, Pencil, RotateCcw } from 'lucide-react';
+import {
+  AlertTriangle,
+  Archive,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  MoreVertical,
+  Pencil,
+  RotateCcw,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -13,13 +23,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { InlinePermissionGuard } from '@/core/auth';
 import { RelationshipCell } from './relationship-cell';
 import { ClickableId } from '@/components/clickable-id';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
+import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
+import {
+  mapVariantImagesToSlots,
+  VARIANT_IMAGE_ORDER,
+} from '@/features/product-variant-images/utils/variant-image-slots';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -31,10 +49,33 @@ function transformEnumValue(enumValue: string): string {
     .join(' ');
 }
 
+function getVariantDescription(variant: ProductVariantDTO): string {
+  const selections = variant.selections ?? [];
+  const summary = selections
+    .map((selection) => {
+      const attributeLabel = selection.attribute?.label || selection.attribute?.name;
+      const optionLabel = selection.option?.label || selection.option?.code || selection.rawValue;
+
+      if (attributeLabel && optionLabel) {
+        return `${attributeLabel}: ${optionLabel}`;
+      }
+
+      return optionLabel || attributeLabel || '';
+    })
+    .filter(Boolean)
+    .join(' • ');
+
+  if (summary) {
+    return summary;
+  }
+
+  return `Status: ${transformEnumValue(variant.status || 'ACTIVE')}`;
+}
+
 interface RelationshipConfig {
   name: string;
   displayName: string;
-  options: Array<{ id: number; [key: string]: any }>;
+  options: Array<{ id: number; [key: string]: unknown }>;
   displayField: string;
   isEditable: boolean;
 }
@@ -53,6 +94,7 @@ interface ProductTableRowProps {
   statusOptions: StatusOption[];
   isSelected: boolean;
   onSelect: (id: number) => void;
+  selectionEnabled?: boolean;
   relationshipConfigs?: RelationshipConfig[];
   onRelationshipUpdate?: (
     entityId: number,
@@ -79,20 +121,60 @@ export function ProductTableRow({
   statusOptions,
   isSelected,
   onSelect,
+  selectionEnabled = true,
   relationshipConfigs = [],
   onRelationshipUpdate,
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
-  const currentStatus = product.status;
-  const statusInfo = statusOptions.find(
-    (opt) => opt.value === currentStatus || opt.value.toString() === currentStatus
+  const [isStockDetailsOpen, setIsStockDetailsOpen] = useState(false);
+  const shouldFetchVariants = !product.variants?.length && Boolean(product.id);
+  const { data: fetchedVariants = [] } = useGetAllProductVariants(
+    shouldFetchVariants
+      ? {
+          'productId.equals': product.id!,
+          size: 200,
+          sort: ['id,asc'],
+        }
+      : undefined,
+    {
+      query: { enabled: shouldFetchVariants },
+    }
   );
+  const variants = product.variants?.length ? product.variants : (fetchedVariants ?? []);
+  const productStockQuantity = (product as ProductDTO & { stockQuantity?: number }).stockQuantity;
+  const resolvedStockQuantity = useMemo(() => {
+    if (typeof productStockQuantity === 'number') {
+      return productStockQuantity;
+    }
 
+    return variants.reduce((sum, variant) => sum + (variant.stockQuantity ?? 0), 0);
+  }, [productStockQuantity, variants]);
+  const primaryVariant = variants.find((variant) => variant.isPrimary) ?? variants[0];
+  const primaryVariantId = primaryVariant?.id;
+  const { data: primaryVariantImages = [] } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: { enabled: !!primaryVariantId },
+    }
+  );
+  const primaryVariantImageUrl = useMemo(() => {
+    const slots = mapVariantImagesToSlots(primaryVariantImages);
+    const orderedUrls = VARIANT_IMAGE_ORDER.map((slot) => {
+      const image = slots[slot];
+
+      return image?.thumbnailUrl || image?.cdnUrl || null;
+    });
+
+    return orderedUrls.find((url) => url) || null;
+  }, [primaryVariantImages]);
+
+  const currentStatus = product.status;
   const getStatusBadge = (status: string) => {
     const info = statusOptions.find(
       (opt) => opt.value === status || opt.value.toString() === status
     );
+
     if (!info) return <Badge variant="secondary">{transformEnumValue(status)}</Badge>;
 
     return (
@@ -101,15 +183,20 @@ export function ProductTableRow({
       </Badge>
     );
   };
+
   return (
     <TableRow className="hover:bg-gray-50 transition-colors">
       <TableCell className="w-10 sm:w-12 px-2 sm:px-3 py-2 sticky left-0 bg-white z-10">
-        <Checkbox checked={isSelected} onCheckedChange={() => product.id && onSelect(product.id)} />
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => product.id && onSelect(product.id)}
+          disabled={!selectionEnabled}
+        />
       </TableCell>
-      {visibleColumns.map((column, index) => {
+      {visibleColumns.map((column) => {
         const getColumnClassName = () => {
           if (column.id === 'image') {
-            return 'px-2 sm:px-3 py-2 w-[60px]';
+            return 'px-2 sm:px-3 py-2 w-[140px]';
           }
 
           if (['description', 'remark'].includes(column.id)) {
@@ -120,7 +207,7 @@ export function ProductTableRow({
             return 'px-2 sm:px-3 py-2 max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis';
           }
 
-          if (['basePrice', 'discountedPrice', 'salePrice'].includes(column.id)) {
+          if (['basePrice', 'discountedPrice', 'salePrice', 'stockQuantity'].includes(column.id)) {
             return 'px-2 sm:px-3 py-2 whitespace-nowrap text-right';
           }
 
@@ -149,7 +236,7 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'code') {
+                  if (column.id === 'barcodeText') {
                     return field?.toString() || '';
                   }
 
@@ -169,11 +256,76 @@ export function ProductTableRow({
                     return field?.toString() || '';
                   }
 
+                  if (column.id === 'stockQuantity') {
+                    return (
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="tabular-nums font-medium">{resolvedStockQuantity}</span>
+                        {variants.length > 0 && (
+                          <Popover open={isStockDetailsOpen} onOpenChange={setIsStockDetailsOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                aria-label="Show variant stock details"
+                              >
+                                {isStockDetailsOpen ? (
+                                  <ChevronUp className="h-3.5 w-3.5" />
+                                ) : (
+                                  <ChevronDown className="h-3.5 w-3.5" />
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-[340px] p-0">
+                              <div className="border-b px-3 py-2">
+                                <p className="text-sm font-semibold">Stock Details</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {product.name || 'Product'} • Total {resolvedStockQuantity}
+                                </p>
+                              </div>
+                              <div className="max-h-64 overflow-y-auto">
+                                {variants.map((variant) => (
+                                  <div
+                                    key={variant.id ?? variant.sku}
+                                    className="flex items-start justify-between gap-3 border-b px-3 py-2 last:border-b-0"
+                                  >
+                                    <div className="min-w-0">
+                                      <p className="truncate text-xs font-semibold">
+                                        {variant.sku}
+                                      </p>
+                                      <p className="truncate text-xs text-muted-foreground">
+                                        {getVariantDescription(variant)}
+                                      </p>
+                                    </div>
+                                    <div className="shrink-0 text-right">
+                                      <p className="text-xs font-semibold tabular-nums">
+                                        {variant.stockQuantity ?? 0}
+                                      </p>
+                                      {variant.isPrimary ? (
+                                        <Badge
+                                          variant="outline"
+                                          className="mt-1 border-blue-200 bg-blue-50 text-[10px] text-blue-700"
+                                        >
+                                          Primary
+                                        </Badge>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
+                    );
+                  }
+
                   if (column.id === 'remark') {
                     return field?.toString() || '';
                   }
 
-                  if (column.id === 'articalNumber') {
+                  if (column.id === 'articleNumber') {
                     return field?.toString() || '';
                   }
 
@@ -198,26 +350,15 @@ export function ProductTableRow({
                   }
 
                   if (column.id === 'id') {
-                    return (
-                      <ClickableId
-                        id={field as string | number}
-                        entityType="products"
-                      />
-                    );
+                    return <ClickableId id={field as string | number} entityType="products" />;
                   }
 
                   if (column.id === 'image') {
-                    const images = (product as any).images as any[] | undefined;
-                    const primaryImageUrl =
-                      images?.find((img: any) => img.isPrimary === true)?.cdnUrl ||
-                      images?.[0]?.cdnUrl ||
-                      null;
-
                     return (
                       <ProductImageThumbnail
-                        imageUrl={primaryImageUrl}
+                        imageUrl={primaryVariantImageUrl}
                         productName={product.name || 'Product'}
-                        size={40}
+                        size={32}
                       />
                     );
                   }
@@ -227,6 +368,7 @@ export function ProductTableRow({
               : (() => {
                   if (column.id === 'category') {
                     const cellKey = `${product.id}-category`;
+
                     return (
                       <RelationshipCell
                         entityId={product.id || 0}
@@ -256,6 +398,7 @@ export function ProductTableRow({
 
                   if (column.id === 'subCategory') {
                     const cellKey = `${product.id}-subCategory`;
+
                     return (
                       <RelationshipCell
                         entityId={product.id || 0}

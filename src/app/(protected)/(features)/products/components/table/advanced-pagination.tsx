@@ -64,7 +64,7 @@ export function AdvancedPagination({
 
     const halfWindow = Math.floor(maxPageButtons / 2);
     let start = Math.max(1, currentPage - halfWindow);
-    let end = Math.min(totalPages, start + maxPageButtons - 1);
+    const end = Math.min(totalPages, start + maxPageButtons - 1);
 
     if (end - start + 1 < maxPageButtons) {
       start = Math.max(1, end - maxPageButtons + 1);
@@ -97,6 +97,7 @@ export function AdvancedPagination({
 
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
+
     if (!isNaN(value) && value >= 1 && value <= totalPages) {
       onPageChange(value);
     }
@@ -104,7 +105,11 @@ export function AdvancedPagination({
 
   const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handlePageInputChange(e as any);
+      const value = parseInt((e.target as HTMLInputElement).value);
+
+      if (!isNaN(value) && value >= 1 && value <= totalPages) {
+        onPageChange(value);
+      }
     }
   };
 
@@ -217,7 +222,7 @@ export function AdvancedPagination({
 
           {/* Page Numbers */}
           <div className="flex items-center gap-1">
-            {pageNumbers.map((page, index) => {
+            {pageNumbers.map((page) => {
               if (page === 'ellipsis-start' || page === 'ellipsis-end') {
                 return (
                   <Button

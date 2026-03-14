@@ -12,8 +12,7 @@ export interface ImportResult {
   successCount?: number;
   duplicateCount?: number;
   validationErrorCount?: number;
-  masterMissingCount?: number;
   systemErrorCount?: number;
-  rows?: RowResult[];
+  rowResults?: RowResult[];
   failedCount?: number;
 }

@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import {
   AlertCircle,
-  Building2,
   CheckCircle,
   Database,
   Loader2,
@@ -25,7 +25,7 @@ const setupSteps = [
   {
     key: 'Creating workspace schema',
     label: 'Setting up workspace',
-    icon: Building2,
+    icon: CrmCupLogo,
     progress: 25,
   },
   { key: 'Running migrations', label: 'Configuring database', icon: Database, progress: 60 },
@@ -157,7 +157,9 @@ export function OrganizationSetupProgress({
     return (
       <Card className="max-w-2xl mx-auto">
         <CardHeader className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <div className="mx-auto mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-red-50">
+            <AlertCircle className="w-10 h-10 text-red-500" />
+          </div>
           <CardTitle className="text-2xl text-red-700">Setup Failed</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
@@ -175,11 +177,11 @@ export function OrganizationSetupProgress({
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="relative">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
             {isComplete ? (
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CrmCupLogo className="w-16 h-16" />
             ) : (
-              <Sparkles className="w-8 h-8 animate-pulse" />
+              <CrmCupLogo className="w-16 h-16 animate-pulse" />
             )}
           </div>
           {!isComplete && (
@@ -200,7 +202,7 @@ export function OrganizationSetupProgress({
       <Card className="border-primary/20">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
-            <Building2 className="w-5 h-5 mr-2 text-primary" />
+            <CrmCupLogo variant="mark" className="w-5 h-5 mr-2" />
             Setup Progress
           </CardTitle>
         </CardHeader>

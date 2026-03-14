@@ -12,7 +12,7 @@ export const organizationFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakOrgId', 'name', 'displayName', 'domain', 'status'],
+      fields: ['keycloakOrgId', 'name', 'displayName', 'logo', 'domain', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -78,6 +78,18 @@ export const organizationFormConfig: FormConfig = {
       validation: {
         required: false,
         maxLength: 150,
+      },
+      ui: {},
+    },
+    {
+      name: 'logo',
+      type: 'text',
+      label: 'Logo',
+      placeholder: 'Enter logo URL or path',
+      required: false,
+      validation: {
+        required: false,
+        maxLength: 2048,
       },
       ui: {},
     },

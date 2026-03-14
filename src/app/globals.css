@@ -248,15 +248,8 @@
     }
 
     .feature-header > .flex {
-        justify-content: flex-start;
-        align-items: center;
         gap: 0.75rem;
         flex-wrap: wrap;
-        flex-direction: row;
-    }
-
-    .feature-header > .flex > :last-child {
-        order: -1;
     }
 
     .feature-header > .flex > :last-child:empty {

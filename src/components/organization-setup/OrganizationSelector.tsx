@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Building2, LogOut } from 'lucide-react';
+import { ArrowRight, LogOut } from 'lucide-react';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import type { UserOrganization } from '@/services/organization/organization-api.service';
 import { logoutAction } from '@/core/auth';
 
@@ -49,8 +50,8 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
 
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
-            <Building2 className="w-8 h-8" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
+            <CrmCupLogo className="w-16 h-16" />
           </div>
           <h1 className="text-2xl font-bold">Select Your Organization</h1>
           <p className="text-muted-foreground">
@@ -73,7 +74,7 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-primary" />
+                      <CrmCupLogo variant="mark" className="w-6 h-6" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">

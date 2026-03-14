@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Building2, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import type { OrganizationSetupRequest } from '@/services/organization/organization-setup.service';
 
 interface OrganizationSetupFormProps {
@@ -27,6 +29,7 @@ export function OrganizationSetupForm({
     domain: '',
     organizationCode: '',
     organizationEmail: session?.user?.email,
+    address: '',
   });
   const [validationError, setValidationError] = useState<string>('');
 
@@ -34,20 +37,35 @@ export function OrganizationSetupForm({
     e.preventDefault();
     setValidationError('');
 
-    if (!formData.organizationName.trim() || !formData.organizationCode.trim()) {
+    if (
+      !formData.organizationName.trim() ||
+      !formData.organizationCode.trim() ||
+      !formData.address?.trim()
+    ) {
+      setValidationError('Organization name, code, and warehouse address are required.');
+
       return;
     }
 
     if (formData.organizationName.includes(' ')) {
       setValidationError('Organization name cannot contain spaces');
+
       return;
     }
 
     const orgCodeRegex = /^(?=.*[A-Z])(?=.*[0-9])[A-Z0-9]{4}$/;
+
     if (!orgCodeRegex.test(formData.organizationCode as string)) {
       setValidationError(
         'Organization code must be 4 characters long, contain at least one uppercase letter and one number, and no special characters.'
       );
+
+      return;
+    }
+
+    if (formData.address.trim().length > 500) {
+      setValidationError('Warehouse address must be 500 characters or fewer.');
+
       return;
     }
 
@@ -62,18 +80,24 @@ export function OrganizationSetupForm({
       domain,
       organizationCode: formData.organizationCode,
       organizationEmail: session?.user?.email || '',
+      address: formData.address.trim(),
     });
   };
 
   const handleChange =
-    (field: keyof OrganizationSetupRequest) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: 'organizationName' | 'organizationCode' | 'organizationEmail' | 'domain' | 'address') =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       let value = e.target.value;
+
       if (field === 'organizationCode') {
         value = value.toUpperCase();
       }
       setFormData((prev) => ({ ...prev, [field]: value }));
 
-      if (validationError && (field === 'organizationName' || field === 'organizationCode')) {
+      if (
+        validationError &&
+        (field === 'organizationName' || field === 'organizationCode' || field === 'address')
+      ) {
         setValidationError('');
       }
     };
@@ -82,8 +106,8 @@ export function OrganizationSetupForm({
     <div className="max-w-2xl mx-auto space-y-4">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
-          <Building2 className="w-8 h-8" />
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
+          <CrmCupLogo className="w-16 h-16" />
         </div>
         <h1 className="text-2xl font-bold">Setup Your Organization</h1>
         <p className="text-muted-foreground">Create your workspace to get started with CRM Cup</p>
@@ -134,7 +158,7 @@ export function OrganizationSetupForm({
       <Card className="border-primary/20">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
-            <Building2 className="w-5 h-5 mr-2 text-primary" />
+            <CrmCupLogo variant="mark" className="w-5 h-5 mr-2" />
             Organization Details
           </CardTitle>
         </CardHeader>
@@ -174,12 +198,31 @@ export function OrganizationSetupForm({
                 Must be 4 characters, at least one uppercase letter and one number, no special
                 characters.
               </p>
+
+              <Label htmlFor="warehouseAddress" className="text-sm font-medium">
+                Warehouse Address *
+              </Label>
+              <Textarea
+                id="warehouseAddress"
+                value={formData.address}
+                onChange={handleChange('address')}
+                placeholder="Enter full warehouse address (street, city, state, zip)"
+                required
+                disabled={isLoading}
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">
+                You can enter multiple lines for the warehouse address.
+              </p>
             </div>
 
             <Button
               type="submit"
               disabled={
-                isLoading || !formData.organizationName.trim() || !formData.organizationCode.trim()
+                isLoading ||
+                !formData.organizationName.trim() ||
+                !formData.organizationCode.trim() ||
+                !formData.address?.trim()
               }
               className="w-full"
               size="lg"

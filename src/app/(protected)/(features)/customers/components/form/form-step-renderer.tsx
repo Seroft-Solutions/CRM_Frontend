@@ -218,6 +218,9 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
   const renderField = (fieldName: string) => {
     const fieldConfig = config.fields.find((f) => f.name === fieldName);
     if (!fieldConfig) return null;
+    if (fieldConfig.type === 'custom') {
+      return null;
+    }
 
     return (
       <FormField
@@ -417,7 +420,7 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
                       if (fieldConfig.type === 'enum') {
                         const option = fieldConfig.options?.find((opt: any) => opt.value === value);
-                        return option ? option.label : value;
+                        return option ? option.label : String(value);
                       }
 
                       if (fieldConfig.type === 'file') {
@@ -425,15 +428,42 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                         return fileStr;
                       }
 
+                      if (fieldConfig.type === 'custom') {
+                        if (fieldConfig.name === 'addresses') {
+                          const addressList = Array.isArray(value) ? value : value ? [value] : [];
+                          const summary = addressList
+                            .map((address: any) => {
+                              const title = address?.title?.trim?.();
+                              const addressText = address?.completeAddress?.trim?.();
+                              if (title && addressText) return `${title}: ${addressText}`;
+                              return title || addressText || '';
+                            })
+                            .filter(Boolean);
+                          return summary.length > 0 ? summary.join(' | ') : 'Not set';
+                        }
+                        if (Array.isArray(value)) {
+                          return value.length > 0 ? `${value.length} item(s)` : 'Not set';
+                        }
+                        if (typeof value === 'object') {
+                          return JSON.stringify(value);
+                        }
+                        return String(value);
+                      }
+
                       return String(value);
                     })();
+                    const safeDisplayValue = React.isValidElement(displayValue)
+                      ? displayValue
+                      : typeof displayValue === 'object'
+                        ? JSON.stringify(displayValue)
+                        : displayValue;
 
                     return (
                       <div key={fieldName} className="space-y-1">
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                           {fieldConfig.label}
                         </div>
-                        <div className="text-sm font-semibold text-foreground">{displayValue}</div>
+                        <div className="text-sm font-semibold text-foreground">{safeDisplayValue}</div>
                       </div>
                     );
                   })}

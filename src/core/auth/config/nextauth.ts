@@ -36,6 +36,19 @@ let refreshPromise: Promise<JWT> | null = null;
 let lastRefreshAttempt = 0;
 const MIN_REFRESH_INTERVAL = 2000; // Minimum 2 seconds between refresh attempts
 
+function markTokenForSignOut(token: JWT, refreshAttempts?: number): JWT {
+  return {
+    ...token,
+    // Drop large/expired token blobs so session cookies do not keep chunking.
+    access_token: undefined,
+    refresh_token: undefined,
+    id_token: undefined,
+    error: 'RefreshAccessTokenError',
+    shouldSignOut: true,
+    refreshAttempts: refreshAttempts ?? token.refreshAttempts,
+  };
+}
+
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   // Early exit conditions
   if (
@@ -45,7 +58,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       token.refreshAttempts >= 3)
   ) {
     console.warn('Token already marked for signout or max refresh attempts reached');
-    return token;
+    return markTokenForSignOut(token);
   }
 
   // Prevent concurrent refresh attempts - return existing promise if refresh is in progress
@@ -64,7 +77,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         `Token is too old to refresh (expired ${Math.floor(tokenAge / 3600)} hours ago), forcing signout`
       );
       refreshPromise = null;
-      return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+      return markTokenForSignOut(token);
     }
   }
 
@@ -72,7 +85,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     if (!token.refresh_token) {
       console.warn('No refresh token available for token refresh');
       refreshPromise = null;
-      return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+      return markTokenForSignOut(token);
     }
 
     lastRefreshAttempt = now;
@@ -113,12 +126,14 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             }
 
             console.error('Refresh token expired or invalid:', errorDetails);
-            return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
+            refreshPromise = null;
+            return markTokenForSignOut(token, refreshAttempts);
           }
 
           if (refreshAttempts >= 3) {
             console.error('Max refresh attempts reached, marking for signout');
-            return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
+            refreshPromise = null;
+            return markTokenForSignOut(token, refreshAttempts);
           }
 
           console.warn(
@@ -132,7 +147,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 
         if (!data.access_token) {
           console.error('Invalid token response: missing access_token', data);
-          return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true, refreshAttempts };
+          refreshPromise = null;
+          return markTokenForSignOut(token, refreshAttempts);
         }
 
         console.log('Token refreshed successfully on attempt', refreshAttempts);
@@ -156,12 +172,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 
         if (retryAttempts >= 3) {
           console.error('Max network error attempts reached, marking for signout');
-          return {
-            ...token,
-            error: 'RefreshAccessTokenError',
-            shouldSignOut: true,
-            refreshAttempts: retryAttempts,
-          };
+          refreshPromise = null;
+          return markTokenForSignOut(token, retryAttempts);
         }
 
         return { ...token, error: 'RefreshAccessTokenError', refreshAttempts: retryAttempts };
@@ -173,7 +185,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     // Outer catch for synchronous errors
     console.error('Unexpected error in refreshAccessToken:', error);
     refreshPromise = null;
-    return { ...token, error: 'RefreshAccessTokenError', shouldSignOut: true };
+    return markTokenForSignOut(token);
   }
 }
 
@@ -233,7 +245,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.refreshAttempts >= 3)
       ) {
         console.warn('[JWT] Token marked for signout, blocking refresh attempts');
-        return token;
+        return markTokenForSignOut(token);
       }
 
       // Handle manual update trigger

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useEntityForm } from './product-form-provider';
 
 interface FormStateManagerProps {
-  entity?: any;
+  entity?: unknown;
 }
 
 export function FormStateManager({ entity }: FormStateManagerProps) {
@@ -34,6 +34,7 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
 
   useEffect(() => {
     const draftsConfig = config.behavior?.drafts;
+
     if (!draftsConfig?.enabled || !draftsConfig.autoSave) return;
     if (entity || state.isLoading) return;
 
@@ -56,6 +57,7 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (state.isDirty && !entity) {
         const draftsConfig = config.behavior?.drafts;
+
         if (
           draftsConfig?.enabled &&
           (draftsConfig.saveBehavior === 'onUnload' || draftsConfig.saveBehavior === 'both')
@@ -68,6 +70,7 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
         if (config.behavior.navigation.confirmOnCancel) {
           event.preventDefault();
           event.returnValue = 'Are you sure you want to leave? Your changes may not be saved.';
+
           return event.returnValue;
         }
       }
@@ -121,16 +124,19 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
 
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
+
           if (key?.startsWith(config.behavior.persistence.storagePrefix)) {
             try {
               const value = localStorage.getItem(key);
+
               if (value) {
                 const parsed = JSON.parse(value);
+
                 if (parsed.timestamp && parsed.timestamp < cutoffTime) {
                   keysToRemove.push(key);
                 }
               }
-            } catch (error) {
+            } catch {
               keysToRemove.push(key);
             }
           }
@@ -158,6 +164,7 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
 
         const timeoutId = setTimeout(() => {
           const relationshipName = Object.keys(info)[0];
+
           if (relationshipName) {
             actions.handleEntityCreated(parseInt(newEntityId), relationshipName);
           }
@@ -169,7 +176,7 @@ export function FormStateManager({ entity }: FormStateManagerProps) {
         }, 100);
 
         return () => clearTimeout(timeoutId);
-      } catch (error) {
+      } catch {
         localStorage.removeItem(config.behavior.crossEntity.newEntityIdKey);
         localStorage.removeItem(config.behavior.crossEntity.relationshipInfoKey);
       }

@@ -93,9 +93,9 @@ type ProductCreationFormData = {
   code: string;
   articalNumber?: string;
   description?: string;
-  basePrice: string;
+  basePrice?: string;
   discountedPrice?: string;
-  salePrice: string;
+  salePrice?: string;
   remark?: string;
   categoryHierarchy?: {
     category?: number;

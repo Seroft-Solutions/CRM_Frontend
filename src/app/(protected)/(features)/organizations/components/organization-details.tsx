@@ -152,14 +152,6 @@ export function OrganizationDetails({ id }: OrganizationDetailsProps) {
       );
     }
 
-    if (fieldConfig.type === 'file') {
-      return value ? (
-        'File uploaded'
-      ) : (
-        <span className="text-muted-foreground italic">No file</span>
-      );
-    }
-
     if (fieldConfig.type === 'enum') {
       return value || <span className="text-muted-foreground italic">Not set</span>;
     }

@@ -20,6 +20,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'CRM Cup - Customer Relationship Management',
   description: 'Advanced CRM solution for managing customer relationships',
+  icons: {
+    icon: '/crm-cup-logo.png',
+  },
 };
 
 export default async function RootLayout({

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Coffee } from 'lucide-react';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import { signIn, useSession } from 'next-auth/react';
 import HeroSection from '@/features/home/components/HeroSection';
 import FeatureSection from '@/features/home/components/FeatureSection';
@@ -45,7 +45,7 @@ export default function HomePage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center">
-          <Coffee className="w-12 h-12 text-primary animate-bounce mb-4" />
+          <CrmCupLogo className="w-20 h-20 mb-4 animate-pulse" />
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <p className="mt-4 text-muted-foreground">Brewing your experience...</p>
         </div>

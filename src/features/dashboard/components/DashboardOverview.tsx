@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   getAllCalls,
   useGetAllCalls,
@@ -31,12 +32,20 @@ import {
 import {
   Activity,
   Calendar,
+  ClipboardPlus,
+  FilePlus2,
+  HandCoins,
   MapPin,
+  PackagePlus,
   Phone,
+  PhoneCall,
   Search,
+  ShoppingBag,
   ShoppingCart,
   TrendingUp,
+  UserCircle,
   Users,
+  type LucideIcon,
 } from 'lucide-react';
 import {
   useCountCustomers,
@@ -46,8 +55,8 @@ import {
   useGetAllUserProfiles,
 } from '@/core/api/generated/spring';
 import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
-import { QuickActionTiles } from './QuickActionTiles';
 import { QuickLinks } from './QuickLinks';
+import { InventoryReportPanel } from './InventoryReportPanel';
 import { StaffLeadSummaryPeriod, useGetStaffLeadSummary } from '@/core/api/call-analytics';
 import {
   Select,
@@ -60,6 +69,20 @@ import { useManageSalesman } from '@/features/manage-salesman/hooks/use-manage-s
 
 const ACTIVE_LEADS_PAGE_SIZE = 1000;
 const MAX_ACTIVE_LEADS_PAGES = 200;
+const dashboardCreateActions: Array<{ href: string; label: string; icon: LucideIcon }> = [
+  { href: '/calls/new', label: 'Add Lead', icon: PhoneCall },
+  { href: '/customers/new', label: 'Add Customer', icon: Users },
+  { href: '/products/new', label: 'Add Product', icon: PackagePlus },
+  { href: '/orders/new', label: 'Add Sales Order', icon: ClipboardPlus },
+  { href: '/purchase-orders/new', label: 'Add Purchase Order', icon: FilePlus2 },
+];
+const dashboardManageActions: Array<{ href: string; label: string; icon: LucideIcon }> = [
+  { href: '/calls', label: 'Manage Leads', icon: Users },
+  { href: '/customers', label: 'Manage Customers', icon: UserCircle },
+  { href: '/products', label: 'Manage Products', icon: ShoppingCart },
+  { href: '/orders', label: 'Manage Sales', icon: HandCoins },
+  { href: '/purchase-orders', label: 'Manage Purchases', icon: ShoppingBag },
+];
 
 export function DashboardOverview() {
   type MeetingPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'OTHERS';
@@ -859,92 +882,146 @@ export function DashboardOverview() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <div>
-          <h1 className="text-3xl font-bold">CRM Dashboard</h1>
-          <p className="text-muted-foreground">
-            Complete overview of your customer relationship management
-          </p>
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <div className="overflow-x-auto">
+          <div className="flex min-w-max items-center justify-between gap-3">
+            <div className="relative w-[320px] shrink-0">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                name="lead-search"
+                value={activeLeadSearchTerm}
+                onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
+                placeholder="Search active leads by customer, email, or phone"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                data-lpignore="true"
+                data-1p-ignore="true"
+                className="h-11 rounded-full border-slate-200 bg-slate-50 pl-10 pr-4"
+              />
+              {shouldShowLeadDropdown && (
+                <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-md border bg-background shadow-lg">
+                  {dropdownActiveLeads.length > 0 ? (
+                    <div className="max-h-80 overflow-y-auto">
+                      {dropdownActiveLeads.map((lead) => {
+                        if (lead.callId) {
+                          return (
+                            <Link
+                              key={`${lead.id}-${lead.leadNo}`}
+                              href={`/calls/${lead.callId}`}
+                              className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
+                            >
+                              <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                              <p className="text-xs text-muted-foreground">{lead.customerName}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {lead.customerEmail}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {lead.customerPhone}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Product: {lead.productName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Created: {lead.leadCreatedDate}
+                              </p>
+                            </Link>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={`${lead.id}-${lead.leadNo}`}
+                            className="border-b p-3 last:border-b-0 text-muted-foreground"
+                          >
+                            <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
+                            <p className="text-xs">{lead.customerName}</p>
+                            <p className="text-xs">{lead.customerEmail}</p>
+                            <p className="text-xs">{lead.customerPhone}</p>
+                            <p className="text-xs">Product: {lead.productName}</p>
+                            <p className="text-xs">Created: {lead.leadCreatedDate}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="p-3 text-sm text-muted-foreground">
+                      No active leads match your search
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {dashboardCreateActions.map((action) => {
+                const Icon = action.icon;
+
+                return (
+                  <Button
+                    key={action.href}
+                    asChild
+                    size="sm"
+                    className="h-10 w-[150px] shrink-0 justify-center rounded-md border border-black/10 px-3 text-xs text-slate-900 shadow-none transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: 'var(--feature-header-accent)' }}
+                  >
+                    <Link href={action.href}>
+                      <Icon className="h-4 w-4" />
+                      {action.label}
+                    </Link>
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="flex min-w-max items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">CRM Dashboard</h1>
+            <p className="text-muted-foreground">
+              Complete overview of your customer relationship management
+            </p>
+          </div>
+
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {dashboardManageActions.map((action) => {
+              const Icon = action.icon;
+
+              return (
+                <Button
+                  key={action.href}
+                  asChild
+                  size="sm"
+                  className="h-10 w-[150px] shrink-0 justify-center rounded-md border border-white/30 px-3 text-xs text-white shadow-none transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: 'var(--sidebar)' }}
+                >
+                  <Link href={action.href}>
+                    <Icon className="h-4 w-4" />
+                    {action.label}
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Quick Action Tiles */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-        <div className="relative mb-4 w-full lg:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            name="lead-search"
-            value={activeLeadSearchTerm}
-            onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
-            placeholder="Search active leads by customer, email, or phone"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            data-lpignore="true"
-            data-1p-ignore="true"
-            className="pl-9"
-          />
-          {shouldShowLeadDropdown && (
-            <div className="absolute left-0 top-full z-20 mt-2 w-full overflow-hidden rounded-md border bg-background shadow-lg">
-              {dropdownActiveLeads.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  {dropdownActiveLeads.map((lead) => {
-                    if (lead.callId) {
-                      return (
-                        <Link
-                          key={`${lead.id}-${lead.leadNo}`}
-                          href={`/calls/${lead.callId}`}
-                          className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
-                        >
-                          <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
-                          <p className="text-xs text-muted-foreground">{lead.customerName}</p>
-                          <p className="text-xs text-muted-foreground">{lead.customerEmail}</p>
-                          <p className="text-xs text-muted-foreground">{lead.customerPhone}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Product: {lead.productName}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Created: {lead.leadCreatedDate}
-                          </p>
-                        </Link>
-                      );
-                    }
-
-                    return (
-                      <div
-                        key={`${lead.id}-${lead.leadNo}`}
-                        className="border-b p-3 last:border-b-0 text-muted-foreground"
-                      >
-                        <p className="text-sm font-semibold">Lead #{lead.leadNo}</p>
-                        <p className="text-xs">{lead.customerName}</p>
-                        <p className="text-xs">{lead.customerEmail}</p>
-                        <p className="text-xs">{lead.customerPhone}</p>
-                        <p className="text-xs">Product: {lead.productName}</p>
-                        <p className="text-xs">Created: {lead.leadCreatedDate}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="p-3 text-sm text-muted-foreground">
-                  No active leads match your search
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-        <QuickActionTiles />
         <QuickLinks />
       </div>
 
       <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-[400px]">
+        <TabsList className="grid w-full grid-cols-4 max-w-[560px]">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="report">Report</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 mt-6">
@@ -1387,6 +1464,10 @@ export function DashboardOverview() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="report" className="space-y-6 mt-6">
+          <InventoryReportPanel />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 mt-6">

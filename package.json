@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --webpack",
+    "dev:turbopack": "next dev --turbopack",
     "build": "next build",
     "build:docker": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_TELEMETRY_DISABLED=1 next build",
     "build:test": "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=4096' next build",
@@ -86,6 +87,7 @@
     "react-hook-form": "^7.56.3",
     "react-phone-number-input": "^3.4.12",
     "react-resizable-panels": "^3.0.2",
+    "react-to-print": "^3.2.0",
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.3.0",

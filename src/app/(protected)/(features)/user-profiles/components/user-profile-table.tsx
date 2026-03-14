@@ -582,38 +582,21 @@ export function UserProfileTable() {
 
   const filterParams = buildFilterParams();
 
-  const { data, isLoading, refetch } = searchTerm
-    ? useSearchUserProfiles(
-        {
-          query: searchTerm,
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      )
-    : useGetAllUserProfiles(
-        {
-          page: apiPage,
-          size: pageSize,
-          sort: [`${sort},${order}`],
-          ...filterParams,
-        },
-        {
-          query: {
-            enabled: true,
-            staleTime: 0,
-            refetchOnWindowFocus: true,
-          },
-        }
-      );
+  const { data, isLoading, refetch } = useGetAllUserProfiles(
+    {
+      page: apiPage,
+      size: pageSize,
+      sort: [`${sort},${order}`],
+      ...filterParams,
+    },
+    {
+      query: {
+        enabled: true,
+        staleTime: 0,
+        refetchOnWindowFocus: true,
+      },
+    }
+  );
 
   const { data: countData } = useCountUserProfiles(filterParams, {
     query: {

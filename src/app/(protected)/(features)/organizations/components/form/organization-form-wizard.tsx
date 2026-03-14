@@ -198,66 +198,8 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
   const { navigateBackToReferrer, hasReferrer } = useCrossFormNavigation();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const { mutate: createEntity, isPending: isCreating } = useCreateOrganization({
-    mutation: {
-      onSuccess: (data) => {
-        const entityId = data?.id || data?.id;
-
-        queryClient.invalidateQueries({
-          queryKey: ['getAllOrganizations'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countOrganizations'],
-          refetchType: 'active',
-        });
-
-        queryClient.invalidateQueries({
-          queryKey: ['searchOrganizations'],
-          refetchType: 'active',
-        });
-
-        if (hasReferrer() && entityId) {
-          setIsRedirecting(true);
-          navigateBackToReferrer(entityId, 'Organization');
-        } else {
-          setIsRedirecting(true);
-          organizationToast.created();
-          router.push('/organizations');
-        }
-      },
-      onError: (error) => {
-        handleOrganizationError(error);
-      },
-    },
-  });
-
-  const { mutate: updateEntity, isPending: isUpdating } = useUpdateOrganization({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ['getAllOrganizations'],
-          refetchType: 'active',
-        });
-        queryClient.invalidateQueries({
-          queryKey: ['countOrganizations'],
-          refetchType: 'active',
-        });
-
-        queryClient.invalidateQueries({
-          queryKey: ['searchOrganizations'],
-          refetchType: 'active',
-        });
-
-        setIsRedirecting(true);
-        organizationToast.updated();
-        router.push('/organizations');
-      },
-      onError: (error) => {
-        handleOrganizationError(error);
-      },
-    },
-  });
+  const { mutateAsync: createEntityAsync } = useCreateOrganization();
+  const { mutateAsync: updateEntityAsync } = useUpdateOrganization();
 
   if (isRedirecting) {
     return (
@@ -274,11 +216,58 @@ export function OrganizationForm({ id }: OrganizationFormProps) {
     <OrganizationFormProvider
       id={id}
       onSuccess={async (transformedData) => {
+        const entityPayload = (transformedData ?? {}) as Record<string, any>;
+
         if (isNew) {
-          createEntity({ data: transformedData as any });
+          const createdEntity = await createEntityAsync({ data: entityPayload as any });
+          const createdEntityId = createdEntity?.id;
+
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: ['getAllOrganizations'],
+              refetchType: 'active',
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ['countOrganizations'],
+              refetchType: 'active',
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ['searchOrganizations'],
+              refetchType: 'active',
+            }),
+          ]);
+
+          if (hasReferrer() && createdEntityId) {
+            setIsRedirecting(true);
+            navigateBackToReferrer(createdEntityId, 'Organization');
+            return;
+          }
+
+          setIsRedirecting(true);
+          organizationToast.created();
+          router.push('/organizations');
         } else if (id) {
-          const entityData = { ...transformedData, id };
-          updateEntity({ id, data: entityData as any });
+          const entityData = { ...entityPayload, id };
+          await updateEntityAsync({ id, data: entityData as any });
+
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: ['getAllOrganizations'],
+              refetchType: 'active',
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ['countOrganizations'],
+              refetchType: 'active',
+            }),
+            queryClient.invalidateQueries({
+              queryKey: ['searchOrganizations'],
+              refetchType: 'active',
+            }),
+          ]);
+
+          setIsRedirecting(true);
+          organizationToast.updated();
+          router.push('/organizations');
         }
       }}
       onError={(error) => {

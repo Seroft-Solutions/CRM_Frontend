@@ -22,6 +22,24 @@ export interface OrganizationDTO {
   name: string;
   /**
    * @minLength 0
+   * @maxLength 4
+   * @pattern ^(?=.*[A-Z])(?=.*[0-9])[A-Z0-9]{4}$
+   */
+  code?: string;
+  /**
+   * @minLength 0
+   * @maxLength 500
+   * @pattern (?s)^(?!\s*$).+
+   */
+  address?: string;
+  /**
+   * @minLength 0
+   * @maxLength 2048
+   * @pattern ^(https?://[^\s]+|(?:\.?\.[/\\][^\s]+))$
+   */
+  logo?: string;
+  /**
+   * @minLength 0
    * @maxLength 150
    */
   displayName?: string;

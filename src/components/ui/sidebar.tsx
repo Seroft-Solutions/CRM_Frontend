@@ -125,9 +125,8 @@ function SidebarProvider({
     if (isMobile) {
       return setOpenMobile((value) => !value);
     }
-    if (pinned) return;
     return setOpen((value) => !value);
-  }, [isMobile, pinned, setOpen, setOpenMobile]);
+  }, [isMobile, setOpen, setOpenMobile]);
 
   const togglePinned = React.useCallback(() => {
     updatePinnedState((prev) => !prev);
@@ -297,7 +296,7 @@ function Sidebar({
 }
 
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar, pinned } = useSidebar();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <Button
@@ -305,11 +304,9 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn('size-7', pinned && 'text-sidebar-foreground/40', className)}
-      disabled={pinned}
+      className={cn('size-7', className)}
       onClick={(event) => {
         onClick?.(event);
-        if (pinned) return;
         toggleSidebar();
       }}
       {...props}
