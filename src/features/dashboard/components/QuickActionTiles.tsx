@@ -14,6 +14,8 @@ import Link from 'next/link';
 
 type QuickActionTilesProps = {
   showAddProduct?: boolean;
+  showAddActions?: boolean;
+  showManageActions?: boolean;
 };
 
 type TileAction = 'add' | 'view';
@@ -209,23 +211,31 @@ function QuickActionTileCard({ tile }: { tile: QuickActionTile }) {
   );
 }
 
-export function QuickActionTiles({ showAddProduct = true }: QuickActionTilesProps) {
+export function QuickActionTiles({
+  showAddProduct = true,
+  showAddActions = true,
+  showManageActions = true,
+}: QuickActionTilesProps) {
   const pairs = showAddProduct
     ? quickActionPairs
     : quickActionPairs.filter((pair) => pair.key !== 'product');
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-        {pairs.map((pair) => (
-          <QuickActionTileCard key={pair.add.key} tile={pair.add} />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-        {pairs.map((pair) => (
-          <QuickActionTileCard key={pair.manage.key} tile={pair.manage} />
-        ))}
-      </div>
+      {showAddActions ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          {pairs.map((pair) => (
+            <QuickActionTileCard key={pair.add.key} tile={pair.add} />
+          ))}
+        </div>
+      ) : null}
+      {showManageActions ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          {pairs.map((pair) => (
+            <QuickActionTileCard key={pair.manage.key} tile={pair.manage} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

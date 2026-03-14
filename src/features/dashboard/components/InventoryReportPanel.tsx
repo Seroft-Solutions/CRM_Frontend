@@ -19,6 +19,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ArrowDownUp, ArrowUpDown, FileDown, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
 import { getAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
@@ -46,6 +48,7 @@ type ProductVariantWithStocks = ProductVariantDTO & {
 
 type OverallInventoryRow = {
   productId: number | null;
+  imageUrl: string | null;
   productName: string;
   barcodeText: string;
   category: string;
@@ -55,6 +58,7 @@ type OverallInventoryRow = {
 
 type WarehouseInventoryRow = {
   productId: number | null;
+  imageUrl: string | null;
   productName: string;
   variantSku: string;
   variantDetails: string;
@@ -121,6 +125,21 @@ const getStockLevelBadgeClassName = (level: StockLevel) => {
 };
 
 const formatStockLevel = (level: StockLevel) => level.charAt(0).toUpperCase() + level.slice(1);
+
+const getProductImageUrl = (product?: ProductWithStockQuantity | null) => {
+  const images = Array.isArray(product?.images) ? product.images : [];
+  const image = images.find((item) => item.isPrimary) ?? images[0];
+
+  if (!image) {
+    return null;
+  }
+
+  return (
+    image.thumbnailUrl ||
+    image.cdnUrl ||
+    (image.gumletPath ? resolveCatalogImageUrl(image.gumletPath) : null)
+  );
+};
 
 const getVariantDetails = (variant: ProductVariantWithStocks): string => {
   const selectionLabels = (variant.selections || [])
@@ -301,6 +320,7 @@ export function InventoryReportPanel() {
 
         return {
           productId: product.id ?? null,
+          imageUrl: getProductImageUrl(product),
           productName: product.name ?? 'Unnamed Product',
           barcodeText: product.barcodeText ?? '',
           category: product.category?.name ?? 'N/A',
@@ -357,6 +377,7 @@ export function InventoryReportPanel() {
 
       const product = productById.get(productId);
       const productName = variant.product?.name || product?.name || 'Unnamed Product';
+      const imageUrl = getProductImageUrl(product);
       const variantIdentifier =
         typeof variant.id === 'number' ? `variant-${variant.id}` : `sku-${variant.sku || 'N/A'}`;
       const variantSku = variant.sku || 'N/A';
@@ -379,6 +400,7 @@ export function InventoryReportPanel() {
             addDetailedRow(
               {
                 productId,
+                imageUrl,
                 productName,
                 variantSku,
                 variantDetails,
@@ -399,6 +421,7 @@ export function InventoryReportPanel() {
           addDetailedRow(
             {
               productId,
+              imageUrl,
               productName,
               variantSku,
               variantDetails,
@@ -447,6 +470,7 @@ export function InventoryReportPanel() {
       addDetailedRow(
         {
           productId: product.id,
+          imageUrl: getProductImageUrl(product),
           productName: product.name ?? 'Unnamed Product',
           variantSku: 'N/A',
           variantDetails: 'No Variant Details',
@@ -692,19 +716,22 @@ export function InventoryReportPanel() {
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Image
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-[17.6%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Product
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[17.6%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Barcode
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[17.6%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Category
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[17.6%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Status
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[17.6%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           <Button
                             type="button"
                             variant="ghost"
@@ -716,7 +743,7 @@ export function InventoryReportPanel() {
                             <ArrowDownUp className="ml-2 h-3.5 w-3.5" />
                           </Button>
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-right text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[17.6%] bg-slate-50/95 text-right text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           <Button
                             type="button"
                             variant="ghost"
@@ -737,6 +764,14 @@ export function InventoryReportPanel() {
                             key={row.productId ?? row.productName}
                             className="border-slate-100 hover:bg-slate-50/70"
                           >
+                            <TableCell>
+                              <ProductImageThumbnail
+                                imageUrl={row.imageUrl}
+                                productName={row.productName}
+                                size={40}
+                                className="rounded-lg"
+                              />
+                            </TableCell>
                             <TableCell className="truncate font-medium text-slate-900">
                               {row.productName}
                             </TableCell>
@@ -769,7 +804,7 @@ export function InventoryReportPanel() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                          <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                             No inventory rows match your search.
                           </TableCell>
                         </TableRow>
@@ -802,22 +837,25 @@ export function InventoryReportPanel() {
                   <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Image
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Product
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Variant SKU
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Variant Details
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Warehouse
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           Warehouse Code
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           <Button
                             type="button"
                             variant="ghost"
@@ -829,7 +867,7 @@ export function InventoryReportPanel() {
                             <ArrowDownUp className="ml-2 h-3.5 w-3.5" />
                           </Button>
                         </TableHead>
-                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-right text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                        <TableHead className="sticky top-0 z-20 w-[12.5%] bg-slate-50/95 text-right text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
                           <Button
                             type="button"
                             variant="ghost"
@@ -850,6 +888,14 @@ export function InventoryReportPanel() {
                             key={`${row.productId ?? 'N/A'}-${row.variantSku}-${row.warehouseId}-${row.variantDetails}`}
                             className="border-slate-100 hover:bg-slate-50/70"
                           >
+                            <TableCell>
+                              <ProductImageThumbnail
+                                imageUrl={row.imageUrl}
+                                productName={row.productName}
+                                size={40}
+                                className="rounded-lg"
+                              />
+                            </TableCell>
                             <TableCell className="truncate font-medium text-slate-900">
                               {row.productName}
                             </TableCell>
@@ -874,7 +920,7 @@ export function InventoryReportPanel() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                          <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                             No warehouse inventory rows match your search.
                           </TableCell>
                         </TableRow>
