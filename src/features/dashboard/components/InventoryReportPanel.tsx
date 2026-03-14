@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, Loader2, Search } from 'lucide-react';
+import { ArrowDownUp, ArrowUpDown, FileDown, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
@@ -64,6 +64,10 @@ type WarehouseInventoryRow = {
   stockQuantity: number;
 };
 
+type StockLevel = 'low' | 'medium' | 'high';
+type StockSortDirection = 'desc' | 'asc';
+type StockSortField = 'quantity' | 'level';
+
 const INVENTORY_REPORT_PAGE_SIZE = 500;
 const INVENTORY_REPORT_MAX_PAGES = 2000;
 const numberFormatter = new Intl.NumberFormat('en-US');
@@ -81,6 +85,42 @@ const normalizeStatus = (status?: string) => {
 };
 
 const formatStockNumber = (value: number) => numberFormatter.format(value);
+
+const getStockLevel = (stockQuantity: number): StockLevel => {
+  if (stockQuantity <= 10) {
+    return 'low';
+  }
+  if (stockQuantity <= 50) {
+    return 'medium';
+  }
+  return 'high';
+};
+
+const getStockLevelWeight = (level: StockLevel) => {
+  switch (level) {
+    case 'high':
+      return 3;
+    case 'medium':
+      return 2;
+    case 'low':
+    default:
+      return 1;
+  }
+};
+
+const getStockLevelBadgeClassName = (level: StockLevel) => {
+  switch (level) {
+    case 'high':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+    case 'medium':
+      return 'border-amber-200 bg-amber-50 text-amber-700';
+    case 'low':
+    default:
+      return 'border-rose-200 bg-rose-50 text-rose-700';
+  }
+};
+
+const formatStockLevel = (level: StockLevel) => level.charAt(0).toUpperCase() + level.slice(1);
 
 const getVariantDetails = (variant: ProductVariantWithStocks): string => {
   const selectionLabels = (variant.selections || [])
@@ -181,6 +221,8 @@ export function InventoryReportPanel() {
     isAdmin() || hasPermission('dashboard') || hasPermission('product:read');
   const [viewMode, setViewMode] = useState<InventoryViewMode>('overall');
   const [searchTerm, setSearchTerm] = useState('');
+  const [stockSortField, setStockSortField] = useState<StockSortField>('quantity');
+  const [stockSortDirection, setStockSortDirection] = useState<StockSortDirection>('desc');
   const reportRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -433,31 +475,74 @@ export function InventoryReportPanel() {
   }, [products, variants, warehouses]);
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredOverallRows = useMemo(() => {
-    if (!normalizedSearchTerm) {
-      return overallRows;
-    }
+  const sortInventoryRows = <T extends { productName: string; stockQuantity: number }>(rows: T[]) =>
+    [...rows].sort((a, b) => {
+      if (stockSortField === 'level') {
+        const levelDelta =
+          getStockLevelWeight(getStockLevel(b.stockQuantity)) -
+          getStockLevelWeight(getStockLevel(a.stockQuantity));
 
-    return overallRows.filter((row) =>
-      [row.productName, row.barcodeText, row.category, row.status]
-        .join(' ')
-        .toLowerCase()
-        .includes(normalizedSearchTerm)
-    );
-  }, [normalizedSearchTerm, overallRows]);
+        if (levelDelta !== 0) {
+          return stockSortDirection === 'desc' ? levelDelta : -levelDelta;
+        }
+      }
+
+      const quantityDelta = b.stockQuantity - a.stockQuantity;
+
+      if (quantityDelta !== 0) {
+        return stockSortDirection === 'desc' ? quantityDelta : -quantityDelta;
+      }
+
+      return a.productName.localeCompare(b.productName);
+    });
+
+  const filteredOverallRows = useMemo(() => {
+    const rows = !normalizedSearchTerm
+      ? overallRows
+      : overallRows.filter((row) =>
+          [row.productName, row.barcodeText, row.category, row.status]
+            .join(' ')
+            .toLowerCase()
+            .includes(normalizedSearchTerm)
+        );
+
+    return sortInventoryRows(rows);
+  }, [normalizedSearchTerm, overallRows, stockSortDirection, stockSortField]);
 
   const filteredWarehouseRows = useMemo(() => {
-    if (!normalizedSearchTerm) {
-      return warehouseRows;
+    const rows = !normalizedSearchTerm
+      ? warehouseRows
+      : warehouseRows.filter((row) =>
+          [row.productName, row.variantSku, row.variantDetails, row.warehouseName, row.warehouseCode]
+            .join(' ')
+            .toLowerCase()
+            .includes(normalizedSearchTerm)
+        );
+
+    return sortInventoryRows(rows);
+  }, [normalizedSearchTerm, warehouseRows, stockSortDirection, stockSortField]);
+
+  const stockLevelSummary = useMemo(() => {
+    const rows = viewMode === 'overall' ? filteredOverallRows : filteredWarehouseRows;
+
+    return rows.reduce(
+      (acc, row) => {
+        acc[getStockLevel(row.stockQuantity)] += 1;
+        return acc;
+      },
+      { low: 0, medium: 0, high: 0 } as Record<StockLevel, number>
+    );
+  }, [filteredOverallRows, filteredWarehouseRows, viewMode]);
+
+  const updateStockSort = (field: StockSortField) => {
+    if (stockSortField === field) {
+      setStockSortDirection((current) => (current === 'desc' ? 'asc' : 'desc'));
+      return;
     }
 
-    return warehouseRows.filter((row) =>
-      [row.productName, row.variantSku, row.variantDetails, row.warehouseName, row.warehouseCode]
-        .join(' ')
-        .toLowerCase()
-        .includes(normalizedSearchTerm)
-    );
-  }, [normalizedSearchTerm, warehouseRows]);
+    setStockSortField(field);
+    setStockSortDirection(field === 'level' ? 'asc' : 'desc');
+  };
 
   const totalOverallStock = filteredOverallRows.reduce((sum, row) => sum + row.stockQuantity, 0);
   const totalWarehouseStock = filteredWarehouseRows.reduce(
@@ -525,41 +610,54 @@ export function InventoryReportPanel() {
               </CardDescription>
             </div>
 
-            <div className="w-full sm:w-auto flex flex-col sm:items-end gap-2">
+            <div className="w-full sm:flex sm:justify-end">
               <Tabs
                 value={viewMode}
                 onValueChange={(value) => setViewMode(value as InventoryViewMode)}
+                className="w-full sm:w-auto"
               >
-                <TabsList className="grid w-full grid-cols-2 sm:w-[360px]">
-                  <TabsTrigger value="overall">All Over Inventory</TabsTrigger>
-                  <TabsTrigger value="warehouse">Inventory as Per Warehouse</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 rounded-xl border border-slate-200 bg-slate-100/80 p-1 sm:w-[420px]">
+                  <TabsTrigger
+                    value="overall"
+                    className="rounded-lg px-4 py-3 text-center text-sm leading-4 font-semibold whitespace-normal text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                  >
+                    Overall Inventory
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="warehouse"
+                    className="rounded-lg px-4 py-3 text-center text-sm leading-4 font-semibold whitespace-normal text-slate-600 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                  >
+                    Inventory Per Warehouse
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
-
-              <Button
-                type="button"
-                onClick={handleGeneratePdf}
-                disabled={!canGenerateReport}
-                className="h-9 px-4 bg-slate-900 text-white hover:bg-slate-800"
-              >
-                <FileDown className="mr-2 h-4 w-4" />
-                Generate Inventory Report (PDF)
-              </Button>
             </div>
           </div>
 
-          <div className="relative mt-2 w-full lg:max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder={
-                viewMode === 'overall'
-                  ? 'Search products, barcode, category...'
-                  : 'Search product, variant, warehouse, code...'
-              }
-              className="pl-9"
-            />
+          <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="relative w-full md:max-w-md">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={
+                  viewMode === 'overall'
+                    ? 'Search products, barcode, category...'
+                    : 'Search product, variant, warehouse, code...'
+                }
+                className="h-10 rounded-xl border-slate-200 pl-9 shadow-sm"
+              />
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleGeneratePdf}
+              disabled={!canGenerateReport}
+              className="h-10 rounded-xl bg-slate-900 px-4 text-white hover:bg-slate-800"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              Generate Inventory Report
+            </Button>
           </div>
         </CardHeader>
 
@@ -578,36 +676,100 @@ export function InventoryReportPanel() {
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <Badge variant="secondary">{filteredOverallRows.length} products</Badge>
                 <Badge variant="outline">Total stock: {formatStockNumber(totalOverallStock)}</Badge>
+                <Badge className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-50">
+                  Low: {stockLevelSummary.low}
+                </Badge>
+                <Badge className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50">
+                  Medium: {stockLevelSummary.medium}
+                </Badge>
+                <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                  High: {stockLevelSummary.high}
+                </Badge>
               </div>
 
-              <div className="rounded-md border">
+              <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="max-h-[420px] overflow-y-auto">
-                  <Table>
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Barcode</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Product
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Barcode
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Category
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Status
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateStockSort('level')}
+                            className="-ml-3 h-8 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 hover:bg-slate-100"
+                          >
+                            Stock Level
+                            <ArrowDownUp className="ml-2 h-3.5 w-3.5" />
+                          </Button>
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/6 bg-slate-50/95 text-right text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateStockSort('quantity')}
+                            className="ml-auto h-8 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 hover:bg-slate-100"
+                          >
+                            Stock
+                            <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                          </Button>
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredOverallRows.length > 0 ? (
                         filteredOverallRows.map((row) => (
-                          <TableRow key={row.productId ?? row.productName}>
-                            <TableCell className="font-medium">{row.productName}</TableCell>
-                            <TableCell>{row.barcodeText || 'N/A'}</TableCell>
-                            <TableCell>{row.category}</TableCell>
-                            <TableCell>{row.status}</TableCell>
-                            <TableCell className="text-right font-semibold tabular-nums">
-                              {formatStockNumber(row.stockQuantity)}
+                          <TableRow
+                            key={row.productId ?? row.productName}
+                            className="border-slate-100 hover:bg-slate-50/70"
+                          >
+                            <TableCell className="truncate font-medium text-slate-900">
+                              {row.productName}
+                            </TableCell>
+                            <TableCell className="truncate text-slate-600">
+                              {row.barcodeText || 'N/A'}
+                            </TableCell>
+                            <TableCell className="truncate text-slate-600">{row.category}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className="border-slate-200 bg-slate-50 text-slate-700"
+                              >
+                                {row.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={getStockLevelBadgeClassName(getStockLevel(row.stockQuantity))}
+                              >
+                                {formatStockLevel(getStockLevel(row.stockQuantity))}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="inline-flex min-w-[88px] justify-end rounded-lg bg-slate-50 px-3 py-2 font-semibold tabular-nums text-slate-900">
+                                {formatStockNumber(row.stockQuantity)}
+                              </span>
                             </TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                          <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                             No inventory rows match your search.
                           </TableCell>
                         </TableRow>
@@ -624,19 +786,61 @@ export function InventoryReportPanel() {
                 <Badge variant="outline">
                   Total stock: {formatStockNumber(totalWarehouseStock)}
                 </Badge>
+                <Badge className="border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-50">
+                  Low: {stockLevelSummary.low}
+                </Badge>
+                <Badge className="border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50">
+                  Medium: {stockLevelSummary.medium}
+                </Badge>
+                <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                  High: {stockLevelSummary.high}
+                </Badge>
               </div>
 
-              <div className="rounded-md border">
+              <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="max-h-[420px] overflow-y-auto">
-                  <Table>
+                  <Table className="table-fixed">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Variant SKU</TableHead>
-                        <TableHead>Variant Details</TableHead>
-                        <TableHead>Warehouse</TableHead>
-                        <TableHead>Warehouse Code</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Product
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Variant SKU
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Variant Details
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Warehouse
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          Warehouse Code
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateStockSort('level')}
+                            className="-ml-3 h-8 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 hover:bg-slate-100"
+                          >
+                            Stock Level
+                            <ArrowDownUp className="ml-2 h-3.5 w-3.5" />
+                          </Button>
+                        </TableHead>
+                        <TableHead className="sticky top-0 z-20 w-1/7 bg-slate-50/95 text-right text-slate-600 backdrop-blur supports-[backdrop-filter]:bg-slate-50/80">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateStockSort('quantity')}
+                            className="ml-auto h-8 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 hover:bg-slate-100"
+                          >
+                            Stock
+                            <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
+                          </Button>
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -644,20 +848,33 @@ export function InventoryReportPanel() {
                         filteredWarehouseRows.map((row) => (
                           <TableRow
                             key={`${row.productId ?? 'N/A'}-${row.variantSku}-${row.warehouseId}-${row.variantDetails}`}
+                            className="border-slate-100 hover:bg-slate-50/70"
                           >
-                            <TableCell className="font-medium">{row.productName}</TableCell>
-                            <TableCell>{row.variantSku}</TableCell>
-                            <TableCell>{row.variantDetails}</TableCell>
-                            <TableCell>{row.warehouseName}</TableCell>
-                            <TableCell>{row.warehouseCode}</TableCell>
-                            <TableCell className="text-right font-semibold tabular-nums">
-                              {formatStockNumber(row.stockQuantity)}
+                            <TableCell className="truncate font-medium text-slate-900">
+                              {row.productName}
+                            </TableCell>
+                            <TableCell className="truncate text-slate-600">{row.variantSku}</TableCell>
+                            <TableCell className="truncate text-slate-600">{row.variantDetails}</TableCell>
+                            <TableCell className="truncate text-slate-600">{row.warehouseName}</TableCell>
+                            <TableCell className="truncate text-slate-600">{row.warehouseCode}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={getStockLevelBadgeClassName(getStockLevel(row.stockQuantity))}
+                              >
+                                {formatStockLevel(getStockLevel(row.stockQuantity))}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="inline-flex min-w-[88px] justify-end rounded-lg bg-slate-50 px-3 py-2 font-semibold tabular-nums text-slate-900">
+                                {formatStockNumber(row.stockQuantity)}
+                              </span>
                             </TableCell>
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                          <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                             No warehouse inventory rows match your search.
                           </TableCell>
                         </TableRow>
