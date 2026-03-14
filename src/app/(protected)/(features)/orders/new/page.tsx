@@ -1,5 +1,5 @@
 import { PermissionGuard } from '@/core/auth';
-import { OrderForm } from '@/app/(protected)/(features)/orders/components/order-form';
+import { OrderForm } from '@/app/(protected)/(features)/orders/components/form/order-form';
 import { Plus } from 'lucide-react';
 
 export const metadata = {

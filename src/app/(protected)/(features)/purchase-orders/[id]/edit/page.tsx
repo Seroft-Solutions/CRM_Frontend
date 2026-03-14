@@ -1,5 +1,5 @@
 import { PermissionGuard } from '@/core/auth';
-import { OrderEditForm } from '../../components/order-edit-form';
+import { OrderEditForm } from '../../components/form/order-edit-form';
 import { Edit } from 'lucide-react';
 
 interface EditOrderPageProps {

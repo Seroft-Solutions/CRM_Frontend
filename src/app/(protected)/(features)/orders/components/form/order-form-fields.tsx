@@ -16,7 +16,7 @@ import {
   OrderStatus,
   PaymentStatus,
   ShippingMethod,
-} from '../data/order-data';
+} from '../../data/order-data';
 import { FieldError } from './order-form-field-error';
 import type { OrderFormErrors, OrderFormState } from './order-form-types';
 

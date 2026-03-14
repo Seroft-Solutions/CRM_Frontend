@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useCountOrderHistories, useGetAllOrderHistories } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
-import { useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
-import { mapOrderHistoryEntries } from '../data/order-data';
+import { useGetAllPurchaseOrders as useGetAllOrders } from '@/core/api/purchase-order';
+import { mapOrderHistoryEntries } from '../../data/purchase-order-data';
 
 function formatDateTime(value?: string) {
   if (!value) return '—';
@@ -51,10 +51,10 @@ export function OrderHistoryTable() {
   const { data: ordersData } = useGetAllOrders(
     orderIds.length
       ? {
-          'id.in': orderIds,
-          page: 0,
-          size: orderIds.length,
-        }
+        'id.in': orderIds,
+        page: 0,
+        size: orderIds.length,
+      }
       : undefined,
     {
       query: {
@@ -107,18 +107,18 @@ export function OrderHistoryTable() {
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">Complete Order History</h3>
+            <h3 className="font-bold text-slate-800">Complete Purchase Order History</h3>
             <p className="text-sm text-muted-foreground">
-              Timeline of every status change across all orders and items
+              Timeline of every status change across all purchase orders and items
             </p>
           </div>
         </div>
         <Button asChild size="sm" className="bg-slate-600 text-white hover:bg-slate-700">
-          <Link href="/orders">
+          <Link href="/purchase-orders">
             <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to orders
+            Back to purchase orders
           </Link>
         </Button>
       </div>
@@ -141,7 +141,7 @@ export function OrderHistoryTable() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="mb-1 font-semibold text-red-700">Unable to load order history</p>
+          <p className="mb-1 font-semibold text-red-700">Unable to load purchase order history</p>
           <p className="text-sm text-muted-foreground">Please try again later</p>
         </div>
       ) : (
@@ -212,7 +212,7 @@ export function OrderHistoryTable() {
                   </TableCell>
                   <TableCell className="text-right">
                     <Button asChild size="sm" className="bg-slate-600 text-white hover:bg-slate-700">
-                      <Link href={`/orders/${entry.orderId}`}>
+                      <Link href={`/purchase-orders/${entry.orderId}`}>
                         <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -234,7 +234,7 @@ export function OrderHistoryTable() {
                         </svg>
                       </div>
                       <p className="mb-1 font-semibold text-slate-700">No history entries yet</p>
-                      <p className="text-sm text-muted-foreground">Order activity will appear here once orders are created</p>
+                      <p className="text-sm text-muted-foreground">Purchase order activity will appear here once purchase orders are created</p>
                     </div>
                   </TableCell>
                 </TableRow>

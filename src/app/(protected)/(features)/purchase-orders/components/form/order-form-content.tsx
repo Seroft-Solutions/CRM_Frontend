@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  OrderStatus,
+  PaymentStatus,
   OrderRecord,
   getOrderStatusCode,
   getPaymentStatusCode,
@@ -21,11 +23,10 @@ import {
   orderStatusOptions,
   paymentStatusOptions,
   shippingMethodOptions,
-} from '../data/order-data';
+} from '../../data/purchase-order-data';
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -33,29 +34,29 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  useCreateOrder,
-  useUpdateOrder,
-} from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
-import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import type { CustomerDTO, OrderDTO } from '@/core/api/generated/spring/schemas';
+  useCreatePurchaseOrder as useCreateOrder,
+  useUpdatePurchaseOrder as useUpdateOrder,
+} from '@/core/api/purchase-order';
+import { useGetSundryCreditor as useGetCustomer } from '@/core/api/generated/spring/endpoints/sundry-creditor-resource/sundry-creditor-resource.gen';
+import type { SundryCreditorDTO as CustomerDTO } from '@/core/api/generated/spring/schemas/SundryCreditorDTO';
+import type { PurchaseOrderDTO as OrderDTO } from '@/core/api/purchase-order';
 import {
-  useCreateOrderDetail,
-  useDeleteOrderDetail,
-  useUpdateOrderDetail,
-} from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
+  useCreatePurchaseOrderDetail as useCreateOrderDetail,
+  useDeletePurchaseOrderDetail as useDeleteOrderDetail,
+  useUpdatePurchaseOrderDetail as useUpdateOrderDetail,
+} from '@/core/api/purchase-order-detail';
 import {
-  useCreateOrderAddressDetail,
-  useUpdateOrderAddressDetail,
-} from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
-import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+  useCreatePurchaseOrderAddressDetail as useCreateOrderAddressDetail,
+  useUpdatePurchaseOrderAddressDetail as useUpdateOrderAddressDetail,
+} from '@/core/api/purchase-order-address-detail';
+import { useCreatePurchaseOrderHistory as useCreateOrderHistory } from '@/core/api/purchase-order-history';
 import {
-  useCreateOrderShippingDetail,
-  useUpdateOrderShippingDetail,
-} from '@/core/api/order-shipping-detail';
+  useCreatePurchaseOrderShippingDetail as useCreateOrderShippingDetail,
+  useUpdatePurchaseOrderShippingDetail as useUpdateOrderShippingDetail,
+} from '@/core/api/purchase-order-shipping-detail';
 import { SaveDraftDialog } from '@/components/form-drafts';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
-import { getDiscountByCode } from '../../discounts/actions/discount-api';
-import type { IDiscount } from '../../discounts/types/discount';
+import type { IDiscount } from '../../../discounts/types/discount';
 import type {
   AddressFieldsForm,
   ItemErrors,
@@ -63,16 +64,14 @@ import type {
   OrderFormErrors,
   OrderFormState,
   OrderItemForm,
-  WarehouseStockEntry,
 } from './order-form-types';
 import { OrderFormAddress } from './order-form-address';
 import { OrderFormFooter } from './order-form-footer';
 import { OrderFormFields } from './order-form-fields';
 import { OrderFormItems } from './order-form-items';
 import { FieldError } from './order-form-field-error';
-import { getOrderItemBillingBreakdown } from './order-item-stock';
 
-interface OrderFormProps {
+export interface OrderFormProps {
   initialOrder?: OrderRecord;
   addressExists?: boolean;
   shippingExists?: boolean;
@@ -92,16 +91,14 @@ const emptyOrderItem = (itemType: OrderItemForm['itemType'] = 'product'): OrderI
 
 const calculateItemsTotal = (items: OrderItemForm[]) =>
   items.reduce((sum, item) => {
-    const breakdown = getOrderItemBillingBreakdown(item);
-    const qty = breakdown.billableQuantity;
+    const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
     return sum + Math.max(qty * price + tax, 0);
   }, 0);
 
 const calculateItemTotal = (item: OrderItemForm) => {
-  const breakdown = getOrderItemBillingBreakdown(item);
-  const qty = breakdown.billableQuantity;
+  const qty = Number.parseInt(item.quantity, 10) || 0;
   const price = Number.parseFloat(item.itemPrice) || 0;
   const tax = Number.parseFloat(item.itemTaxAmount) || 0;
   return Math.max(qty * price + tax, 0);
@@ -126,7 +123,7 @@ const parseItemStatusValue = (value?: string) => {
   return match ? match[0] : '';
 };
 
-export function OrderForm({
+export function OrderFormContent({
   initialOrder,
   addressExists,
   shippingExists,
@@ -138,11 +135,6 @@ export function OrderForm({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<OrderFormErrors>({});
   const [showEmptyCartDialog, setShowEmptyCartDialog] = useState(false);
-  const [showBackOrderResolutionDialog, setShowBackOrderResolutionDialog] = useState(false);
-  const [backOrderResolutionPrompted, setBackOrderResolutionPrompted] = useState(false);
-  const [backOrderResolutionCandidates, setBackOrderResolutionCandidates] = useState<
-    { index: number; name: string; fulfillableQuantity: number; existingBackOrderQuantity: number }[]
-  >([]);
   const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
@@ -154,7 +146,7 @@ export function OrderForm({
       return fallbackId;
     }
 
-    const sessionKey = `orderFormSession:${initialOrder?.orderId ?? 'new'}`;
+    const sessionKey = `purchaseOrderFormSession:${initialOrder?.orderId ?? 'new'}`;
     const existingSession = sessionStorage.getItem(sessionKey);
 
     if (existingSession) {
@@ -164,7 +156,7 @@ export function OrderForm({
     sessionStorage.setItem(sessionKey, fallbackId);
     return fallbackId;
   });
-  const formStateStorageKey = `orderFormState:${formSessionId}`;
+  const formStateStorageKey = `purchaseOrderFormState:${formSessionId}`;
 
   const { mutateAsync: createOrder } = useCreateOrder();
   const { mutateAsync: updateOrder } = useUpdateOrder();
@@ -185,16 +177,13 @@ export function OrderForm({
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       orderTaxRate:
         typeof initialOrder?.orderTaxRate === 'number' ? initialOrder.orderTaxRate.toString() : '',
-      customerId: initialOrder?.customer?.id ? String(initialOrder.customer.id) : '',
+      customerId: initialOrder?.sundryCreditor?.id ? String(initialOrder.sundryCreditor.id) : '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
-      discountCode: initialOrder?.discountCode || '',
       orderComment: '',
     };
   }, [initialOrder]);
-
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
-  const [discountData, setDiscountData] = useState<IDiscount | null>(null);
   const [useCustomTaxRate, setUseCustomTaxRate] = useState(() => {
     const rate = defaultState.orderTaxRate.trim();
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
@@ -206,17 +195,13 @@ export function OrderForm({
       id: item.orderDetailId || undefined,
       itemType: item.productCatalogId ? 'catalog' : 'product',
       productId: item.productId || undefined,
-      initialProductId: item.productId || undefined,
       variantId: item.variantId || undefined,
-      initialVariantId: item.variantId || undefined,
       productCatalogId: item.productCatalogId || undefined,
-      existingQuantity: Math.max(item.quantity || 0, 0),
-      existingBackOrderQuantity: Math.max(item.backOrderQuantity || 0, 0),
       productName: item.productName || undefined,
       sku: item.sku || undefined,
       variantAttributes: item.variantAttributes || undefined,
       itemStatus: item.itemStatusCode?.toString() || parseItemStatusValue(item.itemStatus),
-      quantity: Math.max((item.quantity || 0) + (item.backOrderQuantity || 0), 0).toString(),
+      quantity: item.quantity ? item.quantity.toString() : '',
       itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
       itemTaxAmount: item.itemTaxAmount ? item.itemTaxAmount.toString() : '',
       itemComment: item.itemComment || '',
@@ -261,7 +246,6 @@ export function OrderForm({
   );
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
-  const discountCodeRef = useRef<string>('');
   const hasUnsavedChanges =
     !isEditing &&
     (
@@ -289,7 +273,6 @@ export function OrderForm({
           address,
           useCustomTaxRate,
           shippingEditable,
-          discountData,
         },
       };
 
@@ -308,7 +291,6 @@ export function OrderForm({
     address,
     useCustomTaxRate,
     shippingEditable,
-    discountData,
     initialOrder?.orderId,
     formStateStorageKey,
   ]);
@@ -355,9 +337,6 @@ export function OrderForm({
       if (typeof saved.data?.shippingEditable === 'boolean') {
         setShippingEditable(saved.data.shippingEditable);
       }
-      if (saved.data?.discountData !== undefined) {
-        setDiscountData(saved.data.discountData);
-      }
       if (saved.data?.formState?.customerId) {
         const restoredCustomerId = Number.parseInt(saved.data.formState.customerId, 10);
         if (!Number.isNaN(restoredCustomerId)) {
@@ -367,7 +346,7 @@ export function OrderForm({
 
       localStorage.removeItem(formStateStorageKey);
     } catch (error) {
-      console.error('Failed to restore order form state:', error);
+      console.error('Failed to restore purchase order form state:', error);
     }
   }, [formStateStorageKey, initialOrder?.orderId]);
 
@@ -466,7 +445,7 @@ export function OrderForm({
     if (isEditing) return;
 
     const draftCheckHandler = {
-      formId: 'orders',
+      formId: 'purchase-orders',
       checkDrafts: (onProceed: () => void) => {
         if (hasUnsavedChanges) {
           setPendingNavigation(() => onProceed);
@@ -479,22 +458,22 @@ export function OrderForm({
 
     registerDraftCheck(draftCheckHandler);
     return () => {
-      unregisterDraftCheck('orders');
+      unregisterDraftCheck('purchase-orders');
     };
   }, [hasUnsavedChanges, isEditing, registerDraftCheck, unregisterDraftCheck]);
 
   const selectedCustomerId = formState.customerId.trim()
     ? Number.parseInt(formState.customerId, 10)
     : undefined;
-  const { data: customerData } = useGetCustomer(selectedCustomerId || 0, {
+  const { data: sundryCreditorData } = useGetCustomer(selectedCustomerId || 0, {
     query: { enabled: Boolean(selectedCustomerId) },
   });
-  const initialCustomer = initialOrder?.customer;
+  const initialCustomer = initialOrder?.sundryCreditor;
   const selectedCustomerEmail =
-    customerData?.email ??
+    sundryCreditorData?.email ??
     (initialCustomer?.id === selectedCustomerId ? initialOrder?.email : undefined);
   const selectedCustomerPhone =
-    customerData?.mobile ??
+    sundryCreditorData?.mobile ??
     (initialCustomer?.id === selectedCustomerId ? initialOrder?.phone : undefined);
 
   const splitContactPerson = (contactPerson?: string) => {
@@ -549,8 +528,8 @@ export function OrderForm({
   };
 
   useEffect(() => {
-    if (!customerData) return;
-    const currentId = customerData.id ?? null;
+    if (!sundryCreditorData) return;
+    const currentId = sundryCreditorData.id ?? null;
     const previousId = lastCustomerIdRef.current;
     const shouldAutoFill =
       previousId === null
@@ -564,24 +543,12 @@ export function OrderForm({
 
     setAddress((prev) => ({
       ...prev,
-      shipTo: buildAddressFromCustomer(customerData),
+      shipTo: buildAddressFromCustomer(sundryCreditorData),
     }));
     setShippingEditable(false);
     lastCustomerIdRef.current = currentId;
-  }, [addressExists, customerData?.id]);
+  }, [addressExists, sundryCreditorData?.id]);
 
-  useEffect(() => {
-    const code = formState.discountCode?.trim() || '';
-    if (!code) {
-      setDiscountData(null);
-      discountCodeRef.current = '';
-      return;
-    }
-    if (discountCodeRef.current && discountCodeRef.current !== code) {
-      setDiscountData(null);
-    }
-    discountCodeRef.current = code;
-  }, [formState.discountCode]);
 
   const handleChange = (key: keyof OrderFormState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
@@ -590,7 +557,6 @@ export function OrderForm({
       key === 'shippingAmount' ||
       key === 'orderTaxRate' ||
       key === 'shippingId' ||
-      key === 'discountCode' ||
       key === 'customerId'
     ) {
       setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
@@ -609,11 +575,7 @@ export function OrderForm({
     handleChange('orderTaxRate', value);
   };
 
-  const handleItemChange = (
-    index: number,
-    key: keyof OrderItemForm,
-    value: string | number | WarehouseStockEntry[] | undefined
-  ) => {
+  const handleItemChange = (index: number, key: keyof OrderItemForm, value: string | number | undefined) => {
     setItems((prev) =>
       prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
     );
@@ -646,82 +608,6 @@ export function OrderForm({
       }
       return next;
     });
-  };
-
-  useEffect(() => {
-    if (!isEditing || backOrderResolutionPrompted) {
-      return;
-    }
-
-    const candidates = items
-      .map((item, index) => {
-        const existingBackOrderQuantity = Math.max(item.existingBackOrderQuantity || 0, 0);
-        if (item.itemType !== 'product' || existingBackOrderQuantity <= 0) {
-          return null;
-        }
-
-        const breakdown = getOrderItemBillingBreakdown(item);
-        const fulfillableQuantity = Math.max(existingBackOrderQuantity - breakdown.backOrderQuantity, 0);
-        if (fulfillableQuantity <= 0) {
-          return null;
-        }
-
-        const name = item.productName || item.sku || `Item ${index + 1}`;
-
-        return { index, name, fulfillableQuantity, existingBackOrderQuantity };
-      })
-      .filter((candidate): candidate is {
-        index: number;
-        name: string;
-        fulfillableQuantity: number;
-        existingBackOrderQuantity: number;
-      } => candidate !== null);
-
-    if (candidates.length === 0) {
-      return;
-    }
-
-    setBackOrderResolutionCandidates(candidates);
-    setShowBackOrderResolutionDialog(true);
-    setBackOrderResolutionPrompted(true);
-  }, [backOrderResolutionPrompted, isEditing, items]);
-
-  const handleCancelBackOrders = () => {
-    const quantityByIndex = new Map(
-      backOrderResolutionCandidates.map((candidate) => [candidate.index, candidate.existingBackOrderQuantity])
-    );
-
-    setItems((prev) =>
-      prev.map((item, index) => {
-        const existingBackOrderQuantity = quantityByIndex.get(index);
-        if (!existingBackOrderQuantity) {
-          return item;
-        }
-
-        const currentRequestedQuantity = Number.parseInt(item.quantity, 10);
-        const normalizedCurrentRequestedQuantity = Number.isFinite(currentRequestedQuantity)
-          ? Math.max(currentRequestedQuantity, 0)
-          : 0;
-        const nextRequestedQuantity = Math.max(
-          normalizedCurrentRequestedQuantity - existingBackOrderQuantity,
-          0
-        );
-
-        return {
-          ...item,
-          quantity: String(nextRequestedQuantity),
-          existingBackOrderQuantity: 0,
-        };
-      })
-    );
-
-    setShowBackOrderResolutionDialog(false);
-    toast.info('Back order quantities removed. Save the order to apply cancellation.');
-  };
-
-  const handleProceedBackOrders = () => {
-    setShowBackOrderResolutionDialog(false);
-    toast.info('Proceed selected. Save the order to bill available back-order quantity.');
   };
 
   const handleAddressChange = (
@@ -765,139 +651,6 @@ export function OrderForm({
     }
   };
 
-  const isDiscountActive = (discount?: IDiscount | null) =>
-    (discount?.status || '').toUpperCase() === 'ACTIVE';
-
-  const normalizeTimeForCompare = (time?: string | null) => {
-    if (!time) {
-      return null;
-    }
-
-    const segments = time.split(':');
-    if (segments.length < 2) {
-      return null;
-    }
-
-    const [hoursRaw, minutesRaw, secondsRaw = '00'] = segments;
-    const hours = Number.parseInt(hoursRaw, 10);
-    const minutes = Number.parseInt(minutesRaw, 10);
-    const seconds = Number.parseInt(secondsRaw, 10);
-    if (!Number.isFinite(hours) || !Number.isFinite(minutes) || !Number.isFinite(seconds)) {
-      return null;
-    }
-
-    const hh = String(hours).padStart(2, '0');
-    const mm = String(minutes).padStart(2, '0');
-    const ss = String(seconds).padStart(2, '0');
-    return `${hh}:${mm}:${ss}`;
-  };
-
-  const getNowDateForCompare = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const getNowTimeForCompare = () => {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  };
-
-  const evaluateDiscountAvailability = (discount?: IDiscount | null) => {
-    if (!discount || !isDiscountActive(discount)) {
-      return 'inactive' as const;
-    }
-
-    const today = getNowDateForCompare();
-    const nowTime = getNowTimeForCompare();
-    const startDate = discount.startDate?.trim() || null;
-    const endDate = discount.endDate?.trim() || null;
-    const startTime = normalizeTimeForCompare(discount.discountStartTime);
-    const endTime = normalizeTimeForCompare(discount.discountEndTime);
-
-    if (startDate) {
-      if (today < startDate) {
-        return 'not_started' as const;
-      }
-      if (today === startDate && startTime && nowTime < startTime) {
-        return 'not_started' as const;
-      }
-    }
-
-    if (endDate) {
-      if (today > endDate) {
-        return 'expired' as const;
-      }
-      if (today === endDate && endTime && nowTime > endTime) {
-        return 'expired' as const;
-      }
-    }
-
-    return 'valid' as const;
-  };
-
-  const resolveDiscountAmount = (baseAmount: number, discount?: IDiscount | null) => {
-    if (evaluateDiscountAvailability(discount) !== 'valid') {
-      return 0;
-    }
-    const discountType = (discount.discountType || '').toUpperCase();
-    const rawValue = Number(discount.discountValue ?? discount.discountAmount ?? 0);
-    if (!Number.isFinite(rawValue) || rawValue <= 0) {
-      return 0;
-    }
-    let amount = 0;
-    if (discountType === 'PERCENTAGE') {
-      const safePercent = Math.min(Math.max(rawValue, 0), 100);
-      amount = (safePercent / 100) * baseAmount;
-    } else {
-      amount = Math.max(rawValue, 0);
-    }
-    const maxDiscountValue = Number(discount.maxDiscountValue);
-    if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0) {
-      amount = Math.min(amount, maxDiscountValue);
-    }
-    return Math.max(amount, 0);
-  };
-
-  const fetchDiscountByCode = async (code: string) => {
-    try {
-      const discount = await getDiscountByCode(code);
-      setDiscountData(discount);
-      const availability = evaluateDiscountAvailability(discount);
-
-      if (availability === 'valid') {
-        toast.success(`Discount code "${discount.discountCode}" applied!`);
-      } else if (availability === 'expired') {
-        toast.error('This discount code is expired.');
-      } else if (availability === 'not_started') {
-        toast.error('This discount code is not active yet.');
-      } else {
-        toast.error('This discount code is inactive.');
-      }
-
-      return discount;
-    } catch (error) {
-      console.error('Failed to verify discount code:', error);
-      setDiscountData(null);
-      toast.error('Invalid discount code.');
-      return null;
-    }
-  };
-
-  const handleVerifyDiscount = async () => {
-    const code = formState.discountCode?.trim();
-    if (!code) {
-      toast.error('Please enter a discount code.');
-      return;
-    }
-
-    await fetchDiscountByCode(code);
-  };
 
   const shouldSaveAddress = (value: OrderAddressForm) => {
     const hasShipTo = Object.values(value.shipTo).some((field) => field.trim() !== '');
@@ -911,7 +664,7 @@ export function OrderForm({
     const parsedCustomerId = Number.parseInt(formState.customerId, 10);
 
     if (!formState.customerId.trim() || !Number.isFinite(parsedCustomerId) || parsedCustomerId <= 0) {
-      nextErrors.customerId = 'Please select a customer.';
+      nextErrors.customerId = 'Please select a sundry creditor.';
     }
 
     const validateAmount = (
@@ -948,15 +701,6 @@ export function OrderForm({
     validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
-
-
-    if (formState.discountCode && formState.discountCode.length > 20) {
-      nextErrors.discountCode = 'Max 20 characters.';
-    }
-
-    if (formState.shippingId && formState.shippingId.length > 50) {
-      nextErrors.shippingId = 'Max 50 characters.';
-    }
 
 
     if (shouldSaveAddress(address)) {
@@ -1052,7 +796,7 @@ export function OrderForm({
     const buildAddressPayload = (orderId: number) => {
       const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
       return {
-        orderId,
+        purchaseOrderId: orderId,
         shipToFirstName: address.shipTo.firstName || undefined,
         shipToMiddleName: address.shipTo.middleName || undefined,
         shipToLastName: address.shipTo.lastName || undefined,
@@ -1092,7 +836,7 @@ export function OrderForm({
       const paymentStatusCode =
         getPaymentStatusCode(formState.paymentStatus) ?? initialOrder?.paymentStatusCode ?? 0;
       const shippingMethodCode = getShippingMethodCode(formState.shippingMethod || undefined);
-      const customerPayload = selectedCustomerId
+      const sundryCreditorPayload = selectedCustomerId
         ? ({ id: selectedCustomerId } as CustomerDTO)
         : undefined;
 
@@ -1100,14 +844,13 @@ export function OrderForm({
         orderStatus: orderStatusCode,
         orderTotalAmount,
         orderTaxRate: taxRate,
-        customer: customerPayload,
+        sundryCreditor: sundryCreditorPayload,
         orderBaseAmount: baseAmount,
         phone: selectedCustomerPhone || undefined,
         email: selectedCustomerEmail || undefined,
         paymentStatus: paymentStatusCode,
-        discountCode: formState.discountCode?.trim() || undefined,
         status: 'DRAFT',
-      } as OrderDTO;
+      };
 
       const result = await createOrder({ data: payload });
       const orderId = result?.id;
@@ -1120,9 +863,7 @@ export function OrderForm({
         .filter((item) => hasItemData(item))
         .map((item) => {
           const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
-          const breakdown = getOrderItemBillingBreakdown(item);
-          const quantity = breakdown.billableQuantity;
-          const backOrderQuantity = breakdown.backOrderQuantity;
+          const quantity = parseInteger(item.quantity || '0');
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
@@ -1130,7 +871,7 @@ export function OrderForm({
 
           return createOrderDetail({
             data: {
-              orderId,
+              purchaseOrderId: orderId,
               productId: isCatalog ? undefined : item.productId || undefined,
               variantId: isCatalog ? undefined : item.variantId || undefined,
               productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
@@ -1139,7 +880,6 @@ export function OrderForm({
               variantAttributes: item.variantAttributes || undefined,
               itemStatus,
               quantity,
-              backOrderQuantity,
               itemPrice,
               itemTaxAmount,
               itemTotalAmount,
@@ -1147,9 +887,6 @@ export function OrderForm({
             },
           });
         });
-      const totalBackOrderUnits = items
-        .filter((item) => hasItemData(item))
-        .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
       const addressTasks: Promise<unknown>[] = [];
       if (shouldSaveAddress(address)) {
@@ -1166,7 +903,7 @@ export function OrderForm({
         shippingTasks.push(
           createOrderShippingDetail({
             data: {
-              orderId,
+              purchaseOrderId: orderId,
               shippingAmount,
               shippingMethod: shippingMethodCode,
               shippingId: formState.shippingId || undefined,
@@ -1177,46 +914,26 @@ export function OrderForm({
 
       const historyTask = createOrderHistory({
         data: {
-          orderId,
-          status: `Order saved as draft (${formState.orderStatus})`,
+          purchaseOrderId: orderId,
+          status: `Purchase order saved as draft (${formState.orderStatus})`,
           notificationSent: false,
         },
       });
 
-      const backOrderHistoryTask =
-        totalBackOrderUnits > 0
-          ? createOrderHistory({
-              data: {
-                orderId,
-                status: `Back order created: ${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'}`,
-                notificationSent: false,
-              },
-            })
-          : null;
+      await Promise.allSettled([...detailTasks, ...addressTasks, ...shippingTasks, historyTask]);
 
-      await Promise.allSettled([
-        ...detailTasks,
-        ...addressTasks,
-        ...shippingTasks,
-        historyTask,
-        ...(backOrderHistoryTask ? [backOrderHistoryTask] : []),
-      ]);
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-address-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-shipping-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-histories'] });
 
       setRemovedItemIds([]);
-      toast.success('Order draft saved successfully.');
-      if (totalBackOrderUnits > 0) {
-        toast.info(`${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'} moved to Back Order.`);
-      }
+      toast.success('Purchase order draft saved successfully.');
       return true;
     } catch (error) {
-      console.error('Failed to save order draft:', error);
-      toast.error('Unable to save order draft.');
+      console.error('Failed to save purchase order draft:', error);
+      toast.error('Unable to save purchase order draft.');
       return false;
     } finally {
       setSubmitting(false);
@@ -1288,15 +1005,9 @@ export function OrderForm({
     const baseAmount = formState.orderBaseAmount.trim()
       ? parseAmount(formState.orderBaseAmount)
       : itemsTotal;
-    const discountCode = formState.discountCode?.trim() || '';
-    let resolvedDiscount = discountData;
-    if (discountCode && discountData?.discountCode?.toUpperCase() !== discountCode.toUpperCase()) {
-      resolvedDiscount = await fetchDiscountByCode(discountCode);
-    }
-    const discountAmount = resolveDiscountAmount(baseAmount, resolvedDiscount);
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
-    const taxableAmount = Math.max(baseAmount - discountAmount, 0);
+    const taxableAmount = baseAmount;
     const taxAmount = (taxRate / 100) * taxableAmount;
     const orderTotalAmount = Math.max(taxableAmount + shippingAmount + taxAmount, 0);
 
@@ -1309,7 +1020,7 @@ export function OrderForm({
       initialOrder?.shipping.shippingMethodCode ??
       undefined;
 
-    const customerPayload = selectedCustomerId
+    const sundryCreditorPayload = selectedCustomerId
       ? ({ id: selectedCustomerId } as CustomerDTO)
       : undefined;
 
@@ -1318,12 +1029,11 @@ export function OrderForm({
       orderStatus: orderStatusCode,
       orderTotalAmount,
       orderTaxRate: taxRate,
-      customer: customerPayload,
+      sundryCreditor: sundryCreditorPayload,
       orderBaseAmount: baseAmount,
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
-      discountCode: discountCode || undefined,
       status: 'ACTIVE',
     };
 
@@ -1351,9 +1061,7 @@ export function OrderForm({
         })
         .map((item) => {
           const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
-          const breakdown = getOrderItemBillingBreakdown(item);
-          const quantity = breakdown.billableQuantity;
-          const backOrderQuantity = breakdown.backOrderQuantity;
+          const quantity = parseInteger(item.quantity || '0');
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
@@ -1361,7 +1069,7 @@ export function OrderForm({
 
           const detailPayload = {
             id: item.id,
-            orderId,
+            purchaseOrderId: orderId,
             productId: isCatalog ? undefined : item.productId || undefined,
             variantId: isCatalog ? undefined : item.variantId || undefined,
             productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
@@ -1370,7 +1078,6 @@ export function OrderForm({
             variantAttributes: item.variantAttributes || undefined,
             itemStatus,
             quantity,
-            backOrderQuantity,
             itemPrice,
             itemTaxAmount,
             itemTotalAmount,
@@ -1381,25 +1088,18 @@ export function OrderForm({
             ? updateOrderDetail({ id: item.id, data: detailPayload })
             : createOrderDetail({ data: detailPayload });
         });
-      const totalBackOrderUnits = items
-        .filter((item) => {
-          const hasData =
-            item.productId ||
-            item.variantId ||
-            item.productCatalogId ||
-            item.quantity?.trim() ||
-            item.itemPrice?.trim() ||
-            item.itemTaxAmount?.trim() ||
-            item.itemComment?.trim();
-          return hasData;
-        })
-        .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
       const deleteTasks = removedItemIds.map((id) => deleteOrderDetail({ id }));
 
       const addressTasks: Promise<unknown>[] = [];
       if (shouldSaveAddress(address)) {
-        const addressPayload = buildAddressPayload(orderId);
+        const addressPayload = {
+          ...buildAddressPayload(orderId),
+          purchaseOrderId: orderId,
+        };
+        // Remove the orderId field as it's not used in purchase order address
+        delete (addressPayload as any).orderId;
+
         if (addressExists) {
           addressTasks.push(updateOrderAddressDetail({ id: orderId, data: addressPayload }));
         } else {
@@ -1417,7 +1117,7 @@ export function OrderForm({
       if (shouldSaveShipping) {
         const shippingPayload = {
           id: shippingExists ? orderId : undefined,
-          orderId,
+          purchaseOrderId: orderId,
           shippingAmount,
           shippingMethod: shippingMethodCode,
           shippingId: formState.shippingId || undefined,
@@ -1439,21 +1139,11 @@ export function OrderForm({
         : `Order created (${formState.orderStatus})`;
       const historyTask = createOrderHistory({
         data: {
-          orderId,
+          purchaseOrderId: orderId,
           status: historyStatus,
           notificationSent: false,
         },
       });
-      const backOrderHistoryTask =
-        totalBackOrderUnits > 0
-          ? createOrderHistory({
-              data: {
-                orderId,
-                status: `Back order created: ${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'}`,
-                notificationSent: false,
-              },
-            })
-          : null;
 
       const results = await Promise.allSettled([
         ...itemTasks,
@@ -1461,7 +1151,6 @@ export function OrderForm({
         ...addressTasks,
         ...shippingTasks,
         historyTask,
-        ...(backOrderHistoryTask ? [backOrderHistoryTask] : []),
       ]);
 
       const failed = results.filter((entry) => entry.status === 'rejected');
@@ -1471,35 +1160,32 @@ export function OrderForm({
         });
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] });
       if (result?.id) {
-        await queryClient.invalidateQueries({ queryKey: [`/api/orders/${result.id}`] });
+        await queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${result.id}`] });
       }
       if (initialOrder?.orderId) {
-        await queryClient.invalidateQueries({ queryKey: [`/api/orders/${initialOrder.orderId}`] });
+        await queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${initialOrder.orderId}`] });
       }
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-address-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-shipping-details'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-histories'] });
 
       toast.success(isEditing ? 'Order updated' : 'Order created', {
         description: isEditing ? 'Changes saved successfully.' : 'New order is now available.',
       });
-      if (totalBackOrderUnits > 0) {
-        toast.info(`${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'} moved to Back Order.`);
-      }
 
       setRemovedItemIds([]);
 
       if (onSubmitSuccess) {
         onSubmitSuccess();
       } else if (isEditing && initialOrder?.orderId) {
-        router.push(`/orders/${initialOrder.orderId}`);
+        router.push(`/purchase-orders/${initialOrder.orderId}`);
       } else if (result?.id) {
-        router.push(`/orders/${result.id}`);
+        router.push(`/purchase-orders/${result.id}`);
       } else {
-        router.push('/orders');
+        router.push('/purchase-orders');
       }
     } catch (_error) {
       toast.error('Unable to save order', {
@@ -1514,17 +1200,9 @@ export function OrderForm({
   const baseAmount = formState.orderBaseAmount.trim()
     ? Number.parseFloat(formState.orderBaseAmount) || 0
     : itemsTotal;
-  const discountCodeValue = formState.discountCode?.trim() || '';
-  const activeDiscount =
-    discountCodeValue &&
-      discountData?.discountCode?.toUpperCase() === discountCodeValue.toUpperCase()
-      ? discountData
-      : null;
-  const discountAmount = resolveDiscountAmount(baseAmount, activeDiscount);
-  const discountLabel = discountCodeValue ? `Discount (${discountCodeValue})` : 'Discount';
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const taxRateValue = Math.min(Math.max(Number.parseFloat(formState.orderTaxRate) || 0, 0), 100);
-  const taxableAmount = Math.max(baseAmount - discountAmount, 0);
+  const taxableAmount = baseAmount;
   const taxAmount = (taxRateValue / 100) * taxableAmount;
   const orderTotal = Math.max(taxableAmount + shippingAmount + taxAmount, 0);
   const taxRateSelectValue = useCustomTaxRate
@@ -1535,7 +1213,6 @@ export function OrderForm({
   const itemSummaries = items
     .filter(hasItemData)
     .map((item, index) => {
-      const breakdown = getOrderItemBillingBreakdown(item);
       const name =
         item.itemType === 'catalog'
           ? item.productName
@@ -1546,9 +1223,7 @@ export function OrderForm({
       return {
         key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
         name,
-        quantity: breakdown.requestedQuantity,
-        billableQuantity: breakdown.billableQuantity,
-        backOrderQuantity: breakdown.backOrderQuantity,
+        quantity: Number.parseInt(item.quantity, 10) || 0,
         total: calculateItemTotal(item),
       };
     });
@@ -1566,7 +1241,7 @@ export function OrderForm({
               onAddCatalogItem={addCatalogItem}
               onRemoveItem={removeItem}
               onItemChange={handleItemChange}
-              referrerForm="orders"
+              referrerForm="purchase-orders"
               referrerSessionId={formSessionId}
               referrerField="productId"
               referrerCatalogField="productCatalogId"
@@ -1593,7 +1268,6 @@ export function OrderForm({
                 paymentStatusOptions={paymentStatusSelectOptions as any}
                 shippingMethodOptions={shippingMethodSelectOptions as any}
                 onChange={handleChange}
-                onVerifyDiscount={handleVerifyDiscount}
               />
             </div>
 
@@ -1648,9 +1322,7 @@ export function OrderForm({
                           <div key={item.key} className="flex items-center justify-between text-slate-700">
                             <span className="truncate">{item.name}</span>
                             <span className="font-semibold text-slate-800">
-                              Qty {item.quantity}
-                              {item.backOrderQuantity > 0 ? ` (${item.billableQuantity} billed, ${item.backOrderQuantity} back order)` : ''}
-                              {' '}• ₹{item.total.toFixed(2)}
+                              Qty {item.quantity} • ₹{item.total.toFixed(2)}
                             </span>
                           </div>
                         ))}
@@ -1704,12 +1376,6 @@ export function OrderForm({
                       ₹{shippingAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
-                    <span className="font-semibold text-red-600">
-                      -₹{discountAmount.toFixed(2)}
-                    </span>
-                  </div>
                   <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
                     <span className="font-bold text-slate-900">Order Total</span>
                     <span className="text-lg font-bold text-slate-900">
@@ -1750,7 +1416,7 @@ export function OrderForm({
       <SaveDraftDialog
         open={showDraftDialog}
         onOpenChange={setShowDraftDialog}
-        entityType="Order"
+        entityType="Purchase Order"
         onSaveDraft={async () => {
           const success = await saveDraft();
           if (success && pendingNavigation) {
@@ -1771,39 +1437,6 @@ export function OrderForm({
         isDirty={hasUnsavedChanges}
         formData={formState as Record<string, any>}
       />
-      <AlertDialog
-        open={showBackOrderResolutionDialog}
-        onOpenChange={setShowBackOrderResolutionDialog}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Back order stock is now available</AlertDialogTitle>
-            <AlertDialogDescription>
-              Additional stock has arrived for one or more back-ordered items.
-              Do you want to cancel this back order or proceed with payment for the additional items?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-            <p className="font-semibold">Eligible items</p>
-            <ul className="mt-1 list-disc pl-4">
-              {backOrderResolutionCandidates.map((candidate) => (
-                <li key={`${candidate.index}-${candidate.name}`}>
-                  {candidate.name}: {candidate.fulfillableQuantity} item
-                  {candidate.fulfillableQuantity === 1 ? '' : 's'} ready now
-                </li>
-              ))}
-            </ul>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelBackOrders}>
-              Cancel Back Order
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleProceedBackOrders}>
-              Proceed With Payment
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       <AlertDialog open={showEmptyCartDialog} onOpenChange={setShowEmptyCartDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

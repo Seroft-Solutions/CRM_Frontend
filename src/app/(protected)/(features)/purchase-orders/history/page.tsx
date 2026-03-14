@@ -1,5 +1,5 @@
 import { PermissionGuard } from '@/core/auth';
-import { OrderHistoryTable } from '@/app/(protected)/(features)/orders/components/order-history-table';
+import { OrderHistoryTable } from '@/app/(protected)/(features)/purchase-orders/components/table/order-history-table';
 import { History } from 'lucide-react';
 
 export const metadata = {

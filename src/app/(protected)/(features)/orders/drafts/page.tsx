@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { PermissionGuard } from '@/core/auth';
-import { OrdersPage } from '@/app/(protected)/(features)/orders/components/orders-page';
+import { OrdersPage } from '@/app/(protected)/(features)/orders/components/table/orders-page';
 
 export const metadata = {
   title: 'Sale Order Drafts',

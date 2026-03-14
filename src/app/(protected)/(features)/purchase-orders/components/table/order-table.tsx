@@ -1,23 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAccount, useUserAuthorities } from '@/core/auth';
-import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
-import type { CountOrdersParams } from '@/core/api/generated/spring/schemas';
-import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
-import {
-  getOrderStatusCode,
-  mapOrderDtoToRecord,
-  mapOrderShippingDetail,
-  OrderStatus,
-  orderStatusOptions,
-} from '../data/order-data';
+import { OrderStatus, orderStatusOptions } from '../../data/purchase-order-data';
+import { usePurchaseOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -51,132 +42,27 @@ type OrderTableProps = {
 
 export function OrderTable({
   entityStatus = 'ACTIVE',
-  title = 'All Orders',
-  subtitle = 'order',
-  searchPlaceholder = 'Search orders...',
-  allTabLabel = 'All Orders',
+  title = 'All Purchase Orders',
+  subtitle = 'purchase order',
+  searchPlaceholder = 'Search purchase orders...',
+  allTabLabel = 'All Purchase Orders',
   showStatusTabs = true,
 }: OrderTableProps) {
-  const { hasGroup } = useUserAuthorities();
-  const { data: accountData } = useAccount();
-  const isBusinessPartner = hasGroup('Business Partners');
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const filterParams = useMemo<CountOrdersParams>(() => {
-    const params: CountOrdersParams = {};
-    (params as Record<string, unknown>)['status.equals'] = entityStatus;
-
-    if (statusFilter !== 'All') {
-      const statusCode = getOrderStatusCode(statusFilter);
-      if (typeof statusCode === 'number') {
-        params['orderStatus.equals'] = statusCode;
-      }
-    }
-
-    const normalizedSearch = searchTerm.trim();
-    if (normalizedSearch) {
-      const numericOnly = /^\d+$/.test(normalizedSearch);
-      const phoneLike = /^[+()\d\s-]+$/.test(normalizedSearch);
-
-      if (numericOnly && normalizedSearch.length < 7) {
-        params['id.equals'] = Number(normalizedSearch);
-      } else if (normalizedSearch.includes('@')) {
-        params['email.contains'] = normalizedSearch;
-      } else if (phoneLike || numericOnly) {
-        params['phone.contains'] = normalizedSearch;
-      } else {
-        params['email.contains'] = normalizedSearch;
-      }
-    }
-
-    if (isBusinessPartner && accountData?.login) {
-      params['createdBy.equals'] = accountData.login;
-    }
-
-    return params;
-  }, [accountData?.login, entityStatus, isBusinessPartner, searchTerm, statusFilter]);
-
-  const apiPage = Math.max(currentPage - 1, 0);
-
-  const { data, isLoading, isError } = useGetAllOrders(
-    {
-      page: apiPage,
-      size: pageSize,
-      sort: ['id,desc'],
-      ...filterParams,
-    },
-    {
-      query: {
-        refetchOnWindowFocus: false,
-        staleTime: 30_000,
-      },
-    }
-  );
-
-  const { data: countData } = useCountOrders(filterParams, {
-    query: {
-      refetchOnWindowFocus: false,
-      staleTime: 30_000,
-    },
+  const { orders, totalCount, totalPages, isLoading, isError } = usePurchaseOrderTableData({
+    entityStatus,
+    statusFilter,
+    searchTerm,
+    currentPage,
+    pageSize,
   });
-
-  const orders = useMemo(() => (data ?? []).map(mapOrderDtoToRecord), [data]);
-  const orderIds = useMemo(
-    () => orders.map((order) => order.orderId).filter((id) => id > 0),
-    [orders]
-  );
-  const orderById = useMemo(
-    () => new Map((data ?? []).map((order) => [order.id ?? 0, order])),
-    [data]
-  );
-
-  const { data: shippingData } = useGetAllOrderShippingDetails(
-    orderIds.length ? { 'orderId.in': orderIds } : undefined,
-    {
-      query: {
-        enabled: orderIds.length > 0,
-        refetchOnWindowFocus: false,
-        staleTime: 30_000,
-      },
-    }
-  );
-
-  const shippingByOrderId = useMemo(() => {
-    return new Map((shippingData ?? []).map((shipping) => [shipping.orderId ?? 0, shipping]));
-  }, [shippingData]);
-
-  const ordersWithShipping = useMemo(() => {
-    return orders.map((order) => {
-      const shipping = shippingByOrderId.get(order.orderId);
-      const orderDto = orderById.get(order.orderId);
-      return {
-        ...order,
-        shipping: mapOrderShippingDetail(shipping, orderDto),
-      };
-    });
-  }, [orders, orderById, shippingByOrderId]);
-
-  const resolveDiscountAmount = (order: (typeof ordersWithShipping)[number]) => {
-    if (!order.discountCode) {
-      return 0;
-    }
-    const shippingAmount = order.shipping.shippingAmount ?? 0;
-    const taxRate = order.orderTaxRate ?? 0;
-    const totalAmount = order.orderTotalAmount ?? 0;
-    const divisor = 1 + taxRate / 100;
-    if (divisor <= 0) return 0;
-    const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
-    return Math.max(order.orderBaseAmount - taxableAmount, 0);
-  };
-
-  const totalCount = countData ?? orders.length;
-  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endIndex = totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
-  const paginatedOrders = ordersWithShipping;
+  const paginatedOrders = orders;
 
   // Reset to page 1 when filters change
   const handleFilterChange = (newFilter: OrderStatus | 'All') => {
@@ -213,7 +99,7 @@ export function OrderTable({
   if (isError) {
     return (
       <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
-        Unable to load orders right now. Please try again.
+        Unable to load purchase orders right now. Please try again.
       </div>
     );
   }
@@ -291,15 +177,15 @@ export function OrderTable({
               <TableHead className="font-bold text-slate-700">Status</TableHead>
               <TableHead className="font-bold text-slate-700">Total</TableHead>
               <TableHead className="font-bold text-slate-700">Shipping</TableHead>
-              <TableHead className="font-bold text-slate-700">Customer</TableHead>
+              <TableHead className="font-bold text-slate-700">Sundry Creditor</TableHead>
               <TableHead className="font-bold text-slate-700">Payment</TableHead>
               <TableHead className="text-right font-bold text-slate-700">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedOrders.map((order, index) => {
-              const customerName = order.customer?.customerBusinessName || order.email || '—';
-              const customerContact = order.customer?.mobile || order.phone || '—';
+              const sundryCreditorName = order.sundryCreditor?.creditorName || order.email || '—';
+              const sundryCreditorContact = order.sundryCreditor?.mobile || order.phone || '—';
 
               return (
                 <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
@@ -330,11 +216,6 @@ export function OrderTable({
                       <div className="text-xs text-muted-foreground">
                         Base {formatCurrency(order.orderBaseAmount)}
                       </div>
-                      {resolveDiscountAmount(order) > 0 && (
-                        <div className="text-xs font-semibold text-red-600">
-                          -{formatCurrency(resolveDiscountAmount(order))}
-                        </div>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -356,8 +237,8 @@ export function OrderTable({
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="font-semibold text-slate-800">{customerName}</div>
-                      <div className="text-xs text-muted-foreground">{customerContact}</div>
+                      <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
+                      <div className="text-xs text-muted-foreground">{sundryCreditorContact}</div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -365,17 +246,12 @@ export function OrderTable({
                       <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
                         {order.paymentStatus}
                       </Badge>
-                      {order.discountCode ? (
-                        <div className="mt-1 text-xs font-semibold text-amber-700">
-                          {order.discountCode}
-                        </div>
-                      ) : null}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button asChild size="sm" variant="outline" className="border-slate-300">
-                        <Link href={`/orders/${order.orderId}`}>
+                        <Link href={`/purchase-orders/${order.orderId}`}>
                           <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -384,7 +260,7 @@ export function OrderTable({
                         </Link>
                       </Button>
                       <Button asChild size="sm" className="bg-slate-600 text-white hover:bg-slate-700">
-                        <Link href={`/orders/${order.orderId}/edit`}>
+                        <Link href={`/purchase-orders/${order.orderId}/edit`}>
                           <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
@@ -406,9 +282,9 @@ export function OrderTable({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
                     </div>
-                    <p className="mb-1 font-semibold text-slate-700">No orders found</p>
+                    <p className="mb-1 font-semibold text-slate-700">No purchase orders found</p>
                     <p className="text-sm text-muted-foreground">
-                      {searchTerm ? 'Try adjusting your search or filters' : 'Orders will appear here once created'}
+                      {searchTerm ? 'Try adjusting your search or filters' : 'Purchase orders will appear here once created'}
                     </p>
                   </div>
                 </TableCell>
@@ -438,7 +314,7 @@ export function OrderTable({
             <div className="text-sm text-slate-600">
               Showing <span className="font-bold text-slate-900">{startIndex}</span> to{' '}
               <span className="font-bold text-slate-900">{endIndex}</span> of{' '}
-              <span className="font-bold text-slate-900">{totalCount}</span> orders
+              <span className="font-bold text-slate-900">{totalCount}</span> purchase orders
             </div>
           </div>
 
