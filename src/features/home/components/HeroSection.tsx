@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -34,7 +35,10 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
         <div className="flex flex-col md:flex-row items-center gap-16">
           <MotionItem className="flex-1 space-y-8">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.3em] text-white/70">CRM CUP</p>
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/8 px-4 py-2">
+                <CrmCupLogo variant="seal" className="h-10 w-10 shrink-0" />
+                <p className="text-sm uppercase tracking-[0.3em] text-white/70">CRM CUP</p>
+              </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
                 Brew Better
                 <span className="block text-sidebar-accent">Customer Relationships</span>

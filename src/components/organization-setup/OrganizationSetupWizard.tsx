@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import {
   AlertCircle,
   ArrowRight,
   Building2,
   CheckCircle,
-  Coffee,
   Database,
   Loader2,
   LogOut,
@@ -75,8 +75,8 @@ export function OrganizationSetupWizard() {
         <Header />
         <div className="max-w-2xl mx-auto space-y-4">
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
-              <Coffee className="w-8 h-8 animate-bounce" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
+              <CrmCupLogo className="w-16 h-16 animate-pulse" />
             </div>
             <h1 className="text-2xl font-bold">Checking Setup</h1>
             <div className="flex items-center justify-center space-x-2">
@@ -95,8 +95,8 @@ export function OrganizationSetupWizard() {
         <Header />
         <div className="max-w-2xl mx-auto space-y-4">
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-3">
-              <CheckCircle className="w-8 h-8" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-50 text-green-600 mb-3 ring-1 ring-green-200">
+              <CrmCupLogo className="w-16 h-16" />
             </div>
             <h1 className="text-2xl font-bold text-green-700">Setup Complete!</h1>
             <p className="text-muted-foreground">Your organization is ready to use CRM Cup.</p>
@@ -238,8 +238,8 @@ export function OrganizationSetupWizard() {
         {state.organizationName ? (
           <div className="max-w-2xl mx-auto space-y-4">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
-                <Database className="w-8 h-8" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
+                <CrmCupLogo className="w-16 h-16" />
               </div>
               <h1 className="text-2xl font-bold">Sync Organization Data</h1>
               <p className="text-muted-foreground">
@@ -299,12 +299,12 @@ export function OrganizationSetupWizard() {
   return (
     <div className="relative container mx-auto max-w-2xl py-8">
       <Header />
-      <div className="max-w-2xl mx-auto space-y-4">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
-            <Building2 className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-bold">Welcome to CRM Cup</h1>
+        <div className="max-w-2xl mx-auto space-y-4">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
+              <CrmCupLogo className="w-16 h-16" />
+            </div>
+            <h1 className="text-2xl font-bold">Welcome to CRM Cup</h1>
           <p className="text-muted-foreground">Let's set up your organization to get started</p>
         </div>
         <Card className="border-primary/20">

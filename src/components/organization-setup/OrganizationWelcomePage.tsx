@@ -3,7 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
 import dynamic from 'next/dynamic';
-import { ArrowRight, CheckCircle, Coffee, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 
 const MotionContainer = dynamic(
   () => import('@/features/home/components/motion-components').then((mod) => mod.MotionContainer),
@@ -26,8 +27,8 @@ export function OrganizationWelcomePage() {
           {/* Success Icon with Animation */}
           <div className="relative mx-auto w-32 h-32 mb-8">
             <div className="absolute inset-0 bg-primary/20 rounded-full animate-pulse"></div>
-            <div className="relative bg-primary rounded-full w-32 h-32 flex items-center justify-center shadow-lg">
-              <CheckCircle className="w-16 h-16 text-white" />
+            <div className="relative bg-white rounded-full w-32 h-32 flex items-center justify-center shadow-lg ring-1 ring-primary/10">
+              <CrmCupLogo className="w-28 h-28" />
             </div>
             <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-primary animate-bounce" />
           </div>
@@ -50,7 +51,7 @@ export function OrganizationWelcomePage() {
               className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <Coffee className="w-6 h-6 text-primary" />
+                <CrmCupLogo variant="mark" className="w-7 h-7" />
               </div>
               <h3 className="font-semibold mb-2">Customer Management</h3>
               <p className="text-sm text-muted-foreground">
@@ -88,7 +89,7 @@ export function OrganizationWelcomePage() {
               onClick={handleLetsBrew}
               className="bg-primary hover:bg-primary/90 text-white font-bold text-lg px-12 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              <Coffee className="w-6 h-6 mr-3" />
+              <CrmCupLogo variant="mark" className="w-6 h-6 mr-3 text-white" />
               Let's Brew Together
               <ArrowRight className="w-6 h-6 ml-3" />
             </Button>

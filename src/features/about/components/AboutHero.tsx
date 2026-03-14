@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import dynamic from 'next/dynamic';
 
 const MotionContainer = dynamic(
@@ -19,7 +20,10 @@ export default function AboutHero() {
             <div className="absolute inset-x-0 -bottom-32 h-64 blur-[140px] opacity-60 pointer-events-none bg-[radial-gradient(circle_at_center,var(--sidebar-accent)_0%,transparent_60%)]" />
             <MotionContainer className="relative z-10 container mx-auto max-w-6xl">
                 <MotionItem className="max-w-3xl space-y-6">
-                    <p className="text-sm uppercase tracking-[0.3em] text-white/70">CRM CUP · OUR STORY</p>
+                    <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/8 px-4 py-2">
+                        <CrmCupLogo variant="seal" className="h-10 w-10 shrink-0" />
+                        <p className="text-sm uppercase tracking-[0.3em] text-white/70">CRM CUP · OUR STORY</p>
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
                         Brewed with purpose,
                         <span className="block text-sidebar-accent">built for people</span>

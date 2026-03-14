@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import { useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { localStorageCleanup } from '@/core/auth';
 
@@ -20,28 +21,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-
-const CupIcon = ({ className = 'size-4' }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {/* Coffee/Tea Cup */}
-    <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
-    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
-    {/* Handle */}
-    <path d="M17 8v4" />
-    {/* Steam lines */}
-    <path d="M7 4v1" />
-    <path d="M10 4v2" />
-    <path d="M13 4v1" />
-  </svg>
-);
 
 export function OrganizationSwitcher() {
   const { isMobile } = useSidebar();
@@ -130,14 +109,13 @@ export function OrganizationSwitcher() {
               }}
             >
               <div
-                className="flex h-10 w-10 min-w-10 items-center justify-center rounded-full border shadow-sm shrink-0"
+                className="flex h-10 w-10 min-w-10 items-center justify-center rounded-full border shadow-sm shrink-0 overflow-hidden"
                 style={{
-                  backgroundColor: 'var(--sidebar-accent)',
-                  color: 'var(--sidebar-accent-foreground)',
+                  backgroundColor: 'color-mix(in srgb, var(--sidebar-accent) 18%, var(--sidebar))',
                   borderColor: 'var(--sidebar-border)',
                 }}
               >
-                <CupIcon className="size-5" />
+                <CrmCupLogo variant="mark" className="size-6" />
               </div>
               <div className="grid flex-1 text-left leading-tight gap-0.5 min-w-0">
                 <div className="flex items-center gap-2">
@@ -184,7 +162,7 @@ export function OrganizationSwitcher() {
                   }}
                 >
                   <div
-                    className="flex h-8 w-8 min-w-8 items-center justify-center rounded-full border"
+                    className="flex h-8 w-8 min-w-8 items-center justify-center rounded-full border overflow-hidden"
                     style={{
                       backgroundColor:
                         displayOrg.id === org.id
@@ -197,7 +175,7 @@ export function OrganizationSwitcher() {
                       color: 'var(--sidebar-foreground)',
                     }}
                   >
-                    <CupIcon className="size-4" />
+                    <CrmCupLogo variant="mark" className="size-5" />
                   </div>
                   <div className="flex flex-col flex-1 min-w-0">
                     <span className="font-semibold truncate">{org.name}</span>

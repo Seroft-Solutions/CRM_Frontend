@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Building2, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
+import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import type { OrganizationSetupRequest } from '@/services/organization/organization-setup.service';
 
 interface OrganizationSetupFormProps {
@@ -105,8 +106,8 @@ export function OrganizationSetupForm({
     <div className="max-w-2xl mx-auto space-y-4">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-3">
-          <Building2 className="w-8 h-8" />
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
+          <CrmCupLogo className="w-16 h-16" />
         </div>
         <h1 className="text-2xl font-bold">Setup Your Organization</h1>
         <p className="text-muted-foreground">Create your workspace to get started with CRM Cup</p>
@@ -157,7 +158,7 @@ export function OrganizationSetupForm({
       <Card className="border-primary/20">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg">
-            <Building2 className="w-5 h-5 mr-2 text-primary" />
+            <CrmCupLogo variant="mark" className="w-5 h-5 mr-2" />
             Organization Details
           </CardTitle>
         </CardHeader>
