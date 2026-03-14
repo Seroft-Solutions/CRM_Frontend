@@ -19,6 +19,19 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ArrowDownUp, ArrowUpDown, FileDown, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
@@ -75,6 +88,7 @@ type StockSortField = 'quantity' | 'level';
 const INVENTORY_REPORT_PAGE_SIZE = 500;
 const INVENTORY_REPORT_MAX_PAGES = 2000;
 const numberFormatter = new Intl.NumberFormat('en-US');
+const INVENTORY_CHART_COLORS = ['#0f6cbd', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const normalizeStatus = (status?: string) => {
   if (!status || typeof status !== 'string') {
@@ -558,6 +572,29 @@ export function InventoryReportPanel() {
     );
   }, [filteredOverallRows, filteredWarehouseRows, viewMode]);
 
+  const stockLevelChartData = useMemo(
+    () => [
+      { name: 'Low', value: stockLevelSummary.low, fill: '#ef4444' },
+      { name: 'Medium', value: stockLevelSummary.medium, fill: '#f59e0b' },
+      { name: 'High', value: stockLevelSummary.high, fill: '#22c55e' },
+    ].filter((item) => item.value > 0),
+    [stockLevelSummary]
+  );
+
+  const topStockChartData = useMemo(() => {
+    if (viewMode === 'overall') {
+      return filteredOverallRows.slice(0, 6).map((row) => ({
+        name: row.productName,
+        stock: row.stockQuantity,
+      }));
+    }
+
+    return filteredWarehouseRows.slice(0, 6).map((row) => ({
+      name: `${row.productName} (${row.warehouseCode})`,
+      stock: row.stockQuantity,
+    }));
+  }, [filteredOverallRows, filteredWarehouseRows, viewMode]);
+
   const updateStockSort = (field: StockSortField) => {
     if (stockSortField === field) {
       setStockSortDirection((current) => (current === 'desc' ? 'asc' : 'desc'));
@@ -711,6 +748,87 @@ export function InventoryReportPanel() {
                 </Badge>
               </div>
 
+              <div className="grid gap-4 lg:grid-cols-5">
+                <Card className="border-slate-200 shadow-sm lg:col-span-3">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Top Stock Items</CardTitle>
+                    <CardDescription>
+                      Highest-stock products in the current inventory view.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pl-0">
+                    {topStockChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          data={topStockChartData}
+                          layout="vertical"
+                          margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
+                        >
+                          <CartesianGrid horizontal={false} stroke="#e2e8f0" />
+                          <XAxis type="number" stroke="#64748b" />
+                          <YAxis
+                            type="category"
+                            dataKey="name"
+                            width={150}
+                            stroke="#64748b"
+                            tick={{ fontSize: 12 }}
+                          />
+                          <Tooltip formatter={(value) => [formatStockNumber(Number(value)), 'Stock']} />
+                          <Bar dataKey="stock" radius={[0, 8, 8, 0]}>
+                            {topStockChartData.map((entry, index) => (
+                              <Cell
+                                key={`${entry.name}-${index}`}
+                                fill={INVENTORY_CHART_COLORS[index % INVENTORY_CHART_COLORS.length]}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+                        No stock data available for visualization.
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-slate-200 shadow-sm lg:col-span-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Stock Level Distribution</CardTitle>
+                    <CardDescription>Low, medium, and high stock split.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {stockLevelChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={260}>
+                        <PieChart>
+                          <Pie
+                            data={stockLevelChartData}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={55}
+                            outerRadius={85}
+                            paddingAngle={4}
+                            label={({ name, percent }) =>
+                              `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                            }
+                          >
+                            {stockLevelChartData.map((entry) => (
+                              <Cell key={entry.name} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [value, 'Items']} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+                        No stock level data available for visualization.
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="max-h-[420px] overflow-y-auto">
                   <Table className="table-fixed">
@@ -830,6 +948,87 @@ export function InventoryReportPanel() {
                 <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
                   High: {stockLevelSummary.high}
                 </Badge>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-5">
+                <Card className="border-slate-200 shadow-sm lg:col-span-3">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Top Warehouse Stock Rows</CardTitle>
+                    <CardDescription>
+                      Highest-stock product and warehouse combinations.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pl-0">
+                    {topStockChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={260}>
+                        <BarChart
+                          data={topStockChartData}
+                          layout="vertical"
+                          margin={{ top: 0, right: 20, left: 20, bottom: 0 }}
+                        >
+                          <CartesianGrid horizontal={false} stroke="#e2e8f0" />
+                          <XAxis type="number" stroke="#64748b" />
+                          <YAxis
+                            type="category"
+                            dataKey="name"
+                            width={150}
+                            stroke="#64748b"
+                            tick={{ fontSize: 12 }}
+                          />
+                          <Tooltip formatter={(value) => [formatStockNumber(Number(value)), 'Stock']} />
+                          <Bar dataKey="stock" radius={[0, 8, 8, 0]}>
+                            {topStockChartData.map((entry, index) => (
+                              <Cell
+                                key={`${entry.name}-${index}`}
+                                fill={INVENTORY_CHART_COLORS[index % INVENTORY_CHART_COLORS.length]}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+                        No warehouse stock data available for visualization.
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-slate-200 shadow-sm lg:col-span-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">Stock Level Distribution</CardTitle>
+                    <CardDescription>Low, medium, and high stock split.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {stockLevelChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={260}>
+                        <PieChart>
+                          <Pie
+                            data={stockLevelChartData}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={55}
+                            outerRadius={85}
+                            paddingAngle={4}
+                            label={({ name, percent }) =>
+                              `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                            }
+                          >
+                            {stockLevelChartData.map((entry) => (
+                              <Cell key={entry.name} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [value, 'Rows']} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+                        No stock level data available for visualization.
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
