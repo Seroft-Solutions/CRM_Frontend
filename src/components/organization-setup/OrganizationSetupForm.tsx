@@ -42,7 +42,7 @@ export function OrganizationSetupForm({
       !formData.organizationCode.trim() ||
       !formData.address?.trim()
     ) {
-      setValidationError('Organization name, code, and warehouse address are required.');
+      setValidationError('Organization name, code, and address are required.');
 
       return;
     }
@@ -64,7 +64,7 @@ export function OrganizationSetupForm({
     }
 
     if (formData.address.trim().length > 500) {
-      setValidationError('Warehouse address must be 500 characters or fewer.');
+      setValidationError('Address must be 500 characters or fewer.');
 
       return;
     }
@@ -200,13 +200,13 @@ export function OrganizationSetupForm({
               </p>
 
               <Label htmlFor="warehouseAddress" className="text-sm font-medium">
-                Warehouse Address *
+                Address *
               </Label>
               <Textarea
                 id="warehouseAddress"
                 value={formData.address}
                 onChange={handleChange('address')}
-                placeholder="Enter full warehouse address (street, city, state, zip)"
+                placeholder="Enter full address (street, city, state, zip)"
                 required
                 disabled={isLoading}
                 rows={4}
