@@ -1,10 +1,9 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import { signIn } from 'next-auth/react';
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import LandingNavbar from './LandingNavbar';
 
 const CRMCupAnimation = dynamic(() => import('./CRMCupAnimation'), { ssr: false });
 const MotionContainer = dynamic(
@@ -29,16 +28,13 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
   };
 
   return (
-    <section className="home-hero relative overflow-hidden py-24 px-6">
+    <section className="home-hero relative overflow-hidden pb-24 pt-0">
       <div className="absolute inset-x-0 -bottom-32 h-64 blur-[140px] opacity-60 pointer-events-none bg-[radial-gradient(circle_at_center,var(--sidebar-accent)_0%,transparent_60%)]" />
-      <MotionContainer className="relative z-10 container mx-auto max-w-6xl">
-        <div className="flex flex-col md:flex-row items-center gap-16">
+      <MotionContainer className="relative z-10 w-full">
+        <LandingNavbar onStartBrewing={handleStartBrewing} />
+        <div className="container mx-auto flex max-w-6xl flex-col items-center gap-16 px-6 pt-14 md:flex-row">
           <MotionItem className="flex-1 space-y-8">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/8 px-4 py-2">
-                <CrmCupLogo variant="seal" className="h-10 w-10 shrink-0" />
-                <p className="text-sm uppercase tracking-[0.3em] text-white/70">CRM CUP</p>
-              </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
                 Brew Better
                 <span className="block text-sidebar-accent">Customer Relationships</span>
@@ -78,46 +74,21 @@ export default function HeroSection({ onStartBrewing }: HeroSectionProps) {
                   Create Account
                 </Button>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  asChild
-                  size="lg"
-                  variant="ghost"
-                  className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
-                >
-                  <Link href="/about">About Us</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="ghost"
-                  className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
-                >
-                  <Link href="/pricing">Pricing</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="ghost"
-                  className="w-fit text-white/80 border border-white/20 hover:bg-white/10 hover:text-white px-8 py-6 text-base font-semibold"
-                >
-                  <Link href="/contact">Contact Us</Link>
-                </Button>
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-6">
-              {[{ label: 'Customer trust', value: '98%' }, { label: 'Avg. response boost', value: '3x' }].map(
-                ({ label, value }) => (
-                  <div
-                    key={label}
-                    className="rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-white"
-                  >
-                    <p className="text-2xl font-bold">{value}</p>
-                    <p className="text-sm text-white/70">{label}</p>
-                  </div>
-                )
-              )}
+              {[
+                { label: 'Customer trust', value: '100%' },
+                { label: 'Avg. response boost', value: '3x' },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-white"
+                >
+                  <p className="text-2xl font-bold">{value}</p>
+                  <p className="text-sm text-white/70">{label}</p>
+                </div>
+              ))}
             </div>
           </MotionItem>
 

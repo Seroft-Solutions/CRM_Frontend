@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContactForm } from '@/features/contact/components/ContactForm';
 import { contactDetails } from '@/features/contact/contact-schema';
+import LandingNavbar from '@/features/home/components/LandingNavbar';
 
 const contactEmail = contactDetails.email;
 const contactPhone = contactDetails.phoneDisplay;
@@ -49,8 +50,9 @@ export default function ContactPage() {
     <>
       <ToasterProvider />
       <main className="min-h-screen bg-[linear-gradient(180deg,color-mix(in_srgb,var(--sidebar)_3%,white),white_24%,color-mix(in_srgb,var(--sidebar)_7%,white)_100%)]">
-        <section className="home-hero px-6 pb-14 pt-10 text-white">
-          <div className="mx-auto max-w-6xl space-y-8">
+        <section className="home-hero pb-14 pt-0 text-white">
+          <LandingNavbar />
+          <div className="mx-auto max-w-6xl space-y-8 px-6 pt-10">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm text-white/72 transition hover:text-white"
@@ -68,8 +70,8 @@ export default function ContactPage() {
                 <span className="block text-sidebar-accent">without the clutter.</span>
               </h1>
               <p className="text-base leading-7 text-white/80 md:text-lg">
-                Use the form for a proper inquiry, or contact CRM Cup directly by email or
-                WhatsApp. One page, one decision, no repeated sections.
+                Use the form for a proper inquiry, or contact CRM Cup directly by email or WhatsApp.
+                One page, one decision, no repeated sections.
               </p>
             </div>
 
@@ -149,7 +151,10 @@ export default function ContactPage() {
                     `Form submissions go to ${contactEmail}.`,
                     'WhatsApp remains available for quick follow-up.',
                   ].map((item) => (
-                    <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-white/6 p-4">
+                    <div
+                      key={item}
+                      className="flex gap-3 rounded-2xl border border-white/10 bg-white/6 p-4"
+                    >
                       <PhoneCall className="mt-0.5 h-4 w-4 shrink-0 text-sidebar-accent" />
                       <p className="text-sm leading-6 text-white/75">{item}</p>
                     </div>

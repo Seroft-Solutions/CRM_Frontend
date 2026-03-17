@@ -2,7 +2,6 @@
 
 import AboutHero from './AboutHero';
 import MissionSection from './MissionSection';
-import TeamSection from './TeamSection';
 import CtaSection from '@/features/home/components/CtaSection';
 import Footer from '@/features/home/components/Footer';
 
@@ -12,7 +11,6 @@ export default function AboutPage() {
             <main>
                 <AboutHero />
                 <MissionSection />
-                <TeamSection />
                 <CtaSection />
             </main>
             <Footer />
