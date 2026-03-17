@@ -6,4 +6,6 @@ export const attendanceQueryKeys = {
     ['/api/attendance/my/history', params] as const,
   adminRecords: (params?: AttendanceRecordsParamsDTO) =>
     ['/api/attendance/admin/records', params] as const,
+  adminUserRecords: (params?: AttendanceRecordsParamsDTO) =>
+    ['/api/attendance/admin/user-records', params] as const,
 };

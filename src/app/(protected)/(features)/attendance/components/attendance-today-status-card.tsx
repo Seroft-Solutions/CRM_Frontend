@@ -1,4 +1,4 @@
-import { Clock3, Loader2, LogIn, LogOut, MapPin } from 'lucide-react';
+import { Ban, Clock3, Loader2, LogIn, LogOut, MapPin } from 'lucide-react';
 import { AttendanceTodayStatusDTO } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,10 +13,13 @@ type AttendanceTodayStatusCardProps = {
   isBusy: boolean;
   checkedIn: boolean;
   checkedOut: boolean;
+  leaveMarked: boolean;
   isCheckInPending: boolean;
   isCheckOutPending: boolean;
+  isLeavePending: boolean;
   onCheckIn: () => void;
   onCheckOut: () => void;
+  onLeave: () => void;
 };
 
 export function AttendanceTodayStatusCard({
@@ -25,10 +28,13 @@ export function AttendanceTodayStatusCard({
   isBusy,
   checkedIn,
   checkedOut,
+  leaveMarked,
   isCheckInPending,
   isCheckOutPending,
+  isLeavePending,
   onCheckIn,
   onCheckOut,
+  onLeave,
 }: AttendanceTodayStatusCardProps) {
   return (
     <Card>
@@ -76,7 +82,7 @@ export function AttendanceTodayStatusCard({
         <div className="flex flex-wrap gap-3">
           <Button
             onClick={onCheckIn}
-            disabled={isBusy || checkedIn}
+            disabled={isBusy || checkedIn || leaveMarked}
             className="bg-emerald-600 text-white hover:bg-emerald-700"
           >
             {isCheckInPending ? (
@@ -88,7 +94,7 @@ export function AttendanceTodayStatusCard({
           </Button>
           <Button
             onClick={onCheckOut}
-            disabled={isBusy || !checkedIn || checkedOut}
+            disabled={isBusy || !checkedIn || checkedOut || leaveMarked}
             className="bg-blue-600 text-white hover:bg-blue-700"
           >
             {isCheckOutPending ? (
@@ -97,6 +103,18 @@ export function AttendanceTodayStatusCard({
               <LogOut className="mr-2 h-4 w-4" />
             )}
             Check Out
+          </Button>
+          <Button
+            onClick={onLeave}
+            disabled={isBusy || checkedIn || checkedOut || leaveMarked}
+            className="bg-red-600 text-white hover:bg-red-700"
+          >
+            {isLeavePending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Ban className="mr-2 h-4 w-4" />
+            )}
+            {leaveMarked ? 'Leave Marked' : 'Leave / Absent'}
           </Button>
         </div>
       </CardContent>

@@ -43,6 +43,17 @@ export const getAdminAttendanceRecords = (
     signal,
   });
 
+export const getAdminUserAttendanceRecords = (
+  params?: AttendanceRecordsParamsDTO,
+  signal?: AbortSignal
+) =>
+  springServiceMutator<AttendanceRecordDTO[]>({
+    url: '/api/attendance/admin/user-records',
+    method: 'GET',
+    params,
+    signal,
+  });
+
 export const checkInAttendance = (payload: AttendanceLocationDTO) =>
   springServiceMutator<AttendanceRecordDTO>({
     url: '/api/attendance/check-in',
@@ -55,6 +66,12 @@ export const checkOutAttendance = (payload: AttendanceLocationDTO) =>
     url: '/api/attendance/check-out',
     method: 'POST',
     data: payload,
+  });
+
+export const markLeaveAttendance = () =>
+  springServiceMutator<AttendanceRecordDTO>({
+    url: '/api/attendance/leave',
+    method: 'POST',
   });
 
 export const useGetMyTodayAttendance = (
@@ -116,6 +133,26 @@ export const useGetAdminAttendanceRecords = (
   return query;
 };
 
+export const useGetAdminUserAttendanceRecords = (
+  params?: AttendanceRecordsParamsDTO,
+  options?: { query?: Partial<UseQueryOptions<AttendanceRecordDTO[], Error>> },
+  queryClient?: QueryClient
+): UseQueryResult<AttendanceRecordDTO[], Error> & { queryKey: QueryKey } => {
+  const queryOptions = options?.query ?? {};
+  const queryKey = queryOptions.queryKey ?? attendanceQueryKeys.adminUserRecords(params);
+  const queryFn: QueryFunction<AttendanceRecordDTO[]> = ({ signal }) =>
+    getAdminUserAttendanceRecords(params, signal);
+
+  const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
+    AttendanceRecordDTO[],
+    Error
+  > & { queryKey: QueryKey };
+
+  query.queryKey = queryKey;
+
+  return query;
+};
+
 export const useCheckInAttendance = (
   options?: UseMutationOptions<AttendanceRecordDTO, Error, AttendanceLocationDTO>
 ): UseMutationResult<AttendanceRecordDTO, Error, AttendanceLocationDTO> => {
@@ -130,6 +167,15 @@ export const useCheckOutAttendance = (
 ): UseMutationResult<AttendanceRecordDTO, Error, AttendanceLocationDTO> => {
   return useMutation({
     mutationFn: checkOutAttendance,
+    ...options,
+  });
+};
+
+export const useMarkLeaveAttendance = (
+  options?: UseMutationOptions<AttendanceRecordDTO, Error, void>
+): UseMutationResult<AttendanceRecordDTO, Error, void> => {
+  return useMutation({
+    mutationFn: markLeaveAttendance,
     ...options,
   });
 };

@@ -23,6 +23,9 @@ export interface OrganizationSettings {
   name: string;
   code?: string | null;
   address?: string | null;
+  officeLatitude?: number | null;
+  officeLongitude?: number | null;
+  officeRadiusMeters?: number | null;
   officeSchedule: OrganizationOfficeDaySchedule[];
 }
 

@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Lock, User } from 'lucide-react';
+import { Building2, Lock, User } from 'lucide-react';
 import { BasicInfoUpdateForm } from './BasicInfoUpdateForm';
+import { OrganizationSettingsForm } from './OrganizationSettingsForm';
 import { PasswordUpdateForm } from './PasswordUpdateForm';
 
 interface UserProfileUpdateProps {
@@ -45,10 +46,14 @@ export function UserProfileUpdate({ className = '' }: UserProfileUpdateProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="basic-info" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Basic Information
+          </TabsTrigger>
+          <TabsTrigger value="organization-settings" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Organization Settings
           </TabsTrigger>
           <TabsTrigger value="password" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
@@ -58,6 +63,10 @@ export function UserProfileUpdate({ className = '' }: UserProfileUpdateProps) {
 
         <TabsContent value="basic-info" className="space-y-4">
           <BasicInfoUpdateForm session={session} />
+        </TabsContent>
+
+        <TabsContent value="organization-settings" className="space-y-4">
+          <OrganizationSettingsForm />
         </TabsContent>
 
         <TabsContent value="password" className="space-y-4">

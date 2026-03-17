@@ -10,6 +10,7 @@ type AttendanceAdminCardProps = {
   onAdminDateChange: (value: string) => void;
   rows: AttendanceRecordDTO[];
   isLoading: boolean;
+  onViewDetails: (record: AttendanceRecordDTO) => void;
 };
 
 export function AttendanceAdminCard({
@@ -17,6 +18,7 @@ export function AttendanceAdminCard({
   onAdminDateChange,
   rows,
   isLoading,
+  onViewDetails,
 }: AttendanceAdminCardProps) {
   return (
     <Card>
@@ -38,7 +40,7 @@ export function AttendanceAdminCard({
         {isLoading ? (
           <AttendanceLoadingRow message="Loading admin attendance..." />
         ) : (
-          <AttendanceTable rows={rows} />
+          <AttendanceTable rows={rows} showActions onViewDetails={onViewDetails} />
         )}
       </CardContent>
     </Card>

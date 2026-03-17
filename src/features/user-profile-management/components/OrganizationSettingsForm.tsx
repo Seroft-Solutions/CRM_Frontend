@@ -4,7 +4,16 @@ import React, { useEffect } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Building2, Clock3, Loader2, MapPinned, Plus, Save, Trash2 } from 'lucide-react';
+import {
+  Building2,
+  Clock3,
+  Loader2,
+  LocateFixed,
+  MapPinned,
+  Plus,
+  Save,
+  Trash2,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,16 +87,111 @@ const officeDaySchema = z
     });
   });
 
-const organizationSettingsSchema = z.object({
-  id: z.number(),
-  keycloakOrgId: z.string().min(1),
-  name: z.string().min(1),
-  code: z.string().nullable().optional(),
-  address: z.string().max(500, { message: 'Address must not exceed 500 characters' }),
-  officeSchedule: z.array(officeDaySchema).length(7),
-});
+const organizationSettingsSchema = z
+  .object({
+    id: z.number(),
+    keycloakOrgId: z.string().min(1),
+    name: z.string().min(1),
+    code: z.string().nullable().optional(),
+    address: z.string().max(500, { message: 'Address must not exceed 500 characters' }),
+    officeLatitude: z
+      .number({ invalid_type_error: 'Office latitude must be a number' })
+      .min(-90, { message: 'Latitude must be at least -90' })
+      .max(90, { message: 'Latitude must be at most 90' })
+      .nullable(),
+    officeLongitude: z
+      .number({ invalid_type_error: 'Office longitude must be a number' })
+      .min(-180, { message: 'Longitude must be at least -180' })
+      .max(180, { message: 'Longitude must be at most 180' })
+      .nullable(),
+    officeRadiusMeters: z.number().nullable(),
+    officeSchedule: z.array(officeDaySchema).length(7),
+  })
+  .superRefine((value, context) => {
+    const hasLatitude = value.officeLatitude !== null;
+    const hasLongitude = value.officeLongitude !== null;
+
+    if (hasLatitude || hasLongitude) {
+      if (!hasLatitude) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Office latitude is required when geofence is configured',
+          path: ['officeLatitude'],
+        });
+      }
+      if (!hasLongitude) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Office longitude is required when geofence is configured',
+          path: ['officeLongitude'],
+        });
+      }
+    }
+  });
 
 type OrganizationSettingsFormValues = z.infer<typeof organizationSettingsSchema>;
+
+async function reverseGeocodeOfficeLocation(
+  latitude: number,
+  longitude: number
+): Promise<string | null> {
+  const params = new URLSearchParams({
+    lat: String(latitude),
+    lon: String(longitude),
+  });
+  const response = await fetch(`/api/location/reverse?${params.toString()}`, {
+    method: 'GET',
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as { locationName?: string; displayName?: string };
+
+  return payload.locationName || payload.displayName || null;
+}
+
+async function getCurrentOfficeLocation(): Promise<{ latitude: number; longitude: number }> {
+  if (typeof window === 'undefined' || !navigator.geolocation) {
+    throw new Error('Geolocation is not supported by this browser.');
+  }
+
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          reject(new Error('Location permission denied. Please allow location access.'));
+
+          return;
+        }
+        if (error.code === error.POSITION_UNAVAILABLE) {
+          reject(new Error('Location data is unavailable.'));
+
+          return;
+        }
+        if (error.code === error.TIMEOUT) {
+          reject(new Error('Location request timed out.'));
+
+          return;
+        }
+        reject(new Error('Could not retrieve location from browser.'));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      }
+    );
+  });
+}
 
 const officeDayLabels: Record<OfficeDay, string> = {
   MONDAY: 'Monday',
@@ -116,6 +220,9 @@ function mapSettingsToFormValues(settings: OrganizationSettings): OrganizationSe
     name: settings.name,
     code: settings.code ?? '',
     address: settings.address ?? '',
+    officeLatitude: settings.officeLatitude ?? null,
+    officeLongitude: settings.officeLongitude ?? null,
+    officeRadiusMeters: settings.officeRadiusMeters ?? null,
     officeSchedule: officeDayValues.map((dayOfWeek) => {
       const existingDay = scheduleByDay.get(dayOfWeek);
       const timeSlots = existingDay?.timeSlots ?? [];
@@ -136,6 +243,9 @@ function mapFormValuesToRequest(values: OrganizationSettingsFormValues): Organiz
     name: values.name,
     code: values.code?.trim() || null,
     address: values.address.trim() || null,
+    officeLatitude: values.officeLatitude,
+    officeLongitude: values.officeLongitude,
+    officeRadiusMeters: values.officeRadiusMeters,
     officeSchedule: values.officeSchedule.map((day) => ({
       dayOfWeek: day.dayOfWeek,
       timeSlots: day.isOpen ? day.timeSlots : [],
@@ -289,11 +399,15 @@ export function OrganizationSettingsForm() {
       name: '',
       code: '',
       address: '',
+      officeLatitude: null,
+      officeLongitude: null,
+      officeRadiusMeters: null,
       officeSchedule: defaultOfficeSchedule,
     },
   });
 
   const { control, watch, setValue } = form;
+  const [isFetchingLocation, setIsFetchingLocation] = React.useState(false);
 
   useEffect(() => {
     void refreshOrganizationSettings();
@@ -308,13 +422,67 @@ export function OrganizationSettingsForm() {
   }, [form, organizationSettings]);
 
   const onSubmit = async (values: OrganizationSettingsFormValues) => {
-    const success = await saveOrganizationSettings(mapFormValuesToRequest(values));
+    const submissionValues = { ...values };
+
+    if (submissionValues.officeLatitude === null || submissionValues.officeLongitude === null) {
+      try {
+        const { latitude, longitude } = await getCurrentOfficeLocation();
+        const locationName = await reverseGeocodeOfficeLocation(latitude, longitude);
+
+        submissionValues.officeLatitude = latitude;
+        submissionValues.officeLongitude = longitude;
+        submissionValues.address = locationName || submissionValues.address;
+
+        form.setValue('officeLatitude', latitude, { shouldDirty: true, shouldValidate: true });
+        form.setValue('officeLongitude', longitude, { shouldDirty: true, shouldValidate: true });
+
+        if (locationName) {
+          form.setValue('address', locationName, { shouldDirty: true, shouldValidate: true });
+        }
+      } catch (error) {
+        form.setError('address', {
+          type: 'manual',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to fetch office location before saving',
+        });
+
+        return;
+      }
+    }
+
+    const success = await saveOrganizationSettings(mapFormValuesToRequest(submissionValues));
 
     if (!success) {
       return;
     }
 
-    form.reset(values);
+    form.reset(submissionValues);
+  };
+
+  const handleFetchOfficeLocation = async () => {
+    setIsFetchingLocation(true);
+    form.clearErrors('address');
+
+    try {
+      const { latitude, longitude } = await getCurrentOfficeLocation();
+      const locationName = await reverseGeocodeOfficeLocation(latitude, longitude);
+
+      setValue('officeLatitude', latitude, { shouldDirty: true, shouldValidate: true });
+      setValue('officeLongitude', longitude, { shouldDirty: true, shouldValidate: true });
+
+      if (locationName) {
+        setValue('address', locationName, { shouldDirty: true, shouldValidate: true });
+      }
+    } catch (error) {
+      form.setError('address', {
+        type: 'manual',
+        message: error instanceof Error ? error.message : 'Failed to fetch office location',
+      });
+    } finally {
+      setIsFetchingLocation(false);
+    }
   };
 
   if (isLoading && !organizationSettings) {
@@ -379,10 +547,32 @@ export function OrganizationSettingsForm() {
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <MapPinned className="h-4 w-4" />
-                    Address
-                  </FormLabel>
+                  <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-1">
+                      <FormLabel className="flex items-center gap-2">
+                        <MapPinned className="h-4 w-4" />
+                        Address
+                      </FormLabel>
+                      <FormDescription>
+                        Use your current browser location to fill the office address automatically.
+                      </FormDescription>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2"
+                      disabled={isUpdating || isFetchingLocation}
+                      onClick={handleFetchOfficeLocation}
+                    >
+                      {isFetchingLocation ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LocateFixed className="h-4 w-4" />
+                      )}
+                      Fetch Location
+                    </Button>
+                  </div>
                   <FormControl>
                     <Textarea
                       {...field}
