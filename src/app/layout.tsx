@@ -6,6 +6,7 @@ import { AppSessionProvider } from '@/core/auth';
 import { AuthErrorBoundary } from '@/core/auth/components/auth-error-boundary';
 import { CrossFormNavigationProvider } from '@/context/cross-form-navigation';
 import { auth } from '@/auth';
+import crmCupLogo from '../../public/crm-cup-logo.png';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   title: 'CRM Cup - Customer Relationship Management',
   description: 'Advanced CRM solution for managing customer relationships',
   icons: {
-    icon: '/crm-cup-logo.png',
+    icon: crmCupLogo.src,
   },
 };
 

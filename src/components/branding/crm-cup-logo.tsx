@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import crmCupLogo from '../../../public/crm-cup-logo.png';
 
 type CrmCupLogoVariant = 'seal' | 'mark';
 
@@ -25,7 +26,7 @@ export function CrmCupLogo({
       )}
     >
       <Image
-        src="/crm-cup-logo.png"
+        src={crmCupLogo}
         alt={title}
         fill
         sizes={variant === 'mark' ? '64px' : '256px'}
