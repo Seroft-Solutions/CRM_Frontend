@@ -1,14 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { useRBAC } from '@/core/auth';
 import { useGetAdminUserAttendanceRecords, useGetMyAttendanceHistory } from '@/core/api/attendance';
-import { Button } from '@/components/ui/button';
 import {
-  AttendanceHeader,
+  AttendanceSubpageHeader,
   AttendanceWeekListCard,
   getDefaultWeeklyFromDateValue,
   getLocalDateInputValue,
@@ -60,24 +57,16 @@ export default function AttendanceDetailsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <AttendanceHeader />
-        <Button asChild variant="outline">
-          <Link href="/attendance">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Attendance
-          </Link>
-        </Button>
-      </div>
-
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold">
-          {requestedUserId ? `${requestedUserName || requestedUserId} Weekly Attendance` : 'My Weekly Attendance'}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Browse attendance grouped by week and open the detailed time-worked view for each week.
-        </p>
-      </div>
+      <AttendanceSubpageHeader
+        title={
+          requestedUserId
+            ? `${requestedUserName || requestedUserId} Weekly Attendance`
+            : 'My Weekly Attendance'
+        }
+        description="Browse attendance grouped by week and open the detailed time-worked view for each week."
+        backHref="/attendance"
+        backLabel="Back to Attendance"
+      />
 
       <AttendanceWeekListCard
         title="Weekly Attendance List"

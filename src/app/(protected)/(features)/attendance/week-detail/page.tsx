@@ -1,18 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import { useRBAC } from '@/core/auth';
 import {
   useGetAdminUserAttendanceRecords,
   useGetMyAttendanceHistory,
 } from '@/core/api/attendance';
-import { Button } from '@/components/ui/button';
 import {
-  AttendanceHeader,
   AttendanceLoadingRow,
+  AttendanceSubpageHeader,
   AttendanceWeekDetailCard,
 } from '../components';
 
@@ -83,27 +80,12 @@ export default function AttendanceWeekDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Button asChild variant="outline">
-            <Link href={backHref}>
-              <ArrowLeft className="h-4 w-4" />
-              Back to weekly list
-            </Link>
-          </Button>
-          <AttendanceHeader />
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold">
-          {weekId || 'Week Detail'}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Detailed weekly attendance breakdown using the existing attendance records and
-          frontend-calculated hours.
-        </p>
-      </div>
+      <AttendanceSubpageHeader
+        title={weekId || 'Week Detail'}
+        description="Detailed weekly attendance breakdown using the existing attendance records and frontend-calculated hours."
+        backHref={backHref}
+        backLabel="Back to weekly list"
+      />
 
       {isLoading ? (
         <AttendanceLoadingRow message="Loading weekly attendance detail..." />

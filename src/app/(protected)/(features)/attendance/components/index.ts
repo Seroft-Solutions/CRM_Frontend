@@ -14,6 +14,8 @@ export * from './attendance-my-history-card';
 
 export * from './attendance-status-badge';
 
+export * from './attendance-subpage-header';
+
 export * from './attendance-table';
 
 export * from './attendance-today-status-card';
