@@ -11,6 +11,7 @@ import {
   useCheckInAttendance,
   useCheckOutAttendance,
   useGetAdminAttendanceRecords,
+  useGetMyAttendanceHistory,
   useGetMyTodayAttendance,
   useMarkLeaveAttendance,
 } from '@/core/api/attendance';
@@ -30,9 +31,11 @@ import {
 } from '@/features/user-profile-management/services/organization-settings.service';
 import {
   AttendanceAdminCard,
-  AttendanceDetailsAccessCard,
   AttendanceHeader,
   AttendanceTodayStatusCard,
+  AttendanceWeekListCard,
+  getDefaultWeeklyFromDateValue,
+  getLocalDateInputValue,
 } from './components';
 import { formatCoordinates } from './components';
 
@@ -42,12 +45,6 @@ type PendingWorkFromHomeCheckIn = {
   location: AttendanceLocationDTO;
   locationLabel: string | null;
 };
-
-function getLocalDateInputValue(date: Date = new Date()): string {
-  const timezoneOffset = date.getTimezoneOffset() * 60000;
-
-  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 10);
-}
 
 function getLocationErrorMessage(error: GeolocationPositionError): string {
   if (error.code === error.PERMISSION_DENIED)
@@ -177,6 +174,10 @@ export default function AttendancePage() {
   const adminAccess = isAdmin() || hasGroup('Admins') || hasGroup('Super Admins');
 
   const [adminDate, setAdminDate] = useState<string>(getLocalDateInputValue());
+  const [historyFromDate, setHistoryFromDate] = useState<string>(
+    getDefaultWeeklyFromDateValue()
+  );
+  const [historyToDate, setHistoryToDate] = useState<string>(getLocalDateInputValue());
   const [pendingWorkFromHomeCheckIn, setPendingWorkFromHomeCheckIn] =
     useState<PendingWorkFromHomeCheckIn | null>(null);
 
@@ -193,6 +194,23 @@ export default function AttendancePage() {
   const { data: todayStatus, isLoading: isTodayLoading } = useGetMyTodayAttendance({
     query: { enabled: !adminAccess },
   });
+
+  const selfHistoryParams = useMemo(
+    () => ({
+      fromDate: historyFromDate,
+      toDate: historyToDate,
+      size: 366,
+      sort: ['attendanceDate,desc', 'checkInTime,desc'],
+    }),
+    [historyFromDate, historyToDate]
+  );
+
+  const { data: selfHistoryRows = [], isLoading: isHistoryLoading } = useGetMyAttendanceHistory(
+    selfHistoryParams,
+    {
+      query: { enabled: !adminAccess },
+    }
+  );
 
   const { data: adminRecords = [], isLoading: isAdminLoading } = useGetAdminAttendanceRecords(
     adminParams,
@@ -302,7 +320,6 @@ export default function AttendancePage() {
   const checkedIn = todayStatus?.checkedIn ?? false;
   const checkedOut = todayStatus?.checkedOut ?? false;
   const leaveMarked = todayStatus?.attendance?.status === 'LEAVE';
-  const detailsPageHref = '/attendance/details';
 
   const handleAdminViewDetails = (userId: string, userDisplayName?: string | null) => {
     const params = new URLSearchParams({
@@ -338,8 +355,27 @@ export default function AttendancePage() {
             onCheckOut={handleCheckOut}
             onLeave={handleMarkLeave}
           />
+          <AttendanceWeekListCard
+            title="Weekly Attendance"
+            description="Review attendance grouped by week and open a detailed weekly breakdown."
+            rows={selfHistoryRows}
+            isLoading={isHistoryLoading}
+            fromDate={historyFromDate}
+            toDate={historyToDate}
+            onFromDateChange={setHistoryFromDate}
+            onToDateChange={setHistoryToDate}
+            getWeekHref={(weekId, fromDate, toDate) => {
+              const params = new URLSearchParams({
+                weekId,
+                fromDate,
+                toDate,
+                listFromDate: historyFromDate,
+                listToDate: historyToDate,
+              });
 
-          <AttendanceDetailsAccessCard href={detailsPageHref} />
+              return `/attendance/week-detail?${params.toString()}`;
+            }}
+          />
         </>
       )}
 
