@@ -7,13 +7,12 @@ import { ArrowLeft } from 'lucide-react';
 import { useRBAC } from '@/core/auth';
 import { useGetAdminUserAttendanceRecords, useGetMyAttendanceHistory } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
-import { AttendanceHeader, AttendanceMyHistoryCard } from '../components';
-
-function getLocalDateInputValue(date: Date = new Date()): string {
-  const timezoneOffset = date.getTimezoneOffset() * 60000;
-
-  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 10);
-}
+import {
+  AttendanceHeader,
+  AttendanceWeekListCard,
+  getDefaultWeeklyFromDateValue,
+  getLocalDateInputValue,
+} from '../components';
 
 export default function AttendanceDetailsPage() {
   const searchParams = useSearchParams();
@@ -22,11 +21,10 @@ export default function AttendanceDetailsPage() {
   const requestedUserId = searchParams.get('userId') || '';
   const requestedUserName = searchParams.get('userName') || '';
   const [fromDate, setFromDate] = useState<string>(
-    searchParams.get('fromDate') ||
-      getLocalDateInputValue(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000))
+    searchParams.get('fromDate') || searchParams.get('listFromDate') || getDefaultWeeklyFromDateValue()
   );
   const [toDate, setToDate] = useState<string>(
-    searchParams.get('toDate') || getLocalDateInputValue()
+    searchParams.get('toDate') || searchParams.get('listToDate') || getLocalDateInputValue()
   );
 
   const selfHistoryParams = useMemo(
@@ -59,24 +57,6 @@ export default function AttendanceDetailsPage() {
 
   const rows = requestedUserId ? (adminHistoryQuery.data ?? []) : (selfHistoryQuery.data ?? []);
   const isLoading = requestedUserId ? adminHistoryQuery.isLoading : selfHistoryQuery.isLoading;
-  const totalWorkingMinutes = useMemo(
-    () =>
-      rows.reduce((totalMinutes, record) => {
-        if (!record.checkInTime || !record.checkOutTime) {
-          return totalMinutes;
-        }
-
-        const startedAt = new Date(record.checkInTime).getTime();
-        const endedAt = new Date(record.checkOutTime).getTime();
-
-        if (Number.isNaN(startedAt) || Number.isNaN(endedAt) || endedAt <= startedAt) {
-          return totalMinutes;
-        }
-
-        return totalMinutes + (endedAt - startedAt) / 60000;
-      }, 0),
-    [rows]
-  );
 
   return (
     <div className="space-y-6">
@@ -92,24 +72,41 @@ export default function AttendanceDetailsPage() {
 
       <div className="space-y-1">
         <h2 className="text-xl font-semibold">
-          {requestedUserId
-            ? `${requestedUserName || requestedUserId} Attendance Details`
-            : 'My Attendance Details'}
+          {requestedUserId ? `${requestedUserName || requestedUserId} Weekly Attendance` : 'My Weekly Attendance'}
         </h2>
         <p className="text-sm text-muted-foreground">
-          View attendance details, working hours, check in, and check out information for the
-          selected date range.
+          Browse attendance grouped by week and open the detailed time-worked view for each week.
         </p>
       </div>
 
-      <AttendanceMyHistoryCard
+      <AttendanceWeekListCard
+        title="Weekly Attendance List"
+        description="Attendance grouped into weekly summaries for the selected date range."
         rows={rows}
         isLoading={isLoading}
         fromDate={fromDate}
         toDate={toDate}
         onFromDateChange={setFromDate}
         onToDateChange={setToDate}
-        totalWorkingMinutes={totalWorkingMinutes}
+        getWeekHref={(weekId, weekFromDate, weekToDate) => {
+          const params = new URLSearchParams({
+            weekId,
+            fromDate: weekFromDate,
+            toDate: weekToDate,
+            listFromDate: fromDate,
+            listToDate: toDate,
+          });
+
+          if (requestedUserId) {
+            params.set('userId', requestedUserId);
+          }
+
+          if (requestedUserName) {
+            params.set('userName', requestedUserName);
+          }
+
+          return `/attendance/week-detail?${params.toString()}`;
+        }}
       />
     </div>
   );
