@@ -15,7 +15,10 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useDownloadImportTemplate, useImportCallsFromExcel } from '@/core/api/generated/spring';
+import {
+  useDownloadImportTemplate2 as useDownloadLeadImportTemplate,
+  useImportCallsFromExcel,
+} from '@/core/api/generated/spring';
 import { callImportConfig } from '../config';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImportProgress } from './import-progress';
@@ -92,7 +95,7 @@ export function CallDataImport({}: CallDataImportProps) {
   const {
     refetch: fetchTemplate,
     isFetching: isDownloadingTemplate,
-  } = useDownloadImportTemplate({
+  } = useDownloadLeadImportTemplate({
     query: {
       enabled: false,
     },

@@ -18,7 +18,7 @@ import { customerImportConfig } from '../config';
 import { ImportProgress } from './import-progress';
 import {
   useImportCustomersFromExcel,
-  useDownloadImportTemplate,
+  useDownloadImportTemplate1 as useDownloadCustomerImportTemplate,
 } from '@/core/api/generated/spring';
 
 export function CustomerDataImport() {
@@ -55,7 +55,7 @@ export function CustomerDataImport() {
   const {
     refetch: fetchTemplate,
     isFetching: isDownloadingTemplate,
-  } = useDownloadImportTemplate({
+  } = useDownloadCustomerImportTemplate({
     query: {
       enabled: false,
     },
