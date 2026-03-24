@@ -17,6 +17,7 @@ import {
   useDeleteImportHistory,
 } from '@/core/api/generated/spring/endpoints/import-history-resource/import-history-resource.gen';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import { extractCustomerErrorMessage } from '../../components/customer-toast';
 
 const MOBILE_REGEX = /^[+]?[0-9]{10,15}$/;
 
@@ -183,7 +184,7 @@ export function FailedCustomersTable() {
         refetch();
         return true;
       } catch (e) {
-        const message = e instanceof Error ? e.message : 'Unknown error';
+        const message = extractCustomerErrorMessage(e, 'Unknown error');
         toast.error(`Failed to save row ${row.id}: ${message}`);
         setRowErrors((prev) => ({ ...prev, [row.id!]: message }));
         return false;

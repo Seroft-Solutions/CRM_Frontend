@@ -1,5 +1,104 @@
 import { toast } from 'sonner';
 
+type CustomerErrorPayload = {
+  title?: string;
+  detail?: string;
+  message?: string;
+  fieldErrors?: unknown;
+};
+
+type CustomerError = {
+  response?: {
+    status?: number;
+    data?: CustomerErrorPayload;
+  };
+  status?: number;
+  data?: CustomerErrorPayload;
+  code?: string;
+  message?: string;
+};
+
+const GENERIC_ERROR_TITLES = new Set([
+  'Bad Request',
+  'Unauthorized',
+  'Forbidden',
+  'Not Found',
+  'Conflict',
+  'Internal Server Error',
+]);
+
+const getCustomerErrorPayload = (error: unknown): CustomerErrorPayload | undefined => {
+  if (typeof error !== 'object' || error === null) {
+    return undefined;
+  }
+
+  const customerError = error as CustomerError;
+
+  return customerError.response?.data ?? customerError.data;
+};
+
+const getCustomerErrorStatus = (error: unknown): number | undefined => {
+  if (typeof error !== 'object' || error === null) {
+    return undefined;
+  }
+
+  const customerError = error as CustomerError;
+
+  return customerError.response?.status ?? customerError.status;
+};
+
+const extractFieldNames = (fieldErrors: unknown): string[] => {
+  if (Array.isArray(fieldErrors)) {
+    return fieldErrors
+      .map((fieldError) => {
+        if (typeof fieldError === 'object' && fieldError !== null && 'field' in fieldError) {
+          return String(fieldError.field);
+        }
+
+        return null;
+      })
+      .filter((field): field is string => Boolean(field));
+  }
+
+  if (typeof fieldErrors === 'object' && fieldErrors !== null) {
+    return Object.keys(fieldErrors);
+  }
+
+  return [];
+};
+
+const getMeaningfulTitle = (title?: string): string | undefined => {
+  if (!title) {
+    return undefined;
+  }
+
+  return GENERIC_ERROR_TITLES.has(title) ? undefined : title;
+};
+
+export const extractCustomerErrorMessage = (
+  error: unknown,
+  fallback = 'An unexpected error occurred'
+): string => {
+  if (typeof error === 'string' && error.trim() !== '') {
+    return error;
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    const customerError = error as CustomerError;
+    const errorPayload = getCustomerErrorPayload(error);
+    const payloadMessage =
+      getMeaningfulTitle(errorPayload?.title) ||
+      errorPayload?.detail ||
+      (errorPayload?.message && !errorPayload.message.startsWith('error.')
+        ? errorPayload.message
+        : undefined);
+
+    return payloadMessage || customerError.message || fallback;
+  }
+
+  return fallback;
+};
+
 export const customerToast = {
   created: (entityName?: string) =>
     toast.success('✅ Success!', {
@@ -45,32 +144,44 @@ export const customerToast = {
       description: `${count} customers imported successfully`,
     }),
 
-  createError: (error?: string) =>
+  createError: (error?: unknown) =>
     toast.error('❌ Creation Failed', {
-      description: error || `Failed to create customer. Please try again.`,
+      description: extractCustomerErrorMessage(
+        error,
+        'Failed to create customer. Please try again.'
+      ),
       action: {
         label: 'Retry',
         onClick: () => window.location.reload(),
       },
     }),
 
-  updateError: (error?: string) =>
+  updateError: (error?: unknown) =>
     toast.error('❌ Update Failed', {
-      description: error || `Failed to update customer. Please try again.`,
+      description: extractCustomerErrorMessage(
+        error,
+        'Failed to update customer. Please try again.'
+      ),
       action: {
         label: 'Retry',
         onClick: () => window.location.reload(),
       },
     }),
 
-  deleteError: (error?: string) =>
+  deleteError: (error?: unknown) =>
     toast.error('❌ Delete Failed', {
-      description: error || `Failed to delete customer. Please try again.`,
+      description: extractCustomerErrorMessage(
+        error,
+        'Failed to delete customer. Please try again.'
+      ),
     }),
 
-  bulkDeleteError: (error?: string) =>
+  bulkDeleteError: (error?: unknown) =>
     toast.error('❌ Bulk Delete Failed', {
-      description: error || `Failed to delete selected customers. Please try again.`,
+      description: extractCustomerErrorMessage(
+        error,
+        'Failed to delete selected customers. Please try again.'
+      ),
     }),
 
   validationError: (fields?: string[]) =>
@@ -141,17 +252,18 @@ export const customerToast = {
   },
 };
 
-export const handleCustomerError = (error: any) => {
-  const errorMessage =
-    error?.response?.data?.message || error?.message || 'An unexpected error occurred';
+export const handleCustomerError = (error: unknown) => {
+  const customerError = (error ?? {}) as CustomerError;
+  const errorMessage = extractCustomerErrorMessage(error);
 
-  if (error?.response?.status === 403) {
+  if (getCustomerErrorStatus(error) === 403) {
     customerToast.permissionError();
-  } else if (error?.response?.status === 422) {
-    const validationErrors = error?.response?.data?.fieldErrors;
-    const fields = validationErrors ? Object.keys(validationErrors) : [];
+  } else if (getCustomerErrorStatus(error) === 422) {
+    const validationErrors = getCustomerErrorPayload(error)?.fieldErrors;
+    const fields = extractFieldNames(validationErrors);
+
     customerToast.validationError(fields);
-  } else if (error?.code === 'NETWORK_ERROR') {
+  } else if (customerError.code === 'NETWORK_ERROR' || customerError.code === 'ERR_NETWORK') {
     customerToast.networkError();
   } else {
     toast.error('❌ Error', {
