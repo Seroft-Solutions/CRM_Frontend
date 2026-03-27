@@ -44,6 +44,7 @@ const SidebarContext = React.createContext<SidebarContextProps | null>(null);
 
 function useSidebar() {
   const context = React.useContext(SidebarContext);
+
   if (!context) {
     throw new Error('useSidebar must be used within a SidebarProvider.');
   }
@@ -70,7 +71,9 @@ function SidebarProvider({
   const getCookieBoolean = React.useCallback((name: string, fallback: boolean) => {
     if (typeof document === 'undefined') return fallback;
     const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+
     if (!match) return fallback;
+
     return match[1] === 'true';
   }, []);
 
@@ -99,6 +102,7 @@ function SidebarProvider({
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === 'function' ? value(open) : value;
+
       if (pinned && !isMobile && !openState) {
         return;
       }
@@ -110,6 +114,7 @@ function SidebarProvider({
   const updatePinnedState = React.useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
       const next = typeof value === 'function' ? value(pinned) : value;
+
       _setPinned(next);
       if (typeof document !== 'undefined') {
         document.cookie = `${SIDEBAR_PIN_COOKIE_NAME}=${next}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
@@ -125,6 +130,7 @@ function SidebarProvider({
     if (isMobile) {
       return setOpenMobile((value) => !value);
     }
+
     return setOpen((value) => !value);
   }, [isMobile, setOpen, setOpenMobile]);
 
@@ -147,6 +153,7 @@ function SidebarProvider({
     };
 
     window.addEventListener('keydown', handleKeyDown);
+
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
@@ -530,7 +537,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md border border-transparent bg-sidebar p-2 text-left text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[state=open]:bg-sidebar data-[state=open]:text-sidebar-foreground data-[state=open]:border-sidebar-border/60 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[active=true]:border-transparent group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+  'peer/menu-button flex w-full items-start gap-2 overflow-hidden rounded-md border border-transparent bg-sidebar p-2 text-left text-sm text-sidebar-foreground outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[state=open]:bg-sidebar data-[state=open]:text-sidebar-foreground data-[state=open]:border-sidebar-border/60 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[active=true]:border-transparent group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:p-2! [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:whitespace-normal [&>span:last-child]:break-words [&>span:last-child]:leading-5 [&>svg]:size-4 [&>svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -539,9 +546,9 @@ const sidebarMenuButtonVariants = cva(
           'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
       },
       size: {
-        default: 'h-8 text-sm',
-        sm: 'h-7 text-xs',
-        lg: 'h-12 text-sm group-data-[collapsible=icon]:p-0!',
+        default: 'min-h-8 text-sm',
+        sm: 'min-h-7 text-xs',
+        lg: 'min-h-12 text-sm group-data-[collapsible=icon]:p-0!',
       },
     },
     defaultVariants: {
@@ -730,8 +737,8 @@ function SidebarMenuSubButton({
       data-size={size}
       data-active={isActive}
       className={cn(
-        'text-sidebar-foreground ring-sidebar-ring bg-sidebar hover:bg-sidebar hover:text-sidebar-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 border border-transparent',
-        'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:border-transparent',
+        'text-sidebar-foreground ring-sidebar-ring bg-sidebar hover:bg-sidebar hover:text-sidebar-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-foreground/70 flex min-h-7 min-w-0 -translate-x-px items-start gap-2 overflow-hidden rounded-md px-2 py-1.5 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:min-w-0 [&>span:last-child]:flex-1 [&>span:last-child]:whitespace-normal [&>span:last-child]:break-words [&>span:last-child]:leading-5 [&>svg]:size-4 [&>svg]:shrink-0 border border-transparent',
+        'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:border-transparent data-[active=true]:[&>svg]:text-sidebar-accent-foreground',
         size === 'sm' && 'text-xs',
         size === 'md' && 'text-sm',
         'group-data-[collapsible=icon]:hidden',
