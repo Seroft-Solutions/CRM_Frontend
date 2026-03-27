@@ -198,6 +198,7 @@ function mapOrderRecordToInvoiceOrderRecord(
 export function InvoicePrintButton({ order, orderType }: InvoicePrintButtonProps) {
   const componentRef = useRef<HTMLDivElement>(null);
   const { data: organizations } = useUserOrganizations();
+  const buttonLabel = orderType === 'purchase' ? 'Print Purchase Order' : 'Print Sale Order';
   const organizationName = useMemo(
     () => resolveOrganizationName(organizations),
     [organizations],
@@ -226,7 +227,7 @@ export function InvoicePrintButton({ order, orderType }: InvoicePrintButtonProps
     <>
       <Button size="sm" variant="outline" className="gap-2" onClick={() => handlePrint()}>
         <Printer className="w-4 h-4" />
-        <span>Print Invoice</span>
+        <span>{buttonLabel}</span>
       </Button>
       <div style={{ display: 'none' }}>
         <InvoiceTemplate ref={componentRef} order={invoiceOrder} orderType={orderType} />

@@ -1,9 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { OrderRecord, OrderStatus } from '../data/order-data';
+import { PackageCheck } from 'lucide-react';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -190,97 +193,112 @@ export function OrderDetail({ order }: OrderDetailProps) {
               </svg>
             </div>
             <span className="font-bold">Order Items</span>
-            <Badge className="ml-auto bg-cyan-100 text-cyan-900">{order.items.length} items</Badge>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="gap-2 border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50"
+              >
+                <Link href={`/orders/${order.orderId}/fulfillment`}>
+                  <PackageCheck className="h-4 w-4" />
+                  Order Fulfillment
+                </Link>
+              </Button>
+              <Badge className="bg-cyan-100 text-cyan-900">{order.items.length} items</Badge>
+            </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
-                <TableHead className="font-bold text-slate-700">Item</TableHead>
-                <TableHead className="font-bold text-slate-700">Quantity</TableHead>
-                <TableHead className="font-bold text-slate-700">Price</TableHead>
-                <TableHead className="font-bold text-slate-700">Tax</TableHead>
-                <TableHead className="font-bold text-slate-700">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {order.items.length > 0 ? (
-                order.items.map((item, index) => (
-                  <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                          {index + 1}
-                        </div>
-                        <div>
-                          {item.productName ? (
-                            <>
-                              <div className="flex flex-wrap items-center gap-2">
-                                {item.productCatalogId ? (
-                                  <Badge variant="secondary" className="text-xs">Catalog</Badge>
-                                ) : null}
-                                <div className="font-semibold text-slate-800">{item.productName}</div>
-                              </div>
-                              {item.sku && (
-                                <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                              )}
-                              {item.variantAttributes && (
-                                <div className="text-xs text-blue-600">
-                                  {item.variantAttributes.split(',').map((attr, i) => (
-                                    <div key={i}>{attr.trim()}</div>
-                                  ))}
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
+                  <TableHead className="font-bold text-slate-700">Item</TableHead>
+                  <TableHead className="font-bold text-slate-700">Quantity</TableHead>
+                  <TableHead className="font-bold text-slate-700">Price</TableHead>
+                  <TableHead className="font-bold text-slate-700">Tax</TableHead>
+                  <TableHead className="font-bold text-slate-700">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {order.items.length > 0 ? (
+                  order.items.map((item, index) => (
+                    <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
+                            {index + 1}
+                          </div>
+                          <div>
+                            {item.productName ? (
+                              <>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {item.productCatalogId ? (
+                                    <Badge variant="secondary" className="text-xs">Catalog</Badge>
+                                  ) : null}
+                                  <div className="font-semibold text-slate-800">{item.productName}</div>
                                 </div>
-                              )}
-                              {item.itemComment && (
-                                <div className="text-xs italic text-muted-foreground">{item.itemComment}</div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <div className="font-semibold text-slate-800">
-                                {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {item.itemComment || 'No product selected'}
-                              </div>
-                            </>
-                          )}
+                                {item.sku && (
+                                  <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
+                                )}
+                                {item.variantAttributes && (
+                                  <div className="text-xs text-blue-600">
+                                    {item.variantAttributes.split(',').map((attr, i) => (
+                                      <div key={i}>{attr.trim()}</div>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.itemComment && (
+                                  <div className="text-xs italic text-muted-foreground">{item.itemComment}</div>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <div className="font-semibold text-slate-800">
+                                  {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {item.itemComment || 'No product selected'}
+                                </div>
+                              </>
+                            )}
+                          </div>
                         </div>
+                      </TableCell>
+                      <TableCell className="font-semibold text-slate-800">
+                        <div>{item.quantity}</div>
+                        {item.backOrderQuantity > 0 && (
+                          <div className="text-xs font-medium text-amber-700">
+                            + {item.backOrderQuantity} back order
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemPrice)}</TableCell>
+                      <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemTaxAmount)}</TableCell>
+                      <TableCell className="font-bold text-slate-900">
+                        {formatCurrency(item.itemTotalAmount)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
+                          <svg className="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                          </svg>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-700">No items in this order</p>
+                        <p className="text-xs text-muted-foreground">Items will appear here once added</p>
                       </div>
-                    </TableCell>
-                    <TableCell className="font-semibold text-slate-800">
-                      <div>{item.quantity}</div>
-                      {item.backOrderQuantity > 0 && (
-                        <div className="text-xs font-medium text-amber-700">
-                          + {item.backOrderQuantity} back order
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemPrice)}</TableCell>
-                    <TableCell className="font-semibold text-slate-800">{formatCurrency(item.itemTaxAmount)}</TableCell>
-                    <TableCell className="font-bold text-slate-900">
-                      {formatCurrency(item.itemTotalAmount)}
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="py-12 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
-                        <svg className="h-6 w-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                        </svg>
-                      </div>
-                      <p className="text-sm font-semibold text-slate-700">No items in this order</p>
-                      <p className="text-xs text-muted-foreground">Items will appear here once added</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
