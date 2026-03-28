@@ -6,6 +6,49 @@ export type AttendanceLocationDTO = {
   workFromHome?: boolean;
 };
 
+export type AttendanceAppointmentCheckInDTO = {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  source?: string;
+  leadId: number;
+  orderId: number;
+};
+
+export type AttendanceAppointmentCheckOutDTO = {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  source?: string;
+  remark: string;
+  photo: File;
+};
+
+export type AttendanceAppointmentDTO = {
+  id: number;
+  appointmentDate: string;
+  userId: string;
+  userLogin: string;
+  userEmail?: string | null;
+  userDisplayName?: string | null;
+  leadId: number;
+  leadNo: string;
+  orderId: number;
+  checkInTime?: string | null;
+  checkInLatitude?: number | null;
+  checkInLongitude?: number | null;
+  checkInAccuracy?: number | null;
+  checkInSource?: string | null;
+  checkOutTime?: string | null;
+  checkOutLatitude?: number | null;
+  checkOutLongitude?: number | null;
+  checkOutAccuracy?: number | null;
+  checkOutSource?: string | null;
+  checkOutRemark?: string | null;
+  checkOutPhotoAvailable?: boolean | null;
+  status: 'CHECKED_IN' | 'CHECKED_OUT' | string;
+};
+
 export type AttendanceRecordDTO = {
   id: number;
   attendanceDate: string;

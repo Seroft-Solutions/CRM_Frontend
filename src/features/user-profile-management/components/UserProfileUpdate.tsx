@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Lock, User } from 'lucide-react';
+import { BellRing, Building2, Lock, User } from 'lucide-react';
 import { BasicInfoUpdateForm } from './BasicInfoUpdateForm';
+import { NotificationSettingsForm } from './NotificationSettingsForm';
 import { OrganizationSettingsForm } from './OrganizationSettingsForm';
 import { PasswordUpdateForm } from './PasswordUpdateForm';
 
@@ -46,7 +47,7 @@ export function UserProfileUpdate({ className = '' }: UserProfileUpdateProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic-info" className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Basic Information
@@ -54,6 +55,10 @@ export function UserProfileUpdate({ className = '' }: UserProfileUpdateProps) {
           <TabsTrigger value="organization-settings" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Organization Settings
+          </TabsTrigger>
+          <TabsTrigger value="notification-settings" className="flex items-center gap-2">
+            <BellRing className="h-4 w-4" />
+            Notification Settings
           </TabsTrigger>
           <TabsTrigger value="password" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
@@ -67,6 +72,10 @@ export function UserProfileUpdate({ className = '' }: UserProfileUpdateProps) {
 
         <TabsContent value="organization-settings" className="space-y-4">
           <OrganizationSettingsForm />
+        </TabsContent>
+
+        <TabsContent value="notification-settings" className="space-y-4">
+          <NotificationSettingsForm />
         </TabsContent>
 
         <TabsContent value="password" className="space-y-4">

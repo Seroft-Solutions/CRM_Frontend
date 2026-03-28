@@ -10,6 +10,9 @@ import type {
 } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
 import type {
+  AttendanceAppointmentCheckInDTO,
+  AttendanceAppointmentCheckOutDTO,
+  AttendanceAppointmentDTO,
   AttendanceLocationDTO,
   AttendanceRecordDTO,
   AttendanceRecordsParamsDTO,
@@ -31,6 +34,21 @@ export const getMyAttendanceHistory = (params?: AttendanceRecordsParamsDTO, sign
     params,
     signal,
   });
+
+export const getMyActiveAttendanceAppointment = async (signal?: AbortSignal) => {
+  const response = await springServiceMutator<AttendanceAppointmentDTO | null | undefined>(
+    {
+      url: '/api/attendance/appointments/my/active',
+      method: 'GET',
+      signal,
+    },
+    {
+      validateStatus: (status) => status === 200 || status === 204,
+    }
+  );
+
+  return response ?? null;
+};
 
 export const getAdminAttendanceRecords = (
   params?: AttendanceRecordsParamsDTO,
@@ -67,6 +85,37 @@ export const checkOutAttendance = (payload: AttendanceLocationDTO) =>
     method: 'POST',
     data: payload,
   });
+
+export const checkInAttendanceAppointment = (payload: AttendanceAppointmentCheckInDTO) =>
+  springServiceMutator<AttendanceAppointmentDTO>({
+    url: '/api/attendance/appointments/check-in',
+    method: 'POST',
+    data: payload,
+  });
+
+export const checkOutAttendanceAppointment = (payload: AttendanceAppointmentCheckOutDTO) => {
+  const formData = new FormData();
+
+  formData.append('latitude', String(payload.latitude));
+  formData.append('longitude', String(payload.longitude));
+  if (typeof payload.accuracy === 'number') {
+    formData.append('accuracy', String(payload.accuracy));
+  }
+  if (payload.source) {
+    formData.append('source', payload.source);
+  }
+  formData.append('remark', payload.remark);
+  formData.append('photo', payload.photo);
+
+  return springServiceMutator<AttendanceAppointmentDTO>({
+    url: '/api/attendance/appointments/check-out',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    data: formData,
+  });
+};
 
 export const markLeaveAttendance = () =>
   springServiceMutator<AttendanceRecordDTO>({
@@ -105,6 +154,25 @@ export const useGetMyAttendanceHistory = (
 
   const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
     AttendanceRecordDTO[],
+    Error
+  > & { queryKey: QueryKey };
+
+  query.queryKey = queryKey;
+
+  return query;
+};
+
+export const useGetMyActiveAttendanceAppointment = (
+  options?: { query?: Partial<UseQueryOptions<AttendanceAppointmentDTO | null, Error>> },
+  queryClient?: QueryClient
+): UseQueryResult<AttendanceAppointmentDTO | null, Error> & { queryKey: QueryKey } => {
+  const queryOptions = options?.query ?? {};
+  const queryKey = queryOptions.queryKey ?? attendanceQueryKeys.activeAppointment;
+  const queryFn: QueryFunction<AttendanceAppointmentDTO | null> = ({ signal }) =>
+    getMyActiveAttendanceAppointment(signal);
+
+  const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
+    AttendanceAppointmentDTO | null,
     Error
   > & { queryKey: QueryKey };
 
@@ -167,6 +235,24 @@ export const useCheckOutAttendance = (
 ): UseMutationResult<AttendanceRecordDTO, Error, AttendanceLocationDTO> => {
   return useMutation({
     mutationFn: checkOutAttendance,
+    ...options,
+  });
+};
+
+export const useCheckInAttendanceAppointment = (
+  options?: UseMutationOptions<AttendanceAppointmentDTO, Error, AttendanceAppointmentCheckInDTO>
+): UseMutationResult<AttendanceAppointmentDTO, Error, AttendanceAppointmentCheckInDTO> => {
+  return useMutation({
+    mutationFn: checkInAttendanceAppointment,
+    ...options,
+  });
+};
+
+export const useCheckOutAttendanceAppointment = (
+  options?: UseMutationOptions<AttendanceAppointmentDTO, Error, AttendanceAppointmentCheckOutDTO>
+): UseMutationResult<AttendanceAppointmentDTO, Error, AttendanceAppointmentCheckOutDTO> => {
+  return useMutation({
+    mutationFn: checkOutAttendanceAppointment,
     ...options,
   });
 };

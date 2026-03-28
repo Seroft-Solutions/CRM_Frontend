@@ -1,7 +1,9 @@
 import { Ban, Clock3, Loader2, LogIn, LogOut, MapPin } from 'lucide-react';
-import { AttendanceTodayStatusDTO } from '@/core/api/attendance';
+import { AttendanceAppointmentDTO, AttendanceTodayStatusDTO } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { AttendanceLoadingRow } from './attendance-loading-row';
 import { AttendanceLocationName } from './attendance-location-name';
 import { formatDateTime } from './attendance-formatters';
@@ -17,9 +19,14 @@ type AttendanceTodayStatusCardProps = {
   isCheckInPending: boolean;
   isCheckOutPending: boolean;
   isLeavePending: boolean;
+  activeAppointment?: AttendanceAppointmentDTO | null;
+  isAppointmentCheckInPending: boolean;
+  isAppointmentCheckOutPending: boolean;
   onCheckIn: () => void;
   onCheckOut: () => void;
   onLeave: () => void;
+  onAppointmentCheckIn: () => void;
+  onAppointmentCheckOut: () => void;
 };
 
 export function AttendanceTodayStatusCard({
@@ -32,10 +39,17 @@ export function AttendanceTodayStatusCard({
   isCheckInPending,
   isCheckOutPending,
   isLeavePending,
+  activeAppointment,
+  isAppointmentCheckInPending,
+  isAppointmentCheckOutPending,
   onCheckIn,
   onCheckOut,
   onLeave,
+  onAppointmentCheckIn,
+  onAppointmentCheckOut,
 }: AttendanceTodayStatusCardProps) {
+  const hasActiveAppointment = !!activeAppointment && !activeAppointment.checkOutTime;
+
   return (
     <Card>
       <CardHeader>
@@ -116,6 +130,66 @@ export function AttendanceTodayStatusCard({
             )}
             {leaveMarked ? 'Leave Marked' : 'Leave / Absent'}
           </Button>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Appointment Attendance</h3>
+              <p className="text-muted-foreground text-sm">
+                Track customer or order visits separately from daily attendance.
+              </p>
+            </div>
+            <Badge variant={hasActiveAppointment ? 'default' : 'secondary'}>
+              {hasActiveAppointment ? 'Active Appointment' : 'No Active Appointment'}
+            </Badge>
+          </div>
+
+          {activeAppointment ? (
+            <div className="grid gap-2 text-sm text-muted-foreground md:grid-cols-3">
+              <div>
+                <span className="font-medium text-foreground">Lead No:</span>{' '}
+                {activeAppointment.leadNo}
+              </div>
+              <div>
+                <span className="font-medium text-foreground">Order No:</span> #
+                {activeAppointment.orderId}
+              </div>
+              <div>
+                <span className="font-medium text-foreground">Check in:</span>{' '}
+                {formatDateTime(activeAppointment.checkInTime)}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={onAppointmentCheckIn}
+              disabled={isBusy || leaveMarked || hasActiveAppointment}
+              className="bg-amber-600 text-white hover:bg-amber-700"
+            >
+              {isAppointmentCheckInPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LogIn className="mr-2 h-4 w-4" />
+              )}
+              Check In Appointment
+            </Button>
+            <Button
+              onClick={onAppointmentCheckOut}
+              disabled={isBusy || !hasActiveAppointment}
+              className="bg-violet-600 text-white hover:bg-violet-700"
+            >
+              {isAppointmentCheckOutPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="mr-2 h-4 w-4" />
+              )}
+              Check Out Appointment
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

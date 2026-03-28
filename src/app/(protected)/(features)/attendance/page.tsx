@@ -1,20 +1,27 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useRBAC } from '@/core/auth';
 import {
+  AttendanceAppointmentDTO,
   AttendanceLocationDTO,
   attendanceQueryKeys,
+  useCheckInAttendanceAppointment,
   useCheckInAttendance,
+  useCheckOutAttendanceAppointment,
   useCheckOutAttendance,
   useGetAdminAttendanceRecords,
+  useGetMyActiveAttendanceAppointment,
   useGetMyAttendanceHistory,
   useGetMyTodayAttendance,
   useMarkLeaveAttendance,
 } from '@/core/api/attendance';
+import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +32,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import {
   getOrganizationSettings,
   type OrganizationSettings,
@@ -174,12 +200,17 @@ export default function AttendancePage() {
   const adminAccess = isAdmin() || hasGroup('Admins') || hasGroup('Super Admins');
 
   const [adminDate, setAdminDate] = useState<string>(getLocalDateInputValue());
-  const [historyFromDate, setHistoryFromDate] = useState<string>(
-    getDefaultWeeklyFromDateValue()
-  );
+  const [historyFromDate, setHistoryFromDate] = useState<string>(getDefaultWeeklyFromDateValue());
   const [historyToDate, setHistoryToDate] = useState<string>(getLocalDateInputValue());
   const [pendingWorkFromHomeCheckIn, setPendingWorkFromHomeCheckIn] =
     useState<PendingWorkFromHomeCheckIn | null>(null);
+  const [isAppointmentCheckInDialogOpen, setIsAppointmentCheckInDialogOpen] = useState(false);
+  const [isAppointmentCheckOutDialogOpen, setIsAppointmentCheckOutDialogOpen] = useState(false);
+  const [selectedAppointmentLeadId, setSelectedAppointmentLeadId] = useState<string>('');
+  const [selectedAppointmentOrderId, setSelectedAppointmentOrderId] = useState<string>('');
+  const [appointmentRemark, setAppointmentRemark] = useState('');
+  const [appointmentPhoto, setAppointmentPhoto] = useState<File | null>(null);
+  const [appointmentPhotoPreviewUrl, setAppointmentPhotoPreviewUrl] = useState<string | null>(null);
 
   const adminParams = useMemo(
     () => ({
@@ -194,6 +225,34 @@ export default function AttendancePage() {
   const { data: todayStatus, isLoading: isTodayLoading } = useGetMyTodayAttendance({
     query: { enabled: !adminAccess },
   });
+  const { data: activeAppointment } = useGetMyActiveAttendanceAppointment({
+    query: { enabled: !adminAccess },
+  });
+
+  const { data: leadOptionsResponse = [], isLoading: isLeadOptionsLoading } = useGetAllCalls(
+    {
+      'leadNo.specified': true,
+      size: 200,
+      sort: ['createdDate,desc'],
+    },
+    {
+      query: {
+        enabled: !adminAccess && isAppointmentCheckInDialogOpen,
+      },
+    }
+  );
+
+  const { data: orderOptionsResponse = [], isLoading: isOrderOptionsLoading } = useGetAllOrders(
+    {
+      size: 200,
+      sort: ['id,desc'],
+    },
+    {
+      query: {
+        enabled: !adminAccess && isAppointmentCheckInDialogOpen,
+      },
+    }
+  );
 
   const selfHistoryParams = useMemo(
     () => ({
@@ -229,6 +288,7 @@ export default function AttendancePage() {
   const invalidateAttendanceQueries = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.today }),
+      queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.activeAppointment }),
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/my/history'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/records'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/user-records'] }),
@@ -257,6 +317,32 @@ export default function AttendancePage() {
     },
     onError: (error) => {
       toast.error(error?.message || 'Check-out failed');
+    },
+  });
+
+  const appointmentCheckInMutation = useCheckInAttendanceAppointment({
+    onSuccess: async (appointment) => {
+      toast.success(`Appointment checked in for lead ${appointment.leadNo}`);
+      setIsAppointmentCheckInDialogOpen(false);
+      setSelectedAppointmentLeadId('');
+      setSelectedAppointmentOrderId('');
+      await invalidateAttendanceQueries();
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Appointment check-in failed');
+    },
+  });
+
+  const appointmentCheckOutMutation = useCheckOutAttendanceAppointment({
+    onSuccess: async (appointment) => {
+      toast.success(`Appointment checked out for lead ${appointment.leadNo}`);
+      setIsAppointmentCheckOutDialogOpen(false);
+      setAppointmentRemark('');
+      setAppointmentPhoto(null);
+      await invalidateAttendanceQueries();
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Appointment check-out failed');
     },
   });
 
@@ -316,7 +402,51 @@ export default function AttendancePage() {
     leaveMutation.mutate();
   };
 
-  const isBusy = checkInMutation.isPending || checkOutMutation.isPending || leaveMutation.isPending;
+  const leadOptions = useMemo(
+    () =>
+      leadOptionsResponse
+        .filter((lead) => typeof lead.id === 'number' && !!lead.leadNo)
+        .map((lead) => ({
+          id: String(lead.id),
+          label: lead.leadNo!.trim(),
+          title: lead.title?.trim() || 'Untitled lead',
+        })),
+    [leadOptionsResponse]
+  );
+
+  const orderOptions = useMemo(
+    () =>
+      orderOptionsResponse
+        .filter((order) => typeof order.id === 'number')
+        .map((order) => ({
+          id: String(order.id),
+          label: `Order #${order.id}`,
+        })),
+    [orderOptionsResponse]
+  );
+
+  useEffect(() => {
+    if (!appointmentPhoto) {
+      setAppointmentPhotoPreviewUrl(null);
+
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(appointmentPhoto);
+
+    setAppointmentPhotoPreviewUrl(previewUrl);
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [appointmentPhoto]);
+
+  const isBusy =
+    checkInMutation.isPending ||
+    checkOutMutation.isPending ||
+    leaveMutation.isPending ||
+    appointmentCheckInMutation.isPending ||
+    appointmentCheckOutMutation.isPending;
   const checkedIn = todayStatus?.checkedIn ?? false;
   const checkedOut = todayStatus?.checkedOut ?? false;
   const leaveMarked = todayStatus?.attendance?.status === 'LEAVE';
@@ -335,6 +465,76 @@ export default function AttendancePage() {
     router.push(`/attendance/details?${params.toString()}`);
   };
 
+  const openAppointmentCheckInDialog = () => {
+    setSelectedAppointmentLeadId('');
+    setSelectedAppointmentOrderId('');
+    setIsAppointmentCheckInDialogOpen(true);
+  };
+
+  const openAppointmentCheckOutDialog = () => {
+    setAppointmentRemark('');
+    setAppointmentPhoto(null);
+    setIsAppointmentCheckOutDialogOpen(true);
+  };
+
+  const handleAppointmentCheckIn = async () => {
+    if (!selectedAppointmentLeadId) {
+      toast.error('Please select a lead number');
+
+      return;
+    }
+
+    if (!selectedAppointmentOrderId) {
+      toast.error('Please select an order number');
+
+      return;
+    }
+
+    try {
+      const location = await getCurrentLocation();
+
+      appointmentCheckInMutation.mutate({
+        ...location,
+        leadId: Number(selectedAppointmentLeadId),
+        orderId: Number(selectedAppointmentOrderId),
+      });
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to read location'));
+    }
+  };
+
+  const handleAppointmentCheckOut = async () => {
+    if (!activeAppointment) {
+      toast.error('There is no active appointment to check out');
+
+      return;
+    }
+
+    if (!appointmentPhoto) {
+      toast.error('Please capture a photo before checking out');
+
+      return;
+    }
+
+    if (!appointmentRemark.trim()) {
+      toast.error('Please add a remark before checking out');
+
+      return;
+    }
+
+    try {
+      const location = await getCurrentLocation();
+
+      appointmentCheckOutMutation.mutate({
+        ...location,
+        remark: appointmentRemark.trim(),
+        photo: appointmentPhoto,
+      });
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to read location'));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <AttendanceHeader />
@@ -351,9 +551,14 @@ export default function AttendancePage() {
             isCheckInPending={checkInMutation.isPending}
             isCheckOutPending={checkOutMutation.isPending}
             isLeavePending={leaveMutation.isPending}
+            activeAppointment={activeAppointment as AttendanceAppointmentDTO | null}
+            isAppointmentCheckInPending={appointmentCheckInMutation.isPending}
+            isAppointmentCheckOutPending={appointmentCheckOutMutation.isPending}
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
             onLeave={handleMarkLeave}
+            onAppointmentCheckIn={openAppointmentCheckInDialog}
+            onAppointmentCheckOut={openAppointmentCheckOutDialog}
           />
           <AttendanceWeekListCard
             title="Weekly Attendance"
@@ -436,6 +641,195 @@ export default function AttendancePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog
+        open={isAppointmentCheckInDialogOpen}
+        onOpenChange={(open) => {
+          setIsAppointmentCheckInDialogOpen(open);
+          if (!open) {
+            setSelectedAppointmentLeadId('');
+            setSelectedAppointmentOrderId('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Check In Appointment</DialogTitle>
+            <DialogDescription>
+              Select the lead no and order no for this appointment. The system will save them with
+              your live location.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="appointment-lead-select">Lead No</Label>
+              <Select
+                value={selectedAppointmentLeadId}
+                onValueChange={setSelectedAppointmentLeadId}
+              >
+                <SelectTrigger id="appointment-lead-select" className="w-full">
+                  <SelectValue
+                    placeholder={
+                      isLeadOptionsLoading ? 'Loading lead numbers...' : 'Select lead number'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {leadOptions.length > 0 ? (
+                    leadOptions.map((lead) => (
+                      <SelectItem key={lead.id} value={lead.id}>
+                        {lead.label} | {lead.title}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no-leads__" disabled>
+                      No lead numbers available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="appointment-order-select">Order No</Label>
+              <Select
+                value={selectedAppointmentOrderId}
+                onValueChange={setSelectedAppointmentOrderId}
+              >
+                <SelectTrigger id="appointment-order-select" className="w-full">
+                  <SelectValue
+                    placeholder={
+                      isOrderOptionsLoading ? 'Loading orders...' : 'Select order number'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {orderOptions.length > 0 ? (
+                    orderOptions.map((order) => (
+                      <SelectItem key={order.id} value={order.id}>
+                        {order.label}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no-orders__" disabled>
+                      No orders available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAppointmentCheckInDialogOpen(false)}
+              disabled={appointmentCheckInMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAppointmentCheckIn}
+              disabled={appointmentCheckInMutation.isPending}
+              className="bg-amber-600 text-white hover:bg-amber-700"
+            >
+              {appointmentCheckInMutation.isPending ? 'Checking In...' : 'Check In Appointment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isAppointmentCheckOutDialogOpen}
+        onOpenChange={(open) => {
+          setIsAppointmentCheckOutDialogOpen(open);
+          if (!open) {
+            setAppointmentRemark('');
+            setAppointmentPhoto(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Check Out Appointment</DialogTitle>
+            <DialogDescription>
+              Capture a live photo and add a remark. The remark will also be saved against the
+              selected lead from appointment check-in.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4">
+            {activeAppointment ? (
+              <div className="rounded-lg border bg-muted/30 p-3 text-sm">
+                <p>
+                  <span className="font-medium">Lead No:</span> {activeAppointment.leadNo}
+                </p>
+                <p>
+                  <span className="font-medium">Order No:</span> #{activeAppointment.orderId}
+                </p>
+              </div>
+            ) : null}
+
+            <div className="grid gap-2">
+              <Label htmlFor="appointment-photo">Photo</Label>
+              <Input
+                id="appointment-photo"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(event) => setAppointmentPhoto(event.target.files?.[0] ?? null)}
+              />
+              <p className="text-muted-foreground text-xs">
+                Use your camera on the spot. This image is required to complete appointment
+                checkout.
+              </p>
+              {appointmentPhotoPreviewUrl ? (
+                <Image
+                  src={appointmentPhotoPreviewUrl}
+                  alt="Appointment checkout preview"
+                  width={800}
+                  height={384}
+                  unoptimized
+                  className="h-48 w-full rounded-md border object-cover"
+                />
+              ) : null}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="appointment-remark">Remark</Label>
+              <Textarea
+                id="appointment-remark"
+                value={appointmentRemark}
+                onChange={(event) => setAppointmentRemark(event.target.value)}
+                placeholder="Add the appointment visit summary"
+                rows={5}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAppointmentCheckOutDialogOpen(false)}
+              disabled={appointmentCheckOutMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAppointmentCheckOut}
+              disabled={appointmentCheckOutMutation.isPending || !activeAppointment}
+              className="bg-violet-600 text-white hover:bg-violet-700"
+            >
+              {appointmentCheckOutMutation.isPending ? 'Checking Out...' : 'Check Out Appointment'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
