@@ -1,29 +1,36 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Pencil, PackageCheck, RefreshCcw, Sparkles } from 'lucide-react';
+import { Eye, History, Pencil, PackageCheck, RefreshCcw, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { useCreateOrderFulfillmentGeneration, useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
+import {
+  useCreateOrderFulfillmentGeneration,
+  useGetOrderFulfillmentGenerations,
+} from '@/core/api/order-fulfillment-generations';
 import type { OrderDetailItem, OrderRecord } from '../data/order-data';
 import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
+import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillment-utils';
 
 type FulfillmentDraftState = Record<number, { selected: boolean; quantity: string }>;
 
-const formatDateTime = (value?: string) => {
-  if (!value) return '—';
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
-};
-
 const parsePositiveInteger = (value: string) => {
   const parsed = Number.parseInt(value, 10);
+
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 };
 
@@ -34,7 +41,12 @@ const getErrorMessage = (error: unknown) => {
 
   if (typeof error === 'object' && error !== null) {
     const maybeResponse = error as { response?: { data?: { message?: string; title?: string } } };
-    return maybeResponse.response?.data?.message || maybeResponse.response?.data?.title || 'Unable to save order fulfillment.';
+
+    return (
+      maybeResponse.response?.data?.message ||
+      maybeResponse.response?.data?.title ||
+      'Unable to save order fulfillment.'
+    );
   }
 
   return 'Unable to save order fulfillment.';
@@ -50,27 +62,38 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const [draftState, setDraftState] = useState<FulfillmentDraftState>(() => createInitialDraftState(order.items));
-  const allItems = useMemo(
-    () => order.items,
-    [order.items]
+  const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
+    createInitialDraftState(order.items)
   );
+  const allItems = useMemo(() => order.items, [order.items]);
   const pendingItems = useMemo(
-    () => order.items.filter((item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) > 0),
+    () =>
+      order.items.filter(
+        (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) > 0
+      ),
     [order.items]
   );
   const completedItemsCount = useMemo(
-    () => allItems.filter((item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) === 0).length,
+    () =>
+      allItems.filter(
+        (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) === 0
+      ).length,
     [allItems]
   );
   const totalPendingUnits = useMemo(
-    () => pendingItems.reduce((sum, item) => sum + Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity), 0),
+    () =>
+      pendingItems.reduce(
+        (sum, item) => sum + Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity),
+        0
+      ),
     [pendingItems]
   );
 
   const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
-  const { data: generations = [], isLoading: generationsLoading } = useGetOrderFulfillmentGenerations(order.orderId);
-  const { mutateAsync: createGeneration, isPending: isGenerating } = useCreateOrderFulfillmentGeneration();
+  const { data: generations = [], isLoading: generationsLoading } =
+    useGetOrderFulfillmentGenerations(order.orderId);
+  const { mutateAsync: createGeneration, isPending: isGenerating } =
+    useCreateOrderFulfillmentGeneration();
 
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
@@ -87,6 +110,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         }
 
         const deliveredQuantity = Math.max(0, item.deliveredQuantity ?? 0);
+
         deliveredMap.set(
           item.orderDetailId,
           (deliveredMap.get(item.orderDetailId) ?? 0) + deliveredQuantity
@@ -108,6 +132,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       const totalQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
       const isCompleted = totalQuantity === 0;
       let validationMessage: string | undefined;
+
       if (draft.selected && enteredQuantity > stockSnapshot.availableQuantity) {
         validationMessage = 'Stock not available';
       } else if (draft.selected && enteredQuantity > totalQuantity) {
@@ -137,6 +162,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     if (isEditing) {
       setDraftState(createInitialDraftState(order.items));
       setIsEditing(false);
+
       return;
     }
 
@@ -144,7 +170,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     setIsEditing(true);
   };
 
-  const updateDraftState = (orderDetailId: number, nextValue: Partial<{ selected: boolean; quantity: string }>) => {
+  const updateDraftState = (
+    orderDetailId: number,
+    nextValue: Partial<{ selected: boolean; quantity: string }>
+  ) => {
     setDraftState((current) => ({
       ...current,
       [orderDetailId]: {
@@ -158,11 +187,13 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const handleGenerate = async () => {
     if (selectedRows.length === 0) {
       toast.error('Select at least one pending item and enter a quantity.');
+
       return;
     }
 
     if (hasValidationErrors) {
       toast.error('Requested quantity exceeds the deliverable inventory for one or more items.');
+
       return;
     }
 
@@ -181,16 +212,27 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.orderId}`] }),
         queryClient.invalidateQueries({ queryKey: ['/api/order-details'] }),
         queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] }),
-        queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.orderId}/fulfillment-generations`] }),
+        queryClient.invalidateQueries({
+          queryKey: [`/api/orders/${order.orderId}/fulfillment-generations`],
+        }),
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey[0];
-            return typeof key === 'string' && (key.startsWith('/api/products/') || key.startsWith('/api/product-variants/'));
+
+            return (
+              typeof key === 'string' &&
+              (key.startsWith('/api/products/') || key.startsWith('/api/product-variants/'))
+            );
           },
         }),
       ]);
 
-      toast.success(`Order fulfillment saved successfully. Record #${result.generationNumber ?? '—'}.`);
+      toast.success(
+        `Order fulfillment saved successfully. ${getFulfillmentRecordLabel(order.orderId, {
+          invoiceId: result.id,
+          generationNumber: result.generationNumber,
+        })}.`
+      );
       setDraftState(createInitialDraftState(order.items));
       setIsEditing(false);
     } catch (error) {
@@ -204,7 +246,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         <div className="flex flex-wrap items-center gap-2">
           <Badge className="bg-cyan-100 text-cyan-900">{allItems.length} total items</Badge>
           <Badge className="bg-amber-100 text-amber-900">{pendingItems.length} pending items</Badge>
-          <Badge className="bg-emerald-100 text-emerald-900">{completedItemsCount} completed items</Badge>
+          <Badge className="bg-emerald-100 text-emerald-900">
+            {completedItemsCount} completed items
+          </Badge>
           <Badge className="bg-slate-100 text-slate-900">{totalPendingUnits} pending units</Badge>
         </div>
         <Button
@@ -232,7 +276,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           <div className="space-y-1">
             <h4 className="font-semibold text-slate-900">Order Fulfillment</h4>
             <p className="text-sm text-slate-600">
-              This page shows all order items. Completed items remain in the list, while only items with remaining quantity can be fulfilled again.
+              This page shows all order items. Completed items remain in the list, while only items
+              with remaining quantity can be fulfilled again.
             </p>
           </div>
         </div>
@@ -309,22 +354,31 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
                             ) : null}
                             <p className="text-xs text-slate-500">
-                              Base qty: {row.item.quantity} • Backlog qty: {row.item.backOrderQuantity}
+                              Base qty: {row.item.quantity} • Backlog qty:{' '}
+                              {row.item.backOrderQuantity}
                             </p>
                             <p className="text-xs text-slate-500">
                               Delivered qty: {row.deliveredQuantity}
                             </p>
                             <p className="text-xs text-slate-500">
                               Can fulfill now: {row.deliverableQuantity} • Remaining after save:{' '}
-                              {isEditing && row.selected ? Math.max(row.totalQuantity - row.enteredQuantity, 0) : row.totalQuantity}
+                              {isEditing && row.selected
+                                ? Math.max(row.totalQuantity - row.enteredQuantity, 0)
+                                : row.totalQuantity}
                             </p>
                             <p className="text-xs text-slate-500">
-                              {typeof row.item.variantId === 'number' ? 'Variant stock based item' : 'Product stock based item'}
+                              {typeof row.item.variantId === 'number'
+                                ? 'Variant stock based item'
+                                : 'Product stock based item'}
                             </p>
                           </div>
                         </TableCell>
-                        <TableCell className="text-center font-semibold text-slate-900">{row.totalQuantity}</TableCell>
-                        <TableCell className="text-center font-semibold text-emerald-700">{row.deliveredQuantity}</TableCell>
+                        <TableCell className="text-center font-semibold text-slate-900">
+                          {row.totalQuantity}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-emerald-700">
+                          {row.deliveredQuantity}
+                        </TableCell>
                         <TableCell className="text-center font-semibold text-slate-900">
                           <div>{stocksLoading ? '...' : row.availableQuantity}</div>
                           <div className="text-[11px] text-slate-500">
@@ -339,7 +393,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 min={0}
                                 placeholder="0"
                                 value={row.quantity}
-                                disabled={!row.selected || row.isCompleted || row.deliverableQuantity === 0}
+                                disabled={
+                                  !row.selected || row.isCompleted || row.deliverableQuantity === 0
+                                }
                                 onChange={(event) =>
                                   updateDraftState(row.item.orderDetailId, {
                                     quantity: event.target.value,
@@ -348,7 +404,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 className="border-slate-300"
                               />
                               {row.validationMessage ? (
-                                <p className="text-xs font-medium text-rose-600">{row.validationMessage}</p>
+                                <p className="text-xs font-medium text-rose-600">
+                                  {row.validationMessage}
+                                </p>
                               ) : row.isCompleted ? (
                                 <p className="text-xs font-medium text-emerald-700">
                                   This item is completed.
@@ -375,9 +433,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         {isEditing ? (
           <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-900">Selected to generate: {selectedUnits} units</div>
+              <div className="text-sm font-semibold text-slate-900">
+                Selected to generate: {selectedUnits} units
+              </div>
               <p className="text-xs text-slate-600">
-                Every fulfillment generation remains recorded in the backend with per-item quantities.
+                Every fulfillment generation remains recorded in the backend with per-item
+                quantities.
               </p>
             </div>
             <Button
@@ -394,16 +455,29 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       </div>
 
       <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center gap-2">
-          <RefreshCcw className="h-4 w-4 text-slate-600" />
-          <h4 className="font-semibold text-slate-900">Fulfillment History</h4>
-          <Badge variant="secondary" className="bg-slate-100 text-slate-800">
-            {generations.length} records
-          </Badge>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-2">
+            <RefreshCcw className="h-4 w-4 text-slate-600" />
+            <h4 className="font-semibold text-slate-900">Fulfillment History</h4>
+            <Badge variant="secondary" className="bg-slate-100 text-slate-800">
+              {generations.length} records
+            </Badge>
+          </div>
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
+          >
+            <Link href={`/orders/${order.orderId}/fulfillment/history`}>
+              <History className="h-4 w-4" />
+              View Full History
+            </Link>
+          </Button>
         </div>
 
         {generationsLoading ? (
-          <p className="text-sm text-slate-500">Loading generation history...</p>
+          <p className="text-sm text-slate-500">Loading fulfillment history...</p>
         ) : generations.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
             No fulfillment records have been recorded for this order yet.
@@ -411,14 +485,21 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         ) : (
           <div className="space-y-3">
             {generations.map((generation) => (
-              <div key={generation.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div
+                key={generation.id}
+                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              >
                 <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <div className="font-semibold text-slate-900">
-                      Generation #{generation.generationNumber ?? '—'}
+                      {getFulfillmentRecordLabel(order.orderId, {
+                        invoiceId: generation.id,
+                        generationNumber: generation.generationNumber,
+                      })}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {formatDateTime(generation.createdDate)} • {generation.createdBy || 'System'}
+                      {formatOrderDateTime(generation.createdDate)} •{' '}
+                      {generation.createdBy || 'System'}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -428,6 +509,20 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <Badge className="bg-amber-100 text-amber-900">
                       {generation.totalBacklogQuantity ?? 0} backlog remaining
                     </Badge>
+                    {generation.id ? (
+                      <Button
+                        asChild
+                        size="sm"
+                        className="gap-2 bg-slate-800 text-white hover:bg-slate-900"
+                      >
+                        <Link
+                          href={`/orders/${order.orderId}/fulfillment/history/${generation.id}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Link>
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
 

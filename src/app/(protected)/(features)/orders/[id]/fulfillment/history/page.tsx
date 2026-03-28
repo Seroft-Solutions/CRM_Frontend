@@ -3,40 +3,52 @@
 import Link from 'next/link';
 import { use } from 'react';
 import { ArrowLeft, History, PackageCheck } from 'lucide-react';
-import { PermissionGuard } from '@/core/auth';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useOrderRecord } from '../../hooks';
-import { OrderFulfillmentPanel } from '../../components/order-fulfillment-panel';
+import { Button } from '@/components/ui/button';
+import { PermissionGuard } from '@/core/auth';
+import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
+import { OrderFulfillmentHistoryTable } from '../../../components/order-fulfillment-history-table';
+import { useOrderRecord } from '../../../hooks';
 
-interface OrderFulfillmentPageProps {
+interface OrderFulfillmentHistoryPageProps {
   params: Promise<{
     id: string;
   }>;
 }
 
-export default function OrderFulfillmentPage({ params }: OrderFulfillmentPageProps) {
+export default function OrderFulfillmentHistoryPage({ params }: OrderFulfillmentHistoryPageProps) {
   const { id: idParam } = use(params);
   const id = Number.parseInt(idParam, 10);
-  const { orderRecord, isLoading, isError } = useOrderRecord(id, { includeHistory: true });
+  const {
+    orderRecord,
+    isLoading: orderLoading,
+    isError: orderError,
+  } = useOrderRecord(id, { includeHistory: false });
+  const {
+    data: generations = [],
+    isLoading: generationsLoading,
+    isError: generationsError,
+  } = useGetOrderFulfillmentGenerations(id);
 
   return (
     <PermissionGuard
-      requiredPermission="order:update"
-      unauthorizedTitle="Access Denied to Order Fulfillment"
-      unauthorizedDescription="You don't have permission to manage order fulfillment for this sale order."
+      requiredPermission="order:read"
+      unauthorizedTitle="Access Denied to Fulfillment History"
+      unauthorizedDescription="You don't have permission to view order fulfillment history."
     >
       <div className="space-y-6">
         <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
           <div className="flex items-center justify-center">
             <div className="flex flex-1 items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sidebar-accent shadow-sm">
-                <PackageCheck className="h-4 w-4 text-sidebar-accent-foreground" />
+                <History className="h-4 w-4 text-sidebar-accent-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Order Fulfillment</h1>
+                <h1 className="text-xl font-semibold text-sidebar-foreground">
+                  Order Fulfillment History
+                </h1>
                 <p className="text-sm text-sidebar-foreground/80">
-                  Fulfill pending order quantities using current product and variant stock.
+                  Review every saved fulfillment record for this sale order.
                 </p>
               </div>
             </div>
@@ -48,9 +60,9 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
                 variant="outline"
                 className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
               >
-                <Link href={`/orders/${id}/fulfillment/history`}>
-                  <History className="h-4 w-4" />
-                  Fulfillment History
+                <Link href={`/orders/${id}/fulfillment`}>
+                  <PackageCheck className="h-4 w-4" />
+                  Fulfillment
                 </Link>
               </Button>
               <Button
@@ -76,18 +88,16 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
           </div>
         </div>
 
-        {isLoading ? (
+        {orderLoading || generationsLoading ? (
           <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
-            Loading sale order fulfillment details...
+            Loading fulfillment history...
           </div>
-        ) : isError || !orderRecord ? (
+        ) : orderError || generationsError || !orderRecord ? (
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
-            Unable to load this sale order for backlog fulfillment.
+            Unable to load fulfillment history for this order.
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <OrderFulfillmentPanel order={orderRecord} />
-          </div>
+          <OrderFulfillmentHistoryTable order={orderRecord} generations={generations} />
         )}
       </div>
     </PermissionGuard>
