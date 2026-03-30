@@ -46,6 +46,7 @@ export type AttendanceAppointmentDTO = {
   checkOutSource?: string | null;
   checkOutRemark?: string | null;
   checkOutPhotoAvailable?: boolean | null;
+  checkOutPhotoUrl?: string | null;
   status: 'CHECKED_IN' | 'CHECKED_OUT' | string;
 };
 

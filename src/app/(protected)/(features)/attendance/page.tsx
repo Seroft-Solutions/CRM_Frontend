@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import {
   attendanceQueryKeys,
   useCheckInAttendanceAppointment,
   useCheckInAttendance,
+  useGetAdminAttendanceAppointments,
   useCheckOutAttendanceAppointment,
   useCheckOutAttendance,
   useGetAdminAttendanceRecords,
@@ -41,7 +42,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -89,6 +89,71 @@ function getErrorMessage(error: unknown, fallback: string): string {
   }
 
   return fallback;
+}
+
+function getCameraErrorMessage(error: unknown): string {
+  if (error instanceof DOMException) {
+    if (error.name === 'NotAllowedError') {
+      return 'Camera permission denied. Please allow camera access.';
+    }
+
+    if (error.name === 'NotFoundError') {
+      return 'No camera was found on this device.';
+    }
+
+    if (error.name === 'NotReadableError') {
+      return 'The camera is already in use by another application.';
+    }
+  }
+
+  return getErrorMessage(error, 'Unable to open the camera.');
+}
+
+function stopMediaStream(stream: MediaStream | null): void {
+  stream?.getTracks().forEach((track) => track.stop());
+}
+
+async function capturePhotoFile(
+  videoElement: HTMLVideoElement,
+  canvasElement: HTMLCanvasElement
+): Promise<File> {
+  const width = videoElement.videoWidth;
+  const height = videoElement.videoHeight;
+
+  if (!width || !height) {
+    throw new Error('Camera preview is not ready yet.');
+  }
+
+  canvasElement.width = width;
+  canvasElement.height = height;
+
+  const context = canvasElement.getContext('2d');
+
+  if (!context) {
+    throw new Error('Unable to access the image capture canvas.');
+  }
+
+  context.drawImage(videoElement, 0, 0, width, height);
+
+  const imageBlob = await new Promise<Blob>((resolve, reject) => {
+    canvasElement.toBlob(
+      (blob) => {
+        if (blob) {
+          resolve(blob);
+
+          return;
+        }
+
+        reject(new Error('Failed to capture the camera frame.'));
+      },
+      'image/jpeg',
+      0.92
+    );
+  });
+
+  return new File([imageBlob], `appointment-checkout-${Date.now()}.jpg`, {
+    type: imageBlob.type || 'image/jpeg',
+  });
 }
 
 async function getCurrentLocation(): Promise<AttendanceLocationDTO> {
@@ -211,6 +276,12 @@ export default function AttendancePage() {
   const [appointmentRemark, setAppointmentRemark] = useState('');
   const [appointmentPhoto, setAppointmentPhoto] = useState<File | null>(null);
   const [appointmentPhotoPreviewUrl, setAppointmentPhotoPreviewUrl] = useState<string | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isCameraStarting, setIsCameraStarting] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const appointmentCameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const appointmentCameraCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const appointmentCameraStreamRef = useRef<MediaStream | null>(null);
 
   const adminParams = useMemo(
     () => ({
@@ -218,6 +289,15 @@ export default function AttendancePage() {
       toDate: adminDate,
       size: 500,
       sort: ['attendanceDate,desc', 'checkInTime,desc'],
+    }),
+    [adminDate]
+  );
+  const adminAppointmentParams = useMemo(
+    () => ({
+      fromDate: adminDate,
+      toDate: adminDate,
+      size: 500,
+      sort: ['appointmentDate,desc', 'checkInTime,desc'],
     }),
     [adminDate]
   );
@@ -277,6 +357,10 @@ export default function AttendancePage() {
       query: { enabled: adminAccess },
     }
   );
+  const { data: adminAppointments = [], isLoading: isAdminAppointmentsLoading } =
+    useGetAdminAttendanceAppointments(adminAppointmentParams, {
+      query: { enabled: adminAccess },
+    });
 
   const { data: organizationSettings } = useQuery({
     queryKey: ['attendance-organization-settings'],
@@ -289,6 +373,10 @@ export default function AttendancePage() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.today }),
       queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.activeAppointment }),
+      queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.appointmentHistory }),
+      queryClient.invalidateQueries({
+        queryKey: attendanceQueryKeys.adminAppointmentHistory(adminAppointmentParams),
+      }),
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/my/history'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/records'] }),
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/user-records'] }),
@@ -441,6 +529,94 @@ export default function AttendancePage() {
     };
   }, [appointmentPhoto]);
 
+  const stopAppointmentCamera = () => {
+    stopMediaStream(appointmentCameraStreamRef.current);
+    appointmentCameraStreamRef.current = null;
+
+    const videoElement = appointmentCameraVideoRef.current;
+
+    if (videoElement) {
+      videoElement.srcObject = null;
+    }
+
+    setIsCameraReady(false);
+    setIsCameraStarting(false);
+  };
+
+  const startAppointmentCamera = async () => {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setCameraError('Camera access is not supported by this browser.');
+
+      return;
+    }
+
+    const videoElement = appointmentCameraVideoRef.current;
+
+    if (!videoElement) {
+      setCameraError('Camera preview is not available right now.');
+
+      return;
+    }
+
+    stopAppointmentCamera();
+    setCameraError(null);
+    setIsCameraStarting(true);
+    setIsCameraReady(false);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' },
+        },
+      });
+
+      appointmentCameraStreamRef.current = stream;
+      videoElement.srcObject = stream;
+
+      await new Promise<void>((resolve) => {
+        if (videoElement.readyState >= HTMLMediaElement.HAVE_METADATA) {
+          resolve();
+
+          return;
+        }
+
+        videoElement.onloadedmetadata = () => {
+          videoElement.onloadedmetadata = null;
+          resolve();
+        };
+      });
+
+      await videoElement.play();
+
+      setIsCameraReady(true);
+    } catch (error: unknown) {
+      stopAppointmentCamera();
+      setCameraError(getCameraErrorMessage(error));
+    } finally {
+      setIsCameraStarting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAppointmentCheckOutDialogOpen) {
+      stopAppointmentCamera();
+      setCameraError(null);
+
+      return;
+    }
+
+    if (!appointmentPhoto && !appointmentCameraStreamRef.current) {
+      void startAppointmentCamera();
+    }
+  }, [appointmentPhoto, isAppointmentCheckOutDialogOpen]);
+
+  useEffect(() => {
+    return () => {
+      stopMediaStream(appointmentCameraStreamRef.current);
+    };
+  }, []);
+
   const isBusy =
     checkInMutation.isPending ||
     checkOutMutation.isPending ||
@@ -474,7 +650,34 @@ export default function AttendancePage() {
   const openAppointmentCheckOutDialog = () => {
     setAppointmentRemark('');
     setAppointmentPhoto(null);
+    setCameraError(null);
     setIsAppointmentCheckOutDialogOpen(true);
+  };
+
+  const handleCaptureAppointmentPhoto = async () => {
+    const videoElement = appointmentCameraVideoRef.current;
+    const canvasElement = appointmentCameraCanvasRef.current;
+
+    if (!videoElement || !canvasElement) {
+      toast.error('Camera preview is not ready yet');
+
+      return;
+    }
+
+    try {
+      const photoFile = await capturePhotoFile(videoElement, canvasElement);
+
+      setAppointmentPhoto(photoFile);
+      setCameraError(null);
+      stopAppointmentCamera();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Failed to capture photo'));
+    }
+  };
+
+  const handleRetakeAppointmentPhoto = () => {
+    setAppointmentPhoto(null);
+    setCameraError(null);
   };
 
   const handleAppointmentCheckIn = async () => {
@@ -554,6 +757,7 @@ export default function AttendancePage() {
             activeAppointment={activeAppointment as AttendanceAppointmentDTO | null}
             isAppointmentCheckInPending={appointmentCheckInMutation.isPending}
             isAppointmentCheckOutPending={appointmentCheckOutMutation.isPending}
+            appointmentHistoryHref="/attendance/appointments"
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
             onLeave={handleMarkLeave}
@@ -588,8 +792,10 @@ export default function AttendancePage() {
         <AttendanceAdminCard
           adminDate={adminDate}
           onAdminDateChange={setAdminDate}
-          rows={adminRecords}
-          isLoading={isAdminLoading}
+          attendanceRows={adminRecords}
+          appointmentRows={adminAppointments}
+          isAttendanceLoading={isAdminLoading}
+          isAppointmentLoading={isAdminAppointmentsLoading}
           onViewDetails={(record) => handleAdminViewDetails(record.userId, record.userDisplayName)}
         />
       )}
@@ -749,6 +955,8 @@ export default function AttendancePage() {
           if (!open) {
             setAppointmentRemark('');
             setAppointmentPhoto(null);
+            setCameraError(null);
+            stopAppointmentCamera();
           }
         }}
       >
@@ -774,28 +982,73 @@ export default function AttendancePage() {
             ) : null}
 
             <div className="grid gap-2">
-              <Label htmlFor="appointment-photo">Photo</Label>
-              <Input
-                id="appointment-photo"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(event) => setAppointmentPhoto(event.target.files?.[0] ?? null)}
-              />
+              <Label>Photo</Label>
+              <div className="overflow-hidden rounded-md border bg-black">
+                {appointmentPhotoPreviewUrl ? (
+                  <Image
+                    src={appointmentPhotoPreviewUrl}
+                    alt="Appointment checkout preview"
+                    width={800}
+                    height={384}
+                    unoptimized
+                    className="h-48 w-full object-cover"
+                  />
+                ) : (
+                  <video
+                    ref={appointmentCameraVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="h-48 w-full object-cover"
+                  />
+                )}
+              </div>
+              <canvas ref={appointmentCameraCanvasRef} className="hidden" />
               <p className="text-muted-foreground text-xs">
-                Use your camera on the spot. This image is required to complete appointment
+                The camera opens automatically. Capture a live photo on-site to complete appointment
                 checkout.
               </p>
+              {cameraError ? <p className="text-destructive text-xs">{cameraError}</p> : null}
               {appointmentPhotoPreviewUrl ? (
-                <Image
-                  src={appointmentPhotoPreviewUrl}
-                  alt="Appointment checkout preview"
-                  width={800}
-                  height={384}
-                  unoptimized
-                  className="h-48 w-full rounded-md border object-cover"
-                />
+                <p className="text-xs text-emerald-700">Photo captured. Retake it if needed.</p>
               ) : null}
+              <div className="flex flex-wrap gap-2">
+                {appointmentPhotoPreviewUrl ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRetakeAppointmentPhoto}
+                    disabled={appointmentCheckOutMutation.isPending}
+                  >
+                    Retake Photo
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void handleCaptureAppointmentPhoto()}
+                    disabled={
+                      appointmentCheckOutMutation.isPending || isCameraStarting || !isCameraReady
+                    }
+                  >
+                    {isCameraStarting
+                      ? 'Opening Camera...'
+                      : isCameraReady
+                        ? 'Capture Photo'
+                        : 'Preparing Camera...'}
+                  </Button>
+                )}
+                {!appointmentPhotoPreviewUrl ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => void startAppointmentCamera()}
+                    disabled={appointmentCheckOutMutation.isPending || isCameraStarting}
+                  >
+                    Retry Camera
+                  </Button>
+                ) : null}
+              </div>
             </div>
 
             <div className="grid gap-2">

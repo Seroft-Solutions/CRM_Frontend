@@ -1,5 +1,7 @@
 export * from './attendance-admin-card';
 
+export * from './attendance-appointment-table';
+
 export * from './attendance-details-access-card';
 
 export * from './attendance-formatters';

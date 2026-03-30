@@ -50,12 +50,30 @@ export const getMyActiveAttendanceAppointment = async (signal?: AbortSignal) => 
   return response ?? null;
 };
 
+export const getMyAttendanceAppointments = (signal?: AbortSignal) =>
+  springServiceMutator<AttendanceAppointmentDTO[]>({
+    url: '/api/attendance/appointments/my',
+    method: 'GET',
+    signal,
+  });
+
 export const getAdminAttendanceRecords = (
   params?: AttendanceRecordsParamsDTO,
   signal?: AbortSignal
 ) =>
   springServiceMutator<AttendanceRecordDTO[]>({
     url: '/api/attendance/admin/records',
+    method: 'GET',
+    params,
+    signal,
+  });
+
+export const getAdminAttendanceAppointments = (
+  params?: AttendanceRecordsParamsDTO,
+  signal?: AbortSignal
+) =>
+  springServiceMutator<AttendanceAppointmentDTO[]>({
+    url: '/api/attendance/appointments/admin',
     method: 'GET',
     params,
     signal,
@@ -181,6 +199,25 @@ export const useGetMyActiveAttendanceAppointment = (
   return query;
 };
 
+export const useGetMyAttendanceAppointments = (
+  options?: { query?: Partial<UseQueryOptions<AttendanceAppointmentDTO[], Error>> },
+  queryClient?: QueryClient
+): UseQueryResult<AttendanceAppointmentDTO[], Error> & { queryKey: QueryKey } => {
+  const queryOptions = options?.query ?? {};
+  const queryKey = queryOptions.queryKey ?? attendanceQueryKeys.appointmentHistory;
+  const queryFn: QueryFunction<AttendanceAppointmentDTO[]> = ({ signal }) =>
+    getMyAttendanceAppointments(signal);
+
+  const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
+    AttendanceAppointmentDTO[],
+    Error
+  > & { queryKey: QueryKey };
+
+  query.queryKey = queryKey;
+
+  return query;
+};
+
 export const useGetAdminAttendanceRecords = (
   params?: AttendanceRecordsParamsDTO,
   options?: { query?: Partial<UseQueryOptions<AttendanceRecordDTO[], Error>> },
@@ -193,6 +230,26 @@ export const useGetAdminAttendanceRecords = (
 
   const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
     AttendanceRecordDTO[],
+    Error
+  > & { queryKey: QueryKey };
+
+  query.queryKey = queryKey;
+
+  return query;
+};
+
+export const useGetAdminAttendanceAppointments = (
+  params?: AttendanceRecordsParamsDTO,
+  options?: { query?: Partial<UseQueryOptions<AttendanceAppointmentDTO[], Error>> },
+  queryClient?: QueryClient
+): UseQueryResult<AttendanceAppointmentDTO[], Error> & { queryKey: QueryKey } => {
+  const queryOptions = options?.query ?? {};
+  const queryKey = queryOptions.queryKey ?? attendanceQueryKeys.adminAppointmentHistory(params);
+  const queryFn: QueryFunction<AttendanceAppointmentDTO[]> = ({ signal }) =>
+    getAdminAttendanceAppointments(params, signal);
+
+  const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
+    AttendanceAppointmentDTO[],
     Error
   > & { queryKey: QueryKey };
 

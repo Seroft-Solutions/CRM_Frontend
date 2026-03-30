@@ -1,4 +1,5 @@
-import { Ban, Clock3, Loader2, LogIn, LogOut, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { Ban, Clock3, Loader2, LogIn, LogOut, MapPin, NotebookTabs } from 'lucide-react';
 import { AttendanceAppointmentDTO, AttendanceTodayStatusDTO } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ type AttendanceTodayStatusCardProps = {
   activeAppointment?: AttendanceAppointmentDTO | null;
   isAppointmentCheckInPending: boolean;
   isAppointmentCheckOutPending: boolean;
+  appointmentHistoryHref: string;
   onCheckIn: () => void;
   onCheckOut: () => void;
   onLeave: () => void;
@@ -42,6 +44,7 @@ export function AttendanceTodayStatusCard({
   activeAppointment,
   isAppointmentCheckInPending,
   isAppointmentCheckOutPending,
+  appointmentHistoryHref,
   onCheckIn,
   onCheckOut,
   onLeave,
@@ -188,6 +191,12 @@ export function AttendanceTodayStatusCard({
                 <LogOut className="mr-2 h-4 w-4" />
               )}
               Check Out Appointment
+            </Button>
+            <Button asChild variant="outline">
+              <Link href={appointmentHistoryHref}>
+                <NotebookTabs className="mr-2 h-4 w-4" />
+                View Appointment History
+              </Link>
             </Button>
           </div>
         </div>
