@@ -262,7 +262,6 @@ export function OrderFulfillmentHistoryDetail({
         variantAttributes: orderItem?.variantAttributes || '',
         requestedQuantity: item.requestedQuantity ?? 0,
         deliveredQuantity,
-        availableBefore: item.availableQuantityBefore ?? 0,
         backlogLeft: item.remainingBacklogQuantity ?? 0,
         unitPrice,
         lineTotal: deliveredQuantity * unitPrice,
@@ -485,9 +484,6 @@ export function OrderFulfillmentHistoryDetail({
                       Delivered
                     </th>
                     <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Available
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                       Outstanding After
                     </th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -517,9 +513,6 @@ export function OrderFulfillmentHistoryDetail({
                         <td className="px-4 py-4 text-center text-sm font-medium text-emerald-700">
                           {item.deliveredQuantity}
                         </td>
-                        <td className="px-4 py-4 text-center text-sm text-slate-700">
-                          {item.availableBefore}
-                        </td>
                         <td className="px-4 py-4 text-center text-sm text-amber-700">
                           {item.backlogLeft}
                         </td>
@@ -533,7 +526,7 @@ export function OrderFulfillmentHistoryDetail({
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-500">
+                      <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
                         No fulfillment line items were returned for this invoice.
                       </td>
                     </tr>
