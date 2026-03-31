@@ -11,11 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
@@ -33,12 +29,13 @@ import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
-type ProductWithStock = ProductDTO & { stockQuantity?: number };
+type ProductWithStock = ProductDTO & { stockQuantity?: number; salesStockQuantity?: number };
 type ProductVariantWithWarehouseStocks = {
   id?: number;
   sku: string;
   price?: number;
   stockQuantity?: number;
+  salesStockQuantity?: number;
   variantStocks?: {
     id?: number;
     stockQuantity?: number;
@@ -119,24 +116,33 @@ function ProductVariantSelector({
         warehouseId: entry.warehouse?.id,
         warehouseName: entry.warehouse?.name,
         warehouseCode: entry.warehouse?.code,
+        variantLabel: variant.sku,
         stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+        salesStockQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
       }))
       .sort((a, b) => {
         const aName = (a.warehouseName || a.warehouseCode || '').toLowerCase();
         const bName = (b.warehouseName || b.warehouseCode || '').toLowerCase();
+
         return aName.localeCompare(bName);
       });
   };
 
   const getProductQuantity = (product: ProductDTO) => {
     const productWithStock = product as ProductWithStock;
+
+    if (typeof productWithStock.salesStockQuantity === 'number') {
+      return productWithStock.salesStockQuantity;
+    }
+
     if (typeof productWithStock.stockQuantity === 'number') {
       return Math.max(0, productWithStock.stockQuantity);
     }
 
     if (!product.variants?.length) return 0;
+
     return product.variants.reduce(
-      (total, variant) => total + (variant.stockQuantity ?? 0),
+      (total, variant) => total + (variant.salesStockQuantity ?? variant.stockQuantity ?? 0),
       0
     );
   };
@@ -144,6 +150,7 @@ function ProductVariantSelector({
   // Handle product selection
   const handleProductSelect = (productId: number) => {
     const product = products.find((p) => p.id === productId);
+
     if (!product) return;
 
     // Set product info
@@ -159,6 +166,7 @@ function ProductVariantSelector({
 
     // Auto-populate price from product
     const price = product.salePrice ?? product.discountedPrice ?? product.basePrice;
+
     if (price !== undefined && price !== null) {
       onItemChange(index, 'itemPrice', String(price));
     }
@@ -169,13 +177,18 @@ function ProductVariantSelector({
   // Handle variant selection
   const handleVariantSelect = (variantId: number) => {
     const variant = variants.find((v) => v.id === variantId);
+
     if (!variant) return;
 
     // Set variant info
     onItemChange(index, 'itemType', 'product');
     onItemChange(index, 'variantId', variant.id);
     onItemChange(index, 'sku', variant.sku);
-    onItemChange(index, 'availableQuantity', Math.max(0, variant.stockQuantity ?? 0));
+    onItemChange(
+      index,
+      'availableQuantity',
+      variant.salesStockQuantity ?? variant.stockQuantity ?? 0
+    );
     onItemChange(index, 'warehouseStocks', mapVariantWarehouseStocks(variant));
 
     // Build variant attributes string
@@ -193,12 +206,11 @@ function ProductVariantSelector({
 
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
-  const effectiveQuantity =
-    selectedVariant
-      ? Math.max(0, selectedVariant.stockQuantity ?? 0)
-      : selectedProduct
-        ? getProductQuantity(selectedProduct)
-        : undefined;
+  const effectiveQuantity = selectedVariant
+    ? (selectedVariant.salesStockQuantity ?? selectedVariant.stockQuantity ?? 0)
+    : selectedProduct
+      ? getProductQuantity(selectedProduct)
+      : undefined;
   const effectiveWarehouseStocks =
     selectedVariant && selectedVariant.variantStocks?.length
       ? mapVariantWarehouseStocks(selectedVariant)
@@ -212,6 +224,7 @@ function ProductVariantSelector({
       if (item.warehouseStocks !== undefined) {
         onItemChange(index, 'warehouseStocks', undefined);
       }
+
       return;
     }
 
@@ -224,7 +237,10 @@ function ProductVariantSelector({
           warehouseId: entry.warehouseId ?? null,
           warehouseCode: entry.warehouseCode ?? '',
           warehouseName: entry.warehouseName ?? '',
+          variantLabel: entry.variantLabel ?? '',
           stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+          salesStockQuantity:
+            typeof entry.salesStockQuantity === 'number' ? entry.salesStockQuantity : null,
         }))
       );
 
@@ -233,7 +249,10 @@ function ProductVariantSelector({
         ? effectiveWarehouseStocks
         : undefined;
 
-    if (toComparableWarehouseStocks(item.warehouseStocks) !== toComparableWarehouseStocks(nextWarehouseStocks)) {
+    if (
+      toComparableWarehouseStocks(item.warehouseStocks) !==
+      toComparableWarehouseStocks(nextWarehouseStocks)
+    ) {
       onItemChange(index, 'warehouseStocks', nextWarehouseStocks);
     }
   }, [
@@ -267,7 +286,10 @@ function ProductVariantSelector({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0" align="start">
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+            align="start"
+          >
             <Command>
               <CommandInput placeholder="Search products..." className="h-9" />
               <CommandList>
@@ -282,9 +304,9 @@ function ProductVariantSelector({
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium text-sm">{product.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} •
-                          QTY: {getProductQuantity(product)} •
-                          Price: ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • Sales
+                          Stock: {getProductQuantity(product)} • Price: ₹
+                          {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
                         </span>
                       </div>
                       <Check
@@ -322,7 +344,10 @@ function ProductVariantSelector({
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0" align="start">
+            <PopoverContent
+              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+              align="start"
+            >
               <Command>
                 <CommandInput placeholder="Search variants..." className="h-9" />
                 <CommandList>
@@ -331,7 +356,12 @@ function ProductVariantSelector({
                     {variants.map((variant) => {
                       const variantWarehouseStocks = mapVariantWarehouseStocks(variant);
                       const warehousePreview = variantWarehouseStocks
-                        .map((entry) => entry.warehouseCode || entry.warehouseName || `W${entry.warehouseId ?? ''}`)
+                        .map(
+                          (entry) =>
+                            entry.warehouseCode ||
+                            entry.warehouseName ||
+                            `W${entry.warehouseId ?? ''}`
+                        )
                         .filter((entry) => entry)
                         .join(', ');
 
@@ -344,7 +374,9 @@ function ProductVariantSelector({
                           <div className="flex flex-1 flex-col">
                             <span className="font-medium text-sm">{variant.sku}</span>
                             <span className="text-xs text-muted-foreground">
-                              Stock: {variant.stockQuantity ?? 0} • ₹{variant.price ?? 0}
+                              Sales Stock:{' '}
+                              {variant.salesStockQuantity ?? variant.stockQuantity ?? 0} • ₹
+                              {variant.price ?? 0}
                             </span>
                             {warehousePreview ? (
                               <span className="text-[11px] text-slate-500">
@@ -403,20 +435,24 @@ function ProductCatalogSelector({
 }) {
   const [catalogOpen, setCatalogOpen] = useState(false);
 
-  const { data: catalogData } = useGetAllProductCatalogs({
-    size: 1000,
-  }, {
-    query: {
-      staleTime: 5 * 60 * 1000,
-      keepPreviousData: true,
+  const { data: catalogData } = useGetAllProductCatalogs(
+    {
+      size: 1000,
     },
-  });
+    {
+      query: {
+        staleTime: 5 * 60 * 1000,
+        keepPreviousData: true,
+      },
+    }
+  );
 
   const catalogs = catalogData || [];
   const selectedCatalog = catalogs.find((catalog) => catalog.id === item.productCatalogId);
 
   const handleCatalogSelect = (catalogId: number) => {
     const catalog = catalogs.find((entry) => entry.id === catalogId);
+
     if (!catalog) return;
 
     onItemChange(index, 'itemType', 'catalog');
@@ -455,7 +491,10 @@ function ProductCatalogSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[420px] p-0" align="start">
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] sm:w-[420px] p-0"
+          align="start"
+        >
           <Command>
             <CommandInput placeholder="Search catalogs..." className="h-9" />
             <CommandList>
@@ -520,6 +559,7 @@ export function OrderFormItems({
     const qty = breakdown.billableQuantity;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+
     return Math.max(qty * price + tax, 0);
   };
 
@@ -556,14 +596,26 @@ export function OrderFormItems({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
-            <svg className="h-5 w-5 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="h-5 w-5 text-cyan-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
             </svg>
           </div>
           <div>
             <h3 className="text-lg font-bold text-slate-800">Shopping Cart</h3>
             <p className="text-sm text-muted-foreground">
-              {items.length === 0 ? 'No items added' : `${items.length} item${items.length !== 1 ? 's' : ''} in cart`}
+              {items.length === 0
+                ? 'No items added'
+                : `${items.length} item${items.length !== 1 ? 's' : ''} in cart`}
             </p>
           </div>
         </div>
@@ -575,7 +627,12 @@ export function OrderFormItems({
               className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               Add Item
             </Button>
@@ -597,7 +654,12 @@ export function OrderFormItems({
               className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 7h16M4 12h16M4 17h16"
+                />
               </svg>
               Add Product Catalog
             </Button>
@@ -618,8 +680,18 @@ export function OrderFormItems({
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-cyan-300 bg-cyan-50/50 p-12 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100">
-            <svg className="h-8 w-8 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="h-8 w-8 text-cyan-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
             </svg>
           </div>
           <p className="mb-2 text-base font-semibold text-slate-700">Your cart is empty</p>
@@ -636,11 +708,10 @@ export function OrderFormItems({
               const breakdown = getOrderItemBillingBreakdown(item);
               const availableQuantity = breakdown.availableQuantity ?? undefined;
               const quantityErrorMessage = itemErrors?.[index]?.quantity;
-              const warehouseStocks = (item.warehouseStocks ?? [])
-                .map((entry) => ({
-                  ...entry,
-                  stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-                }));
+              const warehouseStocks = (item.warehouseStocks ?? []).map((entry) => ({
+                ...entry,
+                stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+              }));
               const showWarehouseStocks =
                 item.itemType === 'product' &&
                 Boolean(item.variantId) &&
@@ -684,8 +755,8 @@ export function OrderFormItems({
                                 Catalog
                               </Badge>
                             ) : null}
-                            {item.productName && (
-                              item.itemType === 'catalog' && item.productCatalogId ? (
+                            {item.productName &&
+                              (item.itemType === 'catalog' && item.productCatalogId ? (
                                 <Link
                                   href={`/product-catalogs/${item.productCatalogId}`}
                                   target="_blank"
@@ -694,15 +765,18 @@ export function OrderFormItems({
                                   {item.productName}
                                 </Link>
                               ) : (
-                                <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                              )
-                            )}
+                                <div className="text-sm font-medium text-slate-900">
+                                  {item.productName}
+                                </div>
+                              ))}
                           </div>
                           {item.sku && (
                             <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                           )}
                           {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">{item.variantAttributes}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {item.variantAttributes}
+                            </Badge>
                           )}
                         </div>
                       )}
@@ -721,12 +795,14 @@ export function OrderFormItems({
                       />
                       {availableQuantity !== undefined && (
                         <p className="mt-1 text-[11px] text-slate-500">
-                          Available {breakdown.stockScopeLabel} stock: {availableQuantity}
+                          Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
                         </p>
                       )}
                       {showWarehouseStocks && (
                         <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                          <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
+                          <p className="text-[11px] font-semibold text-slate-600">
+                            Warehouse sales stock
+                          </p>
                           <div className="mt-0.5 space-y-0.5">
                             {warehouseStocks.map((entry, entryIndex) => (
                               <p
@@ -735,14 +811,18 @@ export function OrderFormItems({
                               >
                                 {entry.warehouseName ||
                                   entry.warehouseCode ||
-                                  `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}: {entry.stockQuantity}
+                                  `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}
+                                {entry.variantLabel ? ` • Variant: ${entry.variantLabel} • ` : ': '}
+                                Sales Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
                               </p>
                             ))}
                           </div>
                         </div>
                       )}
                       {backOrderMessage && (
-                        <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+                        <p className="mt-1 text-[11px] font-medium text-amber-700">
+                          {backOrderMessage}
+                        </p>
                       )}
                       <FieldError message={quantityErrorMessage} />
                     </div>
@@ -766,7 +846,9 @@ export function OrderFormItems({
                     <div className="col-span-2 flex flex-col gap-2">
                       <div className="text-right">
                         <div className="text-xs text-muted-foreground mb-1">Total</div>
-                        <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                        <div className="text-lg font-bold text-slate-900">
+                          ₹{itemTotal.toFixed(2)}
+                        </div>
                       </div>
                       <div className="flex gap-1 justify-end">
                         <Button
@@ -776,8 +858,18 @@ export function OrderFormItems({
                           onClick={() => onRemoveItem(index)}
                           className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                         >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
                           </svg>
                         </Button>
                       </div>
@@ -795,7 +887,9 @@ export function OrderFormItems({
                         <div>
                           <div className="text-sm font-bold text-slate-900">Item #{index + 1}</div>
                           {itemTotal > 0 && (
-                            <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-cyan-600">
+                              ₹{itemTotal.toFixed(2)}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -806,8 +900,18 @@ export function OrderFormItems({
                         onClick={() => onRemoveItem(index)}
                         className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                       >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
                         </svg>
                       </Button>
                     </div>
@@ -835,8 +939,8 @@ export function OrderFormItems({
                                 Catalog
                               </Badge>
                             ) : null}
-                            {item.productName && (
-                              item.itemType === 'catalog' && item.productCatalogId ? (
+                            {item.productName &&
+                              (item.itemType === 'catalog' && item.productCatalogId ? (
                                 <Link
                                   href={`/product-catalogs/${item.productCatalogId}`}
                                   target="_blank"
@@ -845,15 +949,18 @@ export function OrderFormItems({
                                   {item.productName}
                                 </Link>
                               ) : (
-                                <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                              )
-                            )}
+                                <div className="text-sm font-medium text-slate-900">
+                                  {item.productName}
+                                </div>
+                              ))}
                           </div>
                           {item.sku && (
                             <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                           )}
                           {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">{item.variantAttributes}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {item.variantAttributes}
+                            </Badge>
                           )}
                         </div>
                       )}
@@ -873,12 +980,14 @@ export function OrderFormItems({
                         />
                         {availableQuantity !== undefined && (
                           <p className="text-[11px] text-slate-500">
-                            Available {breakdown.stockScopeLabel} stock: {availableQuantity}
+                            Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
                           </p>
                         )}
                         {showWarehouseStocks && (
                           <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                            <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
+                            <p className="text-[11px] font-semibold text-slate-600">
+                              Warehouse sales stock
+                            </p>
                             <div className="mt-0.5 space-y-0.5">
                               {warehouseStocks.map((entry, entryIndex) => (
                                 <p
@@ -887,14 +996,20 @@ export function OrderFormItems({
                                 >
                                   {entry.warehouseName ||
                                     entry.warehouseCode ||
-                                    `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}: {entry.stockQuantity}
+                                    `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}
+                                  {entry.variantLabel
+                                    ? ` • Variant: ${entry.variantLabel} • `
+                                    : ': '}
+                                  Sales Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
                                 </p>
                               ))}
                             </div>
                           </div>
                         )}
                         {backOrderMessage && (
-                          <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+                          <p className="text-[11px] font-medium text-amber-700">
+                            {backOrderMessage}
+                          </p>
                         )}
                         <FieldError message={quantityErrorMessage} />
                       </div>
@@ -913,7 +1028,6 @@ export function OrderFormItems({
                       </div>
                     </div>
                   </div>
-
                 </div>
               );
             })}

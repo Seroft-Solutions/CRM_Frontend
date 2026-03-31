@@ -1,8 +1,4 @@
-import type {
-  OrderStatus,
-  PaymentStatus,
-  ShippingMethod,
-} from '../../data/order-data';
+import type { OrderStatus, PaymentStatus, ShippingMethod } from '../../data/order-data';
 
 type OptionalSelectValue<T extends string> = T | '';
 
@@ -45,7 +41,9 @@ export type WarehouseStockEntry = {
   warehouseId?: number;
   warehouseName?: string;
   warehouseCode?: string;
+  variantLabel?: string;
   stockQuantity: number;
+  salesStockQuantity?: number;
 };
 
 export type AddressFieldsForm = {

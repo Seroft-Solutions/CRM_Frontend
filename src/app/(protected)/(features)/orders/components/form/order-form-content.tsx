@@ -96,6 +96,7 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     const qty = breakdown.billableQuantity;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+
     return sum + Math.max(qty * price + tax, 0);
   }, 0);
 
@@ -104,25 +105,28 @@ const calculateItemTotal = (item: OrderItemForm) => {
   const qty = breakdown.billableQuantity;
   const price = Number.parseFloat(item.itemPrice) || 0;
   const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+
   return Math.max(qty * price + tax, 0);
 };
 
 const hasItemData = (item: OrderItemForm) => {
   const hasText = (value?: string) => Boolean(value && value.trim() !== '');
+
   return Boolean(
     item.productId ||
-    item.variantId ||
-    item.productCatalogId ||
-    hasText(item.quantity) ||
-    hasText(item.itemPrice) ||
-    hasText(item.itemTaxAmount) ||
-    hasText(item.itemComment)
+      item.variantId ||
+      item.productCatalogId ||
+      hasText(item.quantity) ||
+      hasText(item.itemPrice) ||
+      hasText(item.itemTaxAmount) ||
+      hasText(item.itemComment)
   );
 };
 
 const parseItemStatusValue = (value?: string) => {
   if (!value) return '';
   const match = value.match(/\d+/);
+
   return match ? match[0] : '';
 };
 
@@ -141,7 +145,12 @@ export function OrderFormContent({
   const [showBackOrderResolutionDialog, setShowBackOrderResolutionDialog] = useState(false);
   const [backOrderResolutionPrompted, setBackOrderResolutionPrompted] = useState(false);
   const [backOrderResolutionCandidates, setBackOrderResolutionCandidates] = useState<
-    { index: number; name: string; fulfillableQuantity: number; existingBackOrderQuantity: number }[]
+    {
+      index: number;
+      name: string;
+      fulfillableQuantity: number;
+      existingBackOrderQuantity: number;
+    }[]
   >([]);
   const [showItemsBreakdown, setShowItemsBreakdown] = useState(false);
   const [showDraftDialog, setShowDraftDialog] = useState(false);
@@ -162,6 +171,7 @@ export function OrderFormContent({
     }
 
     sessionStorage.setItem(sessionKey, fallbackId);
+
     return fallbackId;
   });
   const formStateStorageKey = `orderFormState:${formSessionId}`;
@@ -197,11 +207,13 @@ export function OrderFormContent({
   const [discountData, setDiscountData] = useState<IDiscount | null>(null);
   const [useCustomTaxRate, setUseCustomTaxRate] = useState(() => {
     const rate = defaultState.orderTaxRate.trim();
+
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
   });
   const [shippingEditable, setShippingEditable] = useState(false);
   const [items, setItems] = useState<OrderItemForm[]>(() => {
     if (!initialOrder?.items?.length) return [];
+
     return initialOrder.items.map((item) => ({
       id: item.orderDetailId || undefined,
       itemType: item.productCatalogId ? 'catalog' : 'product',
@@ -225,6 +237,7 @@ export function OrderFormContent({
   const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
   const [address, setAddress] = useState<OrderAddressForm>(() => {
     const initial = initialOrder?.address;
+
     return {
       shipTo: {
         firstName: initial?.shipTo?.firstName || '',
@@ -256,22 +269,19 @@ export function OrderFormContent({
   const hasAddressValues = (fields: AddressFieldsForm) =>
     Object.values(fields).some((value) => value.trim() !== '');
   const hasInitialBillToRef = useRef(
-    hasAddressValues(address.billTo) ||
-    (address.billToSameFlag && hasAddressValues(address.shipTo))
+    hasAddressValues(address.billTo) || (address.billToSameFlag && hasAddressValues(address.shipTo))
   );
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
   const discountCodeRef = useRef<string>('');
   const hasUnsavedChanges =
     !isEditing &&
-    (
-      JSON.stringify(formState) !== JSON.stringify(defaultState) ||
+    (JSON.stringify(formState) !== JSON.stringify(defaultState) ||
       items.some(hasItemData) ||
       removedItemIds.length > 0 ||
       hasAddressValues(address.shipTo) ||
       hasAddressValues(address.billTo) ||
-      address.billToSameFlag
-    );
+      address.billToSameFlag);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -346,8 +356,7 @@ export function OrderFormContent({
         hasInitialShipToRef.current = hasAddressValues(saved.data.address.shipTo);
         hasInitialBillToRef.current =
           hasAddressValues(saved.data.address.billTo) ||
-          (saved.data.address.billToSameFlag &&
-            hasAddressValues(saved.data.address.shipTo));
+          (saved.data.address.billToSameFlag && hasAddressValues(saved.data.address.shipTo));
       }
       if (typeof saved.data?.useCustomTaxRate === 'boolean') {
         setUseCustomTaxRate(saved.data.useCustomTaxRate);
@@ -360,6 +369,7 @@ export function OrderFormContent({
       }
       if (saved.data?.formState?.customerId) {
         const restoredCustomerId = Number.parseInt(saved.data.formState.customerId, 10);
+
         if (!Number.isNaN(restoredCustomerId)) {
           lastCustomerIdRef.current = restoredCustomerId;
         }
@@ -388,6 +398,7 @@ export function OrderFormContent({
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey[0];
+
             return typeof key === 'string' && key.startsWith('/api/products');
           },
           refetchType: 'active',
@@ -395,6 +406,7 @@ export function OrderFormContent({
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey[0];
+
             return typeof key === 'string' && key.startsWith('/api/product-catalogs');
           },
           refetchType: 'active',
@@ -419,6 +431,7 @@ export function OrderFormContent({
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -440,6 +453,7 @@ export function OrderFormContent({
       }
 
       const href = link.getAttribute('href');
+
       if (
         !href ||
         href.startsWith('http') ||
@@ -457,6 +471,7 @@ export function OrderFormContent({
     };
 
     document.addEventListener('click', handleNavigationClick, true);
+
     return () => {
       document.removeEventListener('click', handleNavigationClick, true);
     };
@@ -471,6 +486,7 @@ export function OrderFormContent({
         if (hasUnsavedChanges) {
           setPendingNavigation(() => onProceed);
           setShowDraftDialog(true);
+
           return;
         }
         onProceed();
@@ -478,6 +494,7 @@ export function OrderFormContent({
     };
 
     registerDraftCheck(draftCheckHandler);
+
     return () => {
       unregisterDraftCheck('orders');
     };
@@ -502,12 +519,14 @@ export function OrderFormContent({
       return { firstName: '', middleName: '', lastName: '' };
     }
     const parts = contactPerson.trim().split(/\s+/);
+
     if (parts.length === 1) {
       return { firstName: parts[0], middleName: '', lastName: '' };
     }
     if (parts.length === 2) {
       return { firstName: parts[0], middleName: '', lastName: parts[1] };
     }
+
     return {
       firstName: parts[0],
       middleName: parts.slice(1, -1).join(' '),
@@ -519,6 +538,7 @@ export function OrderFormContent({
     const { firstName, middleName, lastName } = splitContactPerson(customer.contactPerson);
 
     const defaultAddr = customer.defaultAddress ?? customer.addresses?.[0];
+
     if (defaultAddr) {
       return {
         firstName,
@@ -559,6 +579,7 @@ export function OrderFormContent({
 
     if (!shouldAutoFill) {
       lastCustomerIdRef.current = currentId;
+
       return;
     }
 
@@ -572,9 +593,11 @@ export function OrderFormContent({
 
   useEffect(() => {
     const code = formState.discountCode?.trim() || '';
+
     if (!code) {
       setDiscountData(null);
       discountCodeRef.current = '';
+
       return;
     }
     if (discountCodeRef.current && discountCodeRef.current !== code) {
@@ -603,6 +626,7 @@ export function OrderFormContent({
       if (taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])) {
         handleChange('orderTaxRate', '');
       }
+
       return;
     }
     setUseCustomTaxRate(false);
@@ -614,17 +638,17 @@ export function OrderFormContent({
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => {
-    setItems((prev) =>
-      prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
-    );
+    setItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item)));
     setErrors((prev) => {
       if (!prev.items?.[index]?.[key]) {
         return prev;
       }
       const nextItems = prev.items ? [...prev.items] : [];
       const nextItem = { ...nextItems[index] };
+
       delete nextItem[key];
       nextItems[index] = nextItem;
+
       return { ...prev, items: nextItems };
     });
   };
@@ -641,9 +665,11 @@ export function OrderFormContent({
     setItems((prev) => {
       const next = [...prev];
       const [removed] = next.splice(index, 1);
+
       if (removed?.id) {
         setRemovedItemIds((current) => [...current, removed.id!]);
       }
+
       return next;
     });
   };
@@ -656,12 +682,17 @@ export function OrderFormContent({
     const candidates = items
       .map((item, index) => {
         const existingBackOrderQuantity = Math.max(item.existingBackOrderQuantity || 0, 0);
+
         if (item.itemType !== 'product' || existingBackOrderQuantity <= 0) {
           return null;
         }
 
         const breakdown = getOrderItemBillingBreakdown(item);
-        const fulfillableQuantity = Math.max(existingBackOrderQuantity - breakdown.backOrderQuantity, 0);
+        const fulfillableQuantity = Math.max(
+          existingBackOrderQuantity - breakdown.backOrderQuantity,
+          0
+        );
+
         if (fulfillableQuantity <= 0) {
           return null;
         }
@@ -670,12 +701,16 @@ export function OrderFormContent({
 
         return { index, name, fulfillableQuantity, existingBackOrderQuantity };
       })
-      .filter((candidate): candidate is {
-        index: number;
-        name: string;
-        fulfillableQuantity: number;
-        existingBackOrderQuantity: number;
-      } => candidate !== null);
+      .filter(
+        (
+          candidate
+        ): candidate is {
+          index: number;
+          name: string;
+          fulfillableQuantity: number;
+          existingBackOrderQuantity: number;
+        } => candidate !== null
+      );
 
     if (candidates.length === 0) {
       return;
@@ -688,12 +723,16 @@ export function OrderFormContent({
 
   const handleCancelBackOrders = () => {
     const quantityByIndex = new Map(
-      backOrderResolutionCandidates.map((candidate) => [candidate.index, candidate.existingBackOrderQuantity])
+      backOrderResolutionCandidates.map((candidate) => [
+        candidate.index,
+        candidate.existingBackOrderQuantity,
+      ])
     );
 
     setItems((prev) =>
       prev.map((item, index) => {
         const existingBackOrderQuantity = quantityByIndex.get(index);
+
         if (!existingBackOrderQuantity) {
           return item;
         }
@@ -721,7 +760,7 @@ export function OrderFormContent({
 
   const handleProceedBackOrders = () => {
     setShowBackOrderResolutionDialog(false);
-    toast.info('Proceed selected. Save the order to bill available back-order quantity.');
+    toast.info('Proceed selected. Save the order to refresh the outstanding quantities.');
   };
 
   const handleAddressChange = (
@@ -730,6 +769,7 @@ export function OrderFormContent({
     value: string
   ) => {
     const nextValue = key === 'zipcode' ? value.slice(0, 10) : value;
+
     setAddress((prev) => ({
       ...prev,
       [section]: {
@@ -746,6 +786,7 @@ export function OrderFormContent({
           : key === 'zipcode'
             ? 'billToZipcode'
             : 'billToContact';
+
       setErrors((prev) => (prev[errorKey] ? { ...prev, [errorKey]: undefined } : prev));
     }
   };
@@ -774,6 +815,7 @@ export function OrderFormContent({
     }
 
     const segments = time.split(':');
+
     if (segments.length < 2) {
       return null;
     }
@@ -782,6 +824,7 @@ export function OrderFormContent({
     const hours = Number.parseInt(hoursRaw, 10);
     const minutes = Number.parseInt(minutesRaw, 10);
     const seconds = Number.parseInt(secondsRaw, 10);
+
     if (!Number.isFinite(hours) || !Number.isFinite(minutes) || !Number.isFinite(seconds)) {
       return null;
     }
@@ -789,6 +832,7 @@ export function OrderFormContent({
     const hh = String(hours).padStart(2, '0');
     const mm = String(minutes).padStart(2, '0');
     const ss = String(seconds).padStart(2, '0');
+
     return `${hh}:${mm}:${ss}`;
   };
 
@@ -797,6 +841,7 @@ export function OrderFormContent({
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
+
     return `${year}-${month}-${day}`;
   };
 
@@ -805,6 +850,7 @@ export function OrderFormContent({
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
+
     return `${hours}:${minutes}:${seconds}`;
   };
 
@@ -847,26 +893,32 @@ export function OrderFormContent({
     }
     const discountType = (discount.discountType || '').toUpperCase();
     const rawValue = Number(discount.discountValue ?? discount.discountAmount ?? 0);
+
     if (!Number.isFinite(rawValue) || rawValue <= 0) {
       return 0;
     }
     let amount = 0;
+
     if (discountType === 'PERCENTAGE') {
       const safePercent = Math.min(Math.max(rawValue, 0), 100);
+
       amount = (safePercent / 100) * baseAmount;
     } else {
       amount = Math.max(rawValue, 0);
     }
     const maxDiscountValue = Number(discount.maxDiscountValue);
+
     if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0) {
       amount = Math.min(amount, maxDiscountValue);
     }
+
     return Math.max(amount, 0);
   };
 
   const fetchDiscountByCode = async (code: string) => {
     try {
       const discount = await getDiscountByCode(code);
+
       setDiscountData(discount);
       const availability = evaluateDiscountAvailability(discount);
 
@@ -885,14 +937,17 @@ export function OrderFormContent({
       console.error('Failed to verify discount code:', error);
       setDiscountData(null);
       toast.error('Invalid discount code.');
+
       return null;
     }
   };
 
   const handleVerifyDiscount = async () => {
     const code = formState.discountCode?.trim();
+
     if (!code) {
       toast.error('Please enter a discount code.');
+
       return;
     }
 
@@ -902,6 +957,7 @@ export function OrderFormContent({
   const shouldSaveAddress = (value: OrderAddressForm) => {
     const hasShipTo = Object.values(value.shipTo).some((field) => field.trim() !== '');
     const hasBillTo = Object.values(value.billTo).some((field) => field.trim() !== '');
+
     return hasShipTo || hasBillTo || value.billToSameFlag;
   };
 
@@ -910,22 +966,25 @@ export function OrderFormContent({
     const numberPattern = /^-?\d+(\.\d+)?$/;
     const parsedCustomerId = Number.parseInt(formState.customerId, 10);
 
-    if (!formState.customerId.trim() || !Number.isFinite(parsedCustomerId) || parsedCustomerId <= 0) {
+    if (
+      !formState.customerId.trim() ||
+      !Number.isFinite(parsedCustomerId) ||
+      parsedCustomerId <= 0
+    ) {
       nextErrors.customerId = 'Please select a customer.';
     }
 
-    const validateAmount = (
-      value: string,
-      key: 'orderBaseAmount' | 'shippingAmount'
-    ) => {
+    const validateAmount = (value: string, key: 'orderBaseAmount' | 'shippingAmount') => {
       if (!value.trim()) {
         return;
       }
       if (!numberPattern.test(value.trim())) {
         nextErrors[key] = 'Enter a valid number.';
+
         return;
       }
       const parsed = Number.parseFloat(value);
+
       if (!Number.isFinite(parsed) || parsed < 0) {
         nextErrors[key] = 'Amount cannot be negative.';
       }
@@ -937,9 +996,11 @@ export function OrderFormContent({
       }
       if (!numberPattern.test(value.trim())) {
         nextErrors[key] = 'Enter a valid percentage.';
+
         return;
       }
       const parsed = Number.parseFloat(value);
+
       if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
         nextErrors[key] = 'Percentage must be between 0 and 100.';
       }
@@ -949,7 +1010,6 @@ export function OrderFormContent({
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
 
-
     if (formState.discountCode && formState.discountCode.length > 20) {
       nextErrors.discountCode = 'Max 20 characters.';
     }
@@ -957,7 +1017,6 @@ export function OrderFormContent({
     if (formState.shippingId && formState.shippingId.length > 50) {
       nextErrors.shippingId = 'Max 50 characters.';
     }
-
 
     if (shouldSaveAddress(address)) {
       if (address.shipTo.zipcode.trim().length > 10) {
@@ -999,6 +1058,7 @@ export function OrderFormContent({
 
       if (item.itemPrice.trim()) {
         const value = Number.parseFloat(item.itemPrice);
+
         if (!Number.isFinite(value) || value < 0) {
           nextItemErrors[index].itemPrice = 'Enter a valid amount.';
         }
@@ -1006,14 +1066,15 @@ export function OrderFormContent({
 
       if (item.itemTaxAmount.trim()) {
         const value = Number.parseFloat(item.itemTaxAmount);
+
         if (!Number.isFinite(value) || value < 0) {
           nextItemErrors[index].itemTaxAmount = 'Enter a valid amount.';
         }
       }
-
     });
 
     const hasItemErrors = nextItemErrors.some((entry) => Object.keys(entry).length > 0);
+
     if (hasItemErrors) {
       nextErrors.items = nextItemErrors;
     }
@@ -1021,15 +1082,13 @@ export function OrderFormContent({
     return nextErrors;
   };
 
-  const orderStatusSelectOptions =
-    formState.orderStatus === 'Unknown'
-      ? [...orderStatusOptions, 'Unknown']
-      : orderStatusOptions;
-  const paymentStatusSelectOptions =
+  const orderStatusSelectOptions: OrderStatus[] =
+    formState.orderStatus === 'Unknown' ? [...orderStatusOptions, 'Unknown'] : orderStatusOptions;
+  const paymentStatusSelectOptions: PaymentStatus[] =
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
       : paymentStatusOptions;
-  const shippingMethodSelectOptions =
+  const shippingMethodSelectOptions: ShippingMethod[] =
     formState.shippingMethod === 'Unknown'
       ? [...shippingMethodOptions, 'Unknown']
       : shippingMethodOptions;
@@ -1041,16 +1100,19 @@ export function OrderFormContent({
 
     const parseAmount = (value: string) => {
       const parsed = Number.parseFloat(value);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const parseInteger = (value: string) => {
       const parsed = Number.parseInt(value, 10);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const buildAddressPayload = (orderId: number) => {
       const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
+
       return {
         orderId,
         shipToFirstName: address.shipTo.firstName || undefined,
@@ -1152,6 +1214,7 @@ export function OrderFormContent({
         .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
       const addressTasks: Promise<unknown>[] = [];
+
       if (shouldSaveAddress(address)) {
         addressTasks.push(createOrderAddressDetail({ data: buildAddressPayload(orderId) }));
       }
@@ -1210,13 +1273,12 @@ export function OrderFormContent({
 
       setRemovedItemIds([]);
       toast.success('Order draft saved successfully.');
-      if (totalBackOrderUnits > 0) {
-        toast.info(`${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'} moved to Back Order.`);
-      }
+
       return true;
     } catch (error) {
       console.error('Failed to save order draft:', error);
       toast.error('Unable to save order draft.');
+
       return false;
     } finally {
       setSubmitting(false);
@@ -1227,6 +1289,7 @@ export function OrderFormContent({
     event.preventDefault();
     if (!items.some(hasItemData)) {
       setShowEmptyCartDialog(true);
+
       return;
     }
     const validationErrors = validateForm();
@@ -1234,11 +1297,14 @@ export function OrderFormContent({
       if (Array.isArray(value)) {
         return value.some((entry) => Object.keys(entry).length > 0);
       }
+
       return Boolean(value);
     });
+
     if (hasErrors) {
       setErrors(validationErrors);
       toast.error('Please fix the highlighted fields.');
+
       return;
     }
 
@@ -1247,16 +1313,19 @@ export function OrderFormContent({
 
     const parseAmount = (value: string) => {
       const parsed = Number.parseFloat(value);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const parseInteger = (value: string) => {
       const parsed = Number.parseInt(value, 10);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const buildAddressPayload = (orderId: number) => {
       const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
+
       return {
         id: addressExists ? orderId : undefined,
         orderId,
@@ -1290,6 +1359,7 @@ export function OrderFormContent({
       : itemsTotal;
     const discountCode = formState.discountCode?.trim() || '';
     let resolvedDiscount = discountData;
+
     if (discountCode && discountData?.discountCode?.toUpperCase() !== discountCode.toUpperCase()) {
       resolvedDiscount = await fetchDiscountByCode(discountCode);
     }
@@ -1333,6 +1403,7 @@ export function OrderFormContent({
         : await createOrder({ data: payload });
 
       const orderId = result?.id ?? initialOrder?.orderId;
+
       if (!orderId) {
         throw new Error('Order ID missing after save.');
       }
@@ -1347,6 +1418,7 @@ export function OrderFormContent({
             item.itemPrice?.trim() ||
             item.itemTaxAmount?.trim() ||
             item.itemComment?.trim();
+
           return hasData;
         })
         .map((item) => {
@@ -1391,6 +1463,7 @@ export function OrderFormContent({
             item.itemPrice?.trim() ||
             item.itemTaxAmount?.trim() ||
             item.itemComment?.trim();
+
           return hasData;
         })
         .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
@@ -1398,8 +1471,10 @@ export function OrderFormContent({
       const deleteTasks = removedItemIds.map((id) => deleteOrderDetail({ id }));
 
       const addressTasks: Promise<unknown>[] = [];
+
       if (shouldSaveAddress(address)) {
         const addressPayload = buildAddressPayload(orderId);
+
         if (addressExists) {
           addressTasks.push(updateOrderAddressDetail({ id: orderId, data: addressPayload }));
         } else {
@@ -1465,6 +1540,7 @@ export function OrderFormContent({
       ]);
 
       const failed = results.filter((entry) => entry.status === 'rejected');
+
       if (failed.length > 0) {
         toast.error('Order saved, but some related records failed.', {
           description: 'Please review items, address, or history.',
@@ -1486,9 +1562,6 @@ export function OrderFormContent({
       toast.success(isEditing ? 'Order updated' : 'Order created', {
         description: isEditing ? 'Changes saved successfully.' : 'New order is now available.',
       });
-      if (totalBackOrderUnits > 0) {
-        toast.info(`${totalBackOrderUnits} item${totalBackOrderUnits === 1 ? '' : 's'} moved to Back Order.`);
-      }
 
       setRemovedItemIds([]);
 
@@ -1501,7 +1574,7 @@ export function OrderFormContent({
       } else {
         router.push('/orders');
       }
-    } catch (_error) {
+    } catch {
       toast.error('Unable to save order', {
         description: 'Please check the details and try again.',
       });
@@ -1517,7 +1590,7 @@ export function OrderFormContent({
   const discountCodeValue = formState.discountCode?.trim() || '';
   const activeDiscount =
     discountCodeValue &&
-      discountData?.discountCode?.toUpperCase() === discountCodeValue.toUpperCase()
+    discountData?.discountCode?.toUpperCase() === discountCodeValue.toUpperCase()
       ? discountData
       : null;
   const discountAmount = resolveDiscountAmount(baseAmount, activeDiscount);
@@ -1532,26 +1605,24 @@ export function OrderFormContent({
     : taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])
       ? formState.orderTaxRate
       : '';
-  const itemSummaries = items
-    .filter(hasItemData)
-    .map((item, index) => {
-      const breakdown = getOrderItemBillingBreakdown(item);
-      const name =
-        item.itemType === 'catalog'
-          ? item.productName
-            ? `Catalog: ${item.productName}`
-            : 'Catalog item'
-          : item.productName || item.sku || `Item ${index + 1}`;
+  const itemSummaries = items.filter(hasItemData).map((item, index) => {
+    const breakdown = getOrderItemBillingBreakdown(item);
+    const name =
+      item.itemType === 'catalog'
+        ? item.productName
+          ? `Catalog: ${item.productName}`
+          : 'Catalog item'
+        : item.productName || item.sku || `Item ${index + 1}`;
 
-      return {
-        key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
-        name,
-        quantity: breakdown.requestedQuantity,
-        billableQuantity: breakdown.billableQuantity,
-        backOrderQuantity: breakdown.backOrderQuantity,
-        total: calculateItemTotal(item),
-      };
-    });
+    return {
+      key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
+      name,
+      quantity: breakdown.requestedQuantity,
+      billableQuantity: breakdown.billableQuantity,
+      backOrderQuantity: breakdown.backOrderQuantity,
+      total: calculateItemTotal(item),
+    };
+  });
   const hasItemSummaries = itemSummaries.length > 0;
 
   return (
@@ -1575,8 +1646,18 @@ export function OrderFormContent({
             <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                  <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="h-5 w-5 text-blue-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -1589,9 +1670,9 @@ export function OrderFormContent({
               <OrderFormFields
                 formState={formState}
                 errors={errors}
-                orderStatusOptions={orderStatusSelectOptions as any}
-                paymentStatusOptions={paymentStatusSelectOptions as any}
-                shippingMethodOptions={shippingMethodSelectOptions as any}
+                orderStatusOptions={orderStatusSelectOptions}
+                paymentStatusOptions={paymentStatusSelectOptions}
+                shippingMethodOptions={shippingMethodSelectOptions}
                 onChange={handleChange}
                 onVerifyDiscount={handleVerifyDiscount}
               />
@@ -1612,8 +1693,18 @@ export function OrderFormContent({
               <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
                 <div className="mb-4 flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
-                    <svg className="h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    <svg
+                      className="h-4 w-4 text-slate-900"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
                     </svg>
                   </div>
                   <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
@@ -1623,9 +1714,7 @@ export function OrderFormContent({
                   <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                     <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">
-                        ₹{itemsTotal.toFixed(2)}
-                      </span>
+                      <span className="font-semibold text-slate-800">₹{itemsTotal.toFixed(2)}</span>
                       <button
                         type="button"
                         onClick={() => setShowItemsBreakdown((prev) => !prev)}
@@ -1635,8 +1724,9 @@ export function OrderFormContent({
                         className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <ChevronDown
-                          className={`h-4 w-4 transition-transform ${showItemsBreakdown ? 'rotate-180' : ''
-                            }`}
+                          className={`h-4 w-4 transition-transform ${
+                            showItemsBreakdown ? 'rotate-180' : ''
+                          }`}
                         />
                       </button>
                     </div>
@@ -1645,12 +1735,13 @@ export function OrderFormContent({
                     <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
                       <div className="space-y-1 text-xs">
                         {itemSummaries.map((item) => (
-                          <div key={item.key} className="flex items-center justify-between text-slate-700">
+                          <div
+                            key={item.key}
+                            className="flex items-center justify-between text-slate-700"
+                          >
                             <span className="truncate">{item.name}</span>
                             <span className="font-semibold text-slate-800">
-                              Qty {item.quantity}
-                              {item.backOrderQuantity > 0 ? ` (${item.billableQuantity} billed, ${item.backOrderQuantity} back order)` : ''}
-                              {' '}• ₹{item.total.toFixed(2)}
+                              Qty {item.quantity} • ₹{item.total.toFixed(2)}
                             </span>
                           </div>
                         ))}
@@ -1739,10 +1830,7 @@ export function OrderFormContent({
                 </div>
               </div>
 
-              <OrderFormFooter
-                formState={formState}
-                submitting={submitting}
-              />
+              <OrderFormFooter formState={formState} submitting={submitting} />
             </div>
           </div>
         </div>
@@ -1753,10 +1841,12 @@ export function OrderFormContent({
         entityType="Order"
         onSaveDraft={async () => {
           const success = await saveDraft();
+
           if (success && pendingNavigation) {
             pendingNavigation();
             setPendingNavigation(null);
           }
+
           return success;
         }}
         onDiscardChanges={() => {
@@ -1769,7 +1859,7 @@ export function OrderFormContent({
           setPendingNavigation(null);
         }}
         isDirty={hasUnsavedChanges}
-        formData={formState as Record<string, any>}
+        formData={formState as Record<string, unknown>}
       />
       <AlertDialog
         open={showBackOrderResolutionDialog}
@@ -1777,10 +1867,10 @@ export function OrderFormContent({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Back order stock is now available</AlertDialogTitle>
+            <AlertDialogTitle>Additional stock is now available</AlertDialogTitle>
             <AlertDialogDescription>
-              Additional stock has arrived for one or more back-ordered items.
-              Do you want to cancel this back order or proceed with payment for the additional items?
+              Additional stock has arrived for one or more outstanding items. Do you want to reduce
+              the outstanding quantity or keep the current requested quantity?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
@@ -1795,12 +1885,8 @@ export function OrderFormContent({
             </ul>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelBackOrders}>
-              Cancel Back Order
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleProceedBackOrders}>
-              Proceed With Payment
-            </AlertDialogAction>
+            <AlertDialogCancel onClick={handleCancelBackOrders}>Reduce Quantity</AlertDialogCancel>
+            <AlertDialogAction onClick={handleProceedBackOrders}>Keep Quantity</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1813,9 +1899,7 @@ export function OrderFormContent({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowEmptyCartDialog(false)}>
-              Ok
-            </AlertDialogAction>
+            <AlertDialogAction onClick={() => setShowEmptyCartDialog(false)}>Ok</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

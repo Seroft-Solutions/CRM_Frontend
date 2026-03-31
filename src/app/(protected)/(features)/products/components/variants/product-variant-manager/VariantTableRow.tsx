@@ -139,7 +139,7 @@ export function VariantTableRow({
     const stockQuantity = calculateTotalStock(variantStocks);
 
     if (isDraft) {
-      onUpdateDraft(row.key, { variantStocks, stockQuantity });
+      onUpdateDraft(row.key, { variantStocks, stockQuantity, salesStockQuantity: stockQuantity });
     } else if (isEditing) {
       onUpdateEditingRow({ variantStocks, stockQuantity });
     }
@@ -581,7 +581,7 @@ export function VariantTableRow({
                 : 'text-blue-700 bg-blue-50 border-blue-200'
             )}
           >
-            {data.stockQuantity}
+            Stock: {data.stockQuantity}
           </span>
           {hasStockError && (isDraft || isEditing) && (
             <p className="text-xs text-red-600 font-medium mt-1">

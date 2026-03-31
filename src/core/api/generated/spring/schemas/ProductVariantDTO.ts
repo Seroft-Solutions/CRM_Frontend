@@ -24,6 +24,7 @@ export interface ProductVariantDTO {
   price?: number;
   /** @minimum 0 */
   stockQuantity: number;
+  salesStockQuantity?: number;
   status: ProductVariantDTOStatus;
   isPrimary?: boolean;
   /**
@@ -40,4 +41,12 @@ export interface ProductVariantDTO {
   lastModifiedDate?: string;
   product?: ProductDTO;
   selections?: ProductVariantSelectionDTO[];
+  variantStocks?: Array<{
+    id?: number;
+    stockQuantity?: number;
+    warehouse?: {
+      id?: number;
+      name?: string;
+    };
+  }>;
 }

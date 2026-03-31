@@ -82,7 +82,7 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
           </div>
         ) : isError || !orderRecord ? (
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
-            Unable to load this sale order for backlog fulfillment.
+            Unable to load this sale order for fulfillment.
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">

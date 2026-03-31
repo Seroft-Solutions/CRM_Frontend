@@ -345,11 +345,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
                       </TableCell>
                       <TableCell className="font-semibold text-slate-800">
                         <div>{item.quantity}</div>
-                        {item.backOrderQuantity > 0 && (
-                          <div className="text-xs font-medium text-amber-700">
-                            + {item.backOrderQuantity} back order
-                          </div>
-                        )}
                       </TableCell>
                       <TableCell className="font-semibold text-slate-800">
                         {formatCurrency(item.itemPrice)}

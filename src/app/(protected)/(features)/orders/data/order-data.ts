@@ -18,12 +18,12 @@ export const orderStatusOptions = [
 
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;
 
-
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
-
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
+
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
+
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
 
 export interface OrderDetailItem {
@@ -124,12 +124,14 @@ export interface OrderRecord {
 
 const getLabelFromCode = (options: readonly string[], code?: number) => {
   if (typeof code !== 'number') return UNKNOWN_LABEL;
+
   return options[code] ?? UNKNOWN_LABEL;
 };
 
 const getCodeFromLabel = (options: readonly string[], label?: string) => {
   if (!label || label === UNKNOWN_LABEL) return undefined;
   const index = options.indexOf(label);
+
   return index === -1 ? undefined : index;
 };
 
@@ -145,13 +147,11 @@ export const getPaymentStatusLabel = (code?: number): PaymentStatus =>
 export const getPaymentStatusCode = (status?: PaymentStatus) =>
   getCodeFromLabel(paymentStatusOptions, status);
 
-
 export const getShippingMethodLabel = (code?: number): ShippingMethod =>
   getLabelFromCode(shippingMethodOptions, code) as ShippingMethod;
 
 export const getShippingMethodCode = (status?: ShippingMethod) =>
   getCodeFromLabel(shippingMethodOptions, status);
-
 
 const resolveOrderTotal = (order: OrderDTO) => {
   if (typeof order.orderTotalAmount === 'number') {
@@ -164,11 +164,13 @@ const resolveOrderTotal = (order: OrderDTO) => {
   const taxRate = order.orderTaxRate ?? 0;
   const taxableAmount = base; // simplified fallback
   const taxAmount = (taxRate / 100) * taxableAmount;
+
   return Math.max(taxableAmount + shipping + taxAmount, 0);
 };
 
 const toStringValue = (value?: string | number | null) => {
   if (value === null || value === undefined) return '';
+
   return String(value);
 };
 
@@ -216,6 +218,7 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
   // const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
   const itemStatus = UNKNOWN_LABEL;
   const itemStatusCode = undefined;
+  const quantity = (detail.quantity ?? 0) + (detail.backOrderQuantity ?? 0);
 
   return {
     orderDetailId: detail.id ?? 0,
@@ -229,8 +232,8 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
     itemStatus,
     itemStatusCode,
     itemTotalAmount: detail.itemTotalAmount ?? 0,
-    quantity: detail.quantity ?? 0,
-    backOrderQuantity: detail.backOrderQuantity ?? 0,
+    quantity,
+    backOrderQuantity: 0,
     itemPrice: detail.itemPrice ?? 0,
     itemTaxAmount: 0,
     itemComment: undefined,

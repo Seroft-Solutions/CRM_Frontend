@@ -488,7 +488,7 @@ export function OrderFulfillmentHistoryDetail({
                       Available
                     </th>
                     <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Backlog
+                      Outstanding After
                     </th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                       Unit Price

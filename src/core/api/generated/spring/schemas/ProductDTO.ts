@@ -55,6 +55,8 @@ export interface ProductDTO {
    * @maximum 999999
    */
   salePrice?: number;
+  stockQuantity?: number;
+  salesStockQuantity?: number;
   /**
    * @minLength 0
    * @maxLength 1000

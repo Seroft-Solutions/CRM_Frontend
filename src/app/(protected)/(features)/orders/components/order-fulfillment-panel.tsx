@@ -326,6 +326,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             />
                           </TableCell>
                         ) : null}
+                        <TableCell className="text-center font-semibold text-slate-900">
+                          <div>{stocksLoading ? '...' : row.availableQuantity}</div>
+                          <div className="text-[11px] text-slate-500">
+                            {typeof row.item.variantId === 'number' ? 'Variant' : 'Product'}
+                          </div>
+                        </TableCell>
                         <TableCell className="align-top">
                           <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
@@ -354,8 +360,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
                             ) : null}
                             <p className="text-xs text-slate-500">
-                              Base qty: {row.item.quantity} • Backlog qty:{' '}
-                              {row.item.backOrderQuantity}
+                              Requested qty: {row.item.quantity}
                             </p>
                             <p className="text-xs text-slate-500">
                               Delivered qty: {row.deliveredQuantity}
@@ -378,12 +383,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         </TableCell>
                         <TableCell className="text-center font-semibold text-emerald-700">
                           {row.deliveredQuantity}
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-slate-900">
-                          <div>{stocksLoading ? '...' : row.availableQuantity}</div>
-                          <div className="text-[11px] text-slate-500">
-                            {typeof row.item.variantId === 'number' ? 'Variant' : 'Product'}
-                          </div>
                         </TableCell>
                         <TableCell className="align-top">
                           {isEditing ? (
@@ -507,7 +506,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       {generation.totalGeneratedQuantity ?? 0} units generated
                     </Badge>
                     <Badge className="bg-amber-100 text-amber-900">
-                      {generation.totalBacklogQuantity ?? 0} backlog remaining
+                      Outstanding after save: {generation.totalBacklogQuantity ?? 0}
                     </Badge>
                     {generation.id ? (
                       <Button
@@ -540,7 +539,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           <span>Requested: {item.requestedQuantity ?? 0}</span>
                           <span>Delivered: {item.deliveredQuantity ?? 0}</span>
                           <span>Available Before: {item.availableQuantityBefore ?? 0}</span>
-                          <span>Backlog Left: {item.remainingBacklogQuantity ?? 0}</span>
+                          <span>Outstanding After: {item.remainingBacklogQuantity ?? 0}</span>
                         </div>
                       </div>
                     ))}

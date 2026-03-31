@@ -8,8 +8,6 @@ import {
   getHoursForMode,
   getPrimaryWeekRecord,
   getRelatedAttendanceDates,
-  getWeekModeBreakdown,
-  getWeekSourceLabel,
   getWorkingMinutes,
 } from './attendance-week-utils';
 
@@ -59,9 +57,7 @@ export function AttendanceWeekDetailCard({
                   {weekDays.map((day) => (
                     <th key={day.key} className="min-w-24 px-4 py-3 text-center font-medium">
                       <div>{day.displayDate}</div>
-                      <div className="text-xs font-normal text-muted-foreground">
-                        {day.label}
-                      </div>
+                      <div className="text-xs font-normal text-muted-foreground">{day.label}</div>
                     </th>
                   ))}
                 </tr>
@@ -112,10 +108,7 @@ export function AttendanceWeekDetailCard({
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <PostingField
-              label="Week Period"
-              value={formatWeekPeriod(fromDate, toDate)}
-            />
+            <PostingField label="Week Period" value={formatWeekPeriod(fromDate, toDate)} />
             <PostingField label="Week ID" value={weekId} />
             <PostingField
               label="User"
@@ -125,22 +118,8 @@ export function AttendanceWeekDetailCard({
                   : requestedUserName || 'N/A'
               }
             />
-            <PostingField
-              label="Email"
-              value={primaryRecord?.userEmail || 'N/A'}
-            />
-            <PostingField
-              label="Check-in Source"
-              value={getWeekSourceLabel(rows)}
-            />
-            <PostingField
-              label="Mode Breakdown"
-              value={getWeekModeBreakdown(rows)}
-            />
-            <PostingField
-              label="Total ST Hours"
-              value={formatHoursDecimal(totalMinutes)}
-            />
+            <PostingField label="Email" value={primaryRecord?.userEmail || 'N/A'} />
+            <PostingField label="Total ST Hours" value={formatHoursDecimal(totalMinutes)} />
           </div>
 
           <div className="space-y-3">
@@ -176,9 +155,7 @@ type PostingFieldProps = {
 function PostingField({ label, value }: PostingFieldProps) {
   return (
     <div className="rounded-lg border bg-muted/20 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-2 text-sm font-medium">{value}</p>
     </div>
   );
