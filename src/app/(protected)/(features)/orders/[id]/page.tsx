@@ -43,21 +43,28 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
 
             {/* Center Section: Action Buttons */}
             <div className="flex-1 flex justify-center gap-2">
-              <Button asChild size="sm" variant="outline" className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
+              >
                 <Link href="/orders">
                   <ArrowLeft className="h-4 w-4" />
                   Back
                 </Link>
               </Button>
-              <Button asChild size="sm" className="gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90">
+              <Button
+                asChild
+                size="sm"
+                className="gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90"
+              >
                 <Link href={`/orders/${id}/edit`}>
                   <Edit className="h-4 w-4" />
                   Edit
                 </Link>
               </Button>
-              {orderData && (
-                <InvoicePrintButton order={orderData} orderType="sales" />
-              )}
+              {orderData && <InvoicePrintButton order={orderData} orderType="sales" />}
             </div>
 
             {/* Right Section: Spacer for balance */}

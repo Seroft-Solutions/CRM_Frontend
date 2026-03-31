@@ -46,7 +46,7 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
                 asChild
                 size="sm"
                 variant="outline"
-                className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
+                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
               >
                 <Link href={`/orders/${id}/fulfillment/history`}>
                   <History className="h-4 w-4" />
@@ -57,7 +57,7 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
                 asChild
                 size="sm"
                 variant="outline"
-                className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
+                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
               >
                 <Link href={`/orders/${id}`}>
                   <ArrowLeft className="h-4 w-4" />

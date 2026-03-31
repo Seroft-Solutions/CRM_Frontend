@@ -326,12 +326,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             />
                           </TableCell>
                         ) : null}
-                        <TableCell className="text-center font-semibold text-slate-900">
-                          <div>{stocksLoading ? '...' : row.availableQuantity}</div>
-                          <div className="text-[11px] text-slate-500">
-                            {typeof row.item.variantId === 'number' ? 'Variant' : 'Product'}
-                          </div>
-                        </TableCell>
                         <TableCell className="align-top">
                           <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
@@ -383,6 +377,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         </TableCell>
                         <TableCell className="text-center font-semibold text-emerald-700">
                           {row.deliveredQuantity}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-slate-900">
+                          <div>{stocksLoading ? '...' : row.availableQuantity}</div>
+                          <div className="text-[11px] text-slate-500">
+                            {typeof row.item.variantId === 'number' ? 'Variant' : 'Product'}
+                          </div>
                         </TableCell>
                         <TableCell className="align-top">
                           {isEditing ? (

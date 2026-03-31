@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { use, useMemo } from 'react';
-import { ArrowLeft, Eye, PackageCheck } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PermissionGuard } from '@/core/auth';
@@ -74,22 +74,22 @@ export default function OrderFulfillmentHistoryDetailPage({
                 asChild
                 size="sm"
                 variant="outline"
-                className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
+                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
               >
                 <Link href={`/orders/${id}/fulfillment/history`}>
                   <ArrowLeft className="h-4 w-4" />
-                  Back To History
+                  Back To Fulfillment History
                 </Link>
               </Button>
               <Button
                 asChild
                 size="sm"
                 variant="outline"
-                className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
+                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
               >
-                <Link href={`/orders/${id}/fulfillment`}>
-                  <PackageCheck className="h-4 w-4" />
-                  Fulfillment
+                <Link href={`/orders/${id}`}>
+                  <Eye className="h-4 w-4" />
+                  Back To Order
                 </Link>
               </Button>
             </div>

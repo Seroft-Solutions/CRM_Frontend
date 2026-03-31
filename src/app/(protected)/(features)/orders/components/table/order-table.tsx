@@ -5,8 +5,16 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { History } from 'lucide-react';
 import { useAccount, useUserAuthorities } from '@/core/auth';
 import { OrderStatus, orderStatusOptions } from '../../data/order-data';
 import { useOrderTableData } from '../../hooks';
@@ -27,6 +35,7 @@ function formatCurrency(amount: number) {
 function formatDateTime(value?: string) {
   if (!value) return '—';
   const parsed = new Date(value);
+
   return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
@@ -74,8 +83,10 @@ export function OrderTable({
     const taxRate = order.orderTaxRate ?? 0;
     const totalAmount = order.orderTotalAmount ?? 0;
     const divisor = 1 + taxRate / 100;
+
     if (divisor <= 0) return 0;
     const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
+
     return Math.max(order.orderBaseAmount - taxableAmount, 0);
   };
 
@@ -109,10 +120,10 @@ export function OrderTable({
 
   if (isLoading) {
     return (
-        <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
+      <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
         Loading {subtitle}s...
-        </div>
-      );
+      </div>
+    );
   }
 
   if (isError) {
@@ -156,21 +167,42 @@ export function OrderTable({
       <div className="flex flex-col gap-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-600">
-            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              className="h-5 w-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
           </div>
           <div>
             <h3 className="font-bold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
-              Search by ID, email, or phone · {totalCount} {totalCount === 1 ? subtitle : `${subtitle}s`}
+              Search by ID, email, or phone · {totalCount}{' '}
+              {totalCount === 1 ? subtitle : `${subtitle}s`}
             </p>
           </div>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <div className="relative">
-            <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
             <Input
               placeholder={searchPlaceholder}
@@ -179,9 +211,18 @@ export function OrderTable({
               className="w-full border-slate-300 pl-9 sm:w-72"
             />
           </div>
-          <Button variant="outline" onClick={() => handleSearchChange('')} className="border-slate-300">
+          <Button
+            variant="outline"
+            onClick={() => handleSearchChange('')}
+            className="border-slate-300"
+          >
             <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Clear
           </Button>
@@ -231,7 +272,9 @@ export function OrderTable({
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="font-bold text-slate-900">{formatCurrency(order.orderTotalAmount)}</div>
+                      <div className="font-bold text-slate-900">
+                        {formatCurrency(order.orderTotalAmount)}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         Base {formatCurrency(order.orderBaseAmount)}
                       </div>
@@ -253,7 +296,10 @@ export function OrderTable({
                           : 'Included'}
                       </div>
                       {order.shipping.shippingId ? (
-                        <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900">
+                        <Badge
+                          variant="outline"
+                          className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
+                        >
                           #{order.shipping.shippingId}
                         </Badge>
                       ) : null}
@@ -281,19 +327,54 @@ export function OrderTable({
                     <div className="flex justify-end gap-2">
                       <Button asChild size="sm" variant="outline" className="border-slate-300">
                         <Link href={`/orders/${order.orderId}`}>
-                          <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          <svg
+                            className="mr-1 h-3 w-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
                           </svg>
                           View
                         </Link>
                       </Button>
-                      <Button asChild size="sm" className="bg-slate-600 text-white hover:bg-slate-700">
+                      <Button
+                        asChild
+                        size="sm"
+                        className="bg-slate-600 text-white hover:bg-slate-700"
+                      >
                         <Link href={`/orders/${order.orderId}/edit`}>
-                          <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          <svg
+                            className="mr-1 h-3 w-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
                           </svg>
                           Edit
+                        </Link>
+                      </Button>
+                      <Button asChild size="sm" variant="outline" className="border-slate-300">
+                        <Link href={`/orders/${order.orderId}/fulfillment/history`}>
+                          <History className="mr-1 h-3 w-3" />
+                          Fulfillment History
                         </Link>
                       </Button>
                     </div>
@@ -307,13 +388,25 @@ export function OrderTable({
                 <TableCell colSpan={7} className="py-16 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                      <svg className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      <svg
+                        className="h-8 w-8 text-slate-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
                       </svg>
                     </div>
                     <p className="mb-1 font-semibold text-slate-700">No orders found</p>
                     <p className="text-sm text-muted-foreground">
-                      {searchTerm ? 'Try adjusting your search or filters' : 'Orders will appear here once created'}
+                      {searchTerm
+                        ? 'Try adjusting your search or filters'
+                        : 'Orders will appear here once created'}
                     </p>
                   </div>
                 </TableCell>
@@ -356,7 +449,12 @@ export function OrderTable({
               className="border-slate-300 disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                />
               </svg>
             </Button>
             <Button
@@ -367,7 +465,12 @@ export function OrderTable({
               className="border-slate-300 disabled:opacity-50"
             >
               <svg className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Previous
             </Button>
@@ -387,7 +490,12 @@ export function OrderTable({
             >
               Next
               <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </Button>
             <Button
@@ -398,7 +506,12 @@ export function OrderTable({
               className="border-slate-300 disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                />
               </svg>
             </Button>
           </div>
