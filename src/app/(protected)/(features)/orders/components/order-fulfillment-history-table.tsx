@@ -61,7 +61,6 @@ export function OrderFulfillmentHistoryTable({
                 <TableHead className="text-center">Items</TableHead>
                 <TableHead className="text-center">Delivered</TableHead>
                 <TableHead className="text-center">Outstanding</TableHead>
-                <TableHead>Notes</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -99,9 +98,6 @@ export function OrderFulfillmentHistoryTable({
                     <TableCell className="text-center font-semibold text-amber-700">
                       {generation.totalBacklogQuantity ?? 0}
                     </TableCell>
-                    <TableCell className="max-w-[280px] text-sm text-slate-600">
-                      {generation.notes?.trim() ? generation.notes : '—'}
-                    </TableCell>
                     <TableCell className="text-right">
                       {generation.id ? (
                         <Button
@@ -124,7 +120,7 @@ export function OrderFulfillmentHistoryTable({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-16 text-center">
+                  <TableCell colSpan={6} className="py-16 text-center">
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-slate-900">
                         No fulfillment history found
