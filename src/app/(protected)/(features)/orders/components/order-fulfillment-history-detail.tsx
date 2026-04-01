@@ -3,7 +3,8 @@
 import { useMemo, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Printer } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
 import { Button } from '@/components/ui/button';
 import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
 import type { OrderFulfillmentGenerationResponse } from '@/core/api/order-fulfillment-generations';
@@ -203,6 +204,7 @@ export function OrderFulfillmentHistoryDetail({
   order,
   generation,
 }: OrderFulfillmentHistoryDetailProps) {
+  const printContainerRef = useRef<HTMLDivElement>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const { data: organizations } = useUserOrganizations();
@@ -217,6 +219,28 @@ export function OrderFulfillmentHistoryDetail({
   const invoiceLabel = getFulfillmentRecordLabel(order.orderId, {
     invoiceId: generation.id,
     generationNumber: generation.generationNumber,
+  });
+  const handlePrintInvoice = useReactToPrint({
+    contentRef: printContainerRef,
+    documentTitle: invoiceLabel.replace(/\s+/g, '-'),
+    pageStyle: `
+      @page { size: A4 portrait; margin: 6mm; }
+      html, body { margin: 0 !important; padding: 0 !important; }
+      body {
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #order-fulfillment-print-card,
+      #order-fulfillment-print-card * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #order-fulfillment-print-card {
+        overflow: visible !important;
+        background: #ffffff !important;
+      }
+    `,
   });
   const customer = order.customer;
   const customerName = getCustomerDisplayName(order);
@@ -345,7 +369,16 @@ export function OrderFulfillmentHistoryDetail({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handlePrintInvoice()}
+          className="gap-2"
+        >
+          <Printer className="h-4 w-4" />
+          Print Invoice
+        </Button>
         <Button
           type="button"
           onClick={handleDownloadPdf}
@@ -361,10 +394,18 @@ export function OrderFulfillmentHistoryDetail({
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div
+        ref={printContainerRef}
+        id="order-fulfillment-print-card"
+        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+      >
         <div ref={invoiceRef} id="order-fulfillment-invoice" className="p-8">
           <style>
             {`
+              #order-fulfillment-print-card {
+                background: #ffffff !important;
+              }
+
               #order-fulfillment-invoice {
                 background: #ffffff !important;
                 color: #000000 !important;
@@ -385,6 +426,64 @@ export function OrderFulfillmentHistoryDetail({
               #order-fulfillment-invoice .invoice-white-bg {
                 background: #ffffff !important;
               }
+
+              @media print {
+                #order-fulfillment-print-card {
+                  width: 980px !important;
+                  margin: 0 !important;
+                  zoom: 0.76;
+                  overflow: visible !important;
+                  border-radius: 1rem !important;
+                  border: 1px solid #e2e8f0 !important;
+                  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.06) !important;
+                }
+
+                #order-fulfillment-invoice {
+                  padding: 2rem !important;
+                }
+
+                #order-fulfillment-invoice .invoice-heading-row {
+                  display: flex !important;
+                  flex-direction: row !important;
+                  align-items: center !important;
+                  justify-content: space-between !important;
+                }
+
+                #order-fulfillment-invoice .invoice-meta-grid {
+                  display: grid !important;
+                  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                  gap: 1.5rem !important;
+                }
+
+                #order-fulfillment-invoice .invoice-detail-grid {
+                  display: grid !important;
+                  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                  gap: 1rem !important;
+                }
+
+                #order-fulfillment-invoice .invoice-summary-grid {
+                  display: grid !important;
+                  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr) !important;
+                  gap: 1.5rem !important;
+                  align-items: start !important;
+                }
+
+                #order-fulfillment-invoice .invoice-table-card,
+                #order-fulfillment-invoice .invoice-section-card,
+                #order-fulfillment-invoice .invoice-total-card,
+                #order-fulfillment-invoice table,
+                #order-fulfillment-invoice tr,
+                #order-fulfillment-invoice td,
+                #order-fulfillment-invoice th {
+                  break-inside: avoid !important;
+                  page-break-inside: avoid !important;
+                }
+
+                #order-fulfillment-print-card {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+              }
             `}
           </style>
           <div className="border-b-2 border-slate-200 pb-6">
@@ -392,7 +491,7 @@ export function OrderFulfillmentHistoryDetail({
               <div className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
                 Order Fulfillment Invoice
               </div>
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="invoice-heading-row flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <h1 className="text-3xl font-black tracking-tight text-slate-950">
                   {invoiceLabel}
                 </h1>
@@ -406,8 +505,8 @@ export function OrderFulfillmentHistoryDetail({
             </div>
           </div>
 
-          <div className="grid gap-6 border-b border-slate-200 py-6 lg:grid-cols-4">
-            <div className="space-y-3">
+          <div className="invoice-meta-grid grid gap-6 border-b border-slate-200 py-6 lg:grid-cols-4">
+            <div className="invoice-section-card space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Billing From
               </div>
@@ -420,7 +519,7 @@ export function OrderFulfillmentHistoryDetail({
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="invoice-section-card space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Bill To
               </div>
@@ -432,7 +531,7 @@ export function OrderFulfillmentHistoryDetail({
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="invoice-section-card space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Ship To
               </div>
@@ -444,7 +543,7 @@ export function OrderFulfillmentHistoryDetail({
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="invoice-section-card space-y-3">
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Shipping Data
               </div>
@@ -470,7 +569,7 @@ export function OrderFulfillmentHistoryDetail({
           </div>
 
           <div className="py-6">
-            <div className="invoice-white-bg overflow-hidden rounded-2xl border border-slate-200">
+            <div className="invoice-table-card invoice-white-bg overflow-hidden rounded-2xl border border-slate-200">
               <table className="w-full text-left">
                 <thead className="invoice-muted-bg">
                   <tr>
@@ -536,10 +635,10 @@ export function OrderFulfillmentHistoryDetail({
             </div>
           </div>
 
-          <div className="grid gap-6 border-t border-slate-200 pt-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="invoice-summary-grid grid gap-6 border-t border-slate-200 pt-6 lg:grid-cols-[1.3fr_0.7fr]">
             <div className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 p-4">
+              <div className="invoice-detail-grid grid gap-4 md:grid-cols-2">
+                <div className="invoice-section-card rounded-2xl border border-slate-200 p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                     Customer Data
                   </div>
@@ -551,7 +650,7 @@ export function OrderFulfillmentHistoryDetail({
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 p-4">
+                <div className="invoice-section-card rounded-2xl border border-slate-200 p-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                     Order Data
                   </div>
@@ -565,7 +664,7 @@ export function OrderFulfillmentHistoryDetail({
               </div>
             </div>
 
-            <div className="invoice-muted-bg rounded-2xl border border-slate-200 p-5">
+            <div className="invoice-total-card invoice-muted-bg rounded-2xl border border-slate-200 p-5">
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm text-slate-600">
                   <span>Subtotal</span>
