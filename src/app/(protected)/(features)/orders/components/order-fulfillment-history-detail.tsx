@@ -264,9 +264,6 @@ export function OrderFulfillmentHistoryDetail({
     (billToAddress !== '—' ? billToAddress : '') ||
     (shipToAddress !== '—' ? shipToAddress : '') ||
     '—';
-  const discountAmount = getOrderDiscountAmount(order);
-  const taxableAmount = Math.max(order.orderBaseAmount - discountAmount, 0);
-  const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
 
   const invoiceItems = useMemo(() => {
     return (generation.items ?? []).map((item, index) => {
@@ -292,6 +289,19 @@ export function OrderFulfillmentHistoryDetail({
       };
     });
   }, [generation.items, order.items]);
+
+  const overallDiscountAmount = getOrderDiscountAmount(order);
+  const invoiceSubtotal = useMemo(
+    () => invoiceItems.reduce((sum, item) => sum + item.lineTotal, 0),
+    [invoiceItems]
+  );
+  const fulfillmentShare =
+    order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
+  const allocatedDiscountAmount = overallDiscountAmount * fulfillmentShare;
+  const allocatedShippingAmount = (order.shipping.shippingAmount ?? 0) * fulfillmentShare;
+  const taxableAmount = Math.max(invoiceSubtotal - allocatedDiscountAmount, 0);
+  const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
+  const invoiceGrandTotal = Math.max(taxableAmount + taxAmount + allocatedShippingAmount, 0);
 
   const handleDownloadPdf = async () => {
     if (!invoiceRef.current || isDownloading) {
@@ -669,12 +679,14 @@ export function OrderFulfillmentHistoryDetail({
                 <div className="flex items-center justify-between text-sm text-slate-600">
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-950">
-                    {formatOrderCurrency(order.orderBaseAmount)}
+                    {formatOrderCurrency(invoiceSubtotal)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-rose-600">
                   <span>Discount</span>
-                  <span className="font-semibold">- {formatOrderCurrency(discountAmount)}</span>
+                  <span className="font-semibold">
+                    - {formatOrderCurrency(allocatedDiscountAmount)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-slate-600">
                   <span>Taxable Amount</span>
@@ -691,7 +703,7 @@ export function OrderFulfillmentHistoryDetail({
                 <div className="flex items-center justify-between text-sm text-slate-600">
                   <span>Shipping</span>
                   <span className="font-semibold text-slate-950">
-                    {formatOrderCurrency(order.shipping.shippingAmount)}
+                    {formatOrderCurrency(allocatedShippingAmount)}
                   </span>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
@@ -700,7 +712,7 @@ export function OrderFulfillmentHistoryDetail({
                       Grand Total
                     </span>
                     <span className="text-2xl font-black text-slate-950">
-                      {formatOrderCurrency(order.orderTotalAmount)}
+                      {formatOrderCurrency(invoiceGrandTotal)}
                     </span>
                   </div>
                 </div>
