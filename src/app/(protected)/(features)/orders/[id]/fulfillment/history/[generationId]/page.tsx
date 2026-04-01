@@ -117,7 +117,11 @@ export default function OrderFulfillmentHistoryDetailPage({
             This fulfillment history record was not found for the selected order.
           </div>
         ) : (
-          <OrderFulfillmentHistoryDetail order={orderRecord} generation={generation} />
+          <OrderFulfillmentHistoryDetail
+            order={orderRecord}
+            generation={generation}
+            generations={generations}
+          />
         )}
       </div>
     </PermissionGuard>

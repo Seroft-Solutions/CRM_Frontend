@@ -121,6 +121,19 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     return deliveredMap;
   }, [generations]);
 
+  const originalOrderQuantityByOrderDetailId = useMemo(() => {
+    const originalQuantityMap = new Map<number, number>();
+
+    order.items.forEach((item) => {
+      const remainingQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
+      const deliveredQuantity = deliveredQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
+
+      originalQuantityMap.set(item.orderDetailId, remainingQuantity + deliveredQuantity);
+    });
+
+    return originalQuantityMap;
+  }, [deliveredQuantityByOrderDetailId, order.items]);
+
   const rows = useMemo(() => {
     return allItems.map((item) => {
       const draft = draftState[item.orderDetailId] ?? { selected: false, quantity: '' };
@@ -129,14 +142,17 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         deliverableQuantity: 0,
       };
       const enteredQuantity = parsePositiveInteger(draft.quantity);
-      const totalQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
-      const isCompleted = totalQuantity === 0;
+      const remainingQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
+      const deliveredQuantity = deliveredQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
+      const originalOrderQuantity =
+        originalOrderQuantityByOrderDetailId.get(item.orderDetailId) ?? remainingQuantity;
+      const isCompleted = remainingQuantity === 0;
       let validationMessage: string | undefined;
 
       if (draft.selected && enteredQuantity > stockSnapshot.availableQuantity) {
         validationMessage = 'Stock not available';
-      } else if (draft.selected && enteredQuantity > totalQuantity) {
-        validationMessage = `Fulfillment quantity cannot exceed order quantity (${totalQuantity}).`;
+      } else if (draft.selected && enteredQuantity > remainingQuantity) {
+        validationMessage = `Fulfillment quantity cannot exceed remaining quantity (${remainingQuantity}).`;
       }
 
       return {
@@ -145,14 +161,21 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         selected: draft.selected,
         quantity: draft.quantity,
         enteredQuantity,
-        totalQuantity,
-        deliveredQuantity: deliveredQuantityByOrderDetailId.get(item.orderDetailId) ?? 0,
+        originalOrderQuantity,
+        remainingQuantity,
+        deliveredQuantity,
         availableQuantity: stockSnapshot.availableQuantity,
         deliverableQuantity: stockSnapshot.deliverableQuantity,
         validationMessage,
       };
     });
-  }, [allItems, deliveredQuantityByOrderDetailId, draftState, stockByItemId]);
+  }, [
+    allItems,
+    deliveredQuantityByOrderDetailId,
+    draftState,
+    originalOrderQuantityByOrderDetailId,
+    stockByItemId,
+  ]);
 
   const selectedRows = rows.filter((row) => row.selected && row.enteredQuantity > 0);
   const selectedUnits = selectedRows.reduce((sum, row) => sum + row.enteredQuantity, 0);
@@ -296,6 +319,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableHead>Item</TableHead>
                     <TableHead className="text-center">Order Qty</TableHead>
                     <TableHead className="text-center">Delivered Qty</TableHead>
+                    <TableHead className="text-center">Remaining Qty</TableHead>
                     <TableHead className="text-center">Available Stock</TableHead>
                     <TableHead className="min-w-[180px]">Fulfill Quantity</TableHead>
                   </TableRow>
@@ -354,16 +378,17 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
                             ) : null}
                             <p className="text-xs text-slate-500">
-                              Requested qty: {row.item.quantity}
+                              Ordered qty: {row.originalOrderQuantity}
                             </p>
                             <p className="text-xs text-slate-500">
                               Delivered qty: {row.deliveredQuantity}
                             </p>
                             <p className="text-xs text-slate-500">
-                              Can fulfill now: {row.deliverableQuantity} • Remaining after save:{' '}
+                              Remaining qty: {row.remainingQuantity} • Can fulfill now:{' '}
+                              {row.deliverableQuantity} • Remaining after save:{' '}
                               {isEditing && row.selected
-                                ? Math.max(row.totalQuantity - row.enteredQuantity, 0)
-                                : row.totalQuantity}
+                                ? Math.max(row.remainingQuantity - row.enteredQuantity, 0)
+                                : row.remainingQuantity}
                             </p>
                             <p className="text-xs text-slate-500">
                               {typeof row.item.variantId === 'number'
@@ -373,10 +398,13 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           </div>
                         </TableCell>
                         <TableCell className="text-center font-semibold text-slate-900">
-                          {row.totalQuantity}
+                          {row.originalOrderQuantity}
                         </TableCell>
                         <TableCell className="text-center font-semibold text-emerald-700">
                           {row.deliveredQuantity}
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-amber-700">
+                          {row.remainingQuantity}
                         </TableCell>
                         <TableCell className="text-center font-semibold text-slate-900">
                           <div>{stocksLoading ? '...' : row.availableQuantity}</div>
@@ -536,7 +564,11 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           {item.productName || item.sku || `Order item #${item.orderDetailId}`}
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs text-slate-600">
-                          <span>Requested: {item.requestedQuantity ?? 0}</span>
+                          <span>
+                            Ordered:{' '}
+                            {originalOrderQuantityByOrderDetailId.get(item.orderDetailId ?? -1) ??
+                              0}
+                          </span>
                           <span>Delivered: {item.deliveredQuantity ?? 0}</span>
                           <span>Available Before: {item.availableQuantityBefore ?? 0}</span>
                           <span>Outstanding After: {item.remainingBacklogQuantity ?? 0}</span>

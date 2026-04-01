@@ -20,6 +20,7 @@ import {
 interface OrderFulfillmentHistoryDetailProps {
   order: OrderRecord;
   generation: OrderFulfillmentGenerationResponse;
+  generations: OrderFulfillmentGenerationResponse[];
 }
 
 const compactJoin = (parts: Array<string | undefined>, separator = ', ') =>
@@ -203,6 +204,7 @@ const prepareCloneForPdf = (source: HTMLElement, cloneRoot: HTMLElement) => {
 export function OrderFulfillmentHistoryDetail({
   order,
   generation,
+  generations,
 }: OrderFulfillmentHistoryDetailProps) {
   const printContainerRef = useRef<HTMLDivElement>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -265,6 +267,38 @@ export function OrderFulfillmentHistoryDetail({
     (shipToAddress !== '—' ? shipToAddress : '') ||
     '—';
 
+  const deliveredQuantityByOrderDetailId = useMemo(() => {
+    const deliveredMap = new Map<number, number>();
+
+    generations.forEach((entry) => {
+      entry.items?.forEach((item) => {
+        if (typeof item.orderDetailId !== 'number') {
+          return;
+        }
+
+        deliveredMap.set(
+          item.orderDetailId,
+          (deliveredMap.get(item.orderDetailId) ?? 0) + Math.max(0, item.deliveredQuantity ?? 0)
+        );
+      });
+    });
+
+    return deliveredMap;
+  }, [generations]);
+
+  const originalOrderQuantityByOrderDetailId = useMemo(() => {
+    const originalQuantityMap = new Map<number, number>();
+
+    order.items.forEach((item) => {
+      const remainingQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
+      const deliveredQuantity = deliveredQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
+
+      originalQuantityMap.set(item.orderDetailId, remainingQuantity + deliveredQuantity);
+    });
+
+    return originalQuantityMap;
+  }, [deliveredQuantityByOrderDetailId, order.items]);
+
   const invoiceItems = useMemo(() => {
     return (generation.items ?? []).map((item, index) => {
       const orderItem = order.items.find(
@@ -281,14 +315,17 @@ export function OrderFulfillmentHistoryDetail({
           `Order item #${item.orderDetailId ?? index + 1}`,
         sku: item.sku || orderItem?.sku || '—',
         variantAttributes: orderItem?.variantAttributes || '',
-        requestedQuantity: item.requestedQuantity ?? 0,
+        requestedQuantity:
+          originalOrderQuantityByOrderDetailId.get(item.orderDetailId ?? -1) ??
+          item.requestedQuantity ??
+          0,
         deliveredQuantity,
         backlogLeft: item.remainingBacklogQuantity ?? 0,
         unitPrice,
         lineTotal: deliveredQuantity * unitPrice,
       };
     });
-  }, [generation.items, order.items]);
+  }, [generation.items, order.items, originalOrderQuantityByOrderDetailId]);
 
   const overallDiscountAmount = getOrderDiscountAmount(order);
   const invoiceSubtotal = useMemo(
@@ -587,13 +624,13 @@ export function OrderFulfillmentHistoryDetail({
                       Item Details
                     </th>
                     <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Requested
+                      Order
                     </th>
                     <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                       Delivered
                     </th>
                     <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Outstanding After
+                      Remaining
                     </th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                       Unit Price
