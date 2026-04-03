@@ -8,11 +8,12 @@ import type { OrderFormContextValue } from './form-types';
 interface OrderFormProviderProps {
   children: React.ReactNode;
   initialOrder?: OrderRecord;
+  callId?: number;
 }
 
 const OrderFormContext = createContext<OrderFormContextValue | null>(null);
 
-export function OrderFormProvider({ children }: OrderFormProviderProps) {
+export function OrderFormProvider({ children, callId }: OrderFormProviderProps) {
   const [isSubmitting, setSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
@@ -28,8 +29,9 @@ export function OrderFormProvider({ children }: OrderFormProviderProps) {
         setSubmitting,
         setLoading,
       },
+      callId,
     }),
-    [isLoading, isSubmitting]
+    [isLoading, isSubmitting, callId]
   );
 
   return <OrderFormContext.Provider value={value}>{children}</OrderFormContext.Provider>;
@@ -53,4 +55,8 @@ export function useFormState() {
 
 export function useFormActions() {
   return useEntityForm().actions;
+}
+
+export function useCallId() {
+  return useEntityForm().callId;
 }

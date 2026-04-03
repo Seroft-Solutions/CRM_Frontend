@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Pencil } from 'lucide-react';
+import { Pencil, Plus, Package } from 'lucide-react';
 import { callToast, handleCallError } from './call-toast';
 import { callFormConfig } from './form/call-form-config';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,9 @@ import {
   useDeleteCall,
   useGetCall,
 } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
+import { useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
+import type { GetAllOrdersParams, OrderDTO } from '@/core/api/generated/spring/schemas';
+import { getOrderStatusLabel } from '@/app/(protected)/(features)/orders/data/order-data';
 
 import { useGetAllPriorities } from '@/core/api/generated/spring/endpoints/priority-resource/priority-resource.gen';
 import { useGetAllCallTypes } from '@/core/api/generated/spring/endpoints/call-type-resource/call-type-resource.gen';
@@ -40,6 +43,10 @@ import { useGetAllCallStatuses } from '@/core/api/generated/spring/endpoints/cal
 interface CallDetailsProps {
   id: number;
 }
+
+type OrderListParamsWithCallId = GetAllOrdersParams & {
+  'callId.equals'?: number;
+};
 
 function RelationshipDisplayValue({ value, relConfig }: { value: any; relConfig: any }) {
   const { data: priorityData } =
@@ -276,6 +283,24 @@ export function CallDetails({ id }: CallDetailsProps) {
     },
   });
   const customerPhoneNumber = customerDetails?.mobile || entity?.customer?.mobile || '';
+  const createOrderHref = entity?.customer?.id
+    ? `/orders/new?callId=${id}&customerId=${entity.customer.id}`
+    : `/orders/new?callId=${id}`;
+  const orderQueryParams: OrderListParamsWithCallId = {
+    'callId.equals': id,
+    page: 0,
+    size: 100,
+    sort: ['id,desc'],
+  };
+  const {
+    data: callOrders = [],
+    isLoading: isOrdersLoading,
+    isError: isOrdersError,
+  } = useGetAllOrders(orderQueryParams, {
+    query: {
+      enabled: !!id,
+    },
+  });
 
   const { mutate: deleteEntity } = useDeleteCall({
     mutation: {
@@ -439,6 +464,85 @@ export function CallDetails({ id }: CallDetailsProps) {
             </Link>
           </Button>
         </div>
+      </div>
+
+      {/* Orders Section */}
+      <div className="mt-8 pt-6 border-t">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100">
+              <Package className="w-4 h-4 text-amber-600" />
+            </div>
+            <h3 className="text-lg font-semibold">Orders</h3>
+          </div>
+          <Button asChild size="sm" className="gap-2">
+            <Link href={createOrderHref}>
+              <Plus className="w-4 h-4" />
+              Add Order
+            </Link>
+          </Button>
+        </div>
+
+        {isOrdersLoading ? (
+          <div className="text-center py-8 border rounded-lg bg-muted/20">
+            <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3 animate-pulse" />
+            <p className="text-muted-foreground">Loading related orders...</p>
+          </div>
+        ) : isOrdersError ? (
+          <div className="text-center py-8 border rounded-lg bg-muted/20">
+            <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground">Unable to load orders for this call</p>
+          </div>
+        ) : callOrders.length > 0 ? (
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-sm font-medium">Order ID</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium">Status</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium">Total Amount</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium">Created Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {callOrders.map((order: OrderDTO) => (
+                  <tr key={order.id} className="border-t hover:bg-muted/30">
+                    <td className="px-4 py-2">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="text-blue-600 hover:underline font-medium"
+                      >
+                        #{order.id}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {getOrderStatusLabel(order.orderStatus)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 font-medium">
+                      ₹{order.orderTotalAmount?.toFixed(2) || '0.00'}
+                    </td>
+                    <td className="px-4 py-2 text-muted-foreground">
+                      {order.createdDate ? format(new Date(order.createdDate), 'PP') : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 border rounded-lg bg-muted/20">
+            <Package className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground">No orders associated with this lead</p>
+            <Button asChild variant="link" className="mt-2">
+              <Link href={createOrderHref}>
+                <Plus className="w-4 h-4 mr-1" />
+                Create an order
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

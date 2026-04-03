@@ -71,12 +71,15 @@ import { OrderFormFields } from './order-form-fields';
 import { OrderFormItems } from './order-form-items';
 import { FieldError } from './order-form-field-error';
 import { getOrderItemBillingBreakdown } from './order-item-stock';
+import { useCallId } from './order-form-provider';
 
 export interface OrderFormProps {
   initialOrder?: OrderRecord;
   addressExists?: boolean;
   shippingExists?: boolean;
   onSubmitSuccess?: () => void;
+  callId?: number;
+  customerId?: number;
 }
 
 const taxRateOptions = ['6', '12', '18'] as const;
@@ -135,9 +138,11 @@ export function OrderFormContent({
   addressExists,
   shippingExists,
   onSubmitSuccess,
+  customerId,
 }: OrderFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const callId = useCallId();
   const { registerDraftCheck, unregisterDraftCheck } = useCrossFormNavigation();
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<OrderFormErrors>({});
@@ -195,13 +200,17 @@ export function OrderFormContent({
       shippingAmount: initialOrder ? initialOrder.shipping.shippingAmount.toString() : '',
       orderTaxRate:
         typeof initialOrder?.orderTaxRate === 'number' ? initialOrder.orderTaxRate.toString() : '',
-      customerId: initialOrder?.customer?.id ? String(initialOrder.customer.id) : '',
+      customerId: initialOrder?.customer?.id
+        ? String(initialOrder.customer.id)
+        : customerId
+          ? String(customerId)
+          : '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
       discountCode: initialOrder?.discountCode || '',
       orderComment: '',
     };
-  }, [initialOrder]);
+  }, [customerId, initialOrder]);
 
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
   const [discountData, setDiscountData] = useState<IDiscount | null>(null);
@@ -1383,12 +1392,19 @@ export function OrderFormContent({
       ? ({ id: selectedCustomerId } as CustomerDTO)
       : undefined;
 
-    const payload: OrderDTO = {
+    const callPayload = callId
+      ? ({ id: callId } as import('@/core/api/generated/spring/schemas').CallDTO)
+      : undefined;
+
+    const payload: OrderDTO & {
+      call?: import('@/core/api/generated/spring/schemas').CallDTO;
+    } = {
       id: initialOrder?.orderId,
       orderStatus: orderStatusCode,
       orderTotalAmount,
       orderTaxRate: taxRate,
       customer: customerPayload,
+      call: callPayload,
       orderBaseAmount: baseAmount,
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
@@ -1558,6 +1574,9 @@ export function OrderFormContent({
       await queryClient.invalidateQueries({ queryKey: ['/api/order-address-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-shipping-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] });
+      if (callId) {
+        await queryClient.invalidateQueries({ queryKey: [`/api/calls/${callId}`] });
+      }
 
       toast.success(isEditing ? 'Order updated' : 'Order created', {
         description: isEditing ? 'Changes saved successfully.' : 'New order is now available.',
@@ -1569,6 +1588,8 @@ export function OrderFormContent({
         onSubmitSuccess();
       } else if (isEditing && initialOrder?.orderId) {
         router.push(`/orders/${initialOrder.orderId}`);
+      } else if (callId) {
+        router.push(`/calls/${callId}`);
       } else if (result?.id) {
         router.push(`/orders/${result.id}`);
       } else {

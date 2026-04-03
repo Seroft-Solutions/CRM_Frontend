@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building2, CalendarDays, CheckCircle2, Loader2 } from 'lucide-react';
+import { Building2, CalendarDays, CheckCircle2, Loader2, ShoppingCart } from 'lucide-react';
 import { useGetCustomer } from '@/core/api/generated/spring';
 
 interface MeetingSchedulerDialogProps {
@@ -17,6 +17,7 @@ interface MeetingSchedulerDialogProps {
   callId?: number;
   onMeetingScheduledAction?: (meetingData: any) => void;
   onError?: (error: any) => void;
+  onOrderCreated?: (orderData: any) => void;
 }
 
 export function MeetingSchedulerDialog({
@@ -27,9 +28,11 @@ export function MeetingSchedulerDialog({
   callId,
   onMeetingScheduledAction,
   onError,
+  onOrderCreated,
 }: MeetingSchedulerDialogProps) {
   const router = useRouter();
   const [isScheduling, setIsScheduling] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   const { data: customerData } = useGetCustomer(customerId || 0, {
     query: { enabled: !!customerId },
@@ -47,6 +50,27 @@ export function MeetingSchedulerDialog({
     });
 
     const url = `/calls/schedule-meeting?${params.toString()}`;
+
+    console.log('Navigating to:', url);
+
+    setTimeout(() => {
+      router.push(url);
+    }, 500);
+  };
+
+  const handleCreateOrder = () => {
+    setIsCreatingOrder(true);
+
+    const params = new URLSearchParams();
+
+    params.set('callId', callId.toString());
+
+    if (customerId) {
+      params.set('customerId', customerId.toString());
+    }
+
+    const url = `/orders/new?${params.toString()}`;
+
     console.log('Navigating to:', url);
 
     setTimeout(() => {
@@ -130,12 +154,12 @@ export function MeetingSchedulerDialog({
           </div>
 
           {/* Loading Overlay */}
-          {isScheduling && (
+          {(isScheduling || isCreatingOrder) && (
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
               <div className="bg-card p-6 rounded-lg shadow-lg text-center">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
                 <p className="text-sm text-muted-foreground font-medium">
-                  Opening Meeting Scheduler...
+                  {isCreatingOrder ? 'Opening Order Form...' : 'Opening Meeting Scheduler...'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">Please wait a moment</p>
               </div>
@@ -143,18 +167,35 @@ export function MeetingSchedulerDialog({
           )}
 
           {/* Actions */}
-          <div className="px-6 py-5 bg-gray-50/50 flex gap-3">
+          <div className="px-6 py-5 bg-gray-50/50 flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
               onClick={handleDecline}
-              disabled={isScheduling}
+              disabled={isScheduling || isCreatingOrder}
               className="flex-1 h-11 font-medium border-gray-300 hover:bg-gray-100 disabled:opacity-50"
             >
               Maybe Later
             </Button>
             <Button
+              onClick={handleCreateOrder}
+              disabled={isScheduling || isCreatingOrder}
+              className="flex-1 h-11 font-medium bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-sm disabled:opacity-50"
+            >
+              {isCreatingOrder ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Opening...
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Create Order
+                </>
+              )}
+            </Button>
+            <Button
               onClick={handleScheduleMeeting}
-              disabled={isScheduling}
+              disabled={isScheduling || isCreatingOrder}
               className="flex-1 h-11 font-medium bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 shadow-sm disabled:opacity-50"
             >
               {isScheduling ? (

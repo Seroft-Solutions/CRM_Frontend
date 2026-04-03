@@ -1,12 +1,21 @@
 import { PermissionGuard } from '@/core/auth';
 import { OrderForm } from '@/app/(protected)/(features)/orders/components/form/order-form';
 import { Plus } from 'lucide-react';
+import { Suspense } from 'react';
 
 export const metadata = {
   title: 'Create Sale Order',
 };
 
-export default function CreateOrderPage() {
+interface CreateOrderPageProps {
+  searchParams: Promise<{ callId?: string; customerId?: string }>;
+}
+
+export default async function CreateOrderPage({ searchParams }: CreateOrderPageProps) {
+  const params = await searchParams;
+  const callId = params.callId ? parseInt(params.callId, 10) : undefined;
+  const customerId = params.customerId ? parseInt(params.customerId, 10) : undefined;
+
   return (
     <PermissionGuard
       requiredPermission="order:create"
@@ -37,7 +46,9 @@ export default function CreateOrderPage() {
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <OrderForm />
+          <Suspense fallback={<div>Loading...</div>}>
+            <OrderForm callId={callId} customerId={customerId} />
+          </Suspense>
         </div>
       </div>
     </PermissionGuard>
