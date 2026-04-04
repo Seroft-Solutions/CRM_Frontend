@@ -18,8 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { getSelectedOrganizationId } from '@/core/api/services/shared/tenant-helper';
-import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 
 import {
   useCreateWarehouseMutation,
@@ -241,24 +239,6 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
   const { mutate: createWarehouse, isPending: isCreating } = useCreateWarehouseMutation();
   const { mutate: updateWarehouse, isPending: isUpdating } = useUpdateWarehouseMutation();
 
-  const { data: organizations = [] } = useGetAllOrganizations(
-    { page: 0, size: 1000, sort: ['name,asc'] },
-    {
-      query: {
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
-
-  const selectableOrganizations = React.useMemo(
-    () =>
-      organizations.filter(
-        (organization): organization is typeof organization & { id: number } =>
-          typeof organization.id === 'number'
-      ),
-    [organizations]
-  );
-
   const form = useForm<WarehouseFormValues>({
     resolver: zodResolver(warehouseFormSchema),
     defaultValues: {
@@ -316,33 +296,6 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
     });
   }, [existingWarehouse, form]);
 
-  const resolvedOrganizationId = React.useMemo(() => {
-    const selectedOrgId = getSelectedOrganizationId();
-
-    if (!selectedOrgId) {
-      return undefined;
-    }
-
-    const numericSelectedOrgId = Number.parseInt(selectedOrgId, 10);
-
-    if (Number.isFinite(numericSelectedOrgId)) {
-      const directMatch = selectableOrganizations.find(
-        (organization) => organization.id === numericSelectedOrgId
-      );
-
-      if (directMatch?.id) {
-        return directMatch.id;
-      }
-    }
-
-    const matchedOrganization = selectableOrganizations.find(
-      (organization) =>
-        String(organization.id) === selectedOrgId || organization.keycloakOrgId === selectedOrgId
-    );
-
-    return matchedOrganization?.id;
-  }, [selectableOrganizations]);
-
   const setFieldErrorsFromServer = (error: unknown) => {
     const message = extractErrorMessage(error).toLowerCase();
 
@@ -354,27 +307,9 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
 
       return;
     }
-
-    if (message.includes('organization')) {
-      form.setError('root', {
-        type: 'server',
-        message:
-          'Unable to determine your organization. Please re-select your organization and try again.',
-      });
-    }
   };
 
   const onSubmit = (values: WarehouseFormValues) => {
-    if (!resolvedOrganizationId) {
-      form.setError('root', {
-        type: 'manual',
-        message:
-          'Unable to determine your organization. Please re-select your organization and try again.',
-      });
-
-      return;
-    }
-
     form.clearErrors('root');
 
     const areas: IWarehouseArea[] = values.areas.map((area) => ({
@@ -396,7 +331,6 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       address: values.address.trim(),
       areas,
       status: 'ACTIVE' as const,
-      organizationId: resolvedOrganizationId,
     };
 
     if (id) {

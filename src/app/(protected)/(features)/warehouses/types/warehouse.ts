@@ -21,8 +21,6 @@ export interface IWarehouse {
   address?: string;
   areas?: IWarehouseArea[];
   status: WarehouseStatus;
-  organizationId: number;
-  organizationName?: string;
   createdBy?: string;
   createdDate?: string;
   lastModifiedBy?: string;
@@ -40,7 +38,6 @@ export interface WarehouseListParams {
   'createdBy.contains'?: string;
   'lastModifiedBy.contains'?: string;
   'status.equals'?: WarehouseStatus;
-  'organizationId.equals'?: number;
   [key: string]: string | number | string[] | undefined;
 }
 

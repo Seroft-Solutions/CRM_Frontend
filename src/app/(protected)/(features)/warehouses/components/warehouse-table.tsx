@@ -45,7 +45,6 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InlinePermissionGuard } from '@/core/auth';
-import { useGetAllOrganizations } from '@/core/api/generated/spring/endpoints/organization-resource/organization-resource.gen';
 import { useDebounce } from '@/hooks/use-debounce';
 
 import {
@@ -178,14 +177,6 @@ export function WarehouseTable() {
       params['address.contains'] = filters.address.trim();
     }
 
-    if (filters.organizationId?.trim()) {
-      const organizationId = Number.parseInt(filters.organizationId, 10);
-
-      if (Number.isFinite(organizationId)) {
-        params['organizationId.equals'] = organizationId;
-      }
-    }
-
     return params;
   }, [activeStatusTab, filters]);
 
@@ -219,24 +210,6 @@ export function WarehouseTable() {
 
   const { data: totalCount = 0 } = useWarehouseCountQuery(criteriaParams);
   const { mutate: updateWarehouse, isPending: isUpdatingStatus } = useUpdateWarehouseMutation();
-
-  const { data: organizations = [] } = useGetAllOrganizations(
-    { page: 0, size: 1000, sort: ['name,asc'] },
-    {
-      query: {
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
-
-  const selectableOrganizations = React.useMemo(
-    () =>
-      organizations.filter(
-        (organization): organization is typeof organization & { id: number } =>
-          typeof organization.id === 'number'
-      ),
-    [organizations]
-  );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -359,7 +332,6 @@ export function WarehouseTable() {
           onFilterChange={handleFilterChange}
           onClearAll={clearAllFilters}
           hasActiveFilters={hasActiveFilters}
-          organizations={selectableOrganizations}
         />
       </div>
 
@@ -403,7 +375,6 @@ export function WarehouseTable() {
                     currentOrder={sortOrder}
                     onSort={handleSort}
                   />
-                  <TableHead>Organization</TableHead>
                   <TableHead>Areas</TableHead>
                   <SortableHead
                     label="Status"
@@ -418,13 +389,13 @@ export function WarehouseTable() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                       Loading warehouses...
                     </TableCell>
                   </TableRow>
                 ) : warehouses.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                       No warehouses found.
                       {hasActiveFilters && (
                         <div className="mt-1 text-sm text-muted-foreground">
@@ -445,7 +416,6 @@ export function WarehouseTable() {
                       <TableCell className="max-w-[240px] truncate" title={warehouse.address || ''}>
                         {warehouse.address || '—'}
                       </TableCell>
-                      <TableCell>{warehouse.organizationName || '—'}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

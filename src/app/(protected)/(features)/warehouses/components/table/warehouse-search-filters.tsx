@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ChevronDown, Filter, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,19 +12,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 export interface WarehouseFilterState {
   name?: string;
   code?: string;
   address?: string;
-  organizationId?: string;
 }
 
 interface WarehouseSearchAndFiltersProps {
@@ -34,14 +26,12 @@ interface WarehouseSearchAndFiltersProps {
   onFilterChange: (column: keyof WarehouseFilterState, value?: string) => void;
   onClearAll: () => void;
   hasActiveFilters: boolean;
-  organizations: Array<{ id: number; name?: string | null }>;
 }
 
 const filterLabels: Record<keyof WarehouseFilterState, string> = {
   name: 'Name',
   code: 'Code',
   address: 'Address',
-  organizationId: 'Organization',
 };
 
 export function WarehouseSearchAndFilters({
@@ -51,14 +41,8 @@ export function WarehouseSearchAndFilters({
   onFilterChange,
   onClearAll,
   hasActiveFilters,
-  organizations,
 }: WarehouseSearchAndFiltersProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-
-  const organizationsById = useMemo(
-    () => new Map(organizations.map((organization) => [String(organization.id), organization])),
-    [organizations]
-  );
 
   const activeFiltersCount =
     Object.values(filters).filter((value) => value !== undefined && value !== '').length +
@@ -66,14 +50,6 @@ export function WarehouseSearchAndFilters({
 
   const removeFilter = (filterKey: keyof WarehouseFilterState) => {
     onFilterChange(filterKey, undefined);
-  };
-
-  const getFilterDisplayValue = (key: keyof WarehouseFilterState, value: string) => {
-    if (key === 'organizationId') {
-      return organizationsById.get(value)?.name || value;
-    }
-
-    return value;
   };
 
   return (
@@ -143,28 +119,6 @@ export function WarehouseSearchAndFilters({
                       className="h-8"
                     />
                   </div>
-
-                  <div>
-                    <label className="mb-1 block text-xs text-muted-foreground">Organization</label>
-                    <Select
-                      value={filters.organizationId || 'ALL'}
-                      onValueChange={(value) =>
-                        onFilterChange('organizationId', value === 'ALL' ? undefined : value)
-                      }
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="All organizations" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ALL">All organizations</SelectItem>
-                        {organizations.map((organization) => (
-                          <SelectItem key={organization.id} value={String(organization.id)}>
-                            {organization.name || `Organization #${organization.id}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
               </div>
             </DropdownMenuContent>
@@ -209,7 +163,7 @@ export function WarehouseSearchAndFilters({
 
             return (
               <Badge key={filterKey} variant="secondary" className="gap-1">
-                {filterLabels[filterKey]}: {getFilterDisplayValue(filterKey, value)}
+                {filterLabels[filterKey]}: {value}
                 <button
                   onClick={() => removeFilter(filterKey)}
                   className="ml-1 rounded-full hover:bg-secondary-foreground/20"
