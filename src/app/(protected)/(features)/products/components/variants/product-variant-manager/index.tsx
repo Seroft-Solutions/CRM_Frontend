@@ -38,15 +38,15 @@ const normalizeSizeToken = (value: string) => value.toLowerCase().replace(/[^a-z
 const sizeRankByToken = (() => {
   const map = new Map<string, number>();
   const groups = [
-    ['xxxl', '3xl'],
-    ['xxl', '2xl'],
-    ['xl', 'xlarge', 'extralarge', 'extralarger'],
-    ['l', 'large'],
-    ['m', 'medium', 'med'],
-    ['s', 'small'],
-    ['xs', 'xsmall', 'extrasmall', 'exsmall'],
-    ['xxs', '2xs'],
     ['xxxs', '3xs'],
+    ['xxs', '2xs'],
+    ['xs', 'xsmall', 'extrasmall', 'exsmall'],
+    ['s', 'small'],
+    ['m', 'medium', 'med'],
+    ['l', 'large'],
+    ['xl', 'xlarge', 'extralarge', 'extralarger'],
+    ['xxl', '2xl'],
+    ['xxxl', '3xl'],
   ];
 
   groups.forEach((tokens, index) => {
@@ -432,7 +432,7 @@ export function ProductVariantManager({
     const numeric = Number.parseFloat(normalized);
 
     if (!Number.isNaN(numeric)) {
-      return { rank: 1000 - numeric, label: rawValue };
+      return { rank: 1000 + numeric, label: rawValue };
     }
 
     return { rank: 999, label: rawValue };

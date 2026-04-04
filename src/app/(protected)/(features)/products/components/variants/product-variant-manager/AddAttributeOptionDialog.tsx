@@ -16,13 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useCreateSystemConfigAttributeOption } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import type { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import type { SystemConfigAttributeOptionDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTO';
@@ -38,14 +31,12 @@ interface AttributeOptionFormState {
   code: string;
   label: string;
   sortOrder: string;
-  status: SystemConfigAttributeOptionDTOStatus;
 }
 
 interface AttributeOptionFormErrors {
   code?: string;
   label?: string;
   sortOrder?: string;
-  status?: string;
   root?: string;
 }
 
@@ -66,7 +57,6 @@ const buildDefaultFormState = (
     code: isColorAttribute(attribute) ? '#000000' : '',
     label: '',
     sortOrder: String(nextSortOrder),
-    status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
   };
 };
 
@@ -147,10 +137,6 @@ export function AddAttributeOptionDialog({
       nextErrors.sortOrder = 'Sort order must be a whole number greater than or equal to 0';
     }
 
-    if (!formState.status) {
-      nextErrors.status = 'Status is required';
-    }
-
     return nextErrors;
   };
 
@@ -175,7 +161,7 @@ export function AddAttributeOptionDialog({
       code: useColorCode ? formState.code.trim().toUpperCase() : formState.code.trim(),
       label: formState.label.trim(),
       sortOrder: Number(formState.sortOrder),
-      status: formState.status,
+      status: SystemConfigAttributeOptionDTOStatus.ACTIVE,
       attribute: { id: attribute.id } as SystemConfigAttributeDTO,
     };
 
@@ -272,49 +258,18 @@ export function AddAttributeOptionDialog({
               {errors.label && <p className="text-sm text-destructive">{errors.label}</p>}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor={`option-sort-order-${attribute.id}`}>Sort Order</Label>
-                <Input
-                  id={`option-sort-order-${attribute.id}`}
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={formState.sortOrder}
-                  onChange={(event) => updateField('sortOrder', event.target.value)}
-                  aria-invalid={Boolean(errors.sortOrder)}
-                />
-                {errors.sortOrder && <p className="text-sm text-destructive">{errors.sortOrder}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                  value={formState.status}
-                  onValueChange={(value) =>
-                    updateField('status', value as SystemConfigAttributeOptionDTOStatus)
-                  }
-                >
-                  <SelectTrigger className="w-full" aria-invalid={Boolean(errors.status)}>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={SystemConfigAttributeOptionDTOStatus.ACTIVE}>
-                      Active
-                    </SelectItem>
-                    <SelectItem value={SystemConfigAttributeOptionDTOStatus.DRAFT}>
-                      Draft
-                    </SelectItem>
-                    <SelectItem value={SystemConfigAttributeOptionDTOStatus.INACTIVE}>
-                      Inactive
-                    </SelectItem>
-                    <SelectItem value={SystemConfigAttributeOptionDTOStatus.ARCHIVED}>
-                      Archived
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.status && <p className="text-sm text-destructive">{errors.status}</p>}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor={`option-sort-order-${attribute.id}`}>Sort Order</Label>
+              <Input
+                id={`option-sort-order-${attribute.id}`}
+                type="number"
+                min={0}
+                step={1}
+                value={formState.sortOrder}
+                onChange={(event) => updateField('sortOrder', event.target.value)}
+                aria-invalid={Boolean(errors.sortOrder)}
+              />
+              {errors.sortOrder && <p className="text-sm text-destructive">{errors.sortOrder}</p>}
             </div>
 
             {errors.root && <p className="text-sm text-destructive">{errors.root}</p>}
