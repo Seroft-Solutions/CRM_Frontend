@@ -42,6 +42,7 @@ interface VariantGeneratorProps {
   onToggleOption: (attributeId: number, optionId: number) => void;
   disabledOptionIds: Set<number>;
   isCreateMode?: boolean;
+  onOptionCreated?: (attributeId: number, option: SystemConfigAttributeOptionDTO) => void;
 }
 
 /**
@@ -62,6 +63,7 @@ export function VariantGenerator({
   onToggleOption,
   disabledOptionIds,
   isCreateMode = false,
+  onOptionCreated,
 }: VariantGeneratorProps) {
   return (
     <div className="rounded-lg border bg-card p-4 space-y-4">
@@ -104,6 +106,7 @@ export function VariantGenerator({
                 selectedOptionIds={selectedSet}
                 onToggleOption={onToggleOption}
                 disabledOptionIds={disabledOptionIds}
+                onOptionCreated={onOptionCreated}
               />
             );
           })}

@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { SystemConfigAttributeOptionDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTO';
+import { AddAttributeOptionDialog } from './AddAttributeOptionDialog';
 
 /**
  * @interface AttributeOptionsSelectorProps
@@ -17,6 +18,7 @@ interface AttributeOptionsSelectorProps {
   selectedOptionIds: Set<number>;
   onToggleOption: (attributeId: number, optionId: number) => void;
   disabledOptionIds: Set<number>;
+  onOptionCreated?: (attributeId: number, option: SystemConfigAttributeOptionDTO) => void;
 }
 
 /**
@@ -32,6 +34,7 @@ export function AttributeOptionsSelector({
   selectedOptionIds,
   onToggleOption,
   disabledOptionIds,
+  onOptionCreated,
 }: AttributeOptionsSelectorProps) {
   const attributeId = attribute.id!;
   const isColorAttribute =
@@ -86,6 +89,11 @@ export function AttributeOptionsSelector({
             </Badge>
           </div>
         </div>
+        <AddAttributeOptionDialog
+          attribute={attribute}
+          options={options}
+          onOptionCreated={(option) => onOptionCreated?.(attributeId, option)}
+        />
       </div>
 
       <div className="flex flex-wrap gap-2">

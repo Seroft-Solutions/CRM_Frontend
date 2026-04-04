@@ -16,6 +16,7 @@ import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/Prod
 import { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTO';
 import { ProductVariantDTOStatus } from '@/core/api/generated/spring/schemas/ProductVariantDTOStatus';
 import { SystemConfigAttributeDTOAttributeType } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTOAttributeType';
+import type { SystemConfigAttributeOptionDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeOptionDTO';
 import type { GetAllProductVariantsParams } from '@/core/api/generated/spring/schemas/GetAllProductVariantsParams';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
@@ -1312,6 +1313,22 @@ export function ProductVariantManager({
     });
   };
 
+  const handleOptionCreated = (attributeId: number, option: SystemConfigAttributeOptionDTO) => {
+    if (typeof option.id !== 'number') {
+      return;
+    }
+
+    setUserSelectedOptionIdsByAttributeId((prev) => {
+      const next = { ...prev };
+      const currentSet = new Set(next[attributeId] ?? []);
+
+      currentSet.add(option.id);
+      next[attributeId] = currentSet;
+
+      return next;
+    });
+  };
+
   const updateDraft = (key: string, updatedValues: Partial<DraftVariantRow>) => {
     setDraftVariantsByKey((prev) => ({
       ...Object.fromEntries(
@@ -1345,6 +1362,7 @@ export function ProductVariantManager({
           onToggleOption={toggleOption}
           disabledOptionIds={precomputeDisabledOptionIds}
           isCreateMode={!productId}
+          onOptionCreated={handleOptionCreated}
         />
       )}
 
