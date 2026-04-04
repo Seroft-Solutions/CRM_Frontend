@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Save, X } from 'lucide-react';
+import { useEntityForm } from '../product-form-provider';
 
 interface ProductFormActionsProps {
   onCancel: () => void;
@@ -10,6 +11,33 @@ interface ProductFormActionsProps {
 }
 
 export function ProductFormActions({ onCancel, isSubmitting = false }: ProductFormActionsProps) {
+  const { config, state, actions } = useEntityForm();
+
+  const handleCancel = async () => {
+    const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
+    const hasUnsavedChanges = state.isDirty && draftsEnabled;
+
+    if (hasUnsavedChanges && config.behavior?.drafts?.confirmDialog) {
+      if (await actions.saveDraft()) {
+        const draftCheckEvent = new CustomEvent('triggerDraftCheck', {
+          detail: { onProceed: onCancel },
+        });
+
+        window.dispatchEvent(draftCheckEvent);
+      } else {
+        if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+          onCancel();
+        }
+      }
+    } else if (config.behavior.navigation.confirmOnCancel && state.isDirty) {
+      if (window.confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+        onCancel();
+      }
+    } else {
+      onCancel();
+    }
+  };
+
   return (
     <div className="flex flex-row justify-center gap-2">
       <Button type="submit" disabled={isSubmitting} size="default" className="w-fit text-sm">
@@ -18,7 +46,7 @@ export function ProductFormActions({ onCancel, isSubmitting = false }: ProductFo
       </Button>
       <Button
         type="button"
-        onClick={onCancel}
+        onClick={() => void handleCancel()}
         disabled={isSubmitting}
         variant="outline"
         size="default"

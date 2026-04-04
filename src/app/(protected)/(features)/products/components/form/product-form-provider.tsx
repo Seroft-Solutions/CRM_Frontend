@@ -1,6 +1,15 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -8,9 +17,12 @@ import type { FormContextValue } from './form-types';
 import { productFormConfig } from './product-form-config';
 import { productFormSchema } from './product-form-schema';
 import { handleProductError, productToast } from '../product-toast';
+import { useCreateProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { DraftRestorationDialog, SaveDraftDialog } from '@/components/form-drafts';
+import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -32,8 +44,10 @@ export function ProductFormProvider({
   onSuccess,
   onError,
 }: ProductFormProviderProps) {
+  const router = useRouter();
   const isNew = !id;
   const config = productFormConfig;
+  const formRef = useRef<HTMLDivElement>(null);
   const fileFieldNames = useMemo(
     () => config.fields.filter((field) => field.type === 'file').map((field) => field.name),
     [config.fields]
@@ -57,12 +71,12 @@ export function ProductFormProvider({
   const [showRestorationDialog, setShowRestorationDialog] = useState(false);
   const [currentDraftId, setCurrentDraftId] = useState<number | undefined>();
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  const [isInsideForm, setIsInsideForm] = useState(false);
 
   const draftsEnabled = config.behavior?.drafts?.enabled ?? false;
   const {
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
-    saveDraft,
     restoreDraft,
     deleteDraft,
     isSaving: isSavingDraft,
@@ -71,6 +85,14 @@ export function ProductFormProvider({
     entityType: config.entity,
     enabled: draftsEnabled && isNew,
     maxDrafts: config.behavior?.drafts?.maxDrafts ?? 5,
+  });
+
+  const { mutateAsync: createProductDraftAsync } = useCreateProduct({
+    mutation: {
+      onError: (error) => {
+        handleProductError(error);
+      },
+    },
   });
 
   const [formSessionId] = useState(() => {
@@ -131,6 +153,10 @@ export function ProductFormProvider({
     revalidateMode: config.validation.revalidateMode,
     defaultValues,
   });
+
+  const hasUnsavedChanges = useCallback(() => {
+    return form.formState.isDirty && isNew && draftsEnabled;
+  }, [form.formState.isDirty, isNew, draftsEnabled]);
 
   const sanitizeFormValues = useCallback(
     (values: Record<string, unknown>) => {
@@ -632,10 +658,23 @@ export function ProductFormProvider({
       }
     };
 
+    const handleTriggerDraftCheck = (event: CustomEvent) => {
+      const { onProceed } = event.detail;
+
+      if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
+        setPendingNavigation(() => onProceed);
+        setShowDraftDialog(true);
+      } else {
+        onProceed();
+      }
+    };
+
     window.addEventListener('saveFormState', handleSaveFormState);
+    window.addEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
 
     return () => {
       window.removeEventListener('saveFormState', handleSaveFormState);
+      window.removeEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
     };
   }, [
     restorationAttempted,
@@ -645,6 +684,7 @@ export function ProductFormProvider({
     handleEntityCreated,
     clearOldFormStates,
     config,
+    hasUnsavedChanges,
     draftRestorationInProgress,
     formSessionId,
   ]);
@@ -677,22 +717,183 @@ export function ProductFormProvider({
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
   }, [form]);
 
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        const message = 'You have unsaved changes. Are you sure you want to leave?';
+
+        e.preventDefault();
+
+        e.returnValue = message;
+
+        return message;
+      }
+    };
+
+    const handlePopState = () => {
+      if (hasUnsavedChanges()) {
+        window.history.pushState(null, '', window.location.href);
+
+        setPendingNavigation(() => () => {
+          window.history.back();
+        });
+        setShowDraftDialog(true);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    if (hasUnsavedChanges()) {
+      window.history.pushState(null, '', window.location.href);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled]);
+
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    const handleMouseEnter = () => setIsInsideForm(true);
+    const handleMouseLeave = () => setIsInsideForm(false);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
+        if (hasUnsavedChanges() && isInsideForm && !showDraftDialog) {
+          setPendingNavigation(() => () => {
+            setIsInsideForm(false);
+          });
+          setShowDraftDialog(true);
+        }
+      }
+    };
+
+    const formElement = formRef.current;
+
+    if (formElement) {
+      formElement.addEventListener('mouseenter', handleMouseEnter);
+      formElement.addEventListener('mouseleave', handleMouseLeave);
+      document.addEventListener('click', handleClickOutside, true);
+    }
+
+    return () => {
+      if (formElement) {
+        formElement.removeEventListener('mouseenter', handleMouseEnter);
+        formElement.removeEventListener('mouseleave', handleMouseLeave);
+      }
+      document.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [hasUnsavedChanges, isInsideForm, isNew, draftsEnabled, showDraftDialog]);
+
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    let isNavigating = false;
+
+    const handleNavigationClick = (event: Event) => {
+      if (isNavigating) return;
+
+      const target = event.target as Element;
+
+      const link = target.closest('a[href]') as HTMLAnchorElement | null;
+
+      if (link && hasUnsavedChanges()) {
+        const href = link.getAttribute('href');
+
+        if (
+          href &&
+          !href.startsWith('http') &&
+          !href.startsWith('mailto:') &&
+          !href.startsWith('tel:') &&
+          !href.startsWith('#')
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          setPendingNavigation(() => () => {
+            isNavigating = true;
+            router.push(href);
+
+            setTimeout(() => {
+              isNavigating = false;
+            }, 100);
+          });
+
+          setShowDraftDialog(true);
+
+          return;
+        }
+      }
+
+      const button = target.closest('button') as HTMLButtonElement | null;
+
+      if (button && hasUnsavedChanges()) {
+        const linkInsideButton = button.querySelector('a[href]') as HTMLAnchorElement | null;
+
+        if (linkInsideButton) {
+          const href = linkInsideButton.getAttribute('href');
+
+          if (
+            href &&
+            !href.startsWith('http') &&
+            !href.startsWith('mailto:') &&
+            !href.startsWith('tel:') &&
+            !href.startsWith('#')
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            setPendingNavigation(() => () => {
+              isNavigating = true;
+              router.push(href);
+
+              setTimeout(() => {
+                isNavigating = false;
+              }, 100);
+            });
+
+            setShowDraftDialog(true);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('click', handleNavigationClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleNavigationClick, true);
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
+
   const handleSaveDraft = useCallback(async (): Promise<boolean> => {
     if (!draftsEnabled || !isNew) return false;
 
     try {
       const currentFormValues = form.getValues();
       const completeFormData = sanitizeFormValues({ ...allFormData, ...currentFormValues });
+      const { entityToSave } = transformFormDataForSubmission(completeFormData);
+      const productDraftData = { ...entityToSave };
 
-      const success = await saveDraft(completeFormData, currentStep, formSessionId, currentDraftId);
+      delete productDraftData.variants;
+      delete productDraftData.saveAsCatalog;
+      delete productDraftData.productCatalogName;
+      delete productDraftData.productCatalogPrice;
 
-      if (success) {
-        toast.success('Draft saved successfully');
-      } else {
-        toast.error('Failed to save draft');
-      }
+      await createProductDraftAsync({
+        data: {
+          ...productDraftData,
+          status: ProductDTOStatus.DRAFT,
+        } as ProductDTO,
+      });
 
-      return success;
+      toast.success('Draft saved successfully');
+
+      return true;
     } catch (error) {
       console.error('Failed to save draft:', error);
       toast.error('Failed to save draft');
@@ -704,11 +905,9 @@ export function ProductFormProvider({
     isNew,
     form,
     allFormData,
-    currentStep,
-    formSessionId,
-    currentDraftId,
-    saveDraft,
     sanitizeFormValues,
+    transformFormDataForSubmission,
+    createProductDraftAsync,
   ]);
 
   const handleLoadDraft = useCallback(
@@ -848,7 +1047,7 @@ export function ProductFormProvider({
       const draftCheckHandler = {
         formId: config.entity,
         checkDrafts: (onProceed: () => void) => {
-          if (form.formState.isDirty && config.behavior?.drafts?.confirmDialog) {
+          if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
             setPendingNavigation(() => onProceed);
             setShowDraftDialog(true);
           } else {
@@ -868,7 +1067,7 @@ export function ProductFormProvider({
     isNew,
     config.entity,
     config.behavior?.drafts?.confirmDialog,
-    form.formState.isDirty,
+    hasUnsavedChanges,
     registerDraftCheck,
     unregisterDraftCheck,
   ]);
@@ -921,51 +1120,60 @@ export function ProductFormProvider({
 
   return (
     <FormContext.Provider value={contextValue}>
-      {children}
+      <div ref={formRef} className="relative">
+        {children}
 
-      {/* Draft Dialogs */}
-      {draftsEnabled && (
-        <>
-          <SaveDraftDialog
-            open={showDraftDialog}
-            onOpenChange={setShowDraftDialog}
-            entityType={config.entity}
-            onSaveDraft={async () => {
-              const success = await handleSaveDraft();
+        {/* Draft Dialogs */}
+        {draftsEnabled && (
+          <>
+            <SaveDraftDialog
+              open={showDraftDialog}
+              onOpenChange={setShowDraftDialog}
+              entityType={config.entity}
+              onSaveDraft={async () => {
+                const success = await handleSaveDraft();
 
-              if (success && pendingNavigation) {
-                pendingNavigation();
+                if (success) {
+                  setTimeout(() => {
+                    form.reset(form.getValues(), { keepValues: true, keepDefaultValues: true });
+                  }, 50);
+
+                  if (pendingNavigation) {
+                    pendingNavigation();
+                    setPendingNavigation(null);
+                  }
+                }
+
+                return success;
+              }}
+              onDiscardChanges={() => {
+                if (pendingNavigation) {
+                  pendingNavigation();
+                  setPendingNavigation(null);
+                }
+              }}
+              onCancel={() => {
                 setPendingNavigation(null);
-              }
+              }}
+              isDirty={form.formState.isDirty}
+              formData={form.getValues()}
+            />
 
-              return success;
-            }}
-            onDiscardChanges={() => {
-              if (pendingNavigation) {
-                pendingNavigation();
-                setPendingNavigation(null);
-              }
-            }}
-            onCancel={() => {
-              setPendingNavigation(null);
-            }}
-            isDirty={form.formState.isDirty}
-          />
-
-          <DraftRestorationDialog
-            open={showRestorationDialog}
-            onOpenChange={setShowRestorationDialog}
-            entityType={config.entity}
-            drafts={drafts}
-            onRestoreDraft={handleLoadDraft}
-            onDeleteDraft={handleDeleteDraft}
-            onStartFresh={() => {
-              setShowRestorationDialog(false);
-            }}
-            isLoading={isLoadingDrafts}
-          />
-        </>
-      )}
+            <DraftRestorationDialog
+              open={showRestorationDialog}
+              onOpenChange={setShowRestorationDialog}
+              entityType={config.entity}
+              drafts={drafts}
+              onRestoreDraft={handleLoadDraft}
+              onDeleteDraft={handleDeleteDraft}
+              onStartFresh={() => {
+                setShowRestorationDialog(false);
+              }}
+              isLoading={isLoadingDrafts}
+            />
+          </>
+        )}
+      </div>
     </FormContext.Provider>
   );
 }
