@@ -2,14 +2,17 @@
 
 import React, { useMemo } from 'react';
 import { UseFormReturn } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle2, Package } from 'lucide-react';
+import { AlertCircle, Barcode, CheckCircle2, Package, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas';
+import { generateProductBarcodeCode, openBarcodePrintDialog } from '../../barcode-utils';
 
 interface ProductBasicInfoSectionProps {
   form?: UseFormReturn<Record<string, unknown>>;
@@ -26,6 +29,48 @@ export function ProductBasicInfoSection({
   const saveAsCatalog = Boolean(form?.watch?.('saveAsCatalog'));
   const discountedPrice = parseFloat(form?.watch?.('discountedPrice')) || 0;
   const salePrice = parseFloat(form?.watch?.('salePrice')) || 0;
+
+  const handleGenerateBarcode = () => {
+    if (!form) {
+      return;
+    }
+
+    const generatedCode = generateProductBarcodeCode(String(form.getValues('name') ?? ''));
+
+    form.setValue('barcodeText', generatedCode, {
+      shouldDirty: true,
+      shouldValidate: true,
+      shouldTouch: true,
+    });
+
+    toast.success('Barcode generated', {
+      description: `Product code set to ${generatedCode}`,
+    });
+  };
+
+  const handlePrintBarcode = () => {
+    if (!form) {
+      return;
+    }
+
+    const productCode = String(form.getValues('barcodeText') ?? '').trim();
+
+    if (!productCode) {
+      toast.error('Product code required', {
+        description: 'Generate or enter a product code before printing.',
+      });
+
+      return;
+    }
+
+    const didOpenPrintDialog = openBarcodePrintDialog(productCode);
+
+    if (!didOpenPrintDialog) {
+      toast.error('Unable to print barcode', {
+        description: 'Please check the product code and allow pop-ups for this site.',
+      });
+    }
+  };
 
   const priceValidation = useMemo(() => {
     if (!discountedPrice && !salePrice) {
@@ -129,10 +174,10 @@ export function ProductBasicInfoSection({
               </div>
             </div>
 
-            {/* Barcode Text */}
+            {/* Product Code */}
             <div className="space-y-1">
               <div className="text-xs font-semibold text-slate-600">
-                Barcode Text
+                Product Code
                 <span className="ml-1 text-rose-600">*</span>
               </div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
@@ -267,22 +312,46 @@ export function ProductBasicInfoSection({
             )}
           />
 
-          {/* Barcode Text */}
+          {/* Product Code */}
           <FormField
             control={form.control}
             name="barcodeText"
             render={({ field }) => (
               <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold text-slate-600">
-                  Barcode Text
-                  <span className="ml-1 text-rose-600">*</span>
-                </FormLabel>
+                <div className="flex items-center justify-between gap-2">
+                  <FormLabel className="text-xs font-semibold text-slate-600">
+                    Product Code
+                    <span className="ml-1 text-rose-600">*</span>
+                  </FormLabel>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                      onClick={handleGenerateBarcode}
+                      title="Generate barcode code"
+                    >
+                      <Barcode className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                      onClick={handlePrintBarcode}
+                      title="Print barcode"
+                    >
+                      <Printer className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="e.g., 0123456789"
+                    placeholder="Enter product code"
                     className={cn(
-                      'h-9',
+                      'h-9 font-mono',
                       errors.barcodeText && 'border-rose-500 focus-visible:ring-rose-500'
                     )}
                     onChange={(e) => {

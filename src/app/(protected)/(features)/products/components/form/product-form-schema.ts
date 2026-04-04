@@ -12,11 +12,11 @@ export const productFormSchemaFields = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
   barcodeText: z
-    .string({ message: 'Please enter barcode text' })
-    .min(1, { message: 'Please enter barcode text' })
+    .string({ message: 'Please enter product code' })
+    .min(1, { message: 'Please enter product code' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
-    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid barcode text' }),
+    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid product code' }),
   articleNumber: z
     .string()
     .max(100, { message: 'Please enter no more than 100 characters' })
@@ -193,11 +193,11 @@ export const productFieldSchemas = {
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(100, { message: 'Please enter no more than 100 characters' }),
   barcodeText: z
-    .string({ message: 'Please enter barcode text' })
-    .min(1, { message: 'Please enter barcode text' })
+    .string({ message: 'Please enter product code' })
+    .min(1, { message: 'Please enter product code' })
     .min(2, { message: 'Please enter at least 2 characters' })
     .max(20, { message: 'Please enter no more than 20 characters' })
-    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid barcode text' }),
+    .regex(/^[A-Za-z0-9_-]+$/, { message: 'Please enter valid product code' }),
   articleNumber: z
     .string()
     .max(100, { message: 'Please enter no more than 100 characters' })

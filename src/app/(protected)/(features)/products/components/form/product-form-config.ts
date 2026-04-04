@@ -71,8 +71,8 @@ export const productFormConfig: FormConfig = {
     {
       name: 'barcodeText',
       type: 'text',
-      label: 'Barcode Text',
-      placeholder: 'Enter barcode text',
+      label: 'Product Code',
+      placeholder: 'Enter product code',
       required: true,
       validation: {
         required: true,
