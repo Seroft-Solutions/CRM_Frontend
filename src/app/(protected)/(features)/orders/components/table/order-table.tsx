@@ -1,10 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -15,8 +24,11 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { History } from 'lucide-react';
-import { useAccount, useUserAuthorities } from '@/core/auth';
-import { OrderStatus, orderStatusOptions } from '../../data/order-data';
+import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
+import { type OrderDTO } from '@/core/api/generated/spring/schemas';
+import { InlinePermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
+import { getOrderStatusCode, OrderStatus, orderStatusOptions } from '../../data/order-data';
 import { useOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
@@ -58,6 +70,7 @@ export function OrderTable({
   allTabLabel = 'All Orders',
   showStatusTabs = true,
 }: OrderTableProps) {
+  const queryClient = useQueryClient();
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
@@ -65,8 +78,12 @@ export function OrderTable({
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [statusOverrides, setStatusOverrides] = useState<Record<number, OrderStatus>>({});
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const { mutateAsync: partialUpdateOrder } = usePartialUpdateOrder();
+  const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
-  const { orders, totalCount, totalPages, isLoading, isError } = useOrderTableData({
+  const { orders, orderDtos, totalCount, totalPages, isLoading, isError } = useOrderTableData({
     entityStatus,
     statusFilter,
     searchTerm,
@@ -74,6 +91,10 @@ export function OrderTable({
     pageSize,
     createdBy: isBusinessPartner ? accountData?.login : undefined,
   });
+  const orderDtoById = useMemo(
+    () => new Map(orderDtos.map((order) => [order.id ?? 0, order] as const)),
+    [orderDtos]
+  );
 
   const resolveDiscountAmount = (order: (typeof orders)[number]) => {
     if (!order.discountCode) {
@@ -117,6 +138,91 @@ export function OrderTable({
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  const handleOrderStatusChange = async (
+    order: (typeof orders)[number],
+    nextStatus: OrderStatus
+  ) => {
+    if (order.orderId <= 0) {
+      return;
+    }
+
+    const currentStatus = statusOverrides[order.orderId] ?? order.orderStatus;
+
+    if (currentStatus === nextStatus) {
+      return;
+    }
+
+    const hasOrderDto = orderDtoById.has(order.orderId);
+
+    if (!hasOrderDto) {
+      toast.error('Unable to update order status.', {
+        description: 'Order data is incomplete. Refresh and try again.',
+      });
+
+      return;
+    }
+
+    const nextStatusCode = getOrderStatusCode(nextStatus);
+
+    if (typeof nextStatusCode !== 'number') {
+      toast.error('Unable to update order status.', {
+        description: 'Selected status is not supported.',
+      });
+
+      return;
+    }
+
+    setStatusOverrides((prev) => ({
+      ...prev,
+      [order.orderId]: nextStatus,
+    }));
+    setUpdatingOrderId(order.orderId);
+
+    try {
+      await partialUpdateOrder({
+        id: order.orderId,
+        data: {
+          id: order.orderId,
+          orderStatus: nextStatusCode,
+        } satisfies OrderDTO,
+      });
+
+      try {
+        await createOrderHistory({
+          data: {
+            orderId: order.orderId,
+            status: `Status changed to ${nextStatus}`,
+            notificationSent: false,
+          },
+        });
+      } catch (historyError) {
+        console.error('Failed to create order history after status update:', historyError);
+        toast.warning('Order status updated, but history entry could not be created.');
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/orders'] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.orderId}`] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] }),
+      ]);
+
+      toast.success('Order status updated.', {
+        description: `Order #${order.orderId} is now ${nextStatus}.`,
+      });
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      setStatusOverrides((prev) => ({
+        ...prev,
+        [order.orderId]: currentStatus,
+      }));
+      toast.error('Unable to update order status.', {
+        description: `Order #${order.orderId} could not be updated.`,
+      });
+    } finally {
+      setUpdatingOrderId((currentId) => (currentId === order.orderId ? null : currentId));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -246,6 +352,9 @@ export function OrderTable({
             {paginatedOrders.map((order, index) => {
               const customerName = order.customer?.customerBusinessName || order.email || '—';
               const customerContact = order.customer?.mobile || order.phone || '—';
+              const displayedStatus = statusOverrides[order.orderId] ?? order.orderStatus;
+              const isUpdatingThisRow = updatingOrderId === order.orderId;
+              const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
 
               return (
                 <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
@@ -263,12 +372,39 @@ export function OrderTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`border-2 font-semibold ${statusColors[order.orderStatus] ?? statusColors.Unknown}`}
+                    <InlinePermissionGuard
+                      requiredPermission="order:update"
+                      fallback={
+                        <Badge
+                          variant="outline"
+                          className={`border-2 font-semibold ${statusClassName}`}
+                        >
+                          {displayedStatus}
+                        </Badge>
+                      }
                     >
-                      {order.orderStatus}
-                    </Badge>
+                      <Select
+                        value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
+                        onValueChange={(value) =>
+                          handleOrderStatusChange(order, value as OrderStatus)
+                        }
+                        disabled={isUpdatingThisRow}
+                      >
+                        <SelectTrigger
+                          className={`h-9 min-w-[150px] border-2 font-semibold ${statusClassName}`}
+                          aria-label={`Update status for order ${order.orderId}`}
+                        >
+                          <SelectValue placeholder={displayedStatus} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {orderStatusOptions.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </InlinePermissionGuard>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
