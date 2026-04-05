@@ -1,6 +1,10 @@
+import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
+
 export const WAREHOUSE_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED'] as const;
 
 export type WarehouseStatus = (typeof WAREHOUSE_STATUSES)[number];
+
+export type IWarehouseLocation = Partial<AreaDTO> & { id?: number };
 
 export interface IWarehouseShelf {
   id?: number;
@@ -19,6 +23,7 @@ export interface IWarehouse {
   name: string;
   code: string;
   address?: string;
+  area?: IWarehouseLocation | null;
   areas?: IWarehouseArea[];
   status: WarehouseStatus;
   createdBy?: string;

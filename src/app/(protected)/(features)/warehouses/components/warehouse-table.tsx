@@ -72,6 +72,27 @@ const formatStatus = (status: WarehouseStatus) => {
   return status.charAt(0) + status.slice(1).toLowerCase();
 };
 
+const formatWarehouseAddress = (warehouse: IWarehouse) => {
+  const locationParts: string[] = [];
+
+  if (warehouse.area?.city?.district?.state?.name) {
+    locationParts.push(warehouse.area.city.district.state.name);
+  }
+
+  if (warehouse.area?.city?.name) {
+    locationParts.push(warehouse.area.city.name);
+  }
+
+  const locationText = locationParts.join(' . ');
+  const pincodeText = warehouse.area?.pincode ? `(${warehouse.area.pincode})` : '';
+  const addressText = warehouse.address?.trim() ?? '';
+
+  return [locationText, pincodeText]
+    .filter(Boolean)
+    .join(' ')
+    .concat(locationText || pincodeText ? (addressText ? ` • ${addressText}` : '') : addressText);
+};
+
 const getErrorMessage = (error: unknown, fallback: string) => {
   if (typeof error === 'object' && error !== null) {
     const maybeAxiosError = error as {
@@ -405,150 +426,157 @@ export function WarehouseTable() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  warehouses.map((warehouse) => (
-                    <TableRow key={warehouse.id}>
-                      <TableCell className="font-medium">{warehouse.name}</TableCell>
-                      <TableCell>
-                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-                          {warehouse.code}
-                        </code>
-                      </TableCell>
-                      <TableCell className="max-w-[240px] truncate" title={warehouse.address || ''}>
-                        {warehouse.address || '—'}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              type="button"
-                              size="sm"
-                              className="h-8 border border-yellow-400 bg-yellow-400 text-black hover:border-yellow-500 hover:bg-yellow-500"
-                            >
-                              View Areas
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="start"
-                            className="w-72 max-h-64 overflow-y-auto"
-                          >
-                            <DropdownMenuLabel>Areas & Shelves</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {warehouse.areas && warehouse.areas.length > 0 ? (
-                              warehouse.areas.map((area) => (
-                                <div
-                                  key={`${warehouse.id}-${area.id ?? area.name}`}
-                                  className="px-2 py-1.5 text-sm"
-                                >
-                                  <p className="truncate font-medium">{area.name}</p>
-                                  {area.shelves && area.shelves.length > 0 ? (
-                                    <div className="mt-1 space-y-1">
-                                      {area.shelves.map((shelf) => (
-                                        <div
-                                          key={`${warehouse.id}-${area.id ?? area.name}-${shelf.id ?? shelf.name}`}
-                                          className="flex items-center justify-between text-xs text-muted-foreground"
-                                        >
-                                          <span className="truncate pr-2">{shelf.name}</span>
-                                          <span>{shelf.capacity}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <p className="mt-1 text-xs text-muted-foreground">
-                                      No shelves configured.
-                                    </p>
-                                  )}
-                                </div>
-                              ))
-                            ) : (
-                              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                                No areas configured.
-                              </div>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={statusBadgeClass[warehouse.status]}>
-                          {formatStatus(warehouse.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <InlinePermissionGuard requiredPermission="warehouse:update">
-                            <Button
-                              asChild
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                              aria-label={`Edit ${warehouse.name}`}
-                            >
-                              <Link href={`/warehouses/${warehouse.id}`}>
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                          </InlinePermissionGuard>
+                  warehouses.map((warehouse) => {
+                    const formattedAddress = formatWarehouseAddress(warehouse);
 
-                          <InlinePermissionGuard requiredPermission="warehouse:update">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  disabled={isUpdatingStatus}
-                                  aria-label={`Status actions for ${warehouse.name}`}
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                {warehouse.status !== 'ACTIVE' && (
-                                  <DropdownMenuItem
-                                    onClick={() => handleStatusChange(warehouse, 'ACTIVE')}
-                                    className="text-green-700"
+                    return (
+                      <TableRow key={warehouse.id}>
+                        <TableCell className="font-medium">{warehouse.name}</TableCell>
+                        <TableCell>
+                          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                            {warehouse.code}
+                          </code>
+                        </TableCell>
+                        <TableCell
+                          className="max-w-[240px] truncate"
+                          title={formattedAddress || ''}
+                        >
+                          {formattedAddress || '—'}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="h-8 border border-yellow-400 bg-yellow-400 text-black hover:border-yellow-500 hover:bg-yellow-500"
+                              >
+                                View Areas
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="start"
+                              className="w-72 max-h-64 overflow-y-auto"
+                            >
+                              <DropdownMenuLabel>Areas & Shelves</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              {warehouse.areas && warehouse.areas.length > 0 ? (
+                                warehouse.areas.map((area) => (
+                                  <div
+                                    key={`${warehouse.id}-${area.id ?? area.name}`}
+                                    className="px-2 py-1.5 text-sm"
                                   >
-                                    <RotateCcw className="mr-2 h-4 w-4" />
-                                    Set Active
-                                  </DropdownMenuItem>
-                                )}
-                                {warehouse.status !== 'INACTIVE' && (
-                                  <DropdownMenuItem
-                                    onClick={() => handleStatusChange(warehouse, 'INACTIVE')}
-                                    className="text-yellow-700"
+                                    <p className="truncate font-medium">{area.name}</p>
+                                    {area.shelves && area.shelves.length > 0 ? (
+                                      <div className="mt-1 space-y-1">
+                                        {area.shelves.map((shelf) => (
+                                          <div
+                                            key={`${warehouse.id}-${area.id ?? area.name}-${shelf.id ?? shelf.name}`}
+                                            className="flex items-center justify-between text-xs text-muted-foreground"
+                                          >
+                                            <span className="truncate pr-2">{shelf.name}</span>
+                                            <span>{shelf.capacity}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="mt-1 text-xs text-muted-foreground">
+                                        No shelves configured.
+                                      </p>
+                                    )}
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                                  No areas configured.
+                                </div>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusBadgeClass[warehouse.status]}>
+                            {formatStatus(warehouse.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <InlinePermissionGuard requiredPermission="warehouse:update">
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label={`Edit ${warehouse.name}`}
+                              >
+                                <Link href={`/warehouses/${warehouse.id}`}>
+                                  <Edit className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </InlinePermissionGuard>
+
+                            <InlinePermissionGuard requiredPermission="warehouse:update">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    disabled={isUpdatingStatus}
+                                    aria-label={`Status actions for ${warehouse.name}`}
                                   >
-                                    <AlertTriangle className="mr-2 h-4 w-4" />
-                                    Set Inactive
-                                  </DropdownMenuItem>
-                                )}
-                                {warehouse.status !== 'DRAFT' && (
-                                  <DropdownMenuItem
-                                    onClick={() => handleStatusChange(warehouse, 'DRAFT')}
-                                    className="text-slate-700"
-                                  >
-                                    <div className="mr-2 h-4 w-4 rounded border border-current" />
-                                    Set Draft
-                                  </DropdownMenuItem>
-                                )}
-                                {warehouse.status !== 'ARCHIVED' && (
-                                  <>
-                                    <DropdownMenuSeparator />
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {warehouse.status !== 'ACTIVE' && (
                                     <DropdownMenuItem
-                                      onClick={() => handleStatusChange(warehouse, 'ARCHIVED')}
-                                      className="text-red-700"
+                                      onClick={() => handleStatusChange(warehouse, 'ACTIVE')}
+                                      className="text-green-700"
                                     >
-                                      <Archive className="mr-2 h-4 w-4" />
-                                      Archive
+                                      <RotateCcw className="mr-2 h-4 w-4" />
+                                      Set Active
                                     </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </InlinePermissionGuard>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                                  )}
+                                  {warehouse.status !== 'INACTIVE' && (
+                                    <DropdownMenuItem
+                                      onClick={() => handleStatusChange(warehouse, 'INACTIVE')}
+                                      className="text-yellow-700"
+                                    >
+                                      <AlertTriangle className="mr-2 h-4 w-4" />
+                                      Set Inactive
+                                    </DropdownMenuItem>
+                                  )}
+                                  {warehouse.status !== 'DRAFT' && (
+                                    <DropdownMenuItem
+                                      onClick={() => handleStatusChange(warehouse, 'DRAFT')}
+                                      className="text-slate-700"
+                                    >
+                                      <div className="mr-2 h-4 w-4 rounded border border-current" />
+                                      Set Draft
+                                    </DropdownMenuItem>
+                                  )}
+                                  {warehouse.status !== 'ARCHIVED' && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onClick={() => handleStatusChange(warehouse, 'ARCHIVED')}
+                                        className="text-red-700"
+                                      >
+                                        <Archive className="mr-2 h-4 w-4" />
+                                        Archive
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </InlinePermissionGuard>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>

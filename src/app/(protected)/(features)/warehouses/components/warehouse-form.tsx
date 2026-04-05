@@ -25,6 +25,8 @@ import {
   useWarehouseQuery,
 } from '../actions/warehouse-hooks';
 import type { IWarehouseArea, IWarehouseShelf } from '../types/warehouse';
+import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
+import { IntelligentLocationField } from '../../customers/components/intelligent-location-field';
 
 const warehouseShelfSchema = z.object({
   id: z.number().optional(),
@@ -74,6 +76,11 @@ const warehouseFormSchema = z.object({
     .refine((value) => value.length > 0, {
       message: 'Address is required',
     }),
+  area: z.custom<AreaDTO>(
+    (value) =>
+      typeof value === 'object' && value !== null && typeof (value as AreaDTO).id === 'number',
+    { message: 'Please select a location' }
+  ),
   areas: z.array(warehouseAreaSchema),
 });
 
@@ -245,6 +252,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       name: '',
       code: '',
       address: '',
+      area: undefined,
       areas: [],
     },
   });
@@ -268,6 +276,10 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       name: existingWarehouse.name,
       code: existingWarehouse.code,
       address: existingWarehouse.address || '',
+      area:
+        existingWarehouse.area && typeof existingWarehouse.area.id === 'number'
+          ? (existingWarehouse.area as AreaDTO)
+          : undefined,
       areas: (existingWarehouse.areas || []).map((area) => {
         const legacyArea = area as IWarehouseArea & { capacity?: number };
         const mappedShelves = (area.shelves || []).map((shelf) => ({
@@ -329,6 +341,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       name: values.name.trim(),
       code: values.code.trim(),
       address: values.address.trim(),
+      area: values.area?.id ? { id: values.area.id } : undefined,
       areas,
       status: 'ACTIVE' as const,
     };
@@ -401,6 +414,35 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
                 <FormLabel>Address</FormLabel>
                 <FormControl>
                   <Input placeholder="Warehouse address" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="rounded-lg border p-4">
+          <div className="mb-4">
+            <h3 className="text-sm font-medium">Location</h3>
+            <p className="text-xs text-muted-foreground">
+              Search by state, city, or zipcode to attach the warehouse geography hierarchy.
+            </p>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="area"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>City and Zipcode</FormLabel>
+                <FormControl>
+                  <IntelligentLocationField
+                    value={field.value ?? null}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      form.clearErrors('area');
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
