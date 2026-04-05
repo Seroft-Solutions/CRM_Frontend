@@ -108,12 +108,12 @@ const hasItemData = (item: OrderItemForm) => {
   const hasText = (value?: string) => Boolean(value && value.trim() !== '');
   return Boolean(
     item.productId ||
-    item.variantId ||
-    item.productCatalogId ||
-    hasText(item.quantity) ||
-    hasText(item.itemPrice) ||
-    hasText(item.itemTaxAmount) ||
-    hasText(item.itemComment)
+      item.variantId ||
+      item.productCatalogId ||
+      hasText(item.quantity) ||
+      hasText(item.itemPrice) ||
+      hasText(item.itemTaxAmount) ||
+      hasText(item.itemComment)
   );
 };
 
@@ -241,21 +241,18 @@ export function OrderFormContent({
   const hasAddressValues = (fields: AddressFieldsForm) =>
     Object.values(fields).some((value) => value.trim() !== '');
   const hasInitialBillToRef = useRef(
-    hasAddressValues(address.billTo) ||
-    (address.billToSameFlag && hasAddressValues(address.shipTo))
+    hasAddressValues(address.billTo) || (address.billToSameFlag && hasAddressValues(address.shipTo))
   );
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
   const hasUnsavedChanges =
     !isEditing &&
-    (
-      JSON.stringify(formState) !== JSON.stringify(defaultState) ||
+    (JSON.stringify(formState) !== JSON.stringify(defaultState) ||
       items.some(hasItemData) ||
       removedItemIds.length > 0 ||
       hasAddressValues(address.shipTo) ||
       hasAddressValues(address.billTo) ||
-      address.billToSameFlag
-    );
+      address.billToSameFlag);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -328,8 +325,7 @@ export function OrderFormContent({
         hasInitialShipToRef.current = hasAddressValues(saved.data.address.shipTo);
         hasInitialBillToRef.current =
           hasAddressValues(saved.data.address.billTo) ||
-          (saved.data.address.billToSameFlag &&
-            hasAddressValues(saved.data.address.shipTo));
+          (saved.data.address.billToSameFlag && hasAddressValues(saved.data.address.shipTo));
       }
       if (typeof saved.data?.useCustomTaxRate === 'boolean') {
         setUseCustomTaxRate(saved.data.useCustomTaxRate);
@@ -549,7 +545,6 @@ export function OrderFormContent({
     lastCustomerIdRef.current = currentId;
   }, [addressExists, sundryCreditorData?.id]);
 
-
   const handleChange = (key: keyof OrderFormState, value: string | boolean) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
     if (
@@ -575,10 +570,12 @@ export function OrderFormContent({
     handleChange('orderTaxRate', value);
   };
 
-  const handleItemChange = (index: number, key: keyof OrderItemForm, value: string | number | undefined) => {
-    setItems((prev) =>
-      prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item))
-    );
+  const handleItemChange = (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | undefined
+  ) => {
+    setItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item)));
     setErrors((prev) => {
       if (!prev.items?.[index]?.[key]) {
         return prev;
@@ -597,6 +594,21 @@ export function OrderFormContent({
 
   const addCatalogItem = () => {
     setItems((prev) => [...prev, emptyOrderItem('catalog')]);
+  };
+
+  const applyVariantSelection = (index: number, nextItems: OrderItemForm[]) => {
+    if (nextItems.length === 0) {
+      return;
+    }
+
+    setItems((prev) => {
+      if (index < 0 || index >= prev.length) {
+        return prev;
+      }
+
+      return [...prev.slice(0, index), ...nextItems, ...prev.slice(index + 1)];
+    });
+    setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
   };
 
   const removeItem = (index: number) => {
@@ -651,7 +663,6 @@ export function OrderFormContent({
     }
   };
 
-
   const shouldSaveAddress = (value: OrderAddressForm) => {
     const hasShipTo = Object.values(value.shipTo).some((field) => field.trim() !== '');
     const hasBillTo = Object.values(value.billTo).some((field) => field.trim() !== '');
@@ -663,14 +674,15 @@ export function OrderFormContent({
     const numberPattern = /^-?\d+(\.\d+)?$/;
     const parsedCustomerId = Number.parseInt(formState.customerId, 10);
 
-    if (!formState.customerId.trim() || !Number.isFinite(parsedCustomerId) || parsedCustomerId <= 0) {
+    if (
+      !formState.customerId.trim() ||
+      !Number.isFinite(parsedCustomerId) ||
+      parsedCustomerId <= 0
+    ) {
       nextErrors.customerId = 'Please select a sundry creditor.';
     }
 
-    const validateAmount = (
-      value: string,
-      key: 'orderBaseAmount' | 'shippingAmount'
-    ) => {
+    const validateAmount = (value: string, key: 'orderBaseAmount' | 'shippingAmount') => {
       if (!value.trim()) {
         return;
       }
@@ -701,7 +713,6 @@ export function OrderFormContent({
     validateAmount(formState.orderBaseAmount, 'orderBaseAmount');
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
-
 
     if (shouldSaveAddress(address)) {
       if (address.shipTo.zipcode.trim().length > 10) {
@@ -754,7 +765,6 @@ export function OrderFormContent({
           nextItemErrors[index].itemTaxAmount = 'Enter a valid amount.';
         }
       }
-
     });
 
     const hasItemErrors = nextItemErrors.some((entry) => Object.keys(entry).length > 0);
@@ -766,9 +776,7 @@ export function OrderFormContent({
   };
 
   const orderStatusSelectOptions =
-    formState.orderStatus === 'Unknown'
-      ? [...orderStatusOptions, 'Unknown']
-      : orderStatusOptions;
+    formState.orderStatus === 'Unknown' ? [...orderStatusOptions, 'Unknown'] : orderStatusOptions;
   const paymentStatusSelectOptions =
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
@@ -1165,7 +1173,9 @@ export function OrderFormContent({
         await queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${result.id}`] });
       }
       if (initialOrder?.orderId) {
-        await queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${initialOrder.orderId}`] });
+        await queryClient.invalidateQueries({
+          queryKey: [`/api/purchase-orders/${initialOrder.orderId}`],
+        });
       }
       await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-details'] });
       await queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-address-details'] });
@@ -1210,23 +1220,21 @@ export function OrderFormContent({
     : taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])
       ? formState.orderTaxRate
       : '';
-  const itemSummaries = items
-    .filter(hasItemData)
-    .map((item, index) => {
-      const name =
-        item.itemType === 'catalog'
-          ? item.productName
-            ? `Catalog: ${item.productName}`
-            : 'Catalog item'
-          : item.productName || item.sku || `Item ${index + 1}`;
+  const itemSummaries = items.filter(hasItemData).map((item, index) => {
+    const name =
+      item.itemType === 'catalog'
+        ? item.productName
+          ? `Catalog: ${item.productName}`
+          : 'Catalog item'
+        : item.productName || item.sku || `Item ${index + 1}`;
 
-      return {
-        key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
-        name,
-        quantity: Number.parseInt(item.quantity, 10) || 0,
-        total: calculateItemTotal(item),
-      };
-    });
+    return {
+      key: item.id ?? `${item.productId ?? item.productCatalogId ?? 'item'}-${index}`,
+      name,
+      quantity: Number.parseInt(item.quantity, 10) || 0,
+      total: calculateItemTotal(item),
+    };
+  });
   const hasItemSummaries = itemSummaries.length > 0;
 
   return (
@@ -1240,6 +1248,7 @@ export function OrderFormContent({
               onAddItem={addItem}
               onAddCatalogItem={addCatalogItem}
               onRemoveItem={removeItem}
+              onApplyVariantSelection={applyVariantSelection}
               onItemChange={handleItemChange}
               referrerForm="purchase-orders"
               referrerSessionId={formSessionId}
@@ -1250,8 +1259,18 @@ export function OrderFormContent({
             <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                  <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="h-5 w-5 text-blue-700"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -1286,8 +1305,18 @@ export function OrderFormContent({
               <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
                 <div className="mb-4 flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
-                    <svg className="h-4 w-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    <svg
+                      className="h-4 w-4 text-slate-900"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                      />
                     </svg>
                   </div>
                   <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
@@ -1297,9 +1326,7 @@ export function OrderFormContent({
                   <div className="flex justify-between border-b border-yellow-500/20 pb-2">
                     <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">
-                        ₹{itemsTotal.toFixed(2)}
-                      </span>
+                      <span className="font-semibold text-slate-800">₹{itemsTotal.toFixed(2)}</span>
                       <button
                         type="button"
                         onClick={() => setShowItemsBreakdown((prev) => !prev)}
@@ -1309,8 +1336,9 @@ export function OrderFormContent({
                         className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <ChevronDown
-                          className={`h-4 w-4 transition-transform ${showItemsBreakdown ? 'rotate-180' : ''
-                            }`}
+                          className={`h-4 w-4 transition-transform ${
+                            showItemsBreakdown ? 'rotate-180' : ''
+                          }`}
                         />
                       </button>
                     </div>
@@ -1319,7 +1347,10 @@ export function OrderFormContent({
                     <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
                       <div className="space-y-1 text-xs">
                         {itemSummaries.map((item) => (
-                          <div key={item.key} className="flex items-center justify-between text-slate-700">
+                          <div
+                            key={item.key}
+                            className="flex items-center justify-between text-slate-700"
+                          >
                             <span className="truncate">{item.name}</span>
                             <span className="font-semibold text-slate-800">
                               Qty {item.quantity} • ₹{item.total.toFixed(2)}
@@ -1405,10 +1436,7 @@ export function OrderFormContent({
                 </div>
               </div>
 
-              <OrderFormFooter
-                formState={formState}
-                submitting={submitting}
-              />
+              <OrderFormFooter formState={formState} submitting={submitting} />
             </div>
           </div>
         </div>
@@ -1446,9 +1474,7 @@ export function OrderFormContent({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowEmptyCartDialog(false)}>
-              Ok
-            </AlertDialogAction>
+            <AlertDialogAction onClick={() => setShowEmptyCartDialog(false)}>Ok</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

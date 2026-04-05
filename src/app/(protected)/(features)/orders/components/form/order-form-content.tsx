@@ -670,6 +670,21 @@ export function OrderFormContent({
     setItems((prev) => [...prev, emptyOrderItem('catalog')]);
   };
 
+  const applyVariantSelection = (index: number, nextItems: OrderItemForm[]) => {
+    if (nextItems.length === 0) {
+      return;
+    }
+
+    setItems((prev) => {
+      if (index < 0 || index >= prev.length) {
+        return prev;
+      }
+
+      return [...prev.slice(0, index), ...nextItems, ...prev.slice(index + 1)];
+    });
+    setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
+  };
+
   const removeItem = (index: number) => {
     setItems((prev) => {
       const next = [...prev];
@@ -1657,6 +1672,7 @@ export function OrderFormContent({
               onAddItem={addItem}
               onAddCatalogItem={addCatalogItem}
               onRemoveItem={removeItem}
+              onApplyVariantSelection={applyVariantSelection}
               onItemChange={handleItemChange}
               referrerForm="orders"
               referrerSessionId={formSessionId}

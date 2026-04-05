@@ -11,11 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
@@ -26,7 +22,11 @@ import {
 } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { Plus } from 'lucide-react';
-import type { ProductCatalogDTO, ProductDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import type {
+  ProductCatalogDTO,
+  ProductDTO,
+  ProductVariantDTO,
+} from '@/core/api/generated/spring/schemas';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
@@ -38,7 +38,12 @@ type OrderFormItemsProps = {
   onAddItem: () => void;
   onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
-  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
+  onItemChange: (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | undefined
+  ) => void;
   referrerForm?: string;
   referrerSessionId?: string;
   referrerField?: string;
@@ -49,14 +54,21 @@ type OrderFormItemsProps = {
 function ProductVariantSelector({
   item,
   index,
+  onApplyVariantSelection,
   onItemChange,
 }: {
   item: OrderItemForm;
   index: number;
-  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
+  onItemChange: (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | undefined
+  ) => void;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
+  const [pendingVariantIds, setPendingVariantIds] = useState<number[]>([]);
 
   // Fetch active products
   const { data: productsData } = useGetAllProducts({
@@ -83,60 +95,133 @@ function ProductVariantSelector({
 
   const getProductQuantity = (product: ProductDTO) => {
     if (!product.variants?.length) return 0;
-    return product.variants.reduce(
-      (total, variant) => total + (variant.stockQuantity ?? 0),
-      0
-    );
+
+    return product.variants.reduce((total, variant) => total + (variant.stockQuantity ?? 0), 0);
   };
+
+  const getProductPrice = (product: ProductDTO) =>
+    product.salePrice ?? product.discountedPrice ?? product.basePrice;
+
+  const buildProductItem = (product: ProductDTO): OrderItemForm => {
+    const price = getProductPrice(product);
+
+    return {
+      ...item,
+      itemType: 'product',
+      productCatalogId: undefined,
+      productId: product.id,
+      productName: product.name,
+      sku: product.articleNumber ?? product.articalNumber,
+      variantAttributes: undefined,
+      variantId: undefined,
+      itemPrice:
+        price !== undefined && price !== null
+          ? String(price)
+          : item.variantId
+            ? ''
+            : item.itemPrice,
+    };
+  };
+
+  const buildVariantItem = (
+    product: ProductDTO,
+    variant: ProductVariantDTO,
+    baseItem: OrderItemForm
+  ): OrderItemForm => ({
+    ...baseItem,
+    itemType: 'product',
+    productCatalogId: undefined,
+    productId: product.id,
+    productName: product.name,
+    variantId: variant.id,
+    sku: variant.sku,
+    variantAttributes: `Variant: ${variant.sku}`,
+    itemPrice:
+      variant.price !== undefined && variant.price !== null
+        ? String(variant.price)
+        : getProductPrice(product) !== undefined && getProductPrice(product) !== null
+          ? String(getProductPrice(product))
+          : baseItem.itemPrice,
+  });
 
   // Handle product selection
   const handleProductSelect = (productId: number) => {
     const product = products.find((p) => p.id === productId);
+
     if (!product) return;
 
-    // Set product info
-    onItemChange(index, 'itemType', 'product');
-    onItemChange(index, 'productCatalogId', undefined);
-    onItemChange(index, 'productId', product.id);
-    onItemChange(index, 'productName', product.name);
-    onItemChange(index, 'sku', product.articleNumber ?? product.articalNumber);
-    onItemChange(index, 'variantAttributes', undefined);
-    onItemChange(index, 'variantId', undefined);
+    const nextItem = buildProductItem(product);
 
-    // Auto-populate price from product
-    const price = product.salePrice ?? product.discountedPrice ?? product.basePrice;
-    if (price !== undefined && price !== null) {
-      onItemChange(index, 'itemPrice', String(price));
-    }
+    onItemChange(index, 'itemType', nextItem.itemType);
+    onItemChange(index, 'productCatalogId', nextItem.productCatalogId);
+    onItemChange(index, 'productId', nextItem.productId);
+    onItemChange(index, 'productName', nextItem.productName);
+    onItemChange(index, 'sku', nextItem.sku);
+    onItemChange(index, 'variantAttributes', nextItem.variantAttributes);
+    onItemChange(index, 'variantId', nextItem.variantId);
+    onItemChange(index, 'itemPrice', nextItem.itemPrice);
+    setPendingVariantIds([]);
 
     setProductOpen(false);
   };
 
-  // Handle variant selection
-  const handleVariantSelect = (variantId: number) => {
-    const variant = variants.find((v) => v.id === variantId);
-    if (!variant) return;
-
-    // Set variant info
-    onItemChange(index, 'itemType', 'product');
-    onItemChange(index, 'variantId', variant.id);
-    onItemChange(index, 'sku', variant.sku);
-
-    // Build variant attributes string
-    // Note: We'd need to fetch variant selections to get full attribute details
-    // For now, just use SKU as identifier
-    onItemChange(index, 'variantAttributes', `Variant: ${variant.sku}`);
-
-    // Auto-populate price from variant (variant price overrides product price)
-    if (variant.price !== undefined && variant.price !== null) {
-      onItemChange(index, 'itemPrice', String(variant.price));
-    }
-
-    setVariantOpen(false);
+  const togglePendingVariant = (variantId: number) => {
+    setPendingVariantIds((current) =>
+      current.includes(variantId)
+        ? current.filter((currentId) => currentId !== variantId)
+        : [...current, variantId]
+    );
   };
 
   const selectedProduct = products.find((p) => p.id === item.productId);
-  const selectedVariant = variants.find((v) => v.id === item.variantId);
+
+  const applyVariantSelection = () => {
+    if (!selectedProduct) {
+      return;
+    }
+
+    if (pendingVariantIds.length === 0) {
+      onApplyVariantSelection(index, [buildProductItem(selectedProduct)]);
+      setVariantOpen(false);
+
+      return;
+    }
+
+    const selectedVariants = pendingVariantIds
+      .map((variantId) => variants.find((variant) => variant.id === variantId))
+      .filter((variant): variant is ProductVariantDTO => Boolean(variant));
+
+    if (selectedVariants.length === 0) {
+      return;
+    }
+
+    const [firstVariant, ...remainingVariants] = selectedVariants;
+    const currentRow = buildVariantItem(selectedProduct, firstVariant, item);
+    const additionalRows = remainingVariants.map((variant) =>
+      buildVariantItem(selectedProduct, variant, {
+        itemType: 'product',
+        itemStatus: '',
+        quantity: '',
+        itemPrice: '',
+        itemTaxAmount: '',
+        itemComment: '',
+      })
+    );
+
+    onApplyVariantSelection(index, [currentRow, ...additionalRows]);
+    setVariantOpen(false);
+  };
+
+  useEffect(() => {
+    setPendingVariantIds(item.variantId ? [item.variantId] : []);
+  }, [item.productId, item.variantId]);
+
+  const selectedVariantLabel =
+    pendingVariantIds.length === 0
+      ? null
+      : pendingVariantIds.length === 1
+        ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
+        : `${pendingVariantIds.length} variants selected`;
 
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
@@ -159,7 +244,10 @@ function ProductVariantSelector({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0" align="start">
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+            align="start"
+          >
             <Command>
               <CommandInput placeholder="Search products..." className="h-9" />
               <CommandList>
@@ -174,9 +262,9 @@ function ProductVariantSelector({
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium text-sm">{product.name}</span>
                         <span className="text-xs text-muted-foreground">
-                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} •
-                          QTY: {getProductQuantity(product)} •
-                          Price: ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • QTY:{' '}
+                          {getProductQuantity(product)} • Price: ₹
+                          {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
                         </span>
                       </div>
                       <Check
@@ -197,7 +285,9 @@ function ProductVariantSelector({
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-600">Select Variant (Optional)</Label>
+          <Label className="text-xs font-semibold text-slate-600">
+            Select Variant(s) (Optional)
+          </Label>
           <Popover open={variantOpen} onOpenChange={setVariantOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -206,15 +296,18 @@ function ProductVariantSelector({
                 aria-expanded={variantOpen}
                 className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
               >
-                {selectedVariant ? (
-                  <span className="truncate text-sm">{selectedVariant.sku}</span>
+                {selectedVariantLabel ? (
+                  <span className="truncate text-sm">{selectedVariantLabel}</span>
                 ) : (
-                  <span className="text-muted-foreground text-sm">Choose a variant...</span>
+                  <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
                 )}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0" align="start">
+            <PopoverContent
+              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+              align="start"
+            >
               <Command>
                 <CommandInput placeholder="Search variants..." className="h-9" />
                 <CommandList>
@@ -224,7 +317,7 @@ function ProductVariantSelector({
                       <CommandItem
                         key={variant.id}
                         value={variant.sku}
-                        onSelect={() => handleVariantSelect(variant.id!)}
+                        onSelect={() => togglePendingVariant(variant.id!)}
                       >
                         <div className="flex flex-1 flex-col">
                           <span className="font-medium text-sm">{variant.sku}</span>
@@ -235,7 +328,9 @@ function ProductVariantSelector({
                         <Check
                           className={cn(
                             'ml-2 h-4 w-4',
-                            item.variantId === variant.id ? 'opacity-100' : 'opacity-0'
+                            pendingVariantIds.includes(variant.id ?? -1)
+                              ? 'opacity-100'
+                              : 'opacity-0'
                           )}
                         />
                       </CommandItem>
@@ -243,6 +338,26 @@ function ProductVariantSelector({
                   </CommandGroup>
                 </CommandList>
               </Command>
+              <div className="flex items-center justify-between border-t border-slate-200 p-2">
+                <span className="text-xs text-muted-foreground">
+                  {pendingVariantIds.length === 0
+                    ? 'No variants selected'
+                    : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPendingVariantIds([])}
+                  >
+                    Clear
+                  </Button>
+                  <Button type="button" size="sm" onClick={applyVariantSelection}>
+                    {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
+                  </Button>
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -274,24 +389,32 @@ function ProductCatalogSelector({
 }: {
   item: OrderItemForm;
   index: number;
-  onItemChange: (index: number, key: keyof OrderItemForm, value: string | number | undefined) => void;
+  onItemChange: (
+    index: number,
+    key: keyof OrderItemForm,
+    value: string | number | undefined
+  ) => void;
 }) {
   const [catalogOpen, setCatalogOpen] = useState(false);
 
-  const { data: catalogData } = useGetAllProductCatalogs({
-    size: 1000,
-  }, {
-    query: {
-      staleTime: 5 * 60 * 1000,
-      keepPreviousData: true,
+  const { data: catalogData } = useGetAllProductCatalogs(
+    {
+      size: 1000,
     },
-  });
+    {
+      query: {
+        staleTime: 5 * 60 * 1000,
+        keepPreviousData: true,
+      },
+    }
+  );
 
   const catalogs = catalogData || [];
   const selectedCatalog = catalogs.find((catalog) => catalog.id === item.productCatalogId);
 
   const handleCatalogSelect = (catalogId: number) => {
     const catalog = catalogs.find((entry) => entry.id === catalogId);
+
     if (!catalog) return;
 
     onItemChange(index, 'itemType', 'catalog');
@@ -328,7 +451,10 @@ function ProductCatalogSelector({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] sm:w-[420px] p-0" align="start">
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] sm:w-[420px] p-0"
+          align="start"
+        >
           <Command>
             <CommandInput placeholder="Search catalogs..." className="h-9" />
             <CommandList>
@@ -370,6 +496,7 @@ export function OrderFormItems({
   onAddItem,
   onAddCatalogItem,
   onRemoveItem,
+  onApplyVariantSelection,
   onItemChange,
   referrerForm,
   referrerSessionId,
@@ -392,6 +519,7 @@ export function OrderFormItems({
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+
     return Math.max(qty * price + tax, 0);
   };
 
@@ -428,14 +556,26 @@ export function OrderFormItems({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
-            <svg className="h-5 w-5 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="h-5 w-5 text-cyan-700"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
             </svg>
           </div>
           <div>
             <h3 className="text-lg font-bold text-slate-800">Purchase Items</h3>
             <p className="text-sm text-muted-foreground">
-              {items.length === 0 ? 'No items added' : `${items.length} item${items.length !== 1 ? 's' : ''} in purchase list`}
+              {items.length === 0
+                ? 'No items added'
+                : `${items.length} item${items.length !== 1 ? 's' : ''} in purchase list`}
             </p>
           </div>
         </div>
@@ -447,7 +587,12 @@ export function OrderFormItems({
               className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               Add Item
             </Button>
@@ -469,7 +614,12 @@ export function OrderFormItems({
               className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 7h16M4 12h16M4 17h16"
+                />
               </svg>
               Add Product Catalog
             </Button>
@@ -490,8 +640,18 @@ export function OrderFormItems({
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-cyan-300 bg-cyan-50/50 p-12 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100">
-            <svg className="h-8 w-8 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg
+              className="h-8 w-8 text-cyan-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+              />
             </svg>
           </div>
           <p className="mb-2 text-base font-semibold text-slate-700">Your purchase list is empty</p>
@@ -529,6 +689,7 @@ export function OrderFormItems({
                         <ProductVariantSelector
                           item={item}
                           index={index}
+                          onApplyVariantSelection={onApplyVariantSelection}
                           onItemChange={onItemChange}
                         />
                       )}
@@ -540,8 +701,8 @@ export function OrderFormItems({
                                 Catalog
                               </Badge>
                             ) : null}
-                            {item.productName && (
-                              item.itemType === 'catalog' && item.productCatalogId ? (
+                            {item.productName &&
+                              (item.itemType === 'catalog' && item.productCatalogId ? (
                                 <Link
                                   href={`/product-catalogs/${item.productCatalogId}`}
                                   target="_blank"
@@ -550,15 +711,18 @@ export function OrderFormItems({
                                   {item.productName}
                                 </Link>
                               ) : (
-                                <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                              )
-                            )}
+                                <div className="text-sm font-medium text-slate-900">
+                                  {item.productName}
+                                </div>
+                              ))}
                           </div>
                           {item.sku && (
                             <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                           )}
                           {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">{item.variantAttributes}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {item.variantAttributes}
+                            </Badge>
                           )}
                         </div>
                       )}
@@ -597,7 +761,9 @@ export function OrderFormItems({
                     <div className="col-span-2 flex flex-col gap-2">
                       <div className="text-right">
                         <div className="text-xs text-muted-foreground mb-1">Total</div>
-                        <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                        <div className="text-lg font-bold text-slate-900">
+                          ₹{itemTotal.toFixed(2)}
+                        </div>
                       </div>
                       <div className="flex gap-1 justify-end">
                         <Button
@@ -607,8 +773,18 @@ export function OrderFormItems({
                           onClick={() => onRemoveItem(index)}
                           className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                         >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
                           </svg>
                         </Button>
                       </div>
@@ -626,7 +802,9 @@ export function OrderFormItems({
                         <div>
                           <div className="text-sm font-bold text-slate-900">Item #{index + 1}</div>
                           {itemTotal > 0 && (
-                            <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-cyan-600">
+                              ₹{itemTotal.toFixed(2)}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -637,8 +815,18 @@ export function OrderFormItems({
                         onClick={() => onRemoveItem(index)}
                         className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                       >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
                         </svg>
                       </Button>
                     </div>
@@ -666,8 +854,8 @@ export function OrderFormItems({
                                 Catalog
                               </Badge>
                             ) : null}
-                            {item.productName && (
-                              item.itemType === 'catalog' && item.productCatalogId ? (
+                            {item.productName &&
+                              (item.itemType === 'catalog' && item.productCatalogId ? (
                                 <Link
                                   href={`/product-catalogs/${item.productCatalogId}`}
                                   target="_blank"
@@ -676,15 +864,18 @@ export function OrderFormItems({
                                   {item.productName}
                                 </Link>
                               ) : (
-                                <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                              )
-                            )}
+                                <div className="text-sm font-medium text-slate-900">
+                                  {item.productName}
+                                </div>
+                              ))}
                           </div>
                           {item.sku && (
                             <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
                           )}
                           {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">{item.variantAttributes}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {item.variantAttributes}
+                            </Badge>
                           )}
                         </div>
                       )}
@@ -719,7 +910,6 @@ export function OrderFormItems({
                       </div>
                     </div>
                   </div>
-
                 </div>
               );
             })}

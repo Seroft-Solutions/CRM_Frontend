@@ -53,6 +53,7 @@ type OrderFormItemsProps = {
   onAddItem: () => void;
   onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
+  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
   onItemChange: (
     index: number,
     key: keyof OrderItemForm,
@@ -68,10 +69,12 @@ type OrderFormItemsProps = {
 function ProductVariantSelector({
   item,
   index,
+  onApplyVariantSelection,
   onItemChange,
 }: {
   item: OrderItemForm;
   index: number;
+  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
   onItemChange: (
     index: number,
     key: keyof OrderItemForm,
@@ -80,6 +83,7 @@ function ProductVariantSelector({
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
+  const [pendingVariantIds, setPendingVariantIds] = useState<number[]>([]);
 
   // Fetch active products
   const { data: productsData } = useGetAllProducts({
@@ -147,65 +151,126 @@ function ProductVariantSelector({
     );
   };
 
+  const getProductPrice = (product: ProductDTO) =>
+    product.salePrice ?? product.discountedPrice ?? product.basePrice;
+
+  const buildProductItem = (product: ProductDTO): OrderItemForm => {
+    const price = getProductPrice(product);
+
+    return {
+      ...item,
+      itemType: 'product',
+      productCatalogId: undefined,
+      productId: product.id,
+      productName: product.name,
+      sku: product.articleNumber ?? product.articalNumber,
+      availableQuantity: getProductQuantity(product),
+      warehouseStocks: undefined,
+      variantAttributes: undefined,
+      variantId: undefined,
+      itemPrice:
+        price !== undefined && price !== null
+          ? String(price)
+          : item.variantId
+            ? ''
+            : item.itemPrice,
+    };
+  };
+
+  const buildVariantItem = (
+    product: ProductDTO,
+    variant: ProductVariantWithWarehouseStocks,
+    baseItem: OrderItemForm
+  ): OrderItemForm => ({
+    ...baseItem,
+    itemType: 'product',
+    productCatalogId: undefined,
+    productId: product.id,
+    productName: product.name,
+    variantId: variant.id,
+    sku: variant.sku,
+    availableQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+    warehouseStocks: mapVariantWarehouseStocks(variant),
+    variantAttributes: `Variant: ${variant.sku}`,
+    itemPrice:
+      variant.price !== undefined && variant.price !== null
+        ? String(variant.price)
+        : getProductPrice(product) !== undefined && getProductPrice(product) !== null
+          ? String(getProductPrice(product))
+          : baseItem.itemPrice,
+  });
+
   // Handle product selection
   const handleProductSelect = (productId: number) => {
     const product = products.find((p) => p.id === productId);
 
     if (!product) return;
 
-    // Set product info
-    onItemChange(index, 'itemType', 'product');
-    onItemChange(index, 'productCatalogId', undefined);
-    onItemChange(index, 'productId', product.id);
-    onItemChange(index, 'productName', product.name);
-    onItemChange(index, 'sku', product.articleNumber ?? product.articalNumber);
-    onItemChange(index, 'availableQuantity', getProductQuantity(product));
-    onItemChange(index, 'warehouseStocks', undefined);
-    onItemChange(index, 'variantAttributes', undefined);
-    onItemChange(index, 'variantId', undefined);
+    const nextItem = buildProductItem(product);
 
-    // Auto-populate price from product
-    const price = product.salePrice ?? product.discountedPrice ?? product.basePrice;
-
-    if (price !== undefined && price !== null) {
-      onItemChange(index, 'itemPrice', String(price));
-    }
+    onItemChange(index, 'itemType', nextItem.itemType);
+    onItemChange(index, 'productCatalogId', nextItem.productCatalogId);
+    onItemChange(index, 'productId', nextItem.productId);
+    onItemChange(index, 'productName', nextItem.productName);
+    onItemChange(index, 'sku', nextItem.sku);
+    onItemChange(index, 'availableQuantity', nextItem.availableQuantity);
+    onItemChange(index, 'warehouseStocks', nextItem.warehouseStocks);
+    onItemChange(index, 'variantAttributes', nextItem.variantAttributes);
+    onItemChange(index, 'variantId', nextItem.variantId);
+    onItemChange(index, 'itemPrice', nextItem.itemPrice);
+    setPendingVariantIds([]);
 
     setProductOpen(false);
   };
 
-  // Handle variant selection
-  const handleVariantSelect = (variantId: number) => {
-    const variant = variants.find((v) => v.id === variantId);
-
-    if (!variant) return;
-
-    // Set variant info
-    onItemChange(index, 'itemType', 'product');
-    onItemChange(index, 'variantId', variant.id);
-    onItemChange(index, 'sku', variant.sku);
-    onItemChange(
-      index,
-      'availableQuantity',
-      variant.salesStockQuantity ?? variant.stockQuantity ?? 0
+  const togglePendingVariant = (variantId: number) => {
+    setPendingVariantIds((current) =>
+      current.includes(variantId)
+        ? current.filter((currentId) => currentId !== variantId)
+        : [...current, variantId]
     );
-    onItemChange(index, 'warehouseStocks', mapVariantWarehouseStocks(variant));
-
-    // Build variant attributes string
-    // Note: We'd need to fetch variant selections to get full attribute details
-    // For now, just use SKU as identifier
-    onItemChange(index, 'variantAttributes', `Variant: ${variant.sku}`);
-
-    // Auto-populate price from variant (variant price overrides product price)
-    if (variant.price !== undefined && variant.price !== null) {
-      onItemChange(index, 'itemPrice', String(variant.price));
-    }
-
-    setVariantOpen(false);
   };
 
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
+
+  const applyVariantSelection = () => {
+    if (!selectedProduct) {
+      return;
+    }
+
+    if (pendingVariantIds.length === 0) {
+      onApplyVariantSelection(index, [buildProductItem(selectedProduct)]);
+      setVariantOpen(false);
+
+      return;
+    }
+
+    const selectedVariants = pendingVariantIds
+      .map((variantId) => variants.find((variant) => variant.id === variantId))
+      .filter((variant): variant is ProductVariantWithWarehouseStocks => Boolean(variant));
+
+    if (selectedVariants.length === 0) {
+      return;
+    }
+
+    const [firstVariant, ...remainingVariants] = selectedVariants;
+    const currentRow = buildVariantItem(selectedProduct, firstVariant, item);
+    const additionalRows = remainingVariants.map((variant) =>
+      buildVariantItem(selectedProduct, variant, {
+        itemType: 'product',
+        itemStatus: '',
+        quantity: '',
+        itemPrice: '',
+        itemTaxAmount: '',
+        itemComment: '',
+      })
+    );
+
+    onApplyVariantSelection(index, [currentRow, ...additionalRows]);
+    setVariantOpen(false);
+  };
+
   const effectiveQuantity = selectedVariant
     ? (selectedVariant.salesStockQuantity ?? selectedVariant.stockQuantity ?? 0)
     : selectedProduct
@@ -264,6 +329,17 @@ function ProductVariantSelector({
     item.warehouseStocks,
     onItemChange,
   ]);
+
+  useEffect(() => {
+    setPendingVariantIds(item.variantId ? [item.variantId] : []);
+  }, [item.productId, item.variantId]);
+
+  const selectedVariantLabel =
+    pendingVariantIds.length === 0
+      ? null
+      : pendingVariantIds.length === 1
+        ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
+        : `${pendingVariantIds.length} variants selected`;
 
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
@@ -327,7 +403,9 @@ function ProductVariantSelector({
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-600">Select Variant (Optional)</Label>
+          <Label className="text-xs font-semibold text-slate-600">
+            Select Variant(s) (Optional)
+          </Label>
           <Popover open={variantOpen} onOpenChange={setVariantOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -336,10 +414,10 @@ function ProductVariantSelector({
                 aria-expanded={variantOpen}
                 className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
               >
-                {selectedVariant ? (
-                  <span className="truncate text-sm">{selectedVariant.sku}</span>
+                {selectedVariantLabel ? (
+                  <span className="truncate text-sm">{selectedVariantLabel}</span>
                 ) : (
-                  <span className="text-muted-foreground text-sm">Choose a variant...</span>
+                  <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
                 )}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -369,7 +447,7 @@ function ProductVariantSelector({
                         <CommandItem
                           key={variant.id}
                           value={variant.sku}
-                          onSelect={() => handleVariantSelect(variant.id!)}
+                          onSelect={() => togglePendingVariant(variant.id!)}
                         >
                           <div className="flex flex-1 flex-col">
                             <span className="font-medium text-sm">{variant.sku}</span>
@@ -387,7 +465,9 @@ function ProductVariantSelector({
                           <Check
                             className={cn(
                               'ml-2 h-4 w-4',
-                              item.variantId === variant.id ? 'opacity-100' : 'opacity-0'
+                              pendingVariantIds.includes(variant.id ?? -1)
+                                ? 'opacity-100'
+                                : 'opacity-0'
                             )}
                           />
                         </CommandItem>
@@ -396,6 +476,26 @@ function ProductVariantSelector({
                   </CommandGroup>
                 </CommandList>
               </Command>
+              <div className="flex items-center justify-between border-t border-slate-200 p-2">
+                <span className="text-xs text-muted-foreground">
+                  {pendingVariantIds.length === 0
+                    ? 'No variants selected'
+                    : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPendingVariantIds([])}
+                  >
+                    Clear
+                  </Button>
+                  <Button type="button" size="sm" onClick={applyVariantSelection}>
+                    {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
+                  </Button>
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -536,6 +636,7 @@ export function OrderFormItems({
   onAddItem,
   onAddCatalogItem,
   onRemoveItem,
+  onApplyVariantSelection,
   onItemChange,
   referrerForm,
   referrerSessionId,
@@ -744,6 +845,7 @@ export function OrderFormItems({
                         <ProductVariantSelector
                           item={item}
                           index={index}
+                          onApplyVariantSelection={onApplyVariantSelection}
                           onItemChange={onItemChange}
                         />
                       )}
