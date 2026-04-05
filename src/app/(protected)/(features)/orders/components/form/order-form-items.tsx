@@ -812,8 +812,7 @@ export function OrderFormItems({
                                 {entry.warehouseName ||
                                   entry.warehouseCode ||
                                   `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}
-                                {entry.variantLabel ? ` • Variant: ${entry.variantLabel} • ` : ': '}
-                                Sales Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                                {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
                               </p>
                             ))}
                           </div>
@@ -997,10 +996,8 @@ export function OrderFormItems({
                                   {entry.warehouseName ||
                                     entry.warehouseCode ||
                                     `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}
-                                  {entry.variantLabel
-                                    ? ` • Variant: ${entry.variantLabel} • `
-                                    : ': '}
-                                  Sales Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                                  {': '}
+                                  Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
                                 </p>
                               ))}
                             </div>
