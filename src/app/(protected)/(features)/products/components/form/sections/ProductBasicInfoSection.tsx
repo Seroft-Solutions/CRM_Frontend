@@ -351,7 +351,7 @@ export function ProductBasicInfoSection({
                     {...field}
                     placeholder="Enter product code"
                     className={cn(
-                      'h-9 font-mono',
+                      'h-9 font-mono placeholder:font-sans',
                       errors.barcodeText && 'border-rose-500 focus-visible:ring-rose-500'
                     )}
                     onChange={(e) => {

@@ -784,6 +784,33 @@ export function ProductVariantManager({
     });
   }, [draftCombinations]);
 
+  useEffect(() => {
+    if (isViewMode || defaultVariantPrice === undefined) {
+      return;
+    }
+
+    setDraftVariantsByKey((prev) => {
+      let hasChanges = false;
+      const next: Record<string, DraftVariantRow> = {};
+
+      Object.entries(prev).forEach(([key, row]) => {
+        if (row.price === defaultVariantPrice) {
+          next[key] = row;
+
+          return;
+        }
+
+        hasChanges = true;
+        next[key] = {
+          ...row,
+          price: defaultVariantPrice,
+        };
+      });
+
+      return hasChanges ? next : prev;
+    });
+  }, [defaultVariantPrice, isViewMode]);
+
   const draftVariants = useMemo(() => Object.values(draftVariantsByKey), [draftVariantsByKey]);
   const newDraftVariants = useMemo(
     () => draftVariants.filter((v) => !v.isDuplicate),
