@@ -15,12 +15,7 @@ import {
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { createProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useUploadProductVariantImage } from '@/core/api/generated/spring';
-import {
-  getAllProductVariants,
-  useCreateProductVariant,
-  usePartialUpdateProductVariant,
-} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import { useCreateProductVariantSelection } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
+import { getAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { handleProductError, productToast } from '../product-toast';
 import {
   handleProductCatalogError,
@@ -294,7 +289,7 @@ function ProductFormContent({
 
       {/* Single-Page Form Content */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(actions.submitForm)}>
+        <form id="product-form" onSubmit={form.handleSubmit(actions.submitForm)}>
           <ProductFormSinglePage
             form={form}
             config={config}
@@ -323,11 +318,6 @@ export function ProductForm({ id }: ProductFormProps) {
   const hardDeleteImageMutation = useHardDeleteImage();
   const reorderImagesMutation = useReorderImages();
   const [existingEntity, setExistingEntity] = useState<unknown | null>(null);
-
-  // Get mutation functions at component level to avoid hook calls in async callbacks
-  const createVariantMutation = useCreateProductVariant();
-  const partialUpdateVariantMutation = usePartialUpdateProductVariant();
-  const createSelectionMutation = useCreateProductVariantSelection();
   const uploadVariantImageMutation = useUploadProductVariantImage();
 
   const invalidateProductQueries = useCallback(async () => {
@@ -335,6 +325,11 @@ export function ProductForm({ id }: ProductFormProps) {
       queryClient.invalidateQueries({ queryKey: ['getAllProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['countProducts'], refetchType: 'active' }),
       queryClient.invalidateQueries({ queryKey: ['searchProducts'], refetchType: 'active' }),
+      queryClient.invalidateQueries({ queryKey: ['product-summaries'], refetchType: 'active' }),
+      queryClient.invalidateQueries({
+        queryKey: ['product-summaries-search'],
+        refetchType: 'active',
+      }),
       // Also invalidate the specific product query if we have an ID
       ...(id
         ? [queryClient.invalidateQueries({ queryKey: ['get-product', id], refetchType: 'active' })]
@@ -419,144 +414,141 @@ export function ProductForm({ id }: ProductFormProps) {
     router.push('/products');
   }, [router]);
 
-  const handleVariantsCreation = useCallback(
+  const prepareVariantsForPersistence = useCallback((variants: Array<Record<string, unknown>>) => {
+    return variants.map((variantData) => {
+      const variantStocksInput = Array.isArray(variantData.variantStocks)
+        ? (variantData.variantStocks as Array<Record<string, unknown>>)
+        : [];
+      const normalizedVariantStocks = variantStocksInput
+        .map((variantStock) => {
+          const warehouseId =
+            typeof variantStock.warehouseId === 'number'
+              ? variantStock.warehouseId
+              : (variantStock.warehouse as { id?: number } | undefined)?.id;
+          const stockQuantity = Number(variantStock.stockQuantity) || 0;
+
+          return { warehouseId, stockQuantity, id: variantStock.id };
+        })
+        .filter(
+          (
+            variantStock
+          ): variantStock is {
+            warehouseId: number;
+            stockQuantity: number;
+            id: unknown;
+          } => typeof variantStock.warehouseId === 'number'
+        );
+      const totalVariantStock =
+        normalizedVariantStocks.length > 0
+          ? normalizedVariantStocks.reduce(
+              (sum, variantStock) => sum + (Number(variantStock.stockQuantity) || 0),
+              0
+            )
+          : Number(variantData.stockQuantity) || 0;
+
+      return {
+        sku: normalizeSku(String(variantData.sku ?? ''), 'PROD'),
+        price: variantData.price,
+        stockQuantity: totalVariantStock,
+        variantStocks: normalizedVariantStocks.map((variantStock) => ({
+          stockQuantity: variantStock.stockQuantity,
+          warehouse: { id: variantStock.warehouseId },
+        })),
+        status: variantData.status,
+        isPrimary: variantData.isPrimary ?? false,
+        selections: Array.isArray(variantData.selections)
+          ? variantData.selections.map((selection) => ({
+              status: selection.status,
+              attribute: selection.attribute,
+              option: selection.option,
+            }))
+          : [],
+      };
+    });
+  }, []);
+
+  const handleVariantImageUploads = useCallback(
     async (productId: number | undefined, variants: Array<Record<string, unknown>>) => {
       if (!productId || !variants.length) {
         return;
       }
 
-      let primaryCreatedId: number | null = null;
+      const variantsWithImages = variants
+        .map((variant) => ({
+          id: typeof variant.id === 'number' ? variant.id : undefined,
+          sku: normalizeSku(String(variant.sku ?? ''), 'PROD'),
+          imageFiles: variant.imageFiles as VariantImageSlotMap<File | null> | undefined,
+        }))
+        .filter((variant) =>
+          variant.imageFiles
+            ? VARIANT_IMAGE_ORDER.some((slot) => variant.imageFiles?.[slot] instanceof File)
+            : false
+        );
 
-      for (const variantData of variants) {
-        try {
-          const variantStocksInput = Array.isArray(variantData.variantStocks)
-            ? (variantData.variantStocks as Array<Record<string, unknown>>)
-            : [];
-          const normalizedVariantStocks = variantStocksInput
-            .map((variantStock) => {
-              const warehouseId =
-                typeof variantStock.warehouseId === 'number'
-                  ? variantStock.warehouseId
-                  : (variantStock.warehouse as { id?: number } | undefined)?.id;
-              const stockQuantity = Number(variantStock.stockQuantity) || 0;
-
-              return { warehouseId, stockQuantity };
-            })
-            .filter(
-              (variantStock): variantStock is { warehouseId: number; stockQuantity: number } =>
-                typeof variantStock.warehouseId === 'number'
-            );
-          const totalVariantStock =
-            normalizedVariantStocks.length > 0
-              ? normalizedVariantStocks.reduce(
-                  (sum, variantStock) => sum + (Number(variantStock.stockQuantity) || 0),
-                  0
-                )
-              : Number(variantData.stockQuantity) || 0;
-
-          // Create the variant
-          const variantPayload = {
-            sku: normalizeSku(String(variantData.sku ?? ''), 'PROD'),
-            price: variantData.price,
-            stockQuantity: totalVariantStock,
-            variantStocks: normalizedVariantStocks.map((variantStock) => ({
-              stockQuantity: variantStock.stockQuantity,
-              warehouse: { id: variantStock.warehouseId },
-            })),
-            status: variantData.status,
-            isPrimary: variantData.isPrimary ?? false,
-            product: { id: productId },
-          };
-
-          const createdVariant = await createVariantMutation.mutateAsync({
-            data: variantPayload,
-          });
-
-          // Create variant selections
-          if (variantData.selections && Array.isArray(variantData.selections)) {
-            for (const selection of variantData.selections) {
-              const selectionPayload = {
-                status: selection.status,
-                attribute: selection.attribute,
-                option: selection.option,
-                variant: { id: createdVariant.id },
-              };
-
-              await createSelectionMutation.mutateAsync({
-                data: selectionPayload,
-              });
-            }
-          }
-
-          if (variantData.isPrimary && createdVariant?.id) {
-            primaryCreatedId = createdVariant.id;
-          }
-
-          const imageFiles = variantData.imageFiles as VariantImageSlotMap<File | null> | undefined;
-
-          if (imageFiles && createdVariant?.id) {
-            try {
-              for (const slot of VARIANT_IMAGE_ORDER) {
-                const file = imageFiles[slot];
-
-                if (!file) continue;
-
-                await uploadVariantImageMutation.mutateAsync({
-                  data: { file },
-                  params: { variantId: createdVariant.id },
-                });
-              }
-            } catch (uploadError) {
-              console.error('Failed to upload variant pictures:', uploadError);
-              toast.error('Failed to upload variant pictures', {
-                description: extractErrorMessage(
-                  uploadError,
-                  'The variant was created but pictures could not be uploaded.'
-                ),
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Failed to create variant:', error);
-          toast.error('Failed to create some variants', {
-            description: 'The product was created but some variants could not be saved.',
-          });
-        }
+      if (!variantsWithImages.length) {
+        return;
       }
 
-      if (primaryCreatedId) {
-        try {
-          const existingVariants = await getAllProductVariants({
-            'productId.equals': productId,
-            size: 1000,
-            sort: ['id,asc'],
-          });
+      try {
+        const savedVariants = await getAllProductVariants({
+          'productId.equals': productId,
+          size: 1000,
+          sort: ['id,asc'],
+        });
+        const variantIdBySku = new Map(
+          (savedVariants ?? [])
+            .filter((variant) => typeof variant.id === 'number' && typeof variant.sku === 'string')
+            .map((variant) => [variant.sku!, variant.id!])
+        );
 
-          const otherPrimaries = (existingVariants ?? []).filter(
-            (variant) => variant.isPrimary && variant.id !== primaryCreatedId
-          );
+        const uploadJobs: Array<Promise<unknown>> = [];
 
-          for (const variant of otherPrimaries) {
-            await partialUpdateVariantMutation.mutateAsync({
-              id: variant.id!,
-              data: {
-                id: variant.id!,
-                isPrimary: false,
-                product: { id: productId },
-              },
-            });
+        variantsWithImages.forEach((variant) => {
+          const resolvedVariantId = variant.id ?? variantIdBySku.get(variant.sku);
+
+          if (!resolvedVariantId || !variant.imageFiles) {
+            return;
           }
-        } catch (error) {
-          console.error('Failed to normalize primary variant:', error);
+
+          VARIANT_IMAGE_ORDER.forEach((slot) => {
+            const file = variant.imageFiles?.[slot];
+
+            if (!file) {
+              return;
+            }
+
+            uploadJobs.push(
+              uploadVariantImageMutation.mutateAsync({
+                data: { file },
+                params: { variantId: resolvedVariantId },
+              })
+            );
+          });
+        });
+
+        if (!uploadJobs.length) {
+          return;
         }
+
+        const uploadResults = await Promise.allSettled(uploadJobs);
+        const failedUploads = uploadResults.filter((result) => result.status === 'rejected');
+
+        if (failedUploads.length > 0) {
+          toast.error('Failed to upload some variant pictures', {
+            description: `${failedUploads.length} variant image upload(s) could not be completed.`,
+          });
+        }
+      } catch (uploadError) {
+        console.error('Failed to upload variant pictures:', uploadError);
+        toast.error('Failed to upload variant pictures', {
+          description: extractErrorMessage(
+            uploadError,
+            'The product was saved but variant pictures could not be uploaded.'
+          ),
+        });
       }
     },
-    [
-      createVariantMutation,
-      createSelectionMutation,
-      uploadVariantImageMutation,
-      partialUpdateVariantMutation,
-    ]
+    [uploadVariantImageMutation]
   );
 
   const handleImageUploads = useCallback(
@@ -751,10 +743,15 @@ export function ProductForm({ id }: ProductFormProps) {
           ...productDataWithoutVariants
         } = productData;
         const shouldCreateCatalog = Boolean(saveAsCatalog);
+        const preparedVariants =
+          productVariants && Array.isArray(productVariants) && productVariants.length > 0
+            ? prepareVariantsForPersistence(productVariants as Array<Record<string, unknown>>)
+            : undefined;
 
         const productDataWithStatus = {
           ...productDataWithoutVariants,
           status: productDataWithoutVariants.status || 'ACTIVE',
+          ...(preparedVariants?.length ? { variants: preparedVariants } : {}),
         };
 
         if (isNew) {
@@ -769,9 +766,8 @@ export function ProductForm({ id }: ProductFormProps) {
               undefined,
               createdProduct?.name ?? productDataWithStatus.name
             );
-            // Handle variants creation after product is created
             if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
-              await handleVariantsCreation(createdProduct?.id, productVariants);
+              await handleVariantImageUploads(createdProduct?.id, productVariants);
             }
             if (shouldCreateCatalog) {
               await createCatalogForProduct(
@@ -801,9 +797,8 @@ export function ProductForm({ id }: ProductFormProps) {
               existingEntity?.images,
               entityData.name ?? existingEntity?.name
             );
-            // Handle variants creation for edit mode (newly generated variants)
             if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
-              await handleVariantsCreation(id, productVariants);
+              await handleVariantImageUploads(id, productVariants);
             }
             if (shouldCreateCatalog) {
               await createCatalogForProduct(id, productCatalogName, productCatalogPrice);

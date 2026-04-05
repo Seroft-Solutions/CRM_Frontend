@@ -47,8 +47,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCountProducts,
-  useGetAllProducts,
-  useSearchProducts,
   useUpdateProduct,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 
@@ -61,6 +59,10 @@ import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 import { ProductSearchAndFilters } from './table/product-search-filters';
 import { useDebounce } from '@/hooks/use-debounce';
+import {
+  useProductSummariesQuery,
+  useSearchProductSummariesQuery,
+} from '../actions/product-summary-hooks';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
@@ -394,22 +396,34 @@ export function ProductTable() {
     }));
   };
 
-  const handleRefresh = async () => {
-    try {
-      await queryClient.invalidateQueries({
+  const invalidateProductListQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ['product-summaries'],
+        refetchType: 'active',
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['product-summaries-search'],
+        refetchType: 'active',
+      }),
+      queryClient.invalidateQueries({
         queryKey: ['getAllProducts'],
         refetchType: 'active',
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['countProducts'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
+      }),
+      queryClient.invalidateQueries({
         queryKey: ['searchProducts'],
         refetchType: 'active',
-      });
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['countProducts'],
+        refetchType: 'active',
+      }),
+    ]);
+  };
 
+  const handleRefresh = async () => {
+    try {
+      await invalidateProductListQueries();
       await refetch();
 
       toast.success('Data refreshed successfully');
@@ -666,7 +680,7 @@ export function ProductTable() {
 
   const filterParams = buildFilterParams();
 
-  const searchQuery = useSearchProducts(
+  const searchQuery = useSearchProductSummariesQuery(
     {
       query: normalizedSearchTerm,
       page: apiPage,
@@ -674,29 +688,17 @@ export function ProductTable() {
       sort: [`${sort},${order}`],
       ...filterParams,
     },
-    {
-      query: {
-        enabled: Boolean(normalizedSearchTerm),
-        staleTime: 0,
-        refetchOnWindowFocus: true,
-      },
-    }
+    { enabled: Boolean(normalizedSearchTerm) }
   );
 
-  const listQuery = useGetAllProducts(
+  const listQuery = useProductSummariesQuery(
     {
       page: apiPage,
       size: pageSize,
       sort: [`${sort},${order}`],
       ...filterParams,
     },
-    {
-      query: {
-        enabled: !normalizedSearchTerm,
-        staleTime: 0,
-        refetchOnWindowFocus: true,
-      },
-    }
+    { enabled: !normalizedSearchTerm }
   );
 
   const data = normalizedSearchTerm ? searchQuery.data : listQuery.data;
@@ -717,15 +719,15 @@ export function ProductTable() {
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllProducts'],
+          queryKey: ['product-summaries'],
         });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchProducts'],
+          queryKey: ['product-summaries-search'],
         });
 
         const previousData = queryClient.getQueryData([
-          'getAllProducts',
+          'product-summaries',
           {
             page: apiPage,
             size: pageSize,
@@ -737,7 +739,7 @@ export function ProductTable() {
         if (previousData && Array.isArray(previousData)) {
           queryClient.setQueryData(
             [
-              'getAllProducts',
+              'product-summaries',
               {
                 page: apiPage,
                 size: pageSize,
@@ -755,7 +757,7 @@ export function ProductTable() {
         if (normalizedSearchTerm) {
           queryClient.setQueryData(
             [
-              'searchProducts',
+              'product-summaries-search',
               {
                 query: normalizedSearchTerm,
                 page: apiPage,
@@ -776,7 +778,7 @@ export function ProductTable() {
       onSuccess: (data, variables) => {
         queryClient.setQueryData(
           [
-            'getAllProducts',
+            'product-summaries',
             {
               page: apiPage,
               size: pageSize,
@@ -791,7 +793,7 @@ export function ProductTable() {
         if (normalizedSearchTerm) {
           queryClient.setQueryData(
             [
-              'searchProducts',
+              'product-summaries-search',
               {
                 query: normalizedSearchTerm,
                 page: apiPage,
@@ -811,7 +813,7 @@ export function ProductTable() {
         if (context?.previousData) {
           queryClient.setQueryData(
             [
-              'getAllProducts',
+              'product-summaries',
               {
                 page: apiPage,
                 size: pageSize,
@@ -825,19 +827,7 @@ export function ProductTable() {
         handleProductError(error);
       },
       onSettled: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: ['getAllProducts'],
-          refetchType: 'active',
-        });
-        await queryClient.invalidateQueries({
-          queryKey: ['countProducts'],
-          refetchType: 'active',
-        });
-
-        await queryClient.invalidateQueries({
-          queryKey: ['searchProducts'],
-          refetchType: 'active',
-        });
+        await invalidateProductListQueries();
       },
     },
   });
@@ -845,10 +835,10 @@ export function ProductTable() {
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateProduct({
     mutation: {
       onMutate: async (variables) => {
-        await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
+        await queryClient.cancelQueries({ queryKey: ['product-summaries'] });
 
         const previousData = queryClient.getQueryData([
-          'getAllProducts',
+          'product-summaries',
           {
             page: apiPage,
             size: pageSize,
@@ -859,7 +849,7 @@ export function ProductTable() {
 
         queryClient.setQueryData(
           [
-            'getAllProducts',
+            'product-summaries',
             {
               page: apiPage,
               size: pageSize,
@@ -907,7 +897,7 @@ export function ProductTable() {
         if (context?.previousData) {
           queryClient.setQueryData(
             [
-              'getAllProducts',
+              'product-summaries',
               {
                 page: apiPage,
                 size: pageSize,
@@ -921,19 +911,7 @@ export function ProductTable() {
         handleProductError(error);
       },
       onSettled: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: ['getAllProducts'],
-          refetchType: 'active',
-        });
-        await queryClient.invalidateQueries({
-          queryKey: ['countProducts'],
-          refetchType: 'active',
-        });
-
-        await queryClient.invalidateQueries({
-          queryKey: ['searchProducts'],
-          refetchType: 'active',
-        });
+        await invalidateProductListQueries();
       },
     },
   });
@@ -1058,10 +1036,10 @@ export function ProductTable() {
   const confirmBulkArchive = async () => {
     setIsBulkArchiving(true);
 
-    await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
+    await queryClient.cancelQueries({ queryKey: ['product-summaries'] });
 
     const previousData = queryClient.getQueryData([
-      'getAllProducts',
+      'product-summaries',
       {
         page: apiPage,
         size: pageSize,
@@ -1094,19 +1072,7 @@ export function ProductTable() {
 
       await Promise.all(updatePromises);
 
-      await queryClient.invalidateQueries({
-        queryKey: ['getAllProducts'],
-        refetchType: 'active',
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['countProducts'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['searchProducts'],
-        refetchType: 'active',
-      });
+      await invalidateProductListQueries();
 
       productToast.custom.success(
         'Bulk Archive Complete',
@@ -1118,7 +1084,7 @@ export function ProductTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllProducts',
+            'product-summaries',
             {
               page: apiPage,
               size: pageSize,
@@ -1144,10 +1110,10 @@ export function ProductTable() {
 
     setIsBulkUpdatingStatus(true);
 
-    await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
+    await queryClient.cancelQueries({ queryKey: ['product-summaries'] });
 
     const previousData = queryClient.getQueryData([
-      'getAllProducts',
+      'product-summaries',
       {
         page: apiPage,
         size: pageSize,
@@ -1181,19 +1147,7 @@ export function ProductTable() {
 
       await Promise.all(updatePromises);
 
-      await queryClient.invalidateQueries({
-        queryKey: ['getAllProducts'],
-        refetchType: 'active',
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['countProducts'],
-        refetchType: 'active',
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['searchProducts'],
-        refetchType: 'active',
-      });
+      await invalidateProductListQueries();
 
       const statusLabel =
         statusOptions.find((opt) => opt.value.includes(bulkNewStatus))?.label || bulkNewStatus;
@@ -1208,7 +1162,7 @@ export function ProductTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllProducts',
+            'product-summaries',
             {
               page: apiPage,
               size: pageSize,
@@ -1282,7 +1236,7 @@ export function ProductTable() {
             if (isBulkOperation) {
               queryClient.setQueryData(
                 [
-                  'getAllProducts',
+                  'product-summaries',
                   {
                     page: apiPage,
                     size: pageSize,
@@ -1297,7 +1251,7 @@ export function ProductTable() {
               if (normalizedSearchTerm) {
                 queryClient.setQueryData(
                   [
-                    'searchProducts',
+                    'product-summaries-search',
                     {
                       query: normalizedSearchTerm,
                       page: apiPage,
@@ -1339,10 +1293,10 @@ export function ProductTable() {
     relationshipName: string,
     newValue: number | null
   ) => {
-    await queryClient.cancelQueries({ queryKey: ['getAllProducts'] });
+    await queryClient.cancelQueries({ queryKey: ['product-summaries'] });
 
     const previousData = queryClient.getQueryData([
-      'getAllProducts',
+      'product-summaries',
       {
         page: apiPage,
         size: pageSize,
@@ -1386,7 +1340,7 @@ export function ProductTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllProducts',
+            'product-summaries',
             {
               page: apiPage,
               size: pageSize,

@@ -33,11 +33,6 @@ import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/Prod
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring';
-import {
-  mapVariantImagesToSlots,
-  VARIANT_IMAGE_ORDER,
-} from '@/features/product-variant-images/utils/variant-image-slots';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -128,7 +123,8 @@ export function ProductTableRow({
   visibleColumns,
 }: ProductTableRowProps) {
   const [isStockDetailsOpen, setIsStockDetailsOpen] = useState(false);
-  const shouldFetchVariants = !product.variants?.length && Boolean(product.id);
+  const shouldFetchVariants =
+    isStockDetailsOpen && !product.variants?.length && Boolean(product.id);
   const { data: fetchedVariants = [] } = useGetAllProductVariants(
     shouldFetchVariants
       ? {
@@ -150,24 +146,21 @@ export function ProductTableRow({
 
     return variants.reduce((sum, variant) => sum + (variant.stockQuantity ?? 0), 0);
   }, [productStockQuantity, variants]);
-  const primaryVariant = variants.find((variant) => variant.isPrimary) ?? variants[0];
-  const primaryVariantId = primaryVariant?.id;
-  const { data: primaryVariantImages = [] } = useGetAllProductVariantImagesByVariant(
-    primaryVariantId ?? 0,
-    {
-      query: { enabled: !!primaryVariantId },
-    }
-  );
-  const primaryVariantImageUrl = useMemo(() => {
-    const slots = mapVariantImagesToSlots(primaryVariantImages);
-    const orderedUrls = VARIANT_IMAGE_ORDER.map((slot) => {
-      const image = slots[slot];
+  const productImageUrl = useMemo(() => {
+    const sortedImages = [...(product.images ?? [])].sort(
+      (left, right) =>
+        (left.displayOrder ?? Number.MAX_SAFE_INTEGER) -
+        (right.displayOrder ?? Number.MAX_SAFE_INTEGER)
+    );
 
-      return image?.thumbnailUrl || image?.cdnUrl || null;
-    });
-
-    return orderedUrls.find((url) => url) || null;
-  }, [primaryVariantImages]);
+    return (
+      sortedImages.find((image) => image.isPrimary)?.thumbnailUrl ||
+      sortedImages.find((image) => image.isPrimary)?.cdnUrl ||
+      sortedImages[0]?.thumbnailUrl ||
+      sortedImages[0]?.cdnUrl ||
+      null
+    );
+  }, [product.images]);
 
   const currentStatus = product.status;
   const getStatusBadge = (status: string) => {
@@ -356,7 +349,7 @@ export function ProductTableRow({
                   if (column.id === 'image') {
                     return (
                       <ProductImageThumbnail
-                        imageUrl={primaryVariantImageUrl}
+                        imageUrl={productImageUrl}
                         productName={product.name || 'Product'}
                         size={32}
                       />

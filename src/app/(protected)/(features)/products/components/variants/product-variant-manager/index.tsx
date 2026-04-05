@@ -1193,6 +1193,8 @@ export function ProductVariantManager({
         query.queryKey[0] === '/api/products' ||
         query.queryKey[0] === 'getAllProducts' ||
         query.queryKey[0] === 'searchProducts' ||
+        query.queryKey[0] === 'product-summaries' ||
+        query.queryKey[0] === 'product-summaries-search' ||
         query.queryKey[0] === 'get-product',
     });
   };
