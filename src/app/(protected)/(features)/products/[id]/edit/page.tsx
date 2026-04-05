@@ -1,6 +1,7 @@
 import { ProductForm } from '../../components/product-form';
 import { PermissionGuard } from '@/core/auth';
-import { Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Edit, Save } from 'lucide-react';
 
 interface EditProductPageProps {
   params: Promise<{
@@ -25,9 +26,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
       <div className="space-y-6">
         {/* Modern Centered Header for Edit Page */}
         <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-between gap-4">
             {/* Left Section: Icon and Title */}
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
                 <Edit className="w-4 h-4 text-sidebar-accent-foreground" />
               </div>
@@ -39,11 +40,12 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
               </div>
             </div>
 
-            {/* Center Section: Empty for balance */}
-            <div className="flex-1"></div>
-
-            {/* Right Section: Spacer for balance */}
-            <div className="flex-1"></div>
+            <div className="shrink-0">
+              <Button type="submit" form="product-form" size="sm" className="h-8 px-3 text-sm">
+                <Save className="mr-1.5 h-4 w-4" />
+                Save Product
+              </Button>
+            </div>
           </div>
         </div>
 

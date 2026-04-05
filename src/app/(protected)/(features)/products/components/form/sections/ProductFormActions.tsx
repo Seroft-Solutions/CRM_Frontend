@@ -8,9 +8,14 @@ import { useEntityForm } from '../product-form-provider';
 interface ProductFormActionsProps {
   onCancel: () => void;
   isSubmitting?: boolean;
+  showCancel?: boolean;
 }
 
-export function ProductFormActions({ onCancel, isSubmitting = false }: ProductFormActionsProps) {
+export function ProductFormActions({
+  onCancel,
+  isSubmitting = false,
+  showCancel = true,
+}: ProductFormActionsProps) {
   const { config, state, actions } = useEntityForm();
 
   const handleCancel = async () => {
@@ -44,17 +49,19 @@ export function ProductFormActions({ onCancel, isSubmitting = false }: ProductFo
         <Save className="mr-1.5 h-4 w-4" />
         {isSubmitting ? 'Saving...' : 'Save Product'}
       </Button>
-      <Button
-        type="button"
-        onClick={() => void handleCancel()}
-        disabled={isSubmitting}
-        variant="outline"
-        size="default"
-        className="w-fit text-sm"
-      >
-        <X className="mr-1.5 h-4 w-4" />
-        Cancel
-      </Button>
+      {showCancel ? (
+        <Button
+          type="button"
+          onClick={() => void handleCancel()}
+          disabled={isSubmitting}
+          variant="outline"
+          size="default"
+          className="w-fit text-sm"
+        >
+          <X className="mr-1.5 h-4 w-4" />
+          Cancel
+        </Button>
+      ) : null}
     </div>
   );
 }
