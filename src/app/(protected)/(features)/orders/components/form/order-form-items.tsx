@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +13,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   getGetAllProductCatalogsQueryOptions,
@@ -645,6 +644,17 @@ export function OrderFormItems({
 }: OrderFormItemsProps) {
   const { navigateWithDraftCheck } = useCrossFormNavigation();
   const queryClient = useQueryClient();
+  const { data: catalogData = [] } = useGetAllProductCatalogs(
+    {
+      size: 1000,
+    },
+    {
+      query: {
+        staleTime: 5 * 60 * 1000,
+        keepPreviousData: true,
+      },
+    }
+  );
 
   useEffect(() => {
     const options = getGetAllProductCatalogsQueryOptions(
@@ -662,6 +672,31 @@ export function OrderFormItems({
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
 
     return Math.max(qty * price + tax, 0);
+  };
+
+  const handleOpenCatalogInNewTab = (
+    event: MouseEvent<HTMLButtonElement>,
+    productCatalogId: number
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    window.open(`/product-catalogs/${productCatalogId}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const getCatalogDisplayLabel = (item: OrderItemForm) => {
+    if (item.itemType !== 'catalog') {
+      return item.productName ?? '';
+    }
+
+    const selectedCatalog = catalogData.find((catalog) => catalog.id === item.productCatalogId);
+    const catalogName = selectedCatalog?.productCatalogName ?? item.productName ?? '';
+    const variantCount = selectedCatalog?.variants?.length;
+
+    if (variantCount === undefined) {
+      return catalogName;
+    }
+
+    return `${catalogName} / ${variantCount}`;
   };
 
   const handleCreateProduct = () => {
@@ -859,13 +894,15 @@ export function OrderFormItems({
                             ) : null}
                             {item.productName &&
                               (item.itemType === 'catalog' && item.productCatalogId ? (
-                                <Link
-                                  href={`/product-catalogs/${item.productCatalogId}`}
-                                  target="_blank"
+                                <button
+                                  type="button"
+                                  onClick={(event) =>
+                                    handleOpenCatalogInNewTab(event, item.productCatalogId!)
+                                  }
                                   className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
                                 >
-                                  {item.productName}
-                                </Link>
+                                  {getCatalogDisplayLabel(item)}
+                                </button>
                               ) : (
                                 <div className="text-sm font-medium text-slate-900">
                                   {item.productName}
@@ -1042,13 +1079,15 @@ export function OrderFormItems({
                             ) : null}
                             {item.productName &&
                               (item.itemType === 'catalog' && item.productCatalogId ? (
-                                <Link
-                                  href={`/product-catalogs/${item.productCatalogId}`}
-                                  target="_blank"
+                                <button
+                                  type="button"
+                                  onClick={(event) =>
+                                    handleOpenCatalogInNewTab(event, item.productCatalogId!)
+                                  }
                                   className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
                                 >
-                                  {item.productName}
-                                </Link>
+                                  {getCatalogDisplayLabel(item)}
+                                </button>
                               ) : (
                                 <div className="text-sm font-medium text-slate-900">
                                   {item.productName}
