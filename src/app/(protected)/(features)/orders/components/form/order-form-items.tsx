@@ -165,6 +165,7 @@ function ProductVariantSelector({
   index,
   onApplyVariantSelection,
   onItemChange,
+  showProductSelector = true,
 }: {
   item: OrderItemForm;
   index: number;
@@ -174,6 +175,7 @@ function ProductVariantSelector({
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
+  showProductSelector?: boolean;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
@@ -436,54 +438,56 @@ function ProductVariantSelector({
         : `${pendingVariantIds.length} variants selected`;
 
   return (
-    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+    <div className={cn('grid gap-3 grid-cols-1', showProductSelector && 'sm:grid-cols-2')}>
       {/* Product Combobox */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
-        <Popover open={productOpen} onOpenChange={setProductOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={productOpen}
-              className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+      {showProductSelector && (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
+          <Popover open={productOpen} onOpenChange={setProductOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={productOpen}
+                className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+              >
+                {selectedProduct ? (
+                  <span className="truncate text-sm">{selectedProduct.name}</span>
+                ) : (
+                  <span className="text-muted-foreground text-sm">Choose a product...</span>
+                )}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+              align="start"
             >
-              {selectedProduct ? (
-                <span className="truncate text-sm">{selectedProduct.name}</span>
-              ) : (
-                <span className="text-muted-foreground text-sm">Choose a product...</span>
-              )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-            align="start"
-          >
-            <Command>
-              <CommandInput placeholder="Search products..." className="h-9" />
-              <CommandList>
-                <CommandEmpty>No product found.</CommandEmpty>
-                <CommandGroup>
-                  {products.map((product) => (
-                    <CommandItem
-                      key={product.id}
-                      value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
-                      onSelect={() => handleProductSelect(product.id!)}
-                    >
-                      <ProductOptionRow
-                        product={product}
-                        stockQuantity={getProductQuantity(product)}
-                        isSelected={item.productId === product.id}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
+              <Command>
+                <CommandInput placeholder="Search products..." className="h-9" />
+                <CommandList>
+                  <CommandEmpty>No product found.</CommandEmpty>
+                  <CommandGroup>
+                    {products.map((product) => (
+                      <CommandItem
+                        key={product.id}
+                        value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
+                        onSelect={() => handleProductSelect(product.id!)}
+                      >
+                        <ProductOptionRow
+                          product={product}
+                          stockQuantity={getProductQuantity(product)}
+                          isSelected={item.productId === product.id}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
@@ -797,6 +801,348 @@ export function OrderFormItems({
     }
   };
 
+  const itemGroups = useMemo(() => {
+    const groups: Array<{ key: string; entries: Array<{ item: OrderItemForm; index: number }> }> =
+      [];
+
+    items.forEach((item, index) => {
+      const lastGroup = groups[groups.length - 1];
+      const firstEntry = lastGroup?.entries[0]?.item;
+      const shouldGroupWithPrevious =
+        Boolean(lastGroup) &&
+        item.itemType === 'product' &&
+        firstEntry?.itemType === 'product' &&
+        Boolean(item.productId) &&
+        firstEntry.productId === item.productId;
+
+      if (shouldGroupWithPrevious) {
+        lastGroup.entries.push({ item, index });
+        return;
+      }
+
+      groups.push({
+        key: `${item.itemType}-${item.productId ?? item.productCatalogId ?? index}-${index}`,
+        entries: [{ item, index }],
+      });
+    });
+
+    return groups;
+  }, [items]);
+
+  const renderDesktopEntry = (
+    item: OrderItemForm,
+    index: number,
+    entryIndex: number,
+    groupSize: number
+  ) => {
+    const itemTotal = calculateItemTotal(item);
+    const breakdown = getOrderItemBillingBreakdown(item);
+    const availableQuantity = breakdown.availableQuantity ?? undefined;
+    const quantityErrorMessage = itemErrors?.[index]?.quantity;
+    const warehouseStocks = (item.warehouseStocks ?? []).map((entry) => ({
+      ...entry,
+      stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+    }));
+    const showWarehouseStocks =
+      item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
+    const backOrderMessage =
+      breakdown.backOrderQuantity > 0
+        ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
+        : undefined;
+
+    return (
+      <div
+        key={`desktop-entry-${index}`}
+        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+      >
+        <div className="grid grid-cols-11 gap-3 items-start">
+          <div className="col-span-5">
+            {item.itemType === 'catalog' ? (
+              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+            ) : (
+              <ProductVariantSelector
+                item={item}
+                index={index}
+                onApplyVariantSelection={onApplyVariantSelection}
+                onItemChange={onItemChange}
+                showProductSelector={entryIndex === 0}
+              />
+            )}
+            {(item.productName || item.sku) && (
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  {item.itemType === 'catalog' ? (
+                    <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
+                      Catalog
+                    </Badge>
+                  ) : null}
+                  {item.productName &&
+                    (item.itemType === 'catalog' && item.productCatalogId ? (
+                      <button
+                        type="button"
+                        onClick={(event) =>
+                          handleOpenCatalogInNewTab(event, item.productCatalogId!)
+                        }
+                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+                      >
+                        {getCatalogDisplayLabel(item)}
+                      </button>
+                    ) : (
+                      <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                    ))}
+                </div>
+                {item.sku && <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>}
+                {item.variantAttributes && (
+                  <Badge variant="secondary" className="text-xs">
+                    {item.variantAttributes}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="col-span-2">
+            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={item.quantity}
+              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+              className="h-9 border-slate-300"
+            />
+            {availableQuantity !== undefined && (
+              <p className="mt-1 text-[11px] text-slate-500">
+                Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
+              </p>
+            )}
+            {showWarehouseStocks && (
+              <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
+                <div className="mt-0.5 space-y-0.5">
+                  {warehouseStocks.map((entry, stockIndex) => (
+                    <p
+                      key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
+                      className="text-[11px] text-slate-600"
+                    >
+                      {entry.warehouseName ||
+                        entry.warehouseCode ||
+                        `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
+                      {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+            {backOrderMessage && (
+              <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+            )}
+            <FieldError message={quantityErrorMessage} />
+          </div>
+
+          <div className="col-span-2">
+            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="0.00"
+              value={item.itemPrice}
+              readOnly
+              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+            />
+            <FieldError message={itemErrors?.[index]?.itemPrice} />
+          </div>
+
+          <div className="col-span-2 flex flex-col gap-2">
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground mb-1">Total</div>
+              <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+            </div>
+            <div className="flex gap-1 justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveItem(index)}
+                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMobileEntry = (
+    item: OrderItemForm,
+    index: number,
+    entryIndex: number,
+    groupSize: number
+  ) => {
+    const itemTotal = calculateItemTotal(item);
+    const breakdown = getOrderItemBillingBreakdown(item);
+    const availableQuantity = breakdown.availableQuantity ?? undefined;
+    const quantityErrorMessage = itemErrors?.[index]?.quantity;
+    const warehouseStocks = (item.warehouseStocks ?? []).map((entry) => ({
+      ...entry,
+      stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+    }));
+    const showWarehouseStocks =
+      item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
+    const backOrderMessage =
+      breakdown.backOrderQuantity > 0
+        ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
+        : undefined;
+
+    return (
+      <div
+        key={`mobile-entry-${index}`}
+        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+              {index + 1}
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">
+                {groupSize > 1 ? `Variant #${entryIndex + 1}` : `Item #${index + 1}`}
+              </div>
+              {itemTotal > 0 && <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>}
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemoveItem(index)}
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </Button>
+        </div>
+
+        <div className="mt-4">
+          {item.itemType === 'catalog' ? (
+            <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+          ) : (
+            <ProductVariantSelector
+              item={item}
+              index={index}
+              onApplyVariantSelection={onApplyVariantSelection}
+              onItemChange={onItemChange}
+              showProductSelector={entryIndex === 0}
+            />
+          )}
+          {(item.productName || item.sku) && (
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center gap-2">
+                {item.itemType === 'catalog' ? (
+                  <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
+                    Catalog
+                  </Badge>
+                ) : null}
+                {item.productName &&
+                  (item.itemType === 'catalog' && item.productCatalogId ? (
+                    <button
+                      type="button"
+                      onClick={(event) => handleOpenCatalogInNewTab(event, item.productCatalogId!)}
+                      className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
+                    >
+                      {getCatalogDisplayLabel(item)}
+                    </button>
+                  ) : (
+                    <div className="text-sm font-medium text-slate-900">{item.productName}</div>
+                  ))}
+              </div>
+              {item.sku && <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>}
+              {item.variantAttributes && (
+                <Badge variant="secondary" className="text-xs">
+                  {item.variantAttributes}
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={item.quantity}
+              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+              className="h-9 border-slate-300"
+            />
+            {availableQuantity !== undefined && (
+              <p className="text-[11px] text-slate-500">
+                Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
+              </p>
+            )}
+            {showWarehouseStocks && (
+              <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
+                <div className="mt-0.5 space-y-0.5">
+                  {warehouseStocks.map((entry, stockIndex) => (
+                    <p
+                      key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
+                      className="text-[11px] text-slate-600"
+                    >
+                      {entry.warehouseName ||
+                        entry.warehouseCode ||
+                        `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
+                      {': '}
+                      Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+            {backOrderMessage && <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>}
+            <FieldError message={quantityErrorMessage} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Price</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="0.00"
+              value={item.itemPrice}
+              readOnly
+              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+            />
+            <FieldError message={itemErrors?.[index]?.itemPrice} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 rounded-lg border-2 border-cyan-200 bg-gradient-to-br from-white to-cyan-50/30 p-6 shadow-lg">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -909,336 +1255,28 @@ export function OrderFormItems({
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           {/* Cart Items */}
           <div className="divide-y divide-slate-200">
-            {items.map((item, index) => {
-              const itemTotal = calculateItemTotal(item);
-              const breakdown = getOrderItemBillingBreakdown(item);
-              const availableQuantity = breakdown.availableQuantity ?? undefined;
-              const quantityErrorMessage = itemErrors?.[index]?.quantity;
-              const warehouseStocks = (item.warehouseStocks ?? []).map((entry) => ({
-                ...entry,
-                stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-              }));
-              const showWarehouseStocks =
-                item.itemType === 'product' &&
-                Boolean(item.variantId) &&
-                warehouseStocks.length > 0;
-              const backOrderMessage =
-                breakdown.backOrderQuantity > 0
-                  ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
-                  : undefined;
-
-              return (
-                <div key={`item-${index}`} className="hover:bg-slate-50/50 transition-colors">
-                  {/* Desktop View - Grid Layout */}
-                  <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
-                    {/* Number */}
-                    <div className="col-span-1 flex items-center">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                        {index + 1}
-                      </div>
-                    </div>
-
-                    {/* Product/Catalog Selector & Info */}
-                    <div className="col-span-5">
-                      {item.itemType === 'catalog' ? (
-                        <ProductCatalogSelector
-                          item={item}
-                          index={index}
-                          onItemChange={onItemChange}
-                        />
-                      ) : (
-                        <ProductVariantSelector
-                          item={item}
-                          index={index}
-                          onApplyVariantSelection={onApplyVariantSelection}
-                          onItemChange={onItemChange}
-                        />
-                      )}
-                      {(item.productName || item.sku) && (
-                        <div className="mt-2 space-y-1">
-                          <div className="flex items-center gap-2">
-                            {item.itemType === 'catalog' ? (
-                              <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                                Catalog
-                              </Badge>
-                            ) : null}
-                            {item.productName &&
-                              (item.itemType === 'catalog' && item.productCatalogId ? (
-                                <button
-                                  type="button"
-                                  onClick={(event) =>
-                                    handleOpenCatalogInNewTab(event, item.productCatalogId!)
-                                  }
-                                  className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
-                                >
-                                  {getCatalogDisplayLabel(item)}
-                                </button>
-                              ) : (
-                                <div className="text-sm font-medium text-slate-900">
-                                  {item.productName}
-                                </div>
-                              ))}
-                          </div>
-                          {item.sku && (
-                            <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                          )}
-                          {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">
-                              {item.variantAttributes}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quantity */}
-                    <div className="col-span-2">
-                      <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        placeholder="0"
-                        value={item.quantity}
-                        onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                        className="h-9 border-slate-300"
-                      />
-                      {availableQuantity !== undefined && (
-                        <p className="mt-1 text-[11px] text-slate-500">
-                          Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
-                        </p>
-                      )}
-                      {showWarehouseStocks && (
-                        <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                          <p className="text-[11px] font-semibold text-slate-600">
-                            Warehouse sales stock
-                          </p>
-                          <div className="mt-0.5 space-y-0.5">
-                            {warehouseStocks.map((entry, entryIndex) => (
-                              <p
-                                key={`${entry.warehouseId ?? entry.warehouseCode ?? entryIndex}`}
-                                className="text-[11px] text-slate-600"
-                              >
-                                {entry.warehouseName ||
-                                  entry.warehouseCode ||
-                                  `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}
-                                {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {backOrderMessage && (
-                        <p className="mt-1 text-[11px] font-medium text-amber-700">
-                          {backOrderMessage}
-                        </p>
-                      )}
-                      <FieldError message={quantityErrorMessage} />
-                    </div>
-
-                    {/* Price */}
-                    <div className="col-span-2">
-                      <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        placeholder="0.00"
-                        value={item.itemPrice}
-                        readOnly
-                        className="h-9 border-slate-300 bg-slate-100 text-slate-700"
-                      />
-                      <FieldError message={itemErrors?.[index]?.itemPrice} />
-                    </div>
-
-                    {/* Total & Actions */}
-                    <div className="col-span-2 flex flex-col gap-2">
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground mb-1">Total</div>
-                        <div className="text-lg font-bold text-slate-900">
-                          ₹{itemTotal.toFixed(2)}
-                        </div>
-                      </div>
-                      <div className="flex gap-1 justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onRemoveItem(index)}
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        >
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </Button>
-                      </div>
+            {itemGroups.map((group, groupIndex) => (
+              <div key={group.key} className="hover:bg-slate-50/50 transition-colors">
+                <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
+                  <div className="col-span-1 flex items-start">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+                      {groupIndex + 1}
                     </div>
                   </div>
-
-                  {/* Mobile/Tablet View - Stacked Layout */}
-                  <div className="lg:hidden p-4 space-y-4">
-                    {/* Header Row */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-slate-900">Item #{index + 1}</div>
-                          {itemTotal > 0 && (
-                            <div className="text-lg font-bold text-cyan-600">
-                              ₹{itemTotal.toFixed(2)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRemoveItem(index)}
-                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </Button>
-                    </div>
-
-                    {/* Product/Catalog Selector */}
-                    <div>
-                      {item.itemType === 'catalog' ? (
-                        <ProductCatalogSelector
-                          item={item}
-                          index={index}
-                          onItemChange={onItemChange}
-                        />
-                      ) : (
-                        <ProductVariantSelector
-                          item={item}
-                          index={index}
-                          onItemChange={onItemChange}
-                        />
-                      )}
-                      {(item.productName || item.sku) && (
-                        <div className="mt-2 space-y-1">
-                          <div className="flex items-center gap-2">
-                            {item.itemType === 'catalog' ? (
-                              <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                                Catalog
-                              </Badge>
-                            ) : null}
-                            {item.productName &&
-                              (item.itemType === 'catalog' && item.productCatalogId ? (
-                                <button
-                                  type="button"
-                                  onClick={(event) =>
-                                    handleOpenCatalogInNewTab(event, item.productCatalogId!)
-                                  }
-                                  className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
-                                >
-                                  {getCatalogDisplayLabel(item)}
-                                </button>
-                              ) : (
-                                <div className="text-sm font-medium text-slate-900">
-                                  {item.productName}
-                                </div>
-                              ))}
-                          </div>
-                          {item.sku && (
-                            <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                          )}
-                          {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">
-                              {item.variantAttributes}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quantity & Price Row */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={item.quantity}
-                          onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                          className="h-9 border-slate-300"
-                        />
-                        {availableQuantity !== undefined && (
-                          <p className="text-[11px] text-slate-500">
-                            Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
-                          </p>
-                        )}
-                        {showWarehouseStocks && (
-                          <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                            <p className="text-[11px] font-semibold text-slate-600">
-                              Warehouse sales stock
-                            </p>
-                            <div className="mt-0.5 space-y-0.5">
-                              {warehouseStocks.map((entry, entryIndex) => (
-                                <p
-                                  key={`${entry.warehouseId ?? entry.warehouseCode ?? entryIndex}`}
-                                  className="text-[11px] text-slate-600"
-                                >
-                                  {entry.warehouseName ||
-                                    entry.warehouseCode ||
-                                    `Warehouse ${entry.warehouseId ?? entryIndex + 1}`}
-                                  {': '}
-                                  Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
-                                </p>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {backOrderMessage && (
-                          <p className="text-[11px] font-medium text-amber-700">
-                            {backOrderMessage}
-                          </p>
-                        )}
-                        <FieldError message={quantityErrorMessage} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Price</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          placeholder="0.00"
-                          value={item.itemPrice}
-                          readOnly
-                          className="h-9 border-slate-300 bg-slate-100 text-slate-700"
-                        />
-                        <FieldError message={itemErrors?.[index]?.itemPrice} />
-                      </div>
-                    </div>
+                  <div className="col-span-11 space-y-4">
+                    {group.entries.map(({ item, index }, entryIndex) =>
+                      renderDesktopEntry(item, index, entryIndex, group.entries.length)
+                    )}
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="lg:hidden p-4 space-y-4">
+                  {group.entries.map(({ item, index }, entryIndex) =>
+                    renderMobileEntry(item, index, entryIndex, group.entries.length)
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
