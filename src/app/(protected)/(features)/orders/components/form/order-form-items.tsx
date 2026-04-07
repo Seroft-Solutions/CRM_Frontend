@@ -13,20 +13,23 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   getGetAllProductCatalogsQueryOptions,
   useGetAllProductCatalogs,
 } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 import { Plus } from 'lucide-react';
 import type { ProductCatalogDTO, ProductDTO } from '@/core/api/generated/spring/schemas';
+import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm, WarehouseStockEntry } from './order-form-types';
 import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 
 type ProductWithStock = ProductDTO & { stockQuantity?: number; salesStockQuantity?: number };
 type ProductVariantWithWarehouseStocks = {
@@ -35,6 +38,7 @@ type ProductVariantWithWarehouseStocks = {
   price?: number;
   stockQuantity?: number;
   salesStockQuantity?: number;
+  isPrimary?: boolean;
   variantStocks?: {
     id?: number;
     stockQuantity?: number;
@@ -45,6 +49,97 @@ type ProductVariantWithWarehouseStocks = {
     };
   }[];
 };
+
+function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
+  if (!images?.length) {
+    return null;
+  }
+
+  const sortedImages = [...images].sort(
+    (left, right) =>
+      (left.displayOrder ?? Number.MAX_SAFE_INTEGER) -
+      (right.displayOrder ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  return (
+    sortedImages.find((image) => image.isPrimary)?.thumbnailUrl ||
+    sortedImages.find((image) => image.isPrimary)?.cdnUrl ||
+    sortedImages[0]?.thumbnailUrl ||
+    sortedImages[0]?.cdnUrl ||
+    null
+  );
+}
+
+function ProductOptionRow({
+  product,
+  isSelected,
+  stockQuantity,
+}: {
+  product: ProductDTO;
+  isSelected: boolean;
+  stockQuantity: number;
+}) {
+  const primaryVariantId =
+    product.variants?.find((variant) => variant.isPrimary)?.id ?? product.variants?.[0]?.id;
+  const { data: primaryVariantImages } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: { enabled: !!primaryVariantId },
+    }
+  );
+  const imageUrl = useMemo(() => resolveVariantImageUrl(primaryVariantImages), [primaryVariantImages]);
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <ProductImageThumbnail imageUrl={imageUrl} productName={product.name} size={28} />
+        <div className="flex flex-1 flex-col">
+          <span className="font-medium text-sm">{product.name}</span>
+          <span className="text-xs text-muted-foreground">
+            SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • Sales Stock:{' '}
+            {stockQuantity} • Price: ₹
+            {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+          </span>
+        </div>
+      </div>
+      <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </>
+  );
+}
+
+function VariantOptionRow({
+  variant,
+  isSelected,
+  warehousePreview,
+}: {
+  variant: ProductVariantWithWarehouseStocks;
+  isSelected: boolean;
+  warehousePreview: string;
+}) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
+    query: { enabled: !!variant.id },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <ProductImageThumbnail imageUrl={imageUrl} productName={variant.sku} size={28} />
+        <div className="flex flex-1 flex-col">
+          <span className="font-medium text-sm">{variant.sku}</span>
+          <span className="text-xs text-muted-foreground">
+            Sales Stock: {variant.salesStockQuantity ?? variant.stockQuantity ?? 0} • ₹
+            {variant.price ?? 0}
+          </span>
+          {warehousePreview ? (
+            <span className="text-[11px] text-slate-500">Warehouses: {warehousePreview}</span>
+          ) : null}
+        </div>
+      </div>
+      <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </>
+  );
+}
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -376,19 +471,10 @@ function ProductVariantSelector({
                       value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
                       onSelect={() => handleProductSelect(product.id!)}
                     >
-                      <div className="flex flex-1 flex-col">
-                        <span className="font-medium text-sm">{product.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • Sales
-                          Stock: {getProductQuantity(product)} • Price: ₹
-                          {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
-                        </span>
-                      </div>
-                      <Check
-                        className={cn(
-                          'ml-2 h-4 w-4',
-                          item.productId === product.id ? 'opacity-100' : 'opacity-0'
-                        )}
+                      <ProductOptionRow
+                        product={product}
+                        stockQuantity={getProductQuantity(product)}
+                        isSelected={item.productId === product.id}
                       />
                     </CommandItem>
                   ))}
@@ -448,26 +534,10 @@ function ProductVariantSelector({
                           value={variant.sku}
                           onSelect={() => togglePendingVariant(variant.id!)}
                         >
-                          <div className="flex flex-1 flex-col">
-                            <span className="font-medium text-sm">{variant.sku}</span>
-                            <span className="text-xs text-muted-foreground">
-                              Sales Stock:{' '}
-                              {variant.salesStockQuantity ?? variant.stockQuantity ?? 0} • ₹
-                              {variant.price ?? 0}
-                            </span>
-                            {warehousePreview ? (
-                              <span className="text-[11px] text-slate-500">
-                                Warehouses: {warehousePreview}
-                              </span>
-                            ) : null}
-                          </div>
-                          <Check
-                            className={cn(
-                              'ml-2 h-4 w-4',
-                              pendingVariantIds.includes(variant.id ?? -1)
-                                ? 'opacity-100'
-                                : 'opacity-0'
-                            )}
+                          <VariantOptionRow
+                            variant={variant}
+                            warehousePreview={warehousePreview}
+                            isSelected={pendingVariantIds.includes(variant.id ?? -1)}
                           />
                         </CommandItem>
                       );

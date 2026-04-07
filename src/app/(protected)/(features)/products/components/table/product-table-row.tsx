@@ -30,9 +30,11 @@ import { RelationshipCell } from './relationship-cell';
 import { ClickableId } from '@/components/clickable-id';
 import type { ProductDTO } from '@/core/api/generated/spring/schemas/ProductDTO';
 import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
+import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -65,6 +67,26 @@ function getVariantDescription(variant: ProductVariantDTO): string {
   }
 
   return `Status: ${transformEnumValue(variant.status || 'ACTIVE')}`;
+}
+
+function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
+  if (!images?.length) {
+    return null;
+  }
+
+  const sortedImages = [...images].sort(
+    (left, right) =>
+      (left.displayOrder ?? Number.MAX_SAFE_INTEGER) -
+      (right.displayOrder ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  return (
+    sortedImages.find((image) => image.isPrimary)?.thumbnailUrl ||
+    sortedImages.find((image) => image.isPrimary)?.cdnUrl ||
+    sortedImages[0]?.thumbnailUrl ||
+    sortedImages[0]?.cdnUrl ||
+    null
+  );
 }
 
 interface RelationshipConfig {
@@ -123,8 +145,9 @@ export function ProductTableRow({
   visibleColumns,
 }: ProductTableRowProps) {
   const [isStockDetailsOpen, setIsStockDetailsOpen] = useState(false);
+  const hasImageColumn = visibleColumns.some((column) => column.visible && column.id === 'image');
   const shouldFetchVariants =
-    isStockDetailsOpen && !product.variants?.length && Boolean(product.id);
+    Boolean(product.id) && !product.variants?.length && (isStockDetailsOpen || hasImageColumn);
   const { data: fetchedVariants = [] } = useGetAllProductVariants(
     shouldFetchVariants
       ? {
@@ -138,6 +161,16 @@ export function ProductTableRow({
     }
   );
   const variants = product.variants?.length ? product.variants : (fetchedVariants ?? []);
+  const primaryVariantId = useMemo(
+    () => variants.find((variant) => variant.isPrimary)?.id ?? variants[0]?.id,
+    [variants]
+  );
+  const { data: primaryVariantImages } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: { enabled: hasImageColumn && !!primaryVariantId },
+    }
+  );
   const productStockQuantity = (product as ProductDTO & { stockQuantity?: number }).stockQuantity;
   const resolvedStockQuantity = useMemo(() => {
     if (typeof productStockQuantity === 'number') {
@@ -161,6 +194,11 @@ export function ProductTableRow({
       null
     );
   }, [product.images]);
+  const primaryVariantImageUrl = useMemo(
+    () => resolveVariantImageUrl(primaryVariantImages),
+    [primaryVariantImages]
+  );
+  const displayImageUrl = primaryVariantImageUrl ?? productImageUrl;
 
   const currentStatus = product.status;
   const getStatusBadge = (status: string) => {
@@ -349,7 +387,7 @@ export function ProductTableRow({
                   if (column.id === 'image') {
                     return (
                       <ProductImageThumbnail
-                        imageUrl={productImageUrl}
+                        imageUrl={displayImageUrl}
                         productName={product.name || 'Product'}
                         size={32}
                       />
