@@ -42,6 +42,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'calls',
     label: 'Leads Management',
+    path: '/calls',
     icon: PhoneCall,
     expandable: true,
     requiredPermission: 'call:sidebar',
@@ -73,6 +74,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'orders',
     label: 'Order',
+    path: '/orders',
     icon: ShoppingBag,
     expandable: false,
     children: [
@@ -149,6 +151,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'userManagement',
     label: 'My Staff',
+    path: '/user-management/organization-users',
     icon: Users,
     expandable: false,
     requiredPermission: 'manage:users',
@@ -176,6 +179,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'businessPartners',
     label: 'Business Partners',
+    path: '/business-partners',
     icon: Briefcase,
     expandable: false,
     requiredPermission: 'partner:read',
@@ -243,6 +247,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'CustomerManagement',
     label: 'Customers Management',
+    path: '/customers',
     icon: Users,
     expandable: false,
     requiredPermission: 'customer:sidebar',
@@ -276,6 +281,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'SundryCreditorManagement',
     label: 'Sundry Creditors',
+    path: '/sundry-creditors',
     icon: Users,
     expandable: false,
     requiredPermission: 'sundryCreditor:sidebar',
@@ -315,6 +321,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     key: 'productManagement',
     label: 'Product Management',
+    path: '/products',
     icon: Box,
     expandable: false,
     children: [

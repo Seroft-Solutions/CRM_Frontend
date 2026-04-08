@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import {
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarMenuAction,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -129,21 +130,54 @@ function NavItem({
         className="group/collapsible"
       >
         <SidebarMenuItem>
-          <CollapsibleTrigger asChild>
+          {item.path ? (
             <SidebarMenuButton
+              asChild
               tooltip={item.label}
               isActive={active}
-              onClick={handleClick}
+              onClick={() => {
+                handleClick();
+                handleNavigation();
+              }}
               className={cn(
                 '!border !border-sidebar-border/40 !bg-sidebar !text-sidebar-foreground hover:!bg-sidebar hover:!text-sidebar-foreground',
                 active && '!bg-sidebar-accent !text-sidebar-accent-foreground'
               )}
             >
-              {item.icon && <item.icon />}
-              <span>{item.label}</span>
-              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              <Link href={item.path}>
+                {item.icon && <item.icon />}
+                <span>{item.label}</span>
+              </Link>
             </SidebarMenuButton>
-          </CollapsibleTrigger>
+          ) : (
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton
+                tooltip={item.label}
+                isActive={active}
+                onClick={handleClick}
+                className={cn(
+                  '!border !border-sidebar-border/40 !bg-sidebar !text-sidebar-foreground hover:!bg-sidebar hover:!text-sidebar-foreground',
+                  active && '!bg-sidebar-accent !text-sidebar-accent-foreground'
+                )}
+              >
+                {item.icon && <item.icon />}
+                <span>{item.label}</span>
+                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+          )}
+          {item.path ? (
+            <CollapsibleTrigger asChild>
+              <SidebarMenuAction
+                showOnHover
+                aria-label={`Toggle ${item.label}`}
+                onClick={handleClick}
+                className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <ChevronRight className="transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuAction>
+            </CollapsibleTrigger>
+          ) : null}
           <CollapsibleContent>
             <SidebarMenuSub>
               {visibleChildren.map((subItem) => (

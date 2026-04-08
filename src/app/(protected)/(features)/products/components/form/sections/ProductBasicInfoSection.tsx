@@ -30,6 +30,26 @@ export function ProductBasicInfoSection({
   const discountedPrice = parseFloat(form?.watch?.('discountedPrice')) || 0;
   const salePrice = parseFloat(form?.watch?.('salePrice')) || 0;
 
+  const printBarcode = (productCode: string) => {
+    const normalizedCode = productCode.trim();
+
+    if (!normalizedCode) {
+      toast.error('Product code required', {
+        description: 'Generate or enter a product code before printing.',
+      });
+
+      return;
+    }
+
+    const didOpenPrintDialog = openBarcodePrintDialog(normalizedCode);
+
+    if (!didOpenPrintDialog) {
+      toast.error('Unable to print barcode', {
+        description: 'Please check the product code and allow pop-ups for this site.',
+      });
+    }
+  };
+
   const handleGenerateBarcode = () => {
     if (!form) {
       return;
@@ -53,23 +73,7 @@ export function ProductBasicInfoSection({
       return;
     }
 
-    const productCode = String(form.getValues('barcodeText') ?? '').trim();
-
-    if (!productCode) {
-      toast.error('Product code required', {
-        description: 'Generate or enter a product code before printing.',
-      });
-
-      return;
-    }
-
-    const didOpenPrintDialog = openBarcodePrintDialog(productCode);
-
-    if (!didOpenPrintDialog) {
-      toast.error('Unable to print barcode', {
-        description: 'Please check the product code and allow pop-ups for this site.',
-      });
-    }
+    printBarcode(String(form.getValues('barcodeText') ?? ''));
   };
 
   const priceValidation = useMemo(() => {
@@ -176,9 +180,21 @@ export function ProductBasicInfoSection({
 
             {/* Product Code */}
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-slate-600">
-                Product Code
-                <span className="ml-1 text-rose-600">*</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-semibold text-slate-600">
+                  Product Code
+                  <span className="ml-1 text-rose-600">*</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-slate-500 hover:text-slate-900"
+                  onClick={() => printBarcode(String(product.barcodeText ?? ''))}
+                  title="Print barcode"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                </Button>
               </div>
               <div className="text-sm font-medium text-slate-800 bg-slate-50 px-3 py-2 rounded-md border">
                 {product.barcodeText || 'Not specified'}
