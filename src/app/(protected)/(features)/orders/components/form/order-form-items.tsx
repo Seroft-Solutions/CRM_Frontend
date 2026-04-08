@@ -593,7 +593,7 @@ function ProductVariantSelector({
         : `${pendingVariantIds.length} variants selected`;
 
   return (
-    <div className={cn('grid gap-3 grid-cols-1', showProductSelector && 'sm:grid-cols-2')}>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {/* Product Combobox */}
       {showProductSelector && (
         <div className="space-y-1.5">
@@ -656,10 +656,11 @@ function ProductVariantSelector({
           ) : null}
         </div>
       )}
+      {!showProductSelector ? <div aria-hidden="true" className="hidden sm:block" /> : null}
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 ? (
-        <div className="space-y-1.5">
+        <div className={cn('space-y-1.5', !showProductSelector && 'sm:col-start-2')}>
           <Label className="text-xs font-semibold text-slate-600">
             Select Variant(s) (Optional)
           </Label>
