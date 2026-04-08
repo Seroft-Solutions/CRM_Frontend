@@ -236,7 +236,7 @@ function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWareho
   const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
 
   return (
-    <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+    <div className="mt-2 flex min-w-0 items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
       <ProductImageThumbnail
         imageUrl={imageUrl}
         productName={variant.sku}
@@ -245,6 +245,22 @@ function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWareho
       />
       <div className="min-w-0 space-y-1">
         <div className="truncate text-sm font-medium text-slate-900">{variant.sku}</div>
+      </div>
+    </div>
+  );
+}
+
+function SelectedWarehousePreview({ warehouse }: { warehouse: WarehouseStockEntry }) {
+  const warehouseLabel =
+    warehouse.warehouseName ||
+    warehouse.warehouseCode ||
+    `Warehouse ${warehouse.warehouseId ?? ''}`;
+
+  return (
+    <div className="mt-2 min-w-0 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <div className="truncate text-sm font-medium text-slate-900">{warehouseLabel}</div>
+      <div className="mt-1 text-xs text-muted-foreground">
+        Stock: {warehouse.salesStockQuantity ?? warehouse.stockQuantity}
       </div>
     </div>
   );
@@ -334,6 +350,7 @@ function ProductVariantSelector({
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
+  const [warehouseOpen, setWarehouseOpen] = useState(false);
   const [pendingVariantIds, setPendingVariantIds] = useState<number[]>([]);
 
   // Fetch active products
@@ -417,6 +434,9 @@ function ProductVariantSelector({
       sku: product.articleNumber ?? product.articalNumber,
       availableQuantity: getProductQuantity(product),
       warehouseStocks: undefined,
+      selectedWarehouseId: undefined,
+      selectedWarehouseName: undefined,
+      selectedWarehouseCode: undefined,
       variantAttributes: undefined,
       variantId: undefined,
       itemPrice:
@@ -442,6 +462,9 @@ function ProductVariantSelector({
     sku: variant.sku,
     availableQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
     warehouseStocks: mapVariantWarehouseStocks(variant),
+    selectedWarehouseId: undefined,
+    selectedWarehouseName: undefined,
+    selectedWarehouseCode: undefined,
     variantAttributes: `Variant: ${variant.sku}`,
     itemPrice:
       variant.price !== undefined && variant.price !== null
@@ -466,6 +489,9 @@ function ProductVariantSelector({
     onItemChange(index, 'sku', nextItem.sku);
     onItemChange(index, 'availableQuantity', nextItem.availableQuantity);
     onItemChange(index, 'warehouseStocks', nextItem.warehouseStocks);
+    onItemChange(index, 'selectedWarehouseId', nextItem.selectedWarehouseId);
+    onItemChange(index, 'selectedWarehouseName', nextItem.selectedWarehouseName);
+    onItemChange(index, 'selectedWarehouseCode', nextItem.selectedWarehouseCode);
     onItemChange(index, 'variantAttributes', nextItem.variantAttributes);
     onItemChange(index, 'variantId', nextItem.variantId);
     onItemChange(index, 'itemPrice', nextItem.itemPrice);
@@ -484,6 +510,24 @@ function ProductVariantSelector({
 
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
+  const warehouseOptions = item.warehouseStocks ?? [];
+  const selectedWarehouse =
+    warehouseOptions.find((entry) => {
+      if (
+        item.selectedWarehouseId !== undefined &&
+        entry.warehouseId === item.selectedWarehouseId
+      ) {
+        return true;
+      }
+
+      if (item.selectedWarehouseCode && entry.warehouseCode === item.selectedWarehouseCode) {
+        return true;
+      }
+
+      return item.selectedWarehouseName
+        ? entry.warehouseName === item.selectedWarehouseName
+        : false;
+    }) ?? null;
 
   const applyVariantSelection = () => {
     if (!selectedProduct) {
@@ -540,6 +584,15 @@ function ProductVariantSelector({
       if (item.warehouseStocks !== undefined) {
         onItemChange(index, 'warehouseStocks', undefined);
       }
+      if (item.selectedWarehouseId !== undefined) {
+        onItemChange(index, 'selectedWarehouseId', undefined);
+      }
+      if (item.selectedWarehouseName !== undefined) {
+        onItemChange(index, 'selectedWarehouseName', undefined);
+      }
+      if (item.selectedWarehouseCode !== undefined) {
+        onItemChange(index, 'selectedWarehouseCode', undefined);
+      }
 
       return;
     }
@@ -577,8 +630,49 @@ function ProductVariantSelector({
     index,
     item.availableQuantity,
     item.itemType,
+    item.selectedWarehouseCode,
+    item.selectedWarehouseId,
+    item.selectedWarehouseName,
     item.warehouseStocks,
     onItemChange,
+  ]);
+
+  useEffect(() => {
+    if (warehouseOptions.length === 0) {
+      if (item.selectedWarehouseId !== undefined) {
+        onItemChange(index, 'selectedWarehouseId', undefined);
+      }
+      if (item.selectedWarehouseName !== undefined) {
+        onItemChange(index, 'selectedWarehouseName', undefined);
+      }
+      if (item.selectedWarehouseCode !== undefined) {
+        onItemChange(index, 'selectedWarehouseCode', undefined);
+      }
+
+      return;
+    }
+
+    if (selectedWarehouse) {
+      return;
+    }
+
+    if (item.selectedWarehouseId !== undefined) {
+      onItemChange(index, 'selectedWarehouseId', undefined);
+    }
+    if (item.selectedWarehouseName !== undefined) {
+      onItemChange(index, 'selectedWarehouseName', undefined);
+    }
+    if (item.selectedWarehouseCode !== undefined) {
+      onItemChange(index, 'selectedWarehouseCode', undefined);
+    }
+  }, [
+    index,
+    item.selectedWarehouseCode,
+    item.selectedWarehouseId,
+    item.selectedWarehouseName,
+    onItemChange,
+    selectedWarehouse,
+    warehouseOptions,
   ]);
 
   useEffect(() => {
@@ -591,11 +685,23 @@ function ProductVariantSelector({
       : pendingVariantIds.length === 1
         ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
         : `${pendingVariantIds.length} variants selected`;
+  const selectedWarehouseLabel = selectedWarehouse
+    ? selectedWarehouse.warehouseName ||
+      selectedWarehouse.warehouseCode ||
+      `Warehouse ${selectedWarehouse.warehouseId ?? ''}`
+    : null;
+
+  const handleWarehouseSelect = (warehouse: WarehouseStockEntry) => {
+    onItemChange(index, 'selectedWarehouseId', warehouse.warehouseId);
+    onItemChange(index, 'selectedWarehouseName', warehouse.warehouseName);
+    onItemChange(index, 'selectedWarehouseCode', warehouse.warehouseCode);
+    setWarehouseOpen(false);
+  };
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(220px,1.45fr)_minmax(170px,1fr)_minmax(170px,1fr)]">
       {/* Product Combobox */}
-      <div className={cn('space-y-1.5', !showProductSelector && 'hidden sm:block')}>
+      <div className={cn('space-y-1.5', !showProductSelector && 'hidden md:invisible md:block')}>
         {showProductSelector ? (
           <>
             <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
@@ -657,88 +763,162 @@ function ProductVariantSelector({
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 ? (
-        <div className="space-y-1.5 sm:col-start-2">
-          <Label className="text-xs font-semibold text-slate-600">
-            Select Variant(s) (Optional)
-          </Label>
-          <Popover open={variantOpen} onOpenChange={setVariantOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={variantOpen}
-                className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+        <>
+          <div className="space-y-1.5 md:col-start-2">
+            <Label className="text-xs font-semibold text-slate-600">
+              Select Variant(s) (Optional)
+            </Label>
+            <Popover open={variantOpen} onOpenChange={setVariantOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={variantOpen}
+                  className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+                >
+                  {selectedVariantLabel ? (
+                    <span className="truncate text-sm">{selectedVariantLabel}</span>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+                align="start"
               >
-                {selectedVariantLabel ? (
-                  <span className="truncate text-sm">{selectedVariantLabel}</span>
-                ) : (
-                  <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
-                )}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-              align="start"
-            >
-              <Command>
-                <CommandInput placeholder="Search variants..." className="h-9" />
-                <CommandList>
-                  <CommandEmpty>No variant found.</CommandEmpty>
-                  <CommandGroup>
-                    {variants.map((variant) => {
-                      const variantWarehouseStocks = mapVariantWarehouseStocks(variant);
-                      const warehousePreview = variantWarehouseStocks
-                        .map(
-                          (entry) =>
-                            entry.warehouseCode ||
-                            entry.warehouseName ||
-                            `W${entry.warehouseId ?? ''}`
-                        )
-                        .filter((entry) => entry)
-                        .join(', ');
+                <Command>
+                  <CommandInput placeholder="Search variants..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No variant found.</CommandEmpty>
+                    <CommandGroup>
+                      {variants.map((variant) => {
+                        const variantWarehouseStocks = mapVariantWarehouseStocks(variant);
+                        const warehousePreview = variantWarehouseStocks
+                          .map(
+                            (entry) =>
+                              entry.warehouseName ||
+                              entry.warehouseCode ||
+                              `W${entry.warehouseId ?? ''}`
+                          )
+                          .filter((entry) => entry)
+                          .join(', ');
 
-                      return (
-                        <CommandItem
-                          key={variant.id}
-                          value={buildSearchableCommandValue(variant.sku, variant.id)}
-                          onSelect={() => togglePendingVariant(variant.id!)}
-                        >
-                          <VariantOptionRow
-                            variant={variant}
-                            warehousePreview={warehousePreview}
-                            isSelected={pendingVariantIds.includes(variant.id ?? -1)}
-                          />
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-              <div className="flex items-center justify-between border-t border-slate-200 p-2">
-                <span className="text-xs text-muted-foreground">
-                  {pendingVariantIds.length === 0
-                    ? 'No variants selected'
-                    : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPendingVariantIds([])}
-                  >
-                    Clear
-                  </Button>
-                  <Button type="button" size="sm" onClick={applyVariantSelection}>
-                    {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
-                  </Button>
+                        return (
+                          <CommandItem
+                            key={variant.id}
+                            value={buildSearchableCommandValue(variant.sku, variant.id)}
+                            onSelect={() => togglePendingVariant(variant.id!)}
+                          >
+                            <VariantOptionRow
+                              variant={variant}
+                              warehousePreview={warehousePreview}
+                              isSelected={pendingVariantIds.includes(variant.id ?? -1)}
+                            />
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+                <div className="flex items-center justify-between border-t border-slate-200 p-2">
+                  <span className="text-xs text-muted-foreground">
+                    {pendingVariantIds.length === 0
+                      ? 'No variants selected'
+                      : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPendingVariantIds([])}
+                    >
+                      Clear
+                    </Button>
+                    <Button type="button" size="sm" onClick={applyVariantSelection}>
+                      {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          {selectedVariant ? <SelectedVariantPreview variant={selectedVariant} /> : null}
-        </div>
+              </PopoverContent>
+            </Popover>
+            {selectedVariant ? <SelectedVariantPreview variant={selectedVariant} /> : null}
+          </div>
+          {selectedVariant && warehouseOptions.length > 0 ? (
+            <div className="space-y-1.5 md:col-start-3">
+              <Label className="text-xs font-semibold text-slate-600">Select Warehouse</Label>
+              <Popover open={warehouseOpen} onOpenChange={setWarehouseOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={warehouseOpen}
+                    className="h-9 w-full justify-between border-slate-300 hover:border-blue-400"
+                  >
+                    {selectedWarehouseLabel ? (
+                      <span className="truncate text-sm">{selectedWarehouseLabel}</span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Choose a warehouse...</span>
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+                  align="start"
+                >
+                  <Command>
+                    <CommandInput placeholder="Search warehouses..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No warehouse found.</CommandEmpty>
+                      <CommandGroup>
+                        {warehouseOptions.map((warehouse, warehouseIndex) => {
+                          const warehouseLabel =
+                            warehouse.warehouseName ||
+                            warehouse.warehouseCode ||
+                            `Warehouse ${warehouse.warehouseId ?? warehouseIndex + 1}`;
+
+                          return (
+                            <CommandItem
+                              key={`${warehouse.warehouseId ?? warehouse.warehouseCode ?? warehouseIndex}`}
+                              value={buildSearchableCommandValue(
+                                warehouseLabel,
+                                warehouse.warehouseName,
+                                warehouse.warehouseCode,
+                                warehouse.warehouseId
+                              )}
+                              onSelect={() => handleWarehouseSelect(warehouse)}
+                            >
+                              <div className="flex flex-1 flex-col">
+                                <span className="text-sm font-medium">{warehouseLabel}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  Stock: {warehouse.salesStockQuantity ?? warehouse.stockQuantity}
+                                </span>
+                              </div>
+                              <Check
+                                className={cn(
+                                  'ml-2 h-4 w-4',
+                                  selectedWarehouseLabel === warehouseLabel
+                                    ? 'opacity-100'
+                                    : 'opacity-0'
+                                )}
+                              />
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedWarehouse ? (
+                <SelectedWarehousePreview warehouse={selectedWarehouse} />
+              ) : null}
+            </div>
+          ) : null}
+        </>
       ) : null}
     </div>
   );
@@ -801,6 +981,9 @@ function ProductCatalogSelector({
     onItemChange(index, 'variantId', undefined);
     onItemChange(index, 'availableQuantity', undefined);
     onItemChange(index, 'warehouseStocks', undefined);
+    onItemChange(index, 'selectedWarehouseId', undefined);
+    onItemChange(index, 'selectedWarehouseName', undefined);
+    onItemChange(index, 'selectedWarehouseCode', undefined);
     onItemChange(index, 'sku', undefined);
     onItemChange(index, 'productName', catalog.productCatalogName);
     onItemChange(index, 'variantAttributes', buildCatalogAttributes(catalog));
@@ -1002,16 +1185,10 @@ export function OrderFormItems({
     const breakdown = getOrderItemBillingBreakdown(item);
     const availableQuantity = breakdown.availableQuantity ?? undefined;
     const quantityErrorMessage = itemErrors?.[index]?.quantity;
-    const warehouseStocks = (item.warehouseStocks ?? []).map((entry) => ({
-      ...entry,
-      stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-    }));
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
         : undefined;
-    const showWarehouseStocks =
-      item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
@@ -1022,8 +1199,8 @@ export function OrderFormItems({
         key={`desktop-entry-${index}`}
         className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
       >
-        <div className="grid grid-cols-11 gap-3 items-start">
-          <div className="col-span-5">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,2.6fr)_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto]">
+          <div className="min-w-0">
             {item.itemType === 'catalog' ? (
               <>
                 <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
@@ -1047,7 +1224,7 @@ export function OrderFormItems({
             )}
           </div>
 
-          <div className="col-span-2">
+          <div>
             <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
             <Input
               type="number"
@@ -1062,31 +1239,13 @@ export function OrderFormItems({
                 Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
               </p>
             )}
-            {showWarehouseStocks && (
-              <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
-                <div className="mt-0.5 space-y-0.5">
-                  {warehouseStocks.map((entry, stockIndex) => (
-                    <p
-                      key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
-                      className="text-[11px] text-slate-600"
-                    >
-                      {entry.warehouseName ||
-                        entry.warehouseCode ||
-                        `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
-                      {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
             {backOrderMessage && (
               <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
             )}
             <FieldError message={quantityErrorMessage} />
           </div>
 
-          <div className="col-span-2">
+          <div>
             <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
             <Input
               type="number"
@@ -1100,7 +1259,7 @@ export function OrderFormItems({
             <FieldError message={itemErrors?.[index]?.itemPrice} />
           </div>
 
-          <div className="col-span-2 flex flex-col gap-2">
+          <div className="flex flex-col gap-2 xl:min-w-[88px]">
             <div className="text-right">
               <div className="text-xs text-muted-foreground mb-1">Total</div>
               <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
@@ -1139,16 +1298,10 @@ export function OrderFormItems({
     const breakdown = getOrderItemBillingBreakdown(item);
     const availableQuantity = breakdown.availableQuantity ?? undefined;
     const quantityErrorMessage = itemErrors?.[index]?.quantity;
-    const warehouseStocks = (item.warehouseStocks ?? []).map((entry) => ({
-      ...entry,
-      stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-    }));
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
         : undefined;
-    const showWarehouseStocks =
-      item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
@@ -1230,25 +1383,6 @@ export function OrderFormItems({
               <p className="text-[11px] text-slate-500">
                 Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
               </p>
-            )}
-            {showWarehouseStocks && (
-              <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
-                <div className="mt-0.5 space-y-0.5">
-                  {warehouseStocks.map((entry, stockIndex) => (
-                    <p
-                      key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
-                      className="text-[11px] text-slate-600"
-                    >
-                      {entry.warehouseName ||
-                        entry.warehouseCode ||
-                        `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
-                      {': '}
-                      Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
-                    </p>
-                  ))}
-                </div>
-              </div>
             )}
             {backOrderMessage && (
               <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
