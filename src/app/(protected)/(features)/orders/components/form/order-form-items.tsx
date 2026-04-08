@@ -1014,7 +1014,7 @@ export function OrderFormItems({
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
-        ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
+        ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
         : undefined;
 
     return (
@@ -1151,7 +1151,7 @@ export function OrderFormItems({
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
-        ? `${breakdown.backOrderQuantity} item${breakdown.backOrderQuantity === 1 ? '' : 's'} will be placed as Back Order and excluded from current billing.`
+        ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
         : undefined;
 
     return (

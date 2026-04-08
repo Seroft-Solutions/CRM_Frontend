@@ -31,11 +31,15 @@ export const getOrderItemBillingBreakdown = (item: OrderItemForm): OrderItemBill
 
   const availableQuantity =
     typeof item.availableQuantity === 'number' ? Math.max(0, item.availableQuantity) : null;
+  const backOrderQuantity =
+    availableQuantity === null ? 0 : Math.max(requestedQuantity - availableQuantity, 0);
+  const billableQuantity =
+    availableQuantity === null ? requestedQuantity : Math.min(requestedQuantity, availableQuantity);
 
   return {
     requestedQuantity,
-    billableQuantity: requestedQuantity,
-    backOrderQuantity: 0,
+    billableQuantity,
+    backOrderQuantity,
     availableQuantity,
     stockScopeLabel: item.variantId ? 'variant' : 'product',
   };
