@@ -14,10 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
-import {
-  useGetAllProducts,
-  useGetProduct,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   getGetAllProductCatalogsQueryOptions,
   useGetAllProductCatalogs,
@@ -189,6 +186,76 @@ function CatalogOptionRow({
   );
 }
 
+function SelectedProductPreview({
+  product,
+  fallbackSku,
+}: {
+  product: ProductDTO;
+  fallbackSku?: string;
+}) {
+  const primaryVariantId =
+    product.variants?.find((variant) => variant.isPrimary)?.id ?? product.variants?.[0]?.id;
+  const { data: primaryVariantImages } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: {
+        enabled: !!primaryVariantId,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+  const imageUrl = useMemo(
+    () => resolveVariantImageUrl(primaryVariantImages),
+    [primaryVariantImages]
+  );
+  const productSku = product.articleNumber ?? product.articalNumber ?? fallbackSku ?? 'N/A';
+
+  return (
+    <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={product.name}
+        size={48}
+        className="shrink-0 rounded-md"
+      />
+      <div className="min-w-0 space-y-1">
+        <div className="truncate text-sm font-medium text-slate-900">{product.name}</div>
+        <div className="text-xs text-muted-foreground">SKU: {productSku}</div>
+      </div>
+    </div>
+  );
+}
+
+function SelectedVariantPreview({
+  variant,
+  variantAttributes,
+}: {
+  variant: ProductVariantWithWarehouseStocks;
+  variantAttributes?: string;
+}) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
+    query: {
+      enabled: !!variant.id,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={variant.sku}
+        size={48}
+        className="shrink-0 rounded-md"
+      />
+      <div className="min-w-0 space-y-1">
+        <div className="truncate text-sm font-medium text-slate-900">{variant.sku}</div>
+      </div>
+    </div>
+  );
+}
+
 function SelectedOrderItemPreview({
   item,
   selectedCatalog,
@@ -200,66 +267,31 @@ function SelectedOrderItemPreview({
   onOpenCatalogInNewTab: (event: MouseEvent<HTMLButtonElement>, productCatalogId: number) => void;
   catalogDisplayLabel: string;
 }) {
-  const { data: productData } = useGetProduct(item.productId ?? 0, {
-    query: {
-      enabled: item.itemType === 'product' && !!item.productId && !item.variantId,
-      staleTime: 5 * 60 * 1000,
-    },
-  });
-
-  const previewVariantId =
-    item.variantId ??
-    productData?.variants?.find((variant) => variant.isPrimary)?.id ??
-    productData?.variants?.[0]?.id;
-
-  const { data: previewVariantImages } = useGetAllProductVariantImagesByVariant(
-    previewVariantId ?? 0,
-    {
-      query: {
-        enabled: !!previewVariantId,
-        staleTime: 5 * 60 * 1000,
-      },
-    }
-  );
-
-  const imageUrl =
-    item.itemType === 'catalog'
-      ? resolveCatalogImageUrl(selectedCatalog?.image)
-      : resolveVariantImageUrl(previewVariantImages);
-  const productLabel =
-    item.itemType === 'catalog'
-      ? (selectedCatalog?.productCatalogName ?? item.productName ?? 'Catalog')
-      : (item.productName ?? item.sku ?? 'Product');
-
   return (
     <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
       <ProductImageThumbnail
-        imageUrl={imageUrl}
-        productName={productLabel}
+        imageUrl={resolveCatalogImageUrl(selectedCatalog?.image)}
+        productName={selectedCatalog?.productCatalogName ?? item.productName ?? 'Catalog'}
         size={48}
         className="shrink-0 rounded-md"
       />
       <div className="min-w-0 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          {item.itemType === 'catalog' ? (
-            <Badge className="bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-indigo-700">
-              Catalog
-            </Badge>
-          ) : null}
-          {item.productName &&
-            (item.itemType === 'catalog' && item.productCatalogId ? (
-              <button
-                type="button"
-                onClick={(event) => onOpenCatalogInNewTab(event, item.productCatalogId!)}
-                className="truncate text-left text-sm font-bold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline"
-              >
-                {catalogDisplayLabel}
-              </button>
-            ) : (
-              <div className="truncate text-sm font-medium text-slate-900">{item.productName}</div>
-            ))}
+          <Badge className="bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-indigo-700">
+            Catalog
+          </Badge>
+          {item.productName && item.productCatalogId ? (
+            <button
+              type="button"
+              onClick={(event) => onOpenCatalogInNewTab(event, item.productCatalogId!)}
+              className="truncate text-left text-sm font-bold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline"
+            >
+              {catalogDisplayLabel}
+            </button>
+          ) : (
+            <div className="truncate text-sm font-medium text-slate-900">{item.productName}</div>
+          )}
         </div>
-        {item.sku ? <div className="text-xs text-muted-foreground">SKU: {item.sku}</div> : null}
         {item.variantAttributes ? (
           <Badge variant="secondary" className="text-xs">
             {item.variantAttributes}
@@ -569,60 +601,65 @@ function ProductVariantSelector({
   return (
     <div className={cn('grid gap-3 grid-cols-1', showProductSelector && 'sm:grid-cols-2')}>
       {/* Product Combobox */}
-      {showProductSelector && (
-        <div className="space-y-1.5">
-          <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
-          <Popover open={productOpen} onOpenChange={setProductOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={productOpen}
-                className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+      <div className="space-y-1.5">
+        {showProductSelector ? (
+          <>
+            <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
+            <Popover open={productOpen} onOpenChange={setProductOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={productOpen}
+                  className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+                >
+                  {selectedProduct ? (
+                    <span className="truncate text-sm">{selectedProduct.name}</span>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">Choose a product...</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+                align="start"
               >
-                {selectedProduct ? (
-                  <span className="truncate text-sm">{selectedProduct.name}</span>
-                ) : (
-                  <span className="text-muted-foreground text-sm">Choose a product...</span>
-                )}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-              align="start"
-            >
-              <Command>
-                <CommandInput placeholder="Search products..." className="h-9" />
-                <CommandList>
-                  <CommandEmpty>No product found.</CommandEmpty>
-                  <CommandGroup>
-                    {products.map((product) => (
-                      <CommandItem
-                        key={product.id}
-                        value={buildSearchableCommandValue(
-                          product.name,
-                          product.id,
-                          product.barcodeText,
-                          product.articleNumber,
-                          product.articalNumber
-                        )}
-                        onSelect={() => handleProductSelect(product.id!)}
-                      >
-                        <ProductOptionRow
-                          product={product}
-                          stockQuantity={getProductQuantity(product)}
-                          isSelected={item.productId === product.id}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </div>
-      )}
+                <Command>
+                  <CommandInput placeholder="Search products..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No product found.</CommandEmpty>
+                    <CommandGroup>
+                      {products.map((product) => (
+                        <CommandItem
+                          key={product.id}
+                          value={buildSearchableCommandValue(
+                            product.name,
+                            product.id,
+                            product.barcodeText,
+                            product.articleNumber,
+                            product.articalNumber
+                          )}
+                          onSelect={() => handleProductSelect(product.id!)}
+                        >
+                          <ProductOptionRow
+                            product={product}
+                            stockQuantity={getProductQuantity(product)}
+                            isSelected={item.productId === product.id}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </>
+        ) : null}
+        {selectedProduct ? (
+          <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+        ) : null}
+      </div>
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
@@ -706,6 +743,12 @@ function ProductVariantSelector({
               </div>
             </PopoverContent>
           </Popover>
+          {selectedVariant ? (
+            <SelectedVariantPreview
+              variant={selectedVariant}
+              variantAttributes={item.variantAttributes}
+            />
+          ) : null}
         </div>
       )}
     </div>
@@ -993,7 +1036,17 @@ export function OrderFormItems({
         <div className="grid grid-cols-11 gap-3 items-start">
           <div className="col-span-5">
             {item.itemType === 'catalog' ? (
-              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+              <>
+                <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+                {(item.productName || item.sku) && (
+                  <SelectedOrderItemPreview
+                    item={item}
+                    selectedCatalog={selectedCatalog}
+                    onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
+                    catalogDisplayLabel={getCatalogDisplayLabel(item)}
+                  />
+                )}
+              </>
             ) : (
               <ProductVariantSelector
                 item={item}
@@ -1001,14 +1054,6 @@ export function OrderFormItems({
                 onApplyVariantSelection={onApplyVariantSelection}
                 onItemChange={onItemChange}
                 showProductSelector={entryIndex === 0}
-              />
-            )}
-            {(item.productName || item.sku) && (
-              <SelectedOrderItemPreview
-                item={item}
-                selectedCatalog={selectedCatalog}
-                onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
-                catalogDisplayLabel={getCatalogDisplayLabel(item)}
               />
             )}
           </div>
@@ -1159,7 +1204,17 @@ export function OrderFormItems({
 
         <div className="mt-4">
           {item.itemType === 'catalog' ? (
-            <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+            <>
+              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+              {(item.productName || item.sku) && (
+                <SelectedOrderItemPreview
+                  item={item}
+                  selectedCatalog={selectedCatalog}
+                  onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
+                  catalogDisplayLabel={getCatalogDisplayLabel(item)}
+                />
+              )}
+            </>
           ) : (
             <ProductVariantSelector
               item={item}
@@ -1167,14 +1222,6 @@ export function OrderFormItems({
               onApplyVariantSelection={onApplyVariantSelection}
               onItemChange={onItemChange}
               showProductSelector={entryIndex === 0}
-            />
-          )}
-          {(item.productName || item.sku) && (
-            <SelectedOrderItemPreview
-              item={item}
-              selectedCatalog={selectedCatalog}
-              onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
-              catalogDisplayLabel={getCatalogDisplayLabel(item)}
             />
           )}
         </div>
