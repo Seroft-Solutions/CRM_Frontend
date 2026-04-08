@@ -544,6 +544,17 @@ export function VariantTableRow({
           )}
         </TableCell>
 
+        {/* Link ID Column */}
+        <TableCell className="py-2" style={{ width: columnWidth }}>
+          {!isDraft && !isDuplicate && data.linkId ? (
+            <code className="inline-block rounded border bg-slate-50 px-2 py-1 font-mono text-sm text-slate-700">
+              {data.linkId}
+            </code>
+          ) : (
+            <span className="text-sm text-muted-foreground">—</span>
+          )}
+        </TableCell>
+
         {/* Price & Stock Columns */}
         <TableCell className="py-2" style={{ width: columnWidth }}>
           {isDraft || isEditing ? (

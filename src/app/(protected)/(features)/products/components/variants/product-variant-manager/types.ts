@@ -34,6 +34,7 @@ export interface VariantSelection {
 export interface DraftVariantRow {
   key: string;
   sku: string;
+  linkId?: string;
   price?: number;
   stockQuantity: number;
   salesStockQuantity: number;
@@ -59,6 +60,7 @@ export interface DraftVariantRow {
 export interface ExistingVariantRow {
   id: number;
   sku: string;
+  linkId?: string;
   price?: number;
   stockQuantity: number;
   salesStockQuantity: number;

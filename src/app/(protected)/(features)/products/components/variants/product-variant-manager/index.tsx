@@ -520,6 +520,7 @@ export function ProductVariantManager({
         return {
           id: variant.id!,
           sku: variant.sku,
+          linkId: variant.linkId,
           price: variant.price,
           stockQuantity,
           salesStockQuantity: Number(variant.salesStockQuantity ?? stockQuantity) || 0,

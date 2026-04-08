@@ -27,7 +27,7 @@ export function VariantsTableHeader({
   isViewMode = false,
   selection,
 }: VariantsTableHeaderProps) {
-  const dataColumnCount = visibleEnumAttributes.length + 7 + (isViewMode ? 0 : 1);
+  const dataColumnCount = visibleEnumAttributes.length + 8 + (isViewMode ? 0 : 1);
   const warehouseColumnWidth = '280px';
   const nonWarehouseColumnCount = dataColumnCount - 1;
   const columnWidth = selection
@@ -65,6 +65,9 @@ export function VariantsTableHeader({
         ))}
         <TableHead className="font-semibold" style={{ width: columnWidth }}>
           SKU
+        </TableHead>
+        <TableHead className="font-semibold" style={{ width: columnWidth }}>
+          Link ID
         </TableHead>
         <TableHead className="font-semibold" style={{ width: columnWidth }}>
           Price <span className="text-red-500">*</span>

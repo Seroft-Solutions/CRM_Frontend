@@ -17,6 +17,7 @@ export interface ProductVariantDTO {
    * @pattern ^[A-Za-z0-9_-]+$
    */
   sku: string;
+  linkId?: string;
   /**
    * @minimum 0
    * @maximum 999999
