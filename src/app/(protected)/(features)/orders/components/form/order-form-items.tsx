@@ -1014,6 +1014,10 @@ export function OrderFormItems({
         : undefined;
     const showWarehouseStocks =
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
+    const availableSalesStockLabel =
+      item.itemType === 'product' && Boolean(item.variantId)
+        ? 'Available variant sales stock'
+        : 'Available product sales stock';
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
@@ -1061,7 +1065,7 @@ export function OrderFormItems({
             />
             {availableQuantity !== undefined && (
               <p className="mt-1 text-[11px] text-slate-500">
-                Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
+                {availableSalesStockLabel}: {availableQuantity}
               </p>
             )}
             {showWarehouseStocks && (
@@ -1151,6 +1155,10 @@ export function OrderFormItems({
         : undefined;
     const showWarehouseStocks =
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
+    const availableSalesStockLabel =
+      item.itemType === 'product' && Boolean(item.variantId)
+        ? 'Available variant sales stock'
+        : 'Available product sales stock';
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
@@ -1230,7 +1238,7 @@ export function OrderFormItems({
             />
             {availableQuantity !== undefined && (
               <p className="text-[11px] text-slate-500">
-                Available {breakdown.stockScopeLabel} sales stock: {availableQuantity}
+                {availableSalesStockLabel}: {availableQuantity}
               </p>
             )}
             {showWarehouseStocks && (

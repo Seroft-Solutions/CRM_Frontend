@@ -327,6 +327,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 <TableBody>
                   {rows.map((row, index) => {
                     const backlogResolved = row.isCompleted;
+                    const availableStockLabel =
+                      typeof row.item.variantId === 'number'
+                        ? 'Available variant main stock'
+                        : 'Available product main stock';
 
                     return (
                       <TableRow
@@ -392,8 +396,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             </p>
                             <p className="text-xs text-slate-500">
                               {typeof row.item.variantId === 'number'
-                                ? 'Variant stock based item'
-                                : 'Product stock based item'}
+                                ? 'Variant main stock based item'
+                                : 'Product main stock based item'}
                             </p>
                           </div>
                         </TableCell>
@@ -408,9 +412,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         </TableCell>
                         <TableCell className="text-center font-semibold text-slate-900">
                           <div>{stocksLoading ? '...' : row.availableQuantity}</div>
-                          <div className="text-[11px] text-slate-500">
-                            {typeof row.item.variantId === 'number' ? 'Variant' : 'Product'}
-                          </div>
+                          <div className="text-[11px] text-slate-500">{availableStockLabel}</div>
                         </TableCell>
                         <TableCell className="align-top">
                           {isEditing ? (
