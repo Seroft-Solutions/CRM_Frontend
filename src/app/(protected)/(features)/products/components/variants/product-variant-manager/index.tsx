@@ -775,6 +775,19 @@ export function ProductVariantManager({
         next[row.key] = { ...merged, isDuplicate: false };
       });
 
+      const hasDraftPrimary = Object.values(next).some((variant) => variant.isPrimary);
+      const hasExistingPrimary =
+        Boolean(editingRowData?.isPrimary) ||
+        existingVariantRows.some((variant) => variant.isPrimary);
+
+      if (!hasDraftPrimary && !hasExistingPrimary) {
+        const firstDraftKey = Object.keys(next)[0];
+
+        if (firstDraftKey) {
+          next[firstDraftKey] = { ...next[firstDraftKey], isPrimary: true };
+        }
+      }
+
       // Basic check to prevent re-render if only references changed
       if (JSON.stringify(Object.keys(prev)) === JSON.stringify(Object.keys(next))) {
         return prev;
@@ -782,7 +795,7 @@ export function ProductVariantManager({
 
       return next;
     });
-  }, [draftCombinations]);
+  }, [draftCombinations, editingRowData?.isPrimary, existingVariantRows]);
 
   useEffect(() => {
     if (isViewMode || defaultVariantPrice === undefined) {
