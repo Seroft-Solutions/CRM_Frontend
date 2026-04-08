@@ -7,6 +7,7 @@ import {
   Archive,
   ChevronDown,
   ChevronUp,
+  Download,
   Eye,
   MoreVertical,
   Pencil,
@@ -33,8 +34,17 @@ import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/Prod
 import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import { ProductDTOStatus } from '@/core/api/generated/spring/schemas/ProductDTOStatus';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
-import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
-import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
+import {
+  getGetAllProductVariantsQueryOptions,
+  useGetAllProductVariants,
+} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import {
+  getGetAllProductVariantImagesByVariantQueryOptions,
+  useGetAllProductVariantImagesByVariant,
+} from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { downloadProductSheetPdf } from './product-download-sheet';
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -46,12 +56,18 @@ function transformEnumValue(enumValue: string): string {
     .join(' ');
 }
 
+function getSelectionDisplayValue(
+  selection: NonNullable<ProductVariantDTO['selections']>[number]
+): string {
+  return selection.option?.label || selection.rawValue || selection.option?.code || '';
+}
+
 function getVariantDescription(variant: ProductVariantDTO): string {
   const selections = variant.selections ?? [];
   const summary = selections
     .map((selection) => {
       const attributeLabel = selection.attribute?.label || selection.attribute?.name;
-      const optionLabel = selection.option?.label || selection.option?.code || selection.rawValue;
+      const optionLabel = getSelectionDisplayValue(selection);
 
       if (attributeLabel && optionLabel) {
         return `${attributeLabel}: ${optionLabel}`;
@@ -144,7 +160,9 @@ export function ProductTableRow({
   updatingCells = new Set(),
   visibleColumns,
 }: ProductTableRowProps) {
+  const queryClient = useQueryClient();
   const [isStockDetailsOpen, setIsStockDetailsOpen] = useState(false);
+  const [isDownloadingSheet, setIsDownloadingSheet] = useState(false);
   const hasImageColumn = visibleColumns.some((column) => column.visible && column.id === 'image');
   const shouldFetchVariants =
     Boolean(product.id) && !product.variants?.length && (isStockDetailsOpen || hasImageColumn);
@@ -213,6 +231,59 @@ export function ProductTableRow({
         {transformEnumValue(status)}
       </Badge>
     );
+  };
+
+  const handleDownloadSheet = async () => {
+    if (!product.id || isDownloadingSheet) {
+      return;
+    }
+
+    setIsDownloadingSheet(true);
+
+    try {
+      const variantsForSheet =
+        variants.length > 0
+          ? variants
+          : await queryClient.fetchQuery(
+              getGetAllProductVariantsQueryOptions(
+                {
+                  'productId.equals': product.id,
+                  size: 200,
+                  sort: ['id,asc'],
+                },
+                {
+                  query: {
+                    staleTime: 60_000,
+                  },
+                }
+              )
+            );
+      const primaryVariantIdForSheet =
+        variantsForSheet.find((variant) => variant.isPrimary)?.id ?? variantsForSheet[0]?.id;
+      const primaryVariantImagesForSheet =
+        primaryVariantIdForSheet && primaryVariantId === primaryVariantIdForSheet
+          ? primaryVariantImages
+          : primaryVariantIdForSheet
+            ? await queryClient.fetchQuery(
+                getGetAllProductVariantImagesByVariantQueryOptions(primaryVariantIdForSheet, {
+                  query: {
+                    staleTime: 60_000,
+                  },
+                })
+              )
+            : [];
+
+      await downloadProductSheetPdf(
+        product,
+        variantsForSheet ?? [],
+        primaryVariantImagesForSheet ?? []
+      );
+    } catch (error) {
+      console.error('Failed to download product sheet', error);
+      toast.error('Unable to download product sheet. Please try again.');
+    } finally {
+      setIsDownloadingSheet(false);
+    }
   };
 
   return (
@@ -464,6 +535,18 @@ export function ProductTableRow({
       })}
       <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
         <div className="flex items-center justify-center gap-0.5 sm:gap-1">
+          <InlinePermissionGuard requiredPermission="product:read">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+              onClick={() => void handleDownloadSheet()}
+              disabled={isDownloadingSheet}
+            >
+              <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span className="sr-only">Download product sheet</span>
+            </Button>
+          </InlinePermissionGuard>
           <InlinePermissionGuard requiredPermission="product:read">
             <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
               <Link href={`/products/${product.id}`}>
