@@ -36,6 +36,7 @@ type ProductWithStock = ProductDTO & { stockQuantity?: number; salesStockQuantit
 type ProductVariantWithWarehouseStocks = {
   id?: number;
   sku: string;
+  linkId?: string;
   price?: number;
   stockQuantity?: number;
   salesStockQuantity?: number;
@@ -144,6 +145,9 @@ function VariantOptionRow({
         <ProductImageThumbnail imageUrl={imageUrl} productName={variant.sku} size={28} />
         <div className="flex flex-1 flex-col">
           <span className="font-medium text-sm">{variant.sku}</span>
+          {variant.linkId ? (
+            <span className="text-xs text-slate-500">Link ID: {variant.linkId}</span>
+          ) : null}
           <span className="text-xs text-muted-foreground">
             Sales Stock: {variant.salesStockQuantity ?? variant.stockQuantity ?? 0} • ₹
             {variant.price ?? 0}
@@ -245,6 +249,9 @@ function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWareho
       />
       <div className="min-w-0 space-y-1">
         <div className="truncate text-sm font-medium text-slate-900">{variant.sku}</div>
+        {variant.linkId ? (
+          <div className="text-xs text-slate-500">Link ID: {variant.linkId}</div>
+        ) : null}
       </div>
     </div>
   );
@@ -704,7 +711,7 @@ function ProductVariantSelector({
                       return (
                         <CommandItem
                           key={variant.id}
-                          value={buildSearchableCommandValue(variant.sku, variant.id)}
+                          value={buildSearchableCommandValue(variant.sku, variant.linkId, variant.id)}
                           onSelect={() => togglePendingVariant(variant.id!)}
                         >
                           <VariantOptionRow
