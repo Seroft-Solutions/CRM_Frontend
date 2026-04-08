@@ -14,7 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
-import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import {
+  useGetAllProducts,
+  useGetProduct,
+} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   getGetAllProductCatalogsQueryOptions,
   useGetAllProductCatalogs,
@@ -30,6 +33,7 @@ import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 
 type ProductWithStock = ProductDTO & { stockQuantity?: number; salesStockQuantity?: number };
 type ProductVariantWithWarehouseStocks = {
@@ -49,6 +53,19 @@ type ProductVariantWithWarehouseStocks = {
     };
   }[];
 };
+
+function buildSearchableCommandValue(...parts: Array<string | number | null | undefined>) {
+  return parts
+    .map((part) => {
+      if (part === null || part === undefined) {
+        return '';
+      }
+
+      return String(part).trim();
+    })
+    .filter(Boolean)
+    .join(' ');
+}
 
 function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
   if (!images?.length) {
@@ -87,7 +104,10 @@ function ProductOptionRow({
       query: { enabled: !!primaryVariantId },
     }
   );
-  const imageUrl = useMemo(() => resolveVariantImageUrl(primaryVariantImages), [primaryVariantImages]);
+  const imageUrl = useMemo(
+    () => resolveVariantImageUrl(primaryVariantImages),
+    [primaryVariantImages]
+  );
 
   return (
     <>
@@ -138,6 +158,115 @@ function VariantOptionRow({
       </div>
       <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
     </>
+  );
+}
+
+function CatalogOptionRow({
+  catalog,
+  isSelected,
+}: {
+  catalog: ProductCatalogDTO;
+  isSelected: boolean;
+}) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <ProductImageThumbnail
+          imageUrl={resolveCatalogImageUrl(catalog.image)}
+          productName={catalog.productCatalogName || 'Catalog'}
+          size={28}
+        />
+        <div className="flex flex-1 flex-col">
+          <span className="font-medium text-sm">{catalog.productCatalogName}</span>
+          <span className="text-xs text-muted-foreground">
+            Product: {catalog.product?.name ?? 'N/A'} • Items: {catalog.variants?.length ?? 0} • ₹
+            {catalog.price ?? 0}
+          </span>
+        </div>
+      </div>
+      <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </>
+  );
+}
+
+function SelectedOrderItemPreview({
+  item,
+  selectedCatalog,
+  onOpenCatalogInNewTab,
+  catalogDisplayLabel,
+}: {
+  item: OrderItemForm;
+  selectedCatalog?: ProductCatalogDTO;
+  onOpenCatalogInNewTab: (event: MouseEvent<HTMLButtonElement>, productCatalogId: number) => void;
+  catalogDisplayLabel: string;
+}) {
+  const { data: productData } = useGetProduct(item.productId ?? 0, {
+    query: {
+      enabled: item.itemType === 'product' && !!item.productId && !item.variantId,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+
+  const previewVariantId =
+    item.variantId ??
+    productData?.variants?.find((variant) => variant.isPrimary)?.id ??
+    productData?.variants?.[0]?.id;
+
+  const { data: previewVariantImages } = useGetAllProductVariantImagesByVariant(
+    previewVariantId ?? 0,
+    {
+      query: {
+        enabled: !!previewVariantId,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+
+  const imageUrl =
+    item.itemType === 'catalog'
+      ? resolveCatalogImageUrl(selectedCatalog?.image)
+      : resolveVariantImageUrl(previewVariantImages);
+  const productLabel =
+    item.itemType === 'catalog'
+      ? (selectedCatalog?.productCatalogName ?? item.productName ?? 'Catalog')
+      : (item.productName ?? item.sku ?? 'Product');
+
+  return (
+    <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={productLabel}
+        size={48}
+        className="shrink-0 rounded-md"
+      />
+      <div className="min-w-0 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          {item.itemType === 'catalog' ? (
+            <Badge className="bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-indigo-700">
+              Catalog
+            </Badge>
+          ) : null}
+          {item.productName &&
+            (item.itemType === 'catalog' && item.productCatalogId ? (
+              <button
+                type="button"
+                onClick={(event) => onOpenCatalogInNewTab(event, item.productCatalogId!)}
+                className="truncate text-left text-sm font-bold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline"
+              >
+                {catalogDisplayLabel}
+              </button>
+            ) : (
+              <div className="truncate text-sm font-medium text-slate-900">{item.productName}</div>
+            ))}
+        </div>
+        {item.sku ? <div className="text-xs text-muted-foreground">SKU: {item.sku}</div> : null}
+        {item.variantAttributes ? (
+          <Badge variant="secondary" className="text-xs">
+            {item.variantAttributes}
+          </Badge>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -471,7 +600,13 @@ function ProductVariantSelector({
                     {products.map((product) => (
                       <CommandItem
                         key={product.id}
-                        value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
+                        value={buildSearchableCommandValue(
+                          product.name,
+                          product.id,
+                          product.barcodeText,
+                          product.articleNumber,
+                          product.articalNumber
+                        )}
                         onSelect={() => handleProductSelect(product.id!)}
                       >
                         <ProductOptionRow
@@ -535,7 +670,7 @@ function ProductVariantSelector({
                       return (
                         <CommandItem
                           key={variant.id}
-                          value={variant.sku}
+                          value={buildSearchableCommandValue(variant.sku, variant.id)}
                           onSelect={() => togglePendingVariant(variant.id!)}
                         >
                           <VariantOptionRow
@@ -676,21 +811,16 @@ function ProductCatalogSelector({
                 {catalogs.map((catalog) => (
                   <CommandItem
                     key={catalog.id}
-                    value={`${catalog.productCatalogName} ${catalog.product?.name ?? ''}`}
+                    value={buildSearchableCommandValue(
+                      catalog.productCatalogName,
+                      catalog.id,
+                      catalog.product?.name
+                    )}
                     onSelect={() => handleCatalogSelect(catalog.id!)}
                   >
-                    <div className="flex flex-1 flex-col">
-                      <span className="font-medium text-sm">{catalog.productCatalogName}</span>
-                      <span className="text-xs text-muted-foreground">
-                        Product: {catalog.product?.name ?? 'N/A'} • Items:{' '}
-                        {catalog.variants?.length ?? 0} • ₹{catalog.price ?? 0}
-                      </span>
-                    </div>
-                    <Check
-                      className={cn(
-                        'ml-2 h-4 w-4',
-                        item.productCatalogId === catalog.id ? 'opacity-100' : 'opacity-0'
-                      )}
+                    <CatalogOptionRow
+                      catalog={catalog}
+                      isSelected={item.productCatalogId === catalog.id}
                     />
                   </CommandItem>
                 ))}
@@ -817,6 +947,7 @@ export function OrderFormItems({
 
       if (shouldGroupWithPrevious) {
         lastGroup.entries.push({ item, index });
+
         return;
       }
 
@@ -843,6 +974,10 @@ export function OrderFormItems({
       ...entry,
       stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
     }));
+    const selectedCatalog =
+      item.itemType === 'catalog'
+        ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
+        : undefined;
     const showWarehouseStocks =
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
     const backOrderMessage =
@@ -869,35 +1004,12 @@ export function OrderFormItems({
               />
             )}
             {(item.productName || item.sku) && (
-              <div className="mt-2 space-y-1">
-                <div className="flex items-center gap-2">
-                  {item.itemType === 'catalog' ? (
-                    <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                      Catalog
-                    </Badge>
-                  ) : null}
-                  {item.productName &&
-                    (item.itemType === 'catalog' && item.productCatalogId ? (
-                      <button
-                        type="button"
-                        onClick={(event) =>
-                          handleOpenCatalogInNewTab(event, item.productCatalogId!)
-                        }
-                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
-                      >
-                        {getCatalogDisplayLabel(item)}
-                      </button>
-                    ) : (
-                      <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                    ))}
-                </div>
-                {item.sku && <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>}
-                {item.variantAttributes && (
-                  <Badge variant="secondary" className="text-xs">
-                    {item.variantAttributes}
-                  </Badge>
-                )}
-              </div>
+              <SelectedOrderItemPreview
+                item={item}
+                selectedCatalog={selectedCatalog}
+                onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
+                catalogDisplayLabel={getCatalogDisplayLabel(item)}
+              />
             )}
           </div>
 
@@ -909,7 +1021,7 @@ export function OrderFormItems({
               placeholder="0"
               value={item.quantity}
               onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-              className="h-9 border-slate-300"
+              className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
             />
             {availableQuantity !== undefined && (
               <p className="mt-1 text-[11px] text-slate-500">
@@ -949,7 +1061,7 @@ export function OrderFormItems({
               placeholder="0.00"
               value={item.itemPrice}
               readOnly
-              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+              className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
             />
             <FieldError message={itemErrors?.[index]?.itemPrice} />
           </div>
@@ -967,12 +1079,7 @@ export function OrderFormItems({
                 onClick={() => onRemoveItem(index)}
                 className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
               >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1002,6 +1109,10 @@ export function OrderFormItems({
       ...entry,
       stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
     }));
+    const selectedCatalog =
+      item.itemType === 'catalog'
+        ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
+        : undefined;
     const showWarehouseStocks =
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
     const backOrderMessage =
@@ -1023,7 +1134,9 @@ export function OrderFormItems({
               <div className="text-sm font-bold text-slate-900">
                 {groupSize > 1 ? `Variant #${entryIndex + 1}` : `Item #${index + 1}`}
               </div>
-              {itemTotal > 0 && <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>}
+              {itemTotal > 0 && (
+                <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
+              )}
             </div>
           </div>
           <Button
@@ -1057,33 +1170,12 @@ export function OrderFormItems({
             />
           )}
           {(item.productName || item.sku) && (
-            <div className="mt-2 space-y-1">
-              <div className="flex items-center gap-2">
-                {item.itemType === 'catalog' ? (
-                  <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                    Catalog
-                  </Badge>
-                ) : null}
-                {item.productName &&
-                  (item.itemType === 'catalog' && item.productCatalogId ? (
-                    <button
-                      type="button"
-                      onClick={(event) => handleOpenCatalogInNewTab(event, item.productCatalogId!)}
-                      className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
-                    >
-                      {getCatalogDisplayLabel(item)}
-                    </button>
-                  ) : (
-                    <div className="text-sm font-medium text-slate-900">{item.productName}</div>
-                  ))}
-              </div>
-              {item.sku && <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>}
-              {item.variantAttributes && (
-                <Badge variant="secondary" className="text-xs">
-                  {item.variantAttributes}
-                </Badge>
-              )}
-            </div>
+            <SelectedOrderItemPreview
+              item={item}
+              selectedCatalog={selectedCatalog}
+              onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
+              catalogDisplayLabel={getCatalogDisplayLabel(item)}
+            />
           )}
         </div>
 
@@ -1096,7 +1188,7 @@ export function OrderFormItems({
               placeholder="0"
               value={item.quantity}
               onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-              className="h-9 border-slate-300"
+              className="h-8 border-slate-300 px-2 text-sm"
             />
             {availableQuantity !== undefined && (
               <p className="text-[11px] text-slate-500">
@@ -1122,7 +1214,9 @@ export function OrderFormItems({
                 </div>
               </div>
             )}
-            {backOrderMessage && <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>}
+            {backOrderMessage && (
+              <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+            )}
             <FieldError message={quantityErrorMessage} />
           </div>
           <div className="space-y-1.5">
@@ -1134,7 +1228,7 @@ export function OrderFormItems({
               placeholder="0.00"
               value={item.itemPrice}
               readOnly
-              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+              className="h-8 border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
             />
             <FieldError message={itemErrors?.[index]?.itemPrice} />
           </div>
