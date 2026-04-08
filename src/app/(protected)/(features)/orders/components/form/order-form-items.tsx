@@ -226,13 +226,7 @@ function SelectedProductPreview({
   );
 }
 
-function SelectedVariantPreview({
-  variant,
-  variantAttributes,
-}: {
-  variant: ProductVariantWithWarehouseStocks;
-  variantAttributes?: string;
-}) {
+function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWarehouseStocks }) {
   const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
     query: {
       enabled: !!variant.id,
@@ -656,7 +650,7 @@ function ProductVariantSelector({
             </Popover>
           </>
         ) : null}
-        {selectedProduct ? (
+        {showProductSelector && selectedProduct ? (
           <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
         ) : null}
       </div>
@@ -743,12 +737,7 @@ function ProductVariantSelector({
               </div>
             </PopoverContent>
           </Popover>
-          {selectedVariant ? (
-            <SelectedVariantPreview
-              variant={selectedVariant}
-              variantAttributes={item.variantAttributes}
-            />
-          ) : null}
+          {selectedVariant ? <SelectedVariantPreview variant={selectedVariant} /> : null}
         </div>
       )}
     </div>
