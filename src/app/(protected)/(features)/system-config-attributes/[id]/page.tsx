@@ -1,10 +1,13 @@
 import { PermissionGuard } from '@/core/auth';
 import { notFound } from 'next/navigation';
-import { SystemConfigAttributeViewFormPageClient } from '../components/system-config-attribute-form-page-client';
+import { SystemConfigAttributesViewClient } from '../components/system-config-attributes-view-client';
 
 interface SystemConfigAttributePageProps {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    scope?: string;
   }>;
 }
 
@@ -14,8 +17,10 @@ export const metadata = {
 
 export default async function SystemConfigAttributePage({
   params,
+  searchParams,
 }: SystemConfigAttributePageProps) {
   const { id: idParam } = await params;
+  const { scope } = await searchParams;
   const id = parseInt(idParam, 10);
 
   if (!Number.isFinite(id)) notFound();
@@ -26,7 +31,7 @@ export default async function SystemConfigAttributePage({
       unauthorizedTitle="Access Denied to View Config Attribute"
       unauthorizedDescription="You don't have permission to view config attribute details."
     >
-      <SystemConfigAttributeViewFormPageClient id={id} />
+      <SystemConfigAttributesViewClient id={id} scope={scope} />
     </PermissionGuard>
   );
 }
