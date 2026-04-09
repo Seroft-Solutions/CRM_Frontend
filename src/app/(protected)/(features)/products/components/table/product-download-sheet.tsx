@@ -25,6 +25,7 @@ type VariantMatrix = {
 };
 
 type SheetImage = ProductImageDTO | ProductVariantImageDTO;
+type OptionLabelsById = Map<number, string>;
 
 function getImageUrl(image?: SheetImage) {
   const sourceUrl =
@@ -60,8 +61,15 @@ function getSortedImages(images: SheetImage[]) {
   );
 }
 
-function getSelectionDisplayValue(selection: NonNullable<ProductVariantDTO['selections']>[number]) {
-  return selection.option?.label || selection.rawValue || selection.option?.code || '';
+function getSelectionDisplayValue(
+  selection: NonNullable<ProductVariantDTO['selections']>[number],
+  optionLabelsById?: OptionLabelsById
+) {
+  const optionId = selection.option?.id;
+  const resolvedOptionLabel =
+    typeof optionId === 'number' ? optionLabelsById?.get(optionId) : undefined;
+
+  return selection.option?.label || resolvedOptionLabel || selection.rawValue || selection.option?.code || '';
 }
 
 function formatRate(price?: number) {
@@ -99,7 +107,10 @@ function sortLabels(values: Array<{ label: string; sortOrder: number }>) {
     .map((entry) => entry.label);
 }
 
-function buildVariantMatrix(variants: ProductVariantDTO[]): VariantMatrix | null {
+function buildVariantMatrix(
+  variants: ProductVariantDTO[],
+  optionLabelsById?: OptionLabelsById
+): VariantMatrix | null {
   const activeVariants = variants.filter(
     (variant) => (variant.stockQuantity ?? 0) > 0 || (variant.selections?.length ?? 0) > 0
   );
@@ -124,7 +135,7 @@ function buildVariantMatrix(variants: ProductVariantDTO[]): VariantMatrix | null
           selection.attribute?.label || selection.attribute?.name || `Attribute ${attributeId}`,
         values: [],
       };
-      const optionLabel = getSelectionDisplayValue(selection);
+      const optionLabel = getSelectionDisplayValue(selection, optionLabelsById);
 
       if (optionLabel && !existing.values.some((value) => value.label === optionLabel)) {
         existing.values.push({
@@ -170,7 +181,7 @@ function buildVariantMatrix(variants: ProductVariantDTO[]): VariantMatrix | null
       (variant.selections ?? [])
         .map((selection) => {
           const attributeId = selection.attribute?.id;
-          const value = getSelectionDisplayValue(selection);
+          const value = getSelectionDisplayValue(selection, optionLabelsById);
 
           return typeof attributeId === 'number' && value ? [attributeId, value] : null;
         })
@@ -205,15 +216,17 @@ function ProductDownloadSheet({
   product,
   variants,
   images,
+  optionLabelsById,
 }: {
   product: ProductDTO;
   variants: ProductVariantDTO[];
   images: SheetImage[];
+  optionLabelsById?: OptionLabelsById;
 }) {
   const sortedImages = getSortedImages(images).slice(0, 4);
   const imageSlots =
     sortedImages.length > 0 ? sortedImages : [undefined, undefined, undefined, undefined];
-  const matrix = buildVariantMatrix(variants);
+  const matrix = buildVariantMatrix(variants, optionLabelsById);
   const rate = product.salePrice ?? product.discountedPrice ?? product.basePrice;
 
   return (
@@ -471,7 +484,8 @@ function waitForPaint(targetWindow: Window = window) {
 export async function downloadProductSheetPdf(
   product: ProductDTO,
   variants: ProductVariantDTO[],
-  primaryVariantImages: ProductVariantImageDTO[] = []
+  primaryVariantImages: ProductVariantImageDTO[] = [],
+  optionLabelsById?: OptionLabelsById
 ) {
   let iframe: HTMLIFrameElement | null = null;
   let renderHost: HTMLDivElement | null = null;
@@ -516,7 +530,12 @@ export async function downloadProductSheetPdf(
 
     root = createRoot(renderHost);
     root.render(
-      <ProductDownloadSheet product={product} variants={variants} images={imagesForSheet} />
+      <ProductDownloadSheet
+        product={product}
+        variants={variants}
+        images={imagesForSheet}
+        optionLabelsById={optionLabelsById}
+      />
     );
 
     await waitForPaint(frameWindow);

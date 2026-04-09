@@ -42,6 +42,7 @@ import {
   getGetAllProductVariantImagesByVariantQueryOptions,
   useGetAllProductVariantImagesByVariant,
 } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
+import { getGetAllSystemConfigAttributeOptionsQueryOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { downloadProductSheetPdf } from './product-download-sheet';
@@ -272,11 +273,48 @@ export function ProductTableRow({
                 })
               )
             : [];
+      const optionIdsMissingLabels = Array.from(
+        new Set(
+          (variantsForSheet ?? [])
+            .flatMap((variant) => variant.selections ?? [])
+            .map((selection) => {
+              const optionId = selection.option?.id;
+
+              if (typeof optionId !== 'number' || selection.option?.label) {
+                return null;
+              }
+
+              return optionId;
+            })
+            .filter((optionId): optionId is number => typeof optionId === 'number')
+        )
+      );
+      const optionLabelsById =
+        optionIdsMissingLabels.length > 0
+          ? new Map(
+              (
+                await queryClient.fetchQuery(
+                  getGetAllSystemConfigAttributeOptionsQueryOptions(
+                    {
+                      'id.in': optionIdsMissingLabels,
+                      size: optionIdsMissingLabels.length,
+                    },
+                    {
+                      query: {
+                        staleTime: 60_000,
+                      },
+                    }
+                  )
+                )
+              ).map((option) => [option.id!, option.label] as const)
+            )
+          : undefined;
 
       await downloadProductSheetPdf(
         product,
         variantsForSheet ?? [],
-        primaryVariantImagesForSheet ?? []
+        primaryVariantImagesForSheet ?? [],
+        optionLabelsById
       );
     } catch (error) {
       console.error('Failed to download product sheet', error);
