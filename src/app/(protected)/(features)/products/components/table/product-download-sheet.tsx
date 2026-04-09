@@ -224,8 +224,10 @@ function ProductDownloadSheet({
   optionLabelsById?: OptionLabelsById;
 }) {
   const sortedImages = getSortedImages(images).slice(0, 4);
-  const imageSlots =
-    sortedImages.length > 0 ? sortedImages : [undefined, undefined, undefined, undefined];
+  const primaryImage = sortedImages[0];
+  const secondaryImages = sortedImages.slice(1, 4);
+  const secondaryImageSlots =
+    secondaryImages.length > 0 ? secondaryImages : [undefined, undefined, undefined];
   const matrix = buildVariantMatrix(variants, optionLabelsById);
   const rate = product.salePrice ?? product.discountedPrice ?? product.basePrice;
 
@@ -260,64 +262,98 @@ function ProductDownloadSheet({
 
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: '18px',
+          border: '1px solid #111827',
+          padding: '16px',
           marginBottom: '28px',
-          alignItems: 'start',
         }}
       >
-        {imageSlots.map((image, index) => {
-          const imageUrl = getImageUrl(image);
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1.15fr 0.95fr',
+            gap: '26px',
+            alignItems: 'start',
+            minHeight: '360px',
+          }}
+        >
+          <div
+            style={{
+              border: '1px solid #9ca3af',
+              height: '305px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              backgroundColor: '#f8fafc',
+              position: 'relative',
+            }}
+          >
+            {getImageUrl(primaryImage) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={getImageUrl(primaryImage)!}
+                alt={`${product.name || 'Product'} main`}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <span style={{ color: '#94a3b8', fontSize: '14px' }}>No image</span>
+            )}
+          </div>
 
-          return (
-            <div
-              key={`product-sheet-image-${index}`}
-              style={{
-                border: '1px solid #d1d5db',
-                height: '220px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                borderRadius: '10px',
-                backgroundColor: '#f8fafc',
-                position: 'relative',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '10px',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '9999px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #d1d5db',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                }}
-              >
-                {index + 1}
-              </div>
-              {imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={imageUrl}
-                  alt={`${product.name || 'Product'} ${index + 1}`}
-                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                  crossOrigin="anonymous"
-                />
-              ) : (
-                <span style={{ color: '#94a3b8', fontSize: '14px' }}>No image</span>
-              )}
-            </div>
-          );
-        })}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
+              gap: '20px',
+              minHeight: '305px',
+            }}
+          >
+            {secondaryImageSlots.map((image, index) => {
+              const imageUrl = getImageUrl(image);
+              const isThirdSlot = index === 2;
+
+              return (
+                <div
+                  key={`product-sheet-secondary-image-${index}`}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: isThirdSlot ? 'flex-end' : 'stretch',
+                    gridColumn: isThirdSlot ? '1 / span 2' : 'auto',
+                    gridRow: isThirdSlot ? '2' : '1',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: isThirdSlot ? 'calc(50% - 10px)' : '100%',
+                      border: '1px solid #9ca3af',
+                      height: '124px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      backgroundColor: '#f8fafc',
+                    }}
+                  >
+                    {imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imageUrl}
+                        alt={`${product.name || 'Product'} ${index + 2}`}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        crossOrigin="anonymous"
+                      />
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '13px' }}>No image</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div style={{ marginBottom: '18px', lineHeight: 1.7 }}>
