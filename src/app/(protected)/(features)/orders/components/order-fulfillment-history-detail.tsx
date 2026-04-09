@@ -888,6 +888,18 @@ export function OrderFulfillmentHistoryDetail({
                 color: #15803d !important;
               }
 
+              #order-fulfillment-invoice .invoice-dark-fill {
+                background-color: #d1d5db !important;
+              }
+
+              #order-fulfillment-invoice .invoice-light-fill {
+                background-color: #f3f4f6 !important;
+              }
+
+              #order-fulfillment-invoice .invoice-lighter-fill {
+                background-color: #fafafa !important;
+              }
+
               @media print {
                 #order-fulfillment-print-card {
                   width: 760px !important;
@@ -1000,7 +1012,7 @@ export function OrderFulfillmentHistoryDetail({
 
             <div className="overflow-hidden border border-black">
               <table className="w-full border-collapse text-left">
-                <thead>
+                <thead className="invoice-dark-fill">
                   <tr>
                     <th className="w-[7%] border border-black px-2 py-2 text-center font-semibold">
                       SrNo
@@ -1028,7 +1040,10 @@ export function OrderFulfillmentHistoryDetail({
                 <tbody>
                   {invoiceItems.length > 0 ? (
                     resolvedInvoiceItems.map((item, index) => (
-                      <tr key={item.id}>
+                      <tr
+                        key={item.id}
+                        className={index % 2 === 0 ? 'invoice-lighter-fill' : 'invoice-light-fill'}
+                      >
                         <td className="border border-black px-2 py-1.5 text-center align-top">
                           {index + 1}
                         </td>
@@ -1077,7 +1092,7 @@ export function OrderFulfillmentHistoryDetail({
 
               <div className="invoice-footer-panel border border-black">
                 <table className="w-full border-collapse">
-                  <thead>
+                  <thead className="invoice-dark-fill">
                     <tr>
                       <th className="border border-black px-2 py-2 text-left font-semibold">
                         Items
@@ -1089,7 +1104,10 @@ export function OrderFulfillmentHistoryDetail({
                   </thead>
                   <tbody>
                     {invoiceItemSummary.map((item) => (
-                      <tr key={item.label}>
+                      <tr
+                        key={item.label}
+                        className="invoice-light-fill"
+                      >
                         <td className="border border-black px-2 py-1.5 font-semibold">
                           {item.label}
                         </td>
