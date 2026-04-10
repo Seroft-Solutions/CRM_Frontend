@@ -96,7 +96,6 @@ interface ProductVariantManagerProps {
   variantConfigId?: number;
   variantIdsFilter?: number[];
   form?: UseFormReturn<Record<string, unknown>>;
-  defaultVariantPrice?: number;
   isViewMode?: boolean;
   selection?: VariantTableSelection;
 }
@@ -115,7 +114,6 @@ export function ProductVariantManager({
   variantConfigId,
   variantIdsFilter,
   form,
-  defaultVariantPrice,
   isViewMode = false,
   selection,
 }: ProductVariantManagerProps) {
@@ -695,7 +693,7 @@ export function ProductVariantManager({
         const variant = {
           key,
           sku,
-          price: defaultVariantPrice ?? 0,
+          price: 0,
           stockQuantity: 0,
           salesStockQuantity: 0,
           variantStocks: [
@@ -752,7 +750,6 @@ export function ProductVariantManager({
     defaultGeneratedStatus,
     optionById,
     buildCombinationKey,
-    defaultVariantPrice,
     warehouses,
   ]);
 
@@ -797,33 +794,6 @@ export function ProductVariantManager({
       return next;
     });
   }, [draftCombinations, editingRowData?.isPrimary, existingVariantRows]);
-
-  useEffect(() => {
-    if (isViewMode || defaultVariantPrice === undefined) {
-      return;
-    }
-
-    setDraftVariantsByKey((prev) => {
-      let hasChanges = false;
-      const next: Record<string, DraftVariantRow> = {};
-
-      Object.entries(prev).forEach(([key, row]) => {
-        if (row.price === defaultVariantPrice) {
-          next[key] = row;
-
-          return;
-        }
-
-        hasChanges = true;
-        next[key] = {
-          ...row,
-          price: defaultVariantPrice,
-        };
-      });
-
-      return hasChanges ? next : prev;
-    });
-  }, [defaultVariantPrice, isViewMode]);
 
   const draftVariants = useMemo(() => Object.values(draftVariantsByKey), [draftVariantsByKey]);
   const newDraftVariants = useMemo(
@@ -1384,6 +1354,33 @@ export function ProductVariantManager({
     }));
   };
 
+  const copySalePriceToAllVariants = () => {
+    const salePriceRaw = form?.watch?.('salePrice');
+    const salePrice = salePriceRaw !== undefined && salePriceRaw !== null && String(salePriceRaw).trim() !== ''
+      ? Number(salePriceRaw)
+      : undefined;
+
+    if (!Number.isFinite(salePrice) || salePrice <= 0) {
+      toast.error('Please enter a valid sale price first');
+      return;
+    }
+
+    setDraftVariantsByKey((prev) => {
+      const next: Record<string, DraftVariantRow> = {};
+
+      Object.entries(prev).forEach(([key, row]) => {
+        next[key] = {
+          ...row,
+          price: salePrice,
+        };
+      });
+
+      return next;
+    });
+
+    toast.success(`Sale price (${salePrice}) copied to all variants`);
+  };
+
   // #endregion
 
   if (!variantConfigId) {
@@ -1430,6 +1427,7 @@ export function ProductVariantManager({
         isViewMode={isViewMode}
         selection={selection}
         validationErrors={(form?.formState.submitCount ?? 0) > 0 ? variantValidationErrors : {}}
+        onCopySalePriceToAll={copySalePriceToAllVariants}
       />
     </div>
   );

@@ -1,5 +1,7 @@
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
 import { VariantTableSelection } from './types';
 
@@ -13,6 +15,7 @@ interface VariantsTableHeaderProps {
   visibleEnumAttributes: SystemConfigAttributeDTO[];
   isViewMode?: boolean;
   selection?: VariantTableSelection;
+  onCopySalePriceToAll?: () => void;
 }
 
 /**
@@ -26,6 +29,7 @@ export function VariantsTableHeader({
   visibleEnumAttributes,
   isViewMode = false,
   selection,
+  onCopySalePriceToAll,
 }: VariantsTableHeaderProps) {
   const dataColumnCount = visibleEnumAttributes.length + 8 + (isViewMode ? 0 : 1);
   const warehouseColumnWidth = '280px';
@@ -70,7 +74,23 @@ export function VariantsTableHeader({
           Link ID
         </TableHead>
         <TableHead className="font-semibold" style={{ width: columnWidth }}>
-          Price <span className="text-red-500">*</span>
+          <div className="flex items-center gap-1">
+            <span>
+              Price <span className="text-red-500">*</span>
+            </span>
+            {!isViewMode && onCopySalePriceToAll && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 ml-1"
+                onClick={onCopySalePriceToAll}
+                title="Copy sale price to all variants"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         </TableHead>
         <TableHead className="font-semibold" style={{ width: columnWidth }}>
           Stock <span className="text-red-500">*</span>

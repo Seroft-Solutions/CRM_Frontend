@@ -37,6 +37,7 @@ interface VariantsTableProps {
   isViewMode?: boolean;
   selection?: VariantTableSelection;
   validationErrors?: Record<string, string[]>;
+  onCopySalePriceToAll?: () => void;
 }
 
 /**
@@ -66,6 +67,7 @@ export function VariantsTable({
   isViewMode = false,
   selection,
   validationErrors = {},
+  onCopySalePriceToAll,
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
@@ -115,6 +117,7 @@ export function VariantsTable({
             visibleEnumAttributes={visibleEnumAttributes}
             isViewMode={isViewMode}
             selection={selection}
+            onCopySalePriceToAll={onCopySalePriceToAll}
           />
           <TableBody>
             {isLoading ? (
