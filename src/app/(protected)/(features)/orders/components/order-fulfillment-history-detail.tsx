@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Download, Loader2, Printer } from 'lucide-react';
@@ -14,6 +14,7 @@ import { useGetAllProductVariantSelections } from '@/core/api/generated/spring/e
 import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
 import type { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTO';
+import { getOrganizationSettings } from '@/features/user-profile-management/services/organization-settings.service';
 import type { OrderRecord } from '../data/order-data';
 import {
   getAddressLines,
@@ -223,7 +224,10 @@ const normalizeSummaryLabel = (productName: string) => {
   const cleanedName = productName.replace(/\s+/g, ' ').trim();
   const prefixCandidate = cleanedName.split('-')[0]?.trim().replace(/,+$/, '') || cleanedName;
   const normalizedPrefix =
-    prefixCandidate.replace(/[^A-Za-z\s]/g, ' ').replace(/\s+/g, ' ').trim() || cleanedName;
+    prefixCandidate
+      .replace(/[^A-Za-z\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim() || cleanedName;
   const uppercasePrefix = normalizedPrefix.toUpperCase();
 
   if (uppercasePrefix === 'KC') {
@@ -239,6 +243,14 @@ const compactTextValue = (value?: string | null, fallback = '') => {
   return normalizedValue && normalizedValue !== '—' ? normalizedValue : fallback;
 };
 
+const normalizeWhatsAppNumber = (value?: string | null) => value?.replace(/\D/g, '') ?? '';
+
+const getWhatsAppHref = (value?: string | null) => {
+  const normalizedNumber = normalizeWhatsAppNumber(value);
+
+  return normalizedNumber ? `https://wa.me/${normalizedNumber}` : '';
+};
+
 const getVariantSelectionDisplayValue = (
   selection: ProductVariantSelectionDTO | NonNullable<ProductVariantDTO['selections']>[number],
   optionLabelsById?: Map<number, string>
@@ -247,7 +259,13 @@ const getVariantSelectionDisplayValue = (
   const resolvedOptionLabel =
     typeof optionId === 'number' ? optionLabelsById?.get(optionId) : undefined;
 
-  return selection.option?.label || resolvedOptionLabel || selection.rawValue || selection.option?.code || '';
+  return (
+    selection.option?.label ||
+    resolvedOptionLabel ||
+    selection.rawValue ||
+    selection.option?.code ||
+    ''
+  );
 };
 
 const getVariantSelectionValue = (
@@ -278,7 +296,9 @@ const getVariantSelectionValue = (
     );
   });
 
-  return matchingSelection ? getVariantSelectionDisplayValue(matchingSelection, optionLabelsById) : '';
+  return matchingSelection
+    ? getVariantSelectionDisplayValue(matchingSelection, optionLabelsById)
+    : '';
 };
 
 const COLOR_PROPERTIES = [
@@ -405,18 +425,22 @@ export function OrderFulfillmentHistoryDetail({
   const organizationName = useMemo(() => resolveOrganizationName(organizations), [organizations]);
   const organizationId = useMemo(() => resolveOrganizationId(organizations), [organizations]);
   const { data: organizationDetails } = useOrganizationDetails(organizationId);
-  const organizationEmail = useMemo(
-    () => organizationDetails?.attributes?.organizationEmail?.[0] || '',
-    [organizationDetails]
-  );
-  const organizationCode = useMemo(
-    () => organizationDetails?.attributes?.organizationCode?.[0] || '',
-    [organizationDetails]
-  );
+  const { data: organizationSettings } = useQuery({
+    queryKey: ['order-fulfillment-organization-settings'],
+    queryFn: getOrganizationSettings,
+    staleTime: 5 * 60 * 1000,
+  });
   const organizationAddress = useMemo(
-    () => organizationDetails?.attributes?.address?.[0] || '',
-    [organizationDetails]
+    () =>
+      organizationSettings?.address?.trim() || organizationDetails?.attributes?.address?.[0] || '',
+    [organizationDetails, organizationSettings]
   );
+  const organizationDisplayName =
+    organizationSettings?.name?.trim() || organizationName || 'Organization';
+  const organizationLogoUrl =
+    organizationSettings?.logoUrl?.trim() || organizationSettings?.logo?.trim() || '';
+  const organizationWhatsApp = organizationSettings?.whatsApp?.trim() || '';
+  const organizationWhatsAppHref = getWhatsAppHref(organizationWhatsApp);
 
   const invoiceLabel = getFulfillmentRecordLabel(order.orderId, {
     invoiceId: generation.id,
@@ -541,7 +565,9 @@ export function OrderFulfillmentHistoryDetail({
         new Set(
           invoiceItems
             .map((item) => item.variantId)
-            .filter((variantId): variantId is number => typeof variantId === 'number' && variantId > 0)
+            .filter(
+              (variantId): variantId is number => typeof variantId === 'number' && variantId > 0
+            )
         )
       ),
     [invoiceItems]
@@ -599,6 +625,7 @@ export function OrderFulfillmentHistoryDetail({
       }
 
       const existingSelections = nextMap.get(variantId) ?? [];
+
       existingSelections.push(selection);
       nextMap.set(variantId, existingSelections);
     });
@@ -652,9 +679,12 @@ export function OrderFulfillmentHistoryDetail({
   const resolvedInvoiceItems = useMemo(
     () =>
       invoiceItems.map((item) => {
-        const variant = typeof item.variantId === 'number' ? variantById.get(item.variantId) : undefined;
+        const variant =
+          typeof item.variantId === 'number' ? variantById.get(item.variantId) : undefined;
         const variantSelectionsForItem =
-          typeof item.variantId === 'number' ? selectionsByVariantId.get(item.variantId) : undefined;
+          typeof item.variantId === 'number'
+            ? selectionsByVariantId.get(item.variantId)
+            : undefined;
         const colorName =
           getVariantSelectionValue(
             variantSelectionsForItem,
@@ -732,7 +762,6 @@ export function OrderFulfillmentHistoryDetail({
   ]);
   const invoiceDateLabel = formatInvoiceDisplayDate(generation.createdDate);
   const orderNumberLabel = `ORD/${order.orderId}-${generation.generationNumber ?? generation.id ?? ''}`;
-  const organizationHeaderMeta = compactJoin([organizationAddress, organizationEmail], ' | ');
   const transportLabel = compactTextValue(order.shipping.shippingMethod);
   const bookingLabel = compactTextValue(order.shipping.shippingId);
   const markaLabel = compactTextValue(customerContactPerson, compactTextValue(customerWhatsApp));
@@ -915,15 +944,22 @@ export function OrderFulfillmentHistoryDetail({
                   padding: 1rem !important;
                 }
 
-                #order-fulfillment-invoice .invoice-top-row {
-                  display: flex !important;
-                  align-items: flex-start !important;
-                  justify-content: space-between !important;
-                  gap: 1rem !important;
-                }
+	                #order-fulfillment-invoice .invoice-top-row {
+	                  display: flex !important;
+	                  align-items: flex-start !important;
+	                  justify-content: space-between !important;
+	                  gap: 1rem !important;
+	                }
 
-                #order-fulfillment-invoice .invoice-address-grid {
-                  display: grid !important;
+	                #order-fulfillment-invoice .invoice-org-header {
+	                  display: flex !important;
+	                  align-items: flex-start !important;
+	                  gap: 0.875rem !important;
+	                  flex: 1 1 auto !important;
+	                }
+	                
+	                #order-fulfillment-invoice .invoice-address-grid {
+	                  display: grid !important;
                   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                 }
 
@@ -953,19 +989,41 @@ export function OrderFulfillmentHistoryDetail({
           </style>
           <div className="space-y-3 text-[11px] leading-5">
             <div className="invoice-top-row flex items-start justify-between gap-4 border-b border-black pb-3">
-              <div className="w-[20%] text-[12px] font-semibold uppercase tracking-[0.14em]">
-                {organizationCode || 'Sale Order'}
-              </div>
-              <div className="flex-1 text-center">
-                <div className="invoice-accent-red text-[17px] font-bold uppercase underline underline-offset-4">
-                  Order Form
-                </div>
-                <div className="mt-1 text-[22px] font-bold uppercase tracking-wide">
-                  {organizationName || 'Organization'}
-                </div>
-                {organizationHeaderMeta ? (
-                  <div className="mt-1 text-[11px]">{organizationHeaderMeta}</div>
+              <div className="invoice-org-header">
+                {organizationLogoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={organizationLogoUrl}
+                    alt={`${organizationDisplayName} logo`}
+                    crossOrigin="anonymous"
+                    className="h-16 w-16 shrink-0 object-contain"
+                  />
                 ) : null}
+                <div className="min-w-0 flex-1">
+                  <div className="invoice-accent-red text-[17px] font-bold uppercase underline underline-offset-4">
+                    Order Form
+                  </div>
+                  <div className="mt-1 text-[22px] font-bold uppercase tracking-wide">
+                    {organizationDisplayName}
+                  </div>
+                  {organizationWhatsAppHref ? (
+                    <div className="mt-1">
+                      <a
+                        href={organizationWhatsAppHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-[#0f172a] underline underline-offset-2"
+                      >
+                        {organizationWhatsApp}
+                      </a>
+                    </div>
+                  ) : null}
+                  {organizationAddress ? (
+                    <div className="mt-1 whitespace-pre-line text-[11px] leading-5">
+                      {organizationAddress}
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div className="w-[24%] text-right text-[12px] font-semibold leading-6">
                 <div>Date:-{invoiceDateLabel || formatInvoiceDate(generation.createdDate)}</div>
@@ -1020,9 +1078,7 @@ export function OrderFulfillmentHistoryDetail({
                     <th className="w-[39%] border border-black px-2 py-2 font-semibold">
                       Item Name
                     </th>
-                    <th className="w-[14%] border border-black px-2 py-2 font-semibold">
-                      colour
-                    </th>
+                    <th className="w-[14%] border border-black px-2 py-2 font-semibold">colour</th>
                     <th className="w-[17%] border border-black px-2 py-2 font-semibold">
                       Size/Qty
                     </th>
@@ -1104,10 +1160,7 @@ export function OrderFulfillmentHistoryDetail({
                   </thead>
                   <tbody>
                     {invoiceItemSummary.map((item) => (
-                      <tr
-                        key={item.label}
-                        className="invoice-light-fill"
-                      >
+                      <tr key={item.label} className="invoice-light-fill">
                         <td className="border border-black px-2 py-1.5 font-semibold">
                           {item.label}
                         </td>

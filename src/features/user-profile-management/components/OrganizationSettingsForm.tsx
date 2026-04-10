@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   Building2,
+  ImagePlus,
   Clock3,
   Loader2,
   LocateFixed,
@@ -13,7 +14,9 @@ import {
   Plus,
   Save,
   Trash2,
+  Upload,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +32,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
+import { getAcceptString, validateImageFile } from '@/lib/utils/image-validation';
 import {
   type OfficeDay,
   type OrganizationSettings,
@@ -94,6 +98,8 @@ const organizationSettingsSchema = z
     name: z.string().min(1),
     code: z.string().nullable().optional(),
     address: z.string().max(500, { message: 'Address must not exceed 500 characters' }),
+    logo: z.string().nullable().optional(),
+    logoUrl: z.string().nullable().optional(),
     officeLatitude: z
       .number({ invalid_type_error: 'Office latitude must be a number' })
       .min(-90, { message: 'Latitude must be at least -90' })
@@ -220,6 +226,8 @@ function mapSettingsToFormValues(settings: OrganizationSettings): OrganizationSe
     name: settings.name,
     code: settings.code ?? '',
     address: settings.address ?? '',
+    logo: settings.logo ?? '',
+    logoUrl: settings.logoUrl ?? '',
     officeLatitude: settings.officeLatitude ?? null,
     officeLongitude: settings.officeLongitude ?? null,
     officeRadiusMeters: settings.officeRadiusMeters ?? null,
@@ -243,6 +251,8 @@ function mapFormValuesToRequest(values: OrganizationSettingsFormValues): Organiz
     name: values.name,
     code: values.code?.trim() || null,
     address: values.address.trim() || null,
+    logo: values.logo?.trim() || null,
+    logoUrl: values.logoUrl?.trim() || null,
     officeLatitude: values.officeLatitude,
     officeLongitude: values.officeLongitude,
     officeRadiusMeters: values.officeRadiusMeters,
@@ -386,9 +396,13 @@ export function OrganizationSettingsForm() {
     organizationSettings,
     isLoading,
     isUpdating,
+    isUploadingLogo,
+    isRemovingLogo,
     error,
     refreshOrganizationSettings,
     saveOrganizationSettings,
+    uploadLogo,
+    removeLogo,
   } = useOrganizationSettings();
 
   const form = useForm<OrganizationSettingsFormValues>({
@@ -399,6 +413,8 @@ export function OrganizationSettingsForm() {
       name: '',
       code: '',
       address: '',
+      logo: '',
+      logoUrl: '',
       officeLatitude: null,
       officeLongitude: null,
       officeRadiusMeters: null,
@@ -408,6 +424,16 @@ export function OrganizationSettingsForm() {
 
   const { control, watch, setValue } = form;
   const [isFetchingLocation, setIsFetchingLocation] = React.useState(false);
+  const [selectedLogoFile, setSelectedLogoFile] = React.useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (logoPreviewUrl) {
+        URL.revokeObjectURL(logoPreviewUrl);
+      }
+    };
+  }, [logoPreviewUrl]);
 
   useEffect(() => {
     void refreshOrganizationSettings();
@@ -485,6 +511,74 @@ export function OrganizationSettingsForm() {
     }
   };
 
+  const handleLogoSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const validation = await validateImageFile(file);
+
+    if (!validation.valid) {
+      toast.error(validation.errors[0]?.message || 'Invalid image file');
+      event.target.value = '';
+
+      return;
+    }
+
+    if (validation.warnings.length > 0) {
+      toast.warning(validation.warnings[0]?.message || 'Image selected');
+    }
+
+    if (logoPreviewUrl) {
+      URL.revokeObjectURL(logoPreviewUrl);
+    }
+
+    setSelectedLogoFile(file);
+    setLogoPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleUploadLogo = async () => {
+    if (!selectedLogoFile) {
+      toast.error('Please select a logo first');
+
+      return;
+    }
+
+    const updatedSettings = await uploadLogo(selectedLogoFile);
+
+    if (!updatedSettings) {
+      return;
+    }
+
+    form.setValue('logo', updatedSettings.logo ?? '', { shouldDirty: true });
+    form.setValue('logoUrl', updatedSettings.logoUrl ?? '', { shouldDirty: true });
+
+    if (logoPreviewUrl) {
+      URL.revokeObjectURL(logoPreviewUrl);
+    }
+    setLogoPreviewUrl(null);
+    setSelectedLogoFile(null);
+  };
+
+  const handleRemoveLogo = async () => {
+    const updatedSettings = await removeLogo();
+
+    if (!updatedSettings) {
+      return;
+    }
+
+    form.setValue('logo', updatedSettings.logo ?? '', { shouldDirty: true });
+    form.setValue('logoUrl', updatedSettings.logoUrl ?? '', { shouldDirty: true });
+
+    if (logoPreviewUrl) {
+      URL.revokeObjectURL(logoPreviewUrl);
+    }
+    setLogoPreviewUrl(null);
+    setSelectedLogoFile(null);
+  };
+
   if (isLoading && !organizationSettings) {
     return (
       <Card>
@@ -497,6 +591,9 @@ export function OrganizationSettingsForm() {
       </Card>
     );
   }
+
+  const currentLogo =
+    logoPreviewUrl || watch('logoUrl') || (watch('logo')?.startsWith('http') ? watch('logo') : '');
 
   return (
     <Card>
@@ -540,6 +637,90 @@ export function OrganizationSettingsForm() {
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border bg-muted/40">
+                  {currentLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={currentLogo}
+                      alt="Organization logo"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="h-10 w-10 text-muted-foreground" />
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-medium">Organization Logo</p>
+                    <p className="text-xs text-muted-foreground">
+                      Upload JPG, PNG, or WEBP up to 5 MB. Stored using the same image pipeline as
+                      product images.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      id="organization-logo-input"
+                      type="file"
+                      accept={getAcceptString()}
+                      className="hidden"
+                      onChange={handleLogoSelection}
+                      disabled={isUpdating || isUploadingLogo || isRemovingLogo}
+                    />
+                    <label
+                      htmlFor="organization-logo-input"
+                      className="inline-flex cursor-pointer items-center rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <ImagePlus className="mr-2 h-4 w-4" />
+                      Choose Logo
+                    </label>
+
+                    <Button
+                      type="button"
+                      onClick={handleUploadLogo}
+                      disabled={
+                        !selectedLogoFile || isUpdating || isUploadingLogo || isRemovingLogo
+                      }
+                    >
+                      {isUploadingLogo ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleRemoveLogo}
+                      disabled={!watch('logo') || isUpdating || isUploadingLogo || isRemovingLogo}
+                    >
+                      {isRemovingLogo ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Removing...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Remove
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <FormField

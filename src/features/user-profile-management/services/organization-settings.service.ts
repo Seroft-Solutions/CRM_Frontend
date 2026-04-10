@@ -23,6 +23,8 @@ export interface OrganizationSettings {
   name: string;
   code?: string | null;
   address?: string | null;
+  logo?: string | null;
+  logoUrl?: string | null;
   officeLatitude?: number | null;
   officeLongitude?: number | null;
   officeRadiusMeters?: number | null;
@@ -62,6 +64,39 @@ export async function updateOrganizationSettings(
     const errorData = await response.json().catch(() => ({}));
 
     throw new Error(errorData.error || 'Failed to update organization settings');
+  }
+
+  return (await response.json()) as OrganizationSettings;
+}
+
+export async function uploadOrganizationLogo(file: File): Promise<OrganizationSettings> {
+  const formData = new FormData();
+
+  formData.append('file', file);
+
+  const response = await fetch('/api/profile/organization-settings/logo', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    throw new Error(errorData.error || 'Failed to upload organization logo');
+  }
+
+  return (await response.json()) as OrganizationSettings;
+}
+
+export async function removeOrganizationLogo(): Promise<OrganizationSettings> {
+  const response = await fetch('/api/profile/organization-settings/logo', {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    throw new Error(errorData.error || 'Failed to remove organization logo');
   }
 
   return (await response.json()) as OrganizationSettings;

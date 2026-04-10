@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import {
   getOrganizationSettings,
   type OrganizationSettings,
+  removeOrganizationLogo,
+  uploadOrganizationLogo,
   updateOrganizationSettings,
 } from '../services/organization-settings.service';
 
@@ -12,12 +14,16 @@ interface UseOrganizationSettingsState {
   organizationSettings: OrganizationSettings | null;
   isLoading: boolean;
   isUpdating: boolean;
+  isUploadingLogo: boolean;
+  isRemovingLogo: boolean;
   error: string | null;
 }
 
 interface UseOrganizationSettingsActions {
   refreshOrganizationSettings: () => Promise<void>;
   saveOrganizationSettings: (data: OrganizationSettings) => Promise<boolean>;
+  uploadLogo: (file: File) => Promise<OrganizationSettings | null>;
+  removeLogo: () => Promise<OrganizationSettings | null>;
   clearError: () => void;
 }
 
@@ -29,6 +35,8 @@ export function useOrganizationSettings(): UseOrganizationSettingsReturn {
     organizationSettings: null,
     isLoading: false,
     isUpdating: false,
+    isUploadingLogo: false,
+    isRemovingLogo: false,
     error: null,
   });
 
@@ -88,10 +96,70 @@ export function useOrganizationSettings(): UseOrganizationSettingsReturn {
     }
   }, []);
 
+  const uploadLogo = useCallback(async (file: File): Promise<OrganizationSettings | null> => {
+    setState((prev) => ({ ...prev, isUploadingLogo: true, error: null }));
+
+    try {
+      const updatedSettings = await uploadOrganizationLogo(file);
+
+      setState((prev) => ({
+        ...prev,
+        organizationSettings: updatedSettings,
+        isUploadingLogo: false,
+      }));
+      toast.success('Organization logo updated successfully');
+
+      return updatedSettings;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update organization logo';
+
+      setState((prev) => ({
+        ...prev,
+        isUploadingLogo: false,
+        error: errorMessage,
+      }));
+      toast.error(errorMessage);
+
+      return null;
+    }
+  }, []);
+
+  const removeLogo = useCallback(async (): Promise<OrganizationSettings | null> => {
+    setState((prev) => ({ ...prev, isRemovingLogo: true, error: null }));
+
+    try {
+      const updatedSettings = await removeOrganizationLogo();
+
+      setState((prev) => ({
+        ...prev,
+        organizationSettings: updatedSettings,
+        isRemovingLogo: false,
+      }));
+      toast.success('Organization logo removed successfully');
+
+      return updatedSettings;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to remove organization logo';
+
+      setState((prev) => ({
+        ...prev,
+        isRemovingLogo: false,
+        error: errorMessage,
+      }));
+      toast.error(errorMessage);
+
+      return null;
+    }
+  }, []);
+
   return {
     ...state,
     refreshOrganizationSettings,
     saveOrganizationSettings,
+    uploadLogo,
+    removeLogo,
     clearError,
   };
 }
