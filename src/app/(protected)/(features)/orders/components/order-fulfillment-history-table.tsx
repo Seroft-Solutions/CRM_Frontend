@@ -23,34 +23,38 @@ import {
 interface OrderFulfillmentHistoryTableProps {
   order: OrderRecord;
   generations: OrderFulfillmentGenerationResponse[];
+  showHeader?: boolean;
 }
 
 export function OrderFulfillmentHistoryTable({
   order,
   generations,
+  showHeader = true,
 }: OrderFulfillmentHistoryTableProps) {
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
-              <PackageCheck className="h-5 w-5 text-cyan-700" />
+        {showHeader ? (
+          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
+                <PackageCheck className="h-5 w-5 text-cyan-700" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900">Order Fulfillment History</h3>
+                <p className="text-sm text-slate-500">
+                  {getCustomerDisplayName(order)} • Order #{order.orderId}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-slate-900">Order Fulfillment History</h3>
-              <p className="text-sm text-slate-500">
-                {getCustomerDisplayName(order)} • Order #{order.orderId}
-              </p>
-            </div>
+            <Button asChild size="sm" className="gap-2 bg-cyan-700 text-white hover:bg-cyan-800">
+              <Link href={`/orders/${order.orderId}/fulfillment`}>
+                <PackageCheck className="h-4 w-4" />
+                Back To Fulfillment
+              </Link>
+            </Button>
           </div>
-          <Button asChild size="sm" className="gap-2 bg-cyan-700 text-white hover:bg-cyan-800">
-            <Link href={`/orders/${order.orderId}/fulfillment`}>
-              <PackageCheck className="h-4 w-4" />
-              Back To Fulfillment
-            </Link>
-          </Button>
-        </div>
+        ) : null}
 
         <div className="overflow-x-auto">
           <Table>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -23,11 +23,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { History } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { type OrderDTO } from '@/core/api/generated/spring/schemas';
+import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { InlinePermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
+import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import { getOrderStatusCode, OrderStatus, orderStatusOptions } from '../../data/order-data';
 import { useOrderTableData } from '../../hooks';
 
@@ -80,6 +82,7 @@ export function OrderTable({
   const [pageSize, setPageSize] = useState(10);
   const [statusOverrides, setStatusOverrides] = useState<Record<number, OrderStatus>>({});
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const { mutateAsync: partialUpdateOrder } = usePartialUpdateOrder();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
@@ -124,6 +127,10 @@ export function OrderTable({
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
+  };
+
+  const toggleOrderHistory = (orderId: number) => {
+    setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
   const handlePageSizeChange = (newSize: number) => {
@@ -356,166 +363,181 @@ export function OrderTable({
               const isUpdatingThisRow = updatingOrderId === order.orderId;
               const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
 
+              const isExpanded = expandedOrderId === order.orderId;
+
               return (
-                <TableRow key={order.orderId} className="transition-colors hover:bg-slate-50/70">
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                        {startIndex + index + 1}
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-800">#{order.orderId}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDateTime(order.createdDate)}
+                <Fragment key={order.orderId}>
+                  <TableRow className="transition-colors hover:bg-slate-50/70">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
+                          {startIndex + index + 1}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <span className="font-bold text-slate-800">#{order.orderId}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => toggleOrderHistory(order.orderId)}
+                              title="Toggle fulfillment history"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatDateTime(order.createdDate)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <InlinePermissionGuard
-                      requiredPermission="order:update"
-                      fallback={
-                        <Badge
-                          variant="outline"
-                          className={`border-2 font-semibold ${statusClassName}`}
-                        >
-                          {displayedStatus}
-                        </Badge>
-                      }
-                    >
-                      <Select
-                        value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
-                        onValueChange={(value) =>
-                          handleOrderStatusChange(order, value as OrderStatus)
+                    </TableCell>
+                    <TableCell>
+                      <InlinePermissionGuard
+                        requiredPermission="order:update"
+                        fallback={
+                          <Badge
+                            variant="outline"
+                            className={`border-2 font-semibold ${statusClassName}`}
+                          >
+                            {displayedStatus}
+                          </Badge>
                         }
-                        disabled={isUpdatingThisRow}
                       >
-                        <SelectTrigger
-                          className={`h-9 min-w-[150px] border-2 font-semibold ${statusClassName}`}
-                          aria-label={`Update status for order ${order.orderId}`}
+                        <Select
+                          value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
+                          onValueChange={(value) =>
+                            handleOrderStatusChange(order, value as OrderStatus)
+                          }
+                          disabled={isUpdatingThisRow}
                         >
-                          <SelectValue placeholder={displayedStatus} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {orderStatusOptions.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </InlinePermissionGuard>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-bold text-slate-900">
-                        {formatCurrency(order.orderTotalAmount)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Base {formatCurrency(order.orderBaseAmount)}
-                      </div>
-                      {resolveDiscountAmount(order) > 0 && (
-                        <div className="text-xs font-semibold text-red-600">
-                          -{formatCurrency(resolveDiscountAmount(order))}
+                          <SelectTrigger
+                            className={`h-9 min-w-[150px] border-2 font-semibold ${statusClassName}`}
+                            aria-label={`Update status for order ${order.orderId}`}
+                          >
+                            <SelectValue placeholder={displayedStatus} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {orderStatusOptions.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                {status}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </InlinePermissionGuard>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-bold text-slate-900">
+                          {formatCurrency(order.orderTotalAmount)}
                         </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-semibold text-slate-700">
-                        {order.shipping.shippingMethod || 'Not set'}
+                        <div className="text-xs text-muted-foreground">
+                          Base {formatCurrency(order.orderBaseAmount)}
+                        </div>
+                        {resolveDiscountAmount(order) > 0 && (
+                          <div className="text-xs font-semibold text-red-600">
+                            -{formatCurrency(resolveDiscountAmount(order))}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {order.shipping.shippingAmount
-                          ? formatCurrency(order.shipping.shippingAmount)
-                          : 'Included'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-semibold text-slate-700">
+                          {order.shipping.shippingMethod || 'Not set'}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {order.shipping.shippingAmount
+                            ? formatCurrency(order.shipping.shippingAmount)
+                            : 'Included'}
+                        </div>
+                        {order.shipping.shippingId ? (
+                          <Badge
+                            variant="outline"
+                            className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
+                          >
+                            #{order.shipping.shippingId}
+                          </Badge>
+                        ) : null}
                       </div>
-                      {order.shipping.shippingId ? (
-                        <Badge
-                          variant="outline"
-                          className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
-                        >
-                          #{order.shipping.shippingId}
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-semibold text-slate-800">{customerName}</div>
+                        <div className="text-xs text-muted-foreground">{customerContact}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
+                          {order.paymentStatus}
                         </Badge>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-semibold text-slate-800">{customerName}</div>
-                      <div className="text-xs text-muted-foreground">{customerContact}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
-                        {order.paymentStatus}
-                      </Badge>
-                      {order.discountCode ? (
-                        <div className="mt-1 text-xs font-semibold text-amber-700">
-                          {order.discountCode}
-                        </div>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button asChild size="sm" variant="outline" className="border-slate-300">
-                        <Link href={`/orders/${order.orderId}`}>
-                          <svg
-                            className="mr-1 h-3 w-3"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                          View
-                        </Link>
-                      </Button>
-                      <Button
-                        asChild
-                        size="sm"
-                        className="bg-slate-600 text-white hover:bg-slate-700"
-                      >
-                        <Link href={`/orders/${order.orderId}/edit`}>
-                          <svg
-                            className="mr-1 h-3 w-3"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button asChild size="sm" variant="outline" className="border-slate-300">
-                        <Link href={`/orders/${order.orderId}/fulfillment/history`}>
-                          <History className="mr-1 h-3 w-3" />
-                          Fulfillment History
-                        </Link>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                        {order.discountCode ? (
+                          <div className="mt-1 text-xs font-semibold text-amber-700">
+                            {order.discountCode}
+                          </div>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button asChild size="sm" variant="outline" className="border-slate-300">
+                          <Link href={`/orders/${order.orderId}`}>
+                            <svg
+                              className="mr-1 h-3 w-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                            View
+                          </Link>
+                        </Button>
+                        <Button
+                          asChild
+                          size="sm"
+                          className="bg-slate-600 text-white hover:bg-slate-700"
+                        >
+                          <Link href={`/orders/${order.orderId}/edit`}>
+                            <svg
+                              className="mr-1 h-3 w-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                            Edit
+                          </Link>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {isExpanded && <OrderFulfillmentHistoryRow order={order} />}
+                </Fragment>
               );
             })}
 
@@ -654,5 +676,44 @@ export function OrderTable({
         </div>
       )}
     </div>
+  );
+}
+
+interface OrderFulfillmentHistoryRowProps {
+  order: Parameters<typeof OrderFulfillmentHistoryTable>[0]['order'];
+}
+
+function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) {
+  const {
+    data: generations = [],
+    isLoading,
+    isError,
+  } = useGetOrderFulfillmentGenerations(order.orderId, {
+    query: {
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
+  });
+
+  return (
+    <TableRow className="hover:bg-slate-50/50">
+      <TableCell colSpan={7} className="p-0">
+        <div className="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
+          {isLoading ? (
+            <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
+          ) : isError ? (
+            <div className="text-sm text-red-600">
+              Failed to load fulfillment history. Please try again.
+            </div>
+          ) : (
+            <OrderFulfillmentHistoryTable
+              order={order}
+              generations={generations}
+              showHeader={false}
+            />
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
