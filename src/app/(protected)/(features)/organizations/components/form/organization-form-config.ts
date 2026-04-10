@@ -12,7 +12,7 @@ export const organizationFormConfig: FormConfig = {
       id: 'basic',
       title: 'Basic Information',
       description: 'Enter essential details',
-      fields: ['keycloakOrgId', 'name', 'displayName', 'logo', 'domain', 'status'],
+      fields: ['keycloakOrgId', 'name', 'displayName', 'logo', 'domain', 'whatsApp', 'status'],
       relationships: [],
       validation: {
         mode: 'onBlur',
@@ -104,6 +104,18 @@ export const organizationFormConfig: FormConfig = {
         maxLength: 100,
         pattern:
           /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/,
+      },
+      ui: {},
+    },
+    {
+      name: 'whatsApp',
+      type: 'text',
+      label: 'Whats App',
+      placeholder: 'Enter whats app',
+      required: false,
+      validation: {
+        required: false,
+        pattern: /^[+]?[0-9]{10,15}$/,
       },
       ui: {},
     },
@@ -215,6 +227,7 @@ export const organizationFormHelpers = {
     organizationFormConfig.relationships.find((rel) => rel.name === relationshipName),
   getStepFields: (stepId: string) => {
     const step = organizationFormConfig.steps.find((s) => s.id === stepId);
+
     return step ? [...step.fields, ...step.relationships] : [];
   },
 };

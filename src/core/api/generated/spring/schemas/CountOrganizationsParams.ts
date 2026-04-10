@@ -48,6 +48,13 @@ export type CountOrganizationsParams = {
 'domain.specified'?: boolean;
 'domain.in'?: string[];
 'domain.notIn'?: string[];
+'whatsApp.contains'?: string;
+'whatsApp.doesNotContain'?: string;
+'whatsApp.equals'?: string;
+'whatsApp.notEquals'?: string;
+'whatsApp.specified'?: boolean;
+'whatsApp.in'?: string[];
+'whatsApp.notIn'?: string[];
 'status.equals'?: CountOrganizationsStatusEquals;
 'status.notEquals'?: CountOrganizationsStatusNotEquals;
 'status.specified'?: boolean;

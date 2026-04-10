@@ -28,6 +28,16 @@ export const organizationFormSchemaFields = {
       { message: 'Please enter valid domain' }
     )
     .optional(),
+  whatsApp: z
+    .string()
+    .transform((val) => (val === '' ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .regex(/^[+]?[0-9]{10,15}$/, { message: 'Please enter valid whatsapp' })
+        .optional()
+    )
+    .optional(),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   members: z.string().optional(),
 };
@@ -61,6 +71,16 @@ export const organizationFieldSchemas = {
       { message: 'Please enter valid domain' }
     )
     .optional(),
+  whatsApp: z
+    .string()
+    .transform((val) => (val === '' ? undefined : val))
+    .pipe(
+      z
+        .string()
+        .regex(/^[+]?[0-9]{10,15}$/, { message: 'Please enter valid whatsapp' })
+        .optional()
+    )
+    .optional(),
   status: z.string({ message: 'Please enter status' }).min(1, { message: 'Please enter status' }),
   members: z.string().optional(),
 };
@@ -72,18 +92,21 @@ export const organizationStepSchemas = {
     displayName: organizationFieldSchemas.displayName,
     logo: organizationFieldSchemas.logo,
     domain: organizationFieldSchemas.domain,
+    whatsApp: organizationFieldSchemas.whatsApp,
     status: organizationFieldSchemas.status,
   }),
 
   review: organizationFormSchema,
 };
 
-export const validateStep = (stepId: string, data: any) => {
+export const validateStep = (stepId: string, data: unknown) => {
   const schema = organizationStepSchemas[stepId as keyof typeof organizationStepSchemas];
+
   if (!schema) return { success: true, data };
 
   try {
     const validData = schema.parse(data);
+
     return { success: true, data: validData };
   } catch (error) {
     return { success: false, error };

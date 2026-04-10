@@ -9,6 +9,7 @@ export interface OrganizationSetupRequest {
   domain?: string;
   organizationCode?: string;
   organizationEmail?: string;
+  whatsApp?: string;
   address?: string;
   logo?: string;
 }
@@ -266,6 +267,7 @@ export class OrganizationSetupService {
       name: request.organizationName,
       displayName: request.organizationName,
       ...(request.organizationCode && { code: request.organizationCode }),
+      ...(request.whatsApp && { whatsApp: request.whatsApp }),
       ...(request.address && { address: request.address }),
       ...(request.logo && { logo: request.logo }),
       status: 'ACTIVE',

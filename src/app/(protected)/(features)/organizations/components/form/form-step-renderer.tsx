@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -272,14 +273,17 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
                   }}
                 />
               ) : fieldConfig.name?.toLowerCase().includes('mobile') ||
-                fieldConfig.name?.toLowerCase().includes('phone') ? (
-                <Input
-                  type="tel"
-                  placeholder="Enter phone number (example: 03001234567)"
-                  {...field}
-                  onChange={(e) => {
-                    const cleaned = e.target.value.replace(/[^\d\s\-\(\)\+]/g, '');
-                    field.onChange(cleaned);
+                fieldConfig.name?.toLowerCase().includes('phone') ||
+                fieldConfig.name?.toLowerCase().includes('whatsapp') ? (
+                <PhoneInput
+                  placeholder={
+                    fieldConfig.name?.toLowerCase().includes('whatsapp')
+                      ? 'Enter WhatsApp number'
+                      : 'Enter phone number'
+                  }
+                  value={field.value}
+                  onChange={(value) => {
+                    field.onChange(value);
                     form.trigger(fieldConfig.name);
                   }}
                 />

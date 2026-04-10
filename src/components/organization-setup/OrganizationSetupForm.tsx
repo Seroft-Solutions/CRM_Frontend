@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
@@ -29,6 +30,7 @@ export function OrganizationSetupForm({
     domain: '',
     organizationCode: '',
     organizationEmail: session?.user?.email,
+    whatsApp: '',
     address: '',
   });
   const [validationError, setValidationError] = useState<string>('');
@@ -69,6 +71,12 @@ export function OrganizationSetupForm({
       return;
     }
 
+    if (formData.whatsApp?.trim() && !/^[+]?[0-9]{10,15}$/.test(formData.whatsApp.trim())) {
+      setValidationError('Please enter a valid WhatsApp number (10-15 digits).');
+
+      return;
+    }
+
     const orgName = formData.organizationName
       .trim()
       .toLowerCase()
@@ -80,12 +88,21 @@ export function OrganizationSetupForm({
       domain,
       organizationCode: formData.organizationCode,
       organizationEmail: session?.user?.email || '',
+      whatsApp: formData.whatsApp?.trim() || '',
       address: formData.address.trim(),
     });
   };
 
   const handleChange =
-    (field: 'organizationName' | 'organizationCode' | 'organizationEmail' | 'domain' | 'address') =>
+    (
+      field:
+        | 'organizationName'
+        | 'organizationCode'
+        | 'organizationEmail'
+        | 'domain'
+        | 'whatsApp'
+        | 'address'
+    ) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       let value = e.target.value;
 
@@ -96,7 +113,10 @@ export function OrganizationSetupForm({
 
       if (
         validationError &&
-        (field === 'organizationName' || field === 'organizationCode' || field === 'address')
+        (field === 'organizationName' ||
+          field === 'organizationCode' ||
+          field === 'whatsApp' ||
+          field === 'address')
       ) {
         setValidationError('');
       }
@@ -197,6 +217,26 @@ export function OrganizationSetupForm({
               <p className="text-xs text-muted-foreground">
                 Must be 4 characters, at least one uppercase letter and one number, no special
                 characters.
+              </p>
+
+              <Label htmlFor="whatsApp" className="text-sm font-medium">
+                WhatsApp Number
+              </Label>
+              <PhoneInput
+                id="whatsApp"
+                value={formData.whatsApp || ''}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, whatsApp: value || '' }));
+
+                  if (validationError) {
+                    setValidationError('');
+                  }
+                }}
+                placeholder="Enter WhatsApp number"
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter 10-15 digits, with optional leading +.
               </p>
 
               <Label htmlFor="warehouseAddress" className="text-sm font-medium">

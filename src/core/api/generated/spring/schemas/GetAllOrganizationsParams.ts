@@ -48,6 +48,13 @@ export type GetAllOrganizationsParams = {
 'domain.specified'?: boolean;
 'domain.in'?: string[];
 'domain.notIn'?: string[];
+'whatsApp.contains'?: string;
+'whatsApp.doesNotContain'?: string;
+'whatsApp.equals'?: string;
+'whatsApp.notEquals'?: string;
+'whatsApp.specified'?: boolean;
+'whatsApp.in'?: string[];
+'whatsApp.notIn'?: string[];
 'status.equals'?: GetAllOrganizationsStatusEquals;
 'status.notEquals'?: GetAllOrganizationsStatusNotEquals;
 'status.specified'?: boolean;
