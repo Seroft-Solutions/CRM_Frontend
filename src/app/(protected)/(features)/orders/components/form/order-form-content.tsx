@@ -930,10 +930,12 @@ export function OrderFormContent({
     } else {
       amount = Math.max(rawValue, 0);
     }
-    const maxDiscountValue = Number(discount.maxDiscountValue);
+    if (discountType === 'PERCENTAGE') {
+      const maxDiscountValue = Number(discount.maxDiscountValue);
 
-    if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0) {
-      amount = Math.min(amount, maxDiscountValue);
+      if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0 && amount > maxDiscountValue) {
+        amount = maxDiscountValue;
+      }
     }
 
     return Math.max(amount, 0);
