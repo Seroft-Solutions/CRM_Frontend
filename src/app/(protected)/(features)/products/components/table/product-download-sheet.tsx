@@ -26,6 +26,29 @@ type VariantMatrix = {
 
 type SheetImage = ProductImageDTO | ProductVariantImageDTO;
 type OptionLabelsById = Map<number, string>;
+type MatrixAxisPreference = 'size' | 'color' | 'other';
+
+function getMatrixAxisPreference(label: string) {
+  const normalizedLabel = label.trim().toLowerCase();
+
+  if (
+    normalizedLabel.includes('size') ||
+    normalizedLabel.includes('sizing') ||
+    normalizedLabel.includes('dimension')
+  ) {
+    return 'size' as MatrixAxisPreference;
+  }
+
+  if (
+    normalizedLabel.includes('color') ||
+    normalizedLabel.includes('colour') ||
+    normalizedLabel.includes('shade')
+  ) {
+    return 'color' as MatrixAxisPreference;
+  }
+
+  return 'other' as MatrixAxisPreference;
+}
 
 function getImageUrl(image?: SheetImage) {
   const sourceUrl =
@@ -69,7 +92,13 @@ function getSelectionDisplayValue(
   const resolvedOptionLabel =
     typeof optionId === 'number' ? optionLabelsById?.get(optionId) : undefined;
 
-  return selection.option?.label || resolvedOptionLabel || selection.rawValue || selection.option?.code || '';
+  return (
+    selection.option?.label ||
+    resolvedOptionLabel ||
+    selection.rawValue ||
+    selection.option?.code ||
+    ''
+  );
 }
 
 function formatRate(price?: number) {
@@ -105,6 +134,14 @@ function sortLabels(values: Array<{ label: string; sortOrder: number }>) {
       });
     })
     .map((entry) => entry.label);
+}
+
+function capitalizeLabel(label?: string) {
+  if (!label) {
+    return '';
+  }
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function buildVariantMatrix(
@@ -158,8 +195,18 @@ function buildVariantMatrix(
     return left.label.localeCompare(right.label);
   });
 
-  const columnAttribute = attributes[0];
-  const rowAttribute = attributes[1];
+  const sizeAttribute = attributes.find(
+    (attribute) => getMatrixAxisPreference(attribute.label) === 'size'
+  );
+  const colorAttribute = attributes.find(
+    (attribute) => getMatrixAxisPreference(attribute.label) === 'color'
+  );
+
+  const rowAttribute = attributes.length > 1 ? (colorAttribute ?? attributes[1]) : undefined;
+  const columnAttribute =
+    sizeAttribute && sizeAttribute.id !== rowAttribute?.id
+      ? sizeAttribute
+      : (attributes.find((attribute) => attribute.id !== rowAttribute?.id) ?? attributes[0]);
 
   if (!columnAttribute) {
     return null;
@@ -213,11 +260,13 @@ function buildVariantMatrix(
 }
 
 function ProductDownloadSheet({
+  organizationName,
   product,
   variants,
   images,
   optionLabelsById,
 }: {
+  organizationName?: string;
   product: ProductDTO;
   variants: ProductVariantDTO[];
   images: SheetImage[];
@@ -255,8 +304,26 @@ function ProductDownloadSheet({
       </div>
 
       <div style={{ marginBottom: '26px' }}>
-        <div style={{ fontSize: '22px', fontWeight: 700, marginBottom: '10px' }}>
-          Group Name : {product.name || 'Product'}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            gap: '24px',
+          }}
+        >
+          <div style={{ fontSize: '22px', fontWeight: 700, marginBottom: '10px' }}>
+            Product Name : {product.name || 'Product'}
+          </div>
+          <div
+            style={{
+              fontSize: '22px',
+              fontWeight: 700,
+              textAlign: 'right',
+            }}
+          >
+            Organization Name : {organizationName || 'Organization'}
+          </div>
         </div>
       </div>
 
@@ -382,7 +449,7 @@ function ProductDownloadSheet({
                   minWidth: '150px',
                 }}
               >
-                {matrix.rowAttribute?.label || 'Variant'}
+                {capitalizeLabel(matrix.rowAttribute?.label) || 'Variant'}
               </th>
               {matrix.columnLabels.map((columnLabel) => (
                 <th
@@ -518,6 +585,7 @@ function waitForPaint(targetWindow: Window = window) {
 }
 
 export async function downloadProductSheetPdf(
+  organizationName: string | undefined,
   product: ProductDTO,
   variants: ProductVariantDTO[],
   primaryVariantImages: ProductVariantImageDTO[] = [],
@@ -567,6 +635,7 @@ export async function downloadProductSheetPdf(
     root = createRoot(renderHost);
     root.render(
       <ProductDownloadSheet
+        organizationName={organizationName}
         product={product}
         variants={variants}
         images={imagesForSheet}
@@ -596,13 +665,14 @@ export async function downloadProductSheetPdf(
     const pageHeight = pdf.internal.pageSize.getHeight();
     const imageWidth = pageWidth;
     const imageHeight = (canvas.height * imageWidth) / canvas.width;
+    const pageOverflowThreshold = 1;
     let heightLeft = imageHeight;
     let position = 0;
 
     pdf.addImage(imgData, 'PNG', 0, position, imageWidth, imageHeight);
     heightLeft -= pageHeight;
 
-    while (heightLeft > 0) {
+    while (heightLeft > pageOverflowThreshold) {
       position = heightLeft - imageHeight;
       pdf.addPage();
       pdf.addImage(imgData, 'PNG', 0, position, imageWidth, imageHeight);

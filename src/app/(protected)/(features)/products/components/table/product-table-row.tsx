@@ -106,6 +106,14 @@ function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
   );
 }
 
+function resolveSelectedOrganizationName() {
+  if (typeof window === 'undefined') {
+    return 'Organization';
+  }
+
+  return localStorage.getItem('selectedOrganizationName') || 'Organization';
+}
+
 interface RelationshipConfig {
   name: string;
   displayName: string;
@@ -311,6 +319,7 @@ export function ProductTableRow({
           : undefined;
 
       await downloadProductSheetPdf(
+        resolveSelectedOrganizationName(),
         product,
         variantsForSheet ?? [],
         primaryVariantImagesForSheet ?? [],
