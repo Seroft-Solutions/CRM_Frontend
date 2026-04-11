@@ -942,11 +942,24 @@ export function OrderFulfillmentHistoryDetail({
 	                  gap: 1rem !important;
 	                }
 
-	                #order-fulfillment-invoice .invoice-org-header {
+	                #order-fulfillment-invoice .invoice-logo-col {
+	                  width: 80px !important;
+	                  flex-shrink: 0 !important;
+	                }
+
+	                #order-fulfillment-invoice .invoice-header-text {
 	                  display: flex !important;
-	                  align-items: flex-start !important;
-	                  gap: 0.875rem !important;
-	                  flex: 1 1 auto !important;
+	                  flex-direction: column !important;
+	                  align-items: center !important;
+	                  justify-content: center !important;
+	                  flex: 1 !important;
+	                  text-align: center !important;
+	                }
+
+	                #order-fulfillment-invoice .invoice-order-info {
+	                  width: 128px !important;
+	                  flex-shrink: 0 !important;
+	                  text-align: right !important;
 	                }
 	                
 	                #order-fulfillment-invoice .invoice-address-grid {
@@ -980,42 +993,42 @@ export function OrderFulfillmentHistoryDetail({
           </style>
           <div className="space-y-3 text-[11px] leading-5">
             <div className="invoice-top-row flex items-start justify-between gap-4 border-b border-black pb-3">
-              <div className="invoice-org-header">
+              <div className="invoice-logo-col w-20 shrink-0">
                 {organizationLogoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={organizationLogoUrl}
                     alt={`${organizationDisplayName} logo`}
-                    className="h-16 w-16 shrink-0 object-contain"
+                    className="h-16 w-16 object-contain"
                   />
                 ) : null}
-                <div className="min-w-0 flex-1">
-                  <div className="invoice-accent-red text-center text-[17px] font-bold uppercase underline underline-offset-4">
-                    Order Form
-                  </div>
-                  <div className="mt-1 text-center text-[22px] font-bold uppercase tracking-wide">
-                    {organizationDisplayName}
-                  </div>
-                  {organizationWhatsAppHref ? (
-                    <div className="mt-1 text-center">
-                      <a
-                        href={organizationWhatsAppHref}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-medium text-[#0f172a] underline underline-offset-2"
-                      >
-                        {organizationWhatsApp}
-                      </a>
-                    </div>
-                  ) : null}
-                  {organizationAddress ? (
-                    <div className="mt-1 text-center whitespace-pre-line text-[11px] leading-5">
-                      {organizationAddress}
-                    </div>
-                  ) : null}
-                </div>
               </div>
-              <div className="w-[24%] text-right text-[12px] font-semibold leading-6">
+              <div className="invoice-header-text flex flex-1 flex-col items-center justify-center text-center">
+                <div className="invoice-accent-red text-[17px] font-bold uppercase underline underline-offset-4">
+                  Order Form
+                </div>
+                <div className="mt-1 text-[22px] font-bold uppercase tracking-wide">
+                  {organizationDisplayName}
+                </div>
+                {organizationWhatsAppHref ? (
+                  <div className="mt-1">
+                    <a
+                      href={organizationWhatsAppHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-[#0f172a] underline underline-offset-2"
+                    >
+                      {organizationWhatsApp}
+                    </a>
+                  </div>
+                ) : null}
+                {organizationAddress ? (
+                  <div className="mt-1 whitespace-pre-line text-[11px] leading-5">
+                    {organizationAddress}
+                  </div>
+                ) : null}
+              </div>
+              <div className="invoice-order-info w-32 shrink-0 text-right text-[12px] font-semibold leading-6">
                 <div>Date:-{invoiceDateLabel || formatInvoiceDate(generation.createdDate)}</div>
                 <div>Order No:-{orderNumberLabel}</div>
               </div>
