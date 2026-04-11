@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,23 +13,27 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import {
   getGetAllProductCatalogsQueryOptions,
   useGetAllProductCatalogs,
 } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 import { Plus } from 'lucide-react';
 import type {
   ProductCatalogDTO,
   ProductDTO,
   ProductVariantDTO,
 } from '@/core/api/generated/spring/schemas';
+import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import { FieldError } from './order-form-field-error';
 import type { ItemErrors, OrderItemForm } from './order-form-types';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -50,12 +53,148 @@ type OrderFormItemsProps = {
   referrerCatalogField?: string;
 };
 
+function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
+  if (!images?.length) {
+    return null;
+  }
+
+  const sortedImages = [...images].sort(
+    (left, right) =>
+      (left.displayOrder ?? Number.MAX_SAFE_INTEGER) -
+      (right.displayOrder ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  return (
+    sortedImages.find((image) => image.isPrimary)?.thumbnailUrl ||
+    sortedImages.find((image) => image.isPrimary)?.cdnUrl ||
+    sortedImages[0]?.thumbnailUrl ||
+    sortedImages[0]?.cdnUrl ||
+    null
+  );
+}
+
+function SelectedProductPreview({
+  product,
+  fallbackSku,
+}: {
+  product: ProductDTO;
+  fallbackSku?: string;
+}) {
+  const primaryVariantId =
+    product.variants?.find((variant) => variant.isPrimary)?.id ?? product.variants?.[0]?.id;
+  const { data: primaryVariantImages } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: {
+        enabled: !!primaryVariantId,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+  const imageUrl = useMemo(
+    () => resolveVariantImageUrl(primaryVariantImages),
+    [primaryVariantImages]
+  );
+  const productSku = product.articleNumber ?? product.articalNumber ?? fallbackSku ?? 'N/A';
+
+  return (
+    <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={product.name}
+        size={48}
+        className="shrink-0 rounded-md"
+      />
+      <div className="min-w-0 space-y-1">
+        <div className="truncate text-sm font-medium text-slate-900">{product.name}</div>
+        <div className="text-xs text-muted-foreground">SKU: {productSku}</div>
+      </div>
+    </div>
+  );
+}
+
+function SelectedVariantPreview({ variant }: { variant: ProductVariantDTO }) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
+    query: {
+      enabled: !!variant.id,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <div className="mt-2 flex min-w-0 items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={variant.sku}
+        size={48}
+        className="shrink-0 rounded-md"
+      />
+      <div className="min-w-0 space-y-1">
+        <div className="truncate text-sm font-medium text-slate-900">{variant.sku}</div>
+      </div>
+    </div>
+  );
+}
+
+function SelectedVariantImagePreview({ variant }: { variant: ProductVariantDTO }) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
+    query: {
+      enabled: !!variant.id,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <div className="mt-2 flex items-start">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={variant.sku}
+        size={72}
+        className="shrink-0 rounded-md"
+      />
+    </div>
+  );
+}
+
+function SelectedOrderItemPreview({
+  item,
+  selectedCatalog,
+}: {
+  item: OrderItemForm;
+  selectedCatalog?: ProductCatalogDTO;
+}) {
+  return (
+    <div className="mt-2 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+      <ProductImageThumbnail
+        imageUrl={resolveCatalogImageUrl(selectedCatalog?.image)}
+        productName={item.productName || 'Catalog'}
+        size={48}
+        className="shrink-0 rounded-md"
+      />
+      <div className="min-w-0 space-y-1">
+        <div className="truncate text-sm font-medium text-slate-900">
+          {item.productName || 'Catalog'}
+        </div>
+        {item.sku ? <div className="text-xs text-muted-foreground">SKU: {item.sku}</div> : null}
+        {item.variantAttributes ? (
+          <Badge variant="secondary" className="text-xs">
+            {item.variantAttributes}
+          </Badge>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 // Helper component for product/variant selection
 function ProductVariantSelector({
   item,
   index,
   onApplyVariantSelection,
   onItemChange,
+  showProductSelector = true,
 }: {
   item: OrderItemForm;
   index: number;
@@ -65,6 +204,7 @@ function ProductVariantSelector({
     key: keyof OrderItemForm,
     value: string | number | undefined
   ) => void;
+  showProductSelector?: boolean;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
@@ -174,6 +314,8 @@ function ProductVariantSelector({
   };
 
   const selectedProduct = products.find((p) => p.id === item.productId);
+  const selectedVariant = variants.find((v) => v.id === item.variantId);
+  const showSecondaryVariantPreview = !showProductSelector && Boolean(selectedVariant);
 
   const applyVariantSelection = () => {
     if (!selectedProduct) {
@@ -226,65 +368,78 @@ function ProductVariantSelector({
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
       {/* Product Combobox */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
-        <Popover open={productOpen} onOpenChange={setProductOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={productOpen}
-              className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+      {showProductSelector ? (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
+          <Popover open={productOpen} onOpenChange={setProductOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={productOpen}
+                className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+              >
+                {selectedProduct ? (
+                  <span className="truncate text-sm">{selectedProduct.name}</span>
+                ) : (
+                  <span className="text-muted-foreground text-sm">Choose a product...</span>
+                )}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+              align="start"
             >
-              {selectedProduct ? (
-                <span className="truncate text-sm">{selectedProduct.name}</span>
-              ) : (
-                <span className="text-muted-foreground text-sm">Choose a product...</span>
-              )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-            align="start"
-          >
-            <Command>
-              <CommandInput placeholder="Search products..." className="h-9" />
-              <CommandList>
-                <CommandEmpty>No product found.</CommandEmpty>
-                <CommandGroup>
-                  {products.map((product) => (
-                    <CommandItem
-                      key={product.id}
-                      value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
-                      onSelect={() => handleProductSelect(product.id!)}
-                    >
-                      <div className="flex flex-1 flex-col">
-                        <span className="font-medium text-sm">{product.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • QTY:{' '}
-                          {getProductQuantity(product)} • Price: ₹
-                          {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
-                        </span>
-                      </div>
-                      <Check
-                        className={cn(
-                          'ml-2 h-4 w-4',
-                          item.productId === product.id ? 'opacity-100' : 'opacity-0'
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
-      </div>
+              <Command>
+                <CommandInput placeholder="Search products..." className="h-9" />
+                <CommandList>
+                  <CommandEmpty>No product found.</CommandEmpty>
+                  <CommandGroup>
+                    {products.map((product) => (
+                      <CommandItem
+                        key={product.id}
+                        value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
+                        onSelect={() => handleProductSelect(product.id!)}
+                      >
+                        <div className="flex flex-1 flex-col">
+                          <span className="font-medium text-sm">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • QTY:{' '}
+                            {getProductQuantity(product)} • Price: ₹
+                            {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                          </span>
+                        </div>
+                        <Check
+                          className={cn(
+                            'ml-2 h-4 w-4',
+                            item.productId === product.id ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {selectedProduct ? (
+            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+          ) : null}
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {showSecondaryVariantPreview && selectedVariant ? (
+            <SelectedVariantImagePreview variant={selectedVariant} />
+          ) : (
+            <div aria-hidden="true" className="hidden sm:block" />
+          )}
+        </div>
+      )}
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
-        <div className="space-y-1.5">
+        <div className={cn('space-y-1.5', !showProductSelector && 'sm:col-start-2')}>
           <Label className="text-xs font-semibold text-slate-600">
             Select Variant(s) (Optional)
           </Label>
@@ -360,6 +515,9 @@ function ProductVariantSelector({
               </div>
             </PopoverContent>
           </Popover>
+          {selectedVariant && !showSecondaryVariantPreview ? (
+            <SelectedVariantPreview variant={selectedVariant} />
+          ) : null}
         </div>
       )}
     </div>
@@ -505,6 +663,17 @@ export function OrderFormItems({
 }: OrderFormItemsProps) {
   const { navigateWithDraftCheck } = useCrossFormNavigation();
   const queryClient = useQueryClient();
+  const { data: catalogData = [] } = useGetAllProductCatalogs(
+    {
+      size: 1000,
+    },
+    {
+      query: {
+        staleTime: 5 * 60 * 1000,
+        keepPreviousData: true,
+      },
+    }
+  );
 
   useEffect(() => {
     const options = getGetAllProductCatalogsQueryOptions(
@@ -549,6 +718,227 @@ export function OrderFormItems({
     } else {
       window.location.href = '/product-catalogs/new';
     }
+  };
+
+  const itemGroups = useMemo(() => {
+    const groups: Array<{ key: string; entries: Array<{ item: OrderItemForm; index: number }> }> =
+      [];
+
+    items.forEach((item, index) => {
+      const lastGroup = groups[groups.length - 1];
+      const firstEntry = lastGroup?.entries[0]?.item;
+      const shouldGroupWithPrevious =
+        Boolean(lastGroup) &&
+        item.itemType === 'product' &&
+        firstEntry?.itemType === 'product' &&
+        Boolean(item.productId) &&
+        firstEntry.productId === item.productId;
+
+      if (shouldGroupWithPrevious) {
+        lastGroup.entries.push({ item, index });
+
+        return;
+      }
+
+      groups.push({
+        key: `${item.itemType}-${item.productId ?? item.productCatalogId ?? index}-${index}`,
+        entries: [{ item, index }],
+      });
+    });
+
+    return groups;
+  }, [items]);
+
+  const renderDesktopEntry = (
+    item: OrderItemForm,
+    index: number,
+    entryIndex: number,
+    groupSize: number
+  ) => {
+    const itemTotal = calculateItemTotal(item);
+    const selectedCatalog =
+      item.itemType === 'catalog'
+        ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
+        : undefined;
+
+    return (
+      <div
+        key={`desktop-entry-${index}`}
+        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+      >
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(120px,0.75fr)_auto] lg:gap-x-3 lg:gap-y-4">
+          <div className="min-w-0">
+            {item.itemType === 'catalog' ? (
+              <>
+                <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+                {(item.productName || item.sku) && (
+                  <SelectedOrderItemPreview item={item} selectedCatalog={selectedCatalog} />
+                )}
+              </>
+            ) : (
+              <ProductVariantSelector
+                item={item}
+                index={index}
+                onApplyVariantSelection={onApplyVariantSelection}
+                onItemChange={onItemChange}
+                showProductSelector={entryIndex === 0}
+              />
+            )}
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={item.quantity}
+              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+              className="h-9 border-slate-300"
+            />
+            <FieldError message={itemErrors?.[index]?.quantity} />
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="0.00"
+              value={item.itemPrice}
+              readOnly
+              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+            />
+            <FieldError message={itemErrors?.[index]?.itemPrice} />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="text-right">
+              <div className="text-xs text-muted-foreground mb-1">Total</div>
+              <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+            </div>
+            <div className="flex gap-1 justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveItem(index)}
+                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMobileEntry = (
+    item: OrderItemForm,
+    index: number,
+    entryIndex: number,
+    groupSize: number
+  ) => {
+    const itemTotal = calculateItemTotal(item);
+    const selectedCatalog =
+      item.itemType === 'catalog'
+        ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
+        : undefined;
+
+    return (
+      <div
+        key={`mobile-entry-${index}`}
+        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+              {index + 1}
+            </div>
+            <div>
+              <div className="text-sm font-bold text-slate-900">
+                {groupSize > 1 ? `Variant #${entryIndex + 1}` : `Item #${index + 1}`}
+              </div>
+              {itemTotal > 0 && (
+                <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
+              )}
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemoveItem(index)}
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </Button>
+        </div>
+
+        <div className="mt-4">
+          {item.itemType === 'catalog' ? (
+            <>
+              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+              {(item.productName || item.sku) && (
+                <SelectedOrderItemPreview item={item} selectedCatalog={selectedCatalog} />
+              )}
+            </>
+          ) : (
+            <ProductVariantSelector
+              item={item}
+              index={index}
+              onApplyVariantSelection={onApplyVariantSelection}
+              onItemChange={onItemChange}
+              showProductSelector={entryIndex === 0}
+            />
+          )}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={item.quantity}
+              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+              className="h-9 border-slate-300"
+            />
+            <FieldError message={itemErrors?.[index]?.quantity} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold text-slate-600">Price</Label>
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="0.00"
+              value={item.itemPrice}
+              readOnly
+              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+            />
+            <FieldError message={itemErrors?.[index]?.itemPrice} />
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -663,256 +1053,28 @@ export function OrderFormItems({
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           {/* Cart Items */}
           <div className="divide-y divide-slate-200">
-            {items.map((item, index) => {
-              const itemTotal = calculateItemTotal(item);
-
-              return (
-                <div key={`item-${index}`} className="hover:bg-slate-50/50 transition-colors">
-                  {/* Desktop View - Grid Layout */}
-                  <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
-                    {/* Number */}
-                    <div className="col-span-1 flex items-center">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                        {index + 1}
-                      </div>
-                    </div>
-
-                    {/* Product/Catalog Selector & Info */}
-                    <div className="col-span-5">
-                      {item.itemType === 'catalog' ? (
-                        <ProductCatalogSelector
-                          item={item}
-                          index={index}
-                          onItemChange={onItemChange}
-                        />
-                      ) : (
-                        <ProductVariantSelector
-                          item={item}
-                          index={index}
-                          onApplyVariantSelection={onApplyVariantSelection}
-                          onItemChange={onItemChange}
-                        />
-                      )}
-                      {(item.productName || item.sku) && (
-                        <div className="mt-2 space-y-1">
-                          <div className="flex items-center gap-2">
-                            {item.itemType === 'catalog' ? (
-                              <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                                Catalog
-                              </Badge>
-                            ) : null}
-                            {item.productName &&
-                              (item.itemType === 'catalog' && item.productCatalogId ? (
-                                <Link
-                                  href={`/product-catalogs/${item.productCatalogId}`}
-                                  target="_blank"
-                                  className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
-                                >
-                                  {item.productName}
-                                </Link>
-                              ) : (
-                                <div className="text-sm font-medium text-slate-900">
-                                  {item.productName}
-                                </div>
-                              ))}
-                          </div>
-                          {item.sku && (
-                            <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                          )}
-                          {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">
-                              {item.variantAttributes}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quantity */}
-                    <div className="col-span-2">
-                      <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        placeholder="0"
-                        value={item.quantity}
-                        onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                        className="h-9 border-slate-300"
-                      />
-                      <FieldError message={itemErrors?.[index]?.quantity} />
-                    </div>
-
-                    {/* Price */}
-                    <div className="col-span-2">
-                      <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        placeholder="0.00"
-                        value={item.itemPrice}
-                        readOnly
-                        className="h-9 border-slate-300 bg-slate-100 text-slate-700"
-                      />
-                      <FieldError message={itemErrors?.[index]?.itemPrice} />
-                    </div>
-
-                    {/* Total & Actions */}
-                    <div className="col-span-2 flex flex-col gap-2">
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground mb-1">Total</div>
-                        <div className="text-lg font-bold text-slate-900">
-                          ₹{itemTotal.toFixed(2)}
-                        </div>
-                      </div>
-                      <div className="flex gap-1 justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onRemoveItem(index)}
-                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        >
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </Button>
-                      </div>
+            {itemGroups.map((group, groupIndex) => (
+              <div key={group.key} className="hover:bg-slate-50/50 transition-colors">
+                <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
+                  <div className="col-span-1 flex items-start">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+                      {groupIndex + 1}
                     </div>
                   </div>
-
-                  {/* Mobile/Tablet View - Stacked Layout */}
-                  <div className="lg:hidden p-4 space-y-4">
-                    {/* Header Row */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-slate-900">Item #{index + 1}</div>
-                          {itemTotal > 0 && (
-                            <div className="text-lg font-bold text-cyan-600">
-                              ₹{itemTotal.toFixed(2)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRemoveItem(index)}
-                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </Button>
-                    </div>
-
-                    {/* Product/Catalog Selector */}
-                    <div>
-                      {item.itemType === 'catalog' ? (
-                        <ProductCatalogSelector
-                          item={item}
-                          index={index}
-                          onItemChange={onItemChange}
-                        />
-                      ) : (
-                        <ProductVariantSelector
-                          item={item}
-                          index={index}
-                          onItemChange={onItemChange}
-                        />
-                      )}
-                      {(item.productName || item.sku) && (
-                        <div className="mt-2 space-y-1">
-                          <div className="flex items-center gap-2">
-                            {item.itemType === 'catalog' ? (
-                              <Badge className="bg-indigo-600 text-white hover:bg-indigo-700 border-none text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                                Catalog
-                              </Badge>
-                            ) : null}
-                            {item.productName &&
-                              (item.itemType === 'catalog' && item.productCatalogId ? (
-                                <Link
-                                  href={`/product-catalogs/${item.productCatalogId}`}
-                                  target="_blank"
-                                  className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
-                                >
-                                  {item.productName}
-                                </Link>
-                              ) : (
-                                <div className="text-sm font-medium text-slate-900">
-                                  {item.productName}
-                                </div>
-                              ))}
-                          </div>
-                          {item.sku && (
-                            <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                          )}
-                          {item.variantAttributes && (
-                            <Badge variant="secondary" className="text-xs">
-                              {item.variantAttributes}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quantity & Price Row */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={item.quantity}
-                          onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                          className="h-9 border-slate-300"
-                        />
-                        <FieldError message={itemErrors?.[index]?.quantity} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold text-slate-600">Price</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          placeholder="0.00"
-                          value={item.itemPrice}
-                          readOnly
-                          className="h-9 border-slate-300 bg-slate-100 text-slate-700"
-                        />
-                        <FieldError message={itemErrors?.[index]?.itemPrice} />
-                      </div>
-                    </div>
+                  <div className="col-span-11 space-y-4">
+                    {group.entries.map(({ item, index }, entryIndex) =>
+                      renderDesktopEntry(item, index, entryIndex, group.entries.length)
+                    )}
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="lg:hidden p-4 space-y-4">
+                  {group.entries.map(({ item, index }, entryIndex) =>
+                    renderMobileEntry(item, index, entryIndex, group.entries.length)
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
