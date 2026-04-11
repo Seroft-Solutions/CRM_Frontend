@@ -9,6 +9,7 @@ import {
   getAdminRealmsRealmOrganizations,
   getAdminRealmsRealmOrganizationsMembersMemberIdOrganizations,
   getAdminRealmsRealmOrganizationsOrgIdMembersMemberId,
+  getAdminRealmsRealmOrganizationsOrgId,
   getAdminRealmsRealmUsers,
 } from '@/core/api/generated/keycloak';
 import { auth } from '@/auth';
@@ -52,26 +53,40 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const organizations = await getAdminRealmsRealmOrganizationsMembersMemberIdOrganizations(
+      const orgMemberships = await getAdminRealmsRealmOrganizationsMembersMemberIdOrganizations(
         realm,
         keycloakUserId
       );
 
       console.log(
-        'User-specific organizations from Keycloak:',
-        JSON.stringify(organizations, null, 2)
+        'User organization memberships from Keycloak:',
+        JSON.stringify(orgMemberships, null, 2)
       );
 
-      const userOrganizations = (organizations || [])
-        .filter((org) => org.enabled !== false)
-        .map((org) => ({
-          id: org.id || '',
-          name: org.name || org.alias || 'Unknown Organization',
-          alias: org.alias,
-          enabled: org.enabled,
-          description: org.description,
-        }))
-        .filter((org) => org.id && org.name);
+      const userOrganizations = [];
+
+      for (const orgRef of orgMemberships || []) {
+        if (!orgRef.id) continue;
+
+        try {
+          const fullOrg = await getAdminRealmsRealmOrganizationsOrgId(realm, orgRef.id);
+
+          console.log(`Full org details for ${orgRef.id}:`, JSON.stringify(fullOrg, null, 2));
+
+          if (fullOrg.enabled !== false) {
+            userOrganizations.push({
+              id: fullOrg.id || '',
+              name: fullOrg.name || fullOrg.alias || 'Unknown Organization',
+              alias: fullOrg.alias,
+              enabled: fullOrg.enabled,
+              description: fullOrg.description,
+              email: fullOrg.attributes?.organizationEmail?.[0] || '',
+            });
+          }
+        } catch (orgError: any) {
+          console.log(`Failed to fetch org ${orgRef.id}:`, orgError.message);
+        }
+      }
 
       console.log('Filtered user organizations:', JSON.stringify(userOrganizations, null, 2));
       console.log('Organizations count:', userOrganizations.length);
@@ -104,12 +119,15 @@ export async function GET(request: NextRequest) {
               keycloakUserId
             );
 
+            const fullOrg = await getAdminRealmsRealmOrganizationsOrgId(realm, org.id);
+
             userOrganizations.push({
-              id: org.id,
-              name: org.name || org.alias || 'Unknown Organization',
-              alias: org.alias,
-              enabled: org.enabled,
-              description: org.description,
+              id: fullOrg.id || '',
+              name: fullOrg.name || fullOrg.alias || 'Unknown Organization',
+              alias: fullOrg.alias,
+              enabled: fullOrg.enabled,
+              description: fullOrg.description,
+              email: fullOrg.attributes?.organizationEmail?.[0] || '',
             });
 
             console.log(`User is member of: ${org.name} (${org.id})`);

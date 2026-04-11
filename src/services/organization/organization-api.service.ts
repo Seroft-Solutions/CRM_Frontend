@@ -6,6 +6,7 @@ export interface UserOrganization {
   alias?: string;
   enabled?: boolean;
   description?: string;
+  email?: string;
 }
 
 export interface UserOrganizationsResponse {

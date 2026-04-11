@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, LogOut } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, LogOut, Search } from 'lucide-react';
 import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import type { UserOrganization } from '@/services/organization/organization-api.service';
 import { logoutAction } from '@/core/auth';
 
@@ -15,7 +23,21 @@ interface OrganizationSelectorProps {
 
 export function OrganizationSelector({ organizations }: OrganizationSelectorProps) {
   const [selectedOrgId, setSelectedOrgId] = useState<string>(organizations[0]?.id || '');
+  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+
+  const filteredOrganizations = useMemo(() => {
+    if (!searchQuery.trim()) return organizations;
+
+    const query = searchQuery.toLowerCase();
+    return organizations.filter(
+      (org) =>
+        org.name.toLowerCase().includes(query) ||
+        (org.alias && org.alias.toLowerCase().includes(query)) ||
+        (org.description && org.description.toLowerCase().includes(query)) ||
+        (org.email && org.email.toLowerCase().includes(query))
+    );
+  }, [organizations, searchQuery]);
 
   const handleContinue = () => {
     if (selectedOrgId) {
@@ -37,8 +59,7 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
   };
 
   return (
-    <div className="relative container mx-auto max-w-2xl py-8">
-      {/* Header with logout */}
+    <div className="relative container mx-auto max-w-4xl py-8">
       <div className="absolute top-4 right-4 z-10">
         <form action={logoutAction}>
           <Button type="submit" variant="outline" size="sm" className="flex items-center gap-2">
@@ -48,7 +69,7 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
         </form>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 text-primary mb-3 ring-1 ring-primary/10">
             <CrmCupLogo className="w-16 h-16" />
@@ -59,50 +80,80 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
           </p>
         </div>
 
-        <div className="space-y-3">
-          {organizations.map((org) => (
-            <Card
-              key={org.id}
-              className={`cursor-pointer transition-all ${
-                selectedOrgId === org.id
-                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => setSelectedOrgId(org.id)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <CrmCupLogo variant="mark" className="w-6 h-6" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm">{org.name}</h3>
-                    {org.description && (
-                      <p className="text-sm text-muted-foreground truncate">{org.description}</p>
-                    )}
-                    {org.alias && org.alias !== org.name && (
-                      <p className="text-xs text-muted-foreground">Alias: {org.alias}</p>
-                    )}
-                  </div>
-                  <div className="flex-shrink-0">
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        selectedOrgId === org.id
-                          ? 'bg-primary border-primary'
-                          : 'border-muted-foreground/30'
-                      }`}
-                    >
-                      {selectedOrgId === org.id && (
-                        <div className="w-2 h-2 bg-white rounded-full m-0.5" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, alias or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {filteredOrganizations.length} of {organizations.length} organizations
+          </div>
+        </div>
+
+        <div className="border rounded-md">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">Select</TableHead>
+                <TableHead>Organization Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="w-20">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredOrganizations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    No organizations found matching your search.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredOrganizations.map((org) => (
+                  <TableRow
+                    key={org.id}
+                    className={`cursor-pointer ${
+                      selectedOrgId === org.id ? 'bg-primary/5' : ''
+                    }`}
+                    onClick={() => setSelectedOrgId(org.id)}
+                  >
+                    <TableCell>
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          selectedOrgId === org.id
+                            ? 'bg-primary border-primary'
+                            : 'border-muted-foreground/30'
+                        }`}
+                      >
+                        {selectedOrgId === org.id && (
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{org.name}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {org.email || '-'}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          org.enabled !== false
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {org.enabled !== false ? 'Active' : 'Inactive'}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
 
         <Button onClick={handleContinue} disabled={!selectedOrgId} size="lg" className="w-full">
