@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -96,6 +96,7 @@ export function OrderTable({
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const { mutateAsync: partialUpdateOrder } = usePartialUpdateOrder();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
+  const isMounted = useRef(false);
 
   // Filter states
   const [filters, setFilters] = useState<{
@@ -169,7 +170,16 @@ export function OrderTable({
       // Status filter
       if (filters.status) {
         const orderStatusStr = order.orderStatus !== undefined ? getOrderStatusFromCode(order.orderStatus) : '';
-        if (orderStatusStr !== filters.status) {
+        if (orderStatusStr.trim().toLowerCase() !== filters.status.trim().toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Total filter
+      if (filters.total) {
+        const totalAmount = order.orderTotalAmount || 0;
+        const filterValue = parseFloat(filters.total);
+        if (!isNaN(filterValue) && totalAmount !== filterValue) {
           return false;
         }
       }
@@ -177,7 +187,7 @@ export function OrderTable({
       // Payment filter
       if (filters.payment) {
         const paymentStatusStr = order.paymentStatus !== undefined ? String(order.paymentStatus) : '';
-        if (paymentStatusStr !== filters.payment) {
+        if (paymentStatusStr.trim().toLowerCase() !== filters.payment.trim().toLowerCase()) {
           return false;
         }
       }
@@ -185,7 +195,7 @@ export function OrderTable({
       // Shipping filter
       if (filters.shipping) {
         const shippingMethod = order.shipping?.shippingMethod || '';
-        if (shippingMethod !== filters.shipping) {
+        if (shippingMethod.trim().toLowerCase() !== filters.shipping.trim().toLowerCase()) {
           return false;
         }
       }
@@ -281,6 +291,14 @@ export function OrderTable({
   };
 
   useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted.current) return;
     if (filteredTotalPages === 1 && currentPage !== 1) {
       setCurrentPage(1);
     } else if (filteredTotalPages > 1 && currentPage > filteredTotalPages) {
@@ -504,7 +522,7 @@ export function OrderTable({
               <TableHead className="py-2">
                 <Input
                   placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
+                  className="h-8 text-xs border-slate-300 w-full"
                   value={filters.orderId || ''}
                   onChange={(e) => handleFilterChange('orderId', e.target.value)}
                 />
@@ -514,7 +532,7 @@ export function OrderTable({
                   value={filters.status || 'all'} 
                   onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
                 >
-                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
@@ -530,7 +548,7 @@ export function OrderTable({
               <TableHead className="py-2">
                 <Input
                   placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
+                  className="h-8 text-xs border-slate-300 w-full"
                   value={filters.total || ''}
                   onChange={(e) => handleFilterChange('total', e.target.value)}
                 />
@@ -540,7 +558,7 @@ export function OrderTable({
                   value={filters.shipping || 'all'} 
                   onValueChange={(value) => handleFilterChange('shipping', value === 'all' ? '' : value)}
                 >
-                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
@@ -556,7 +574,7 @@ export function OrderTable({
               <TableHead className="py-2">
                 <Input
                   placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
+                  className="h-8 text-xs border-slate-300 w-full"
                   value={filters.customer || ''}
                   onChange={(e) => handleFilterChange('customer', e.target.value)}
                 />
@@ -566,7 +584,7 @@ export function OrderTable({
                   value={filters.payment || 'all'} 
                   onValueChange={(value) => handleFilterChange('payment', value === 'all' ? '' : value)}
                 >
-                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
@@ -580,38 +598,34 @@ export function OrderTable({
                 </Select>
               </TableHead>
               <TableHead className="py-2">
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-row gap-1">
                   <Input
                     type="date"
-                    className="h-7 text-xs border-slate-300"
+                    className="h-8 w-24 text-xs border-slate-300"
                     value={filters.createdDateFrom || ''}
                     onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
-                    placeholder="From"
                   />
                   <Input
                     type="date"
-                    className="h-7 text-xs border-slate-300"
+                    className="h-8 w-24 text-xs border-slate-300"
                     value={filters.createdDateTo || ''}
                     onChange={(e) => handleFilterChange('createdDateTo', e.target.value)}
-                    placeholder="To"
                   />
                 </div>
               </TableHead>
               <TableHead className="py-2">
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-row gap-1">
                   <Input
                     type="date"
-                    className="h-7 text-xs border-slate-300"
+                    className="h-8 w-24 text-xs border-slate-300"
                     value={filters.updatedDateFrom || ''}
                     onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
-                    placeholder="From"
                   />
                   <Input
                     type="date"
-                    className="h-7 text-xs border-slate-300"
+                    className="h-8 w-24 text-xs border-slate-300"
                     value={filters.updatedDateTo || ''}
                     onChange={(e) => handleFilterChange('updatedDateTo', e.target.value)}
-                    placeholder="To"
                   />
                 </div>
               </TableHead>
