@@ -862,19 +862,7 @@ export function OrderFulfillmentHistoryDetail({
           <Printer className="h-4 w-4" />
           Print Invoice
         </Button>
-        <Button
-          type="button"
-          onClick={handleDownloadPdf}
-          disabled={isDownloading}
-          className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
-        >
-          {isDownloading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="h-4 w-4" />
-          )}
-          {isDownloading ? 'Preparing PDF...' : 'Download PDF'}
-        </Button>
+
       </div>
 
       <div
