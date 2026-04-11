@@ -1002,14 +1002,14 @@ export function OrderFulfillmentHistoryDetail({
                   />
                 ) : null}
                 <div className="min-w-0 flex-1">
-                  <div className="invoice-accent-red text-[17px] font-bold uppercase underline underline-offset-4">
+                  <div className="invoice-accent-red text-center text-[17px] font-bold uppercase underline underline-offset-4">
                     Order Form
                   </div>
-                  <div className="mt-1 text-[22px] font-bold uppercase tracking-wide">
+                  <div className="mt-1 text-center text-[22px] font-bold uppercase tracking-wide">
                     {organizationDisplayName}
                   </div>
                   {organizationWhatsAppHref ? (
-                    <div className="mt-1">
+                    <div className="mt-1 text-center">
                       <a
                         href={organizationWhatsAppHref}
                         target="_blank"
@@ -1021,7 +1021,7 @@ export function OrderFulfillmentHistoryDetail({
                     </div>
                   ) : null}
                   {organizationAddress ? (
-                    <div className="mt-1 whitespace-pre-line text-[11px] leading-5">
+                    <div className="mt-1 text-center whitespace-pre-line text-[11px] leading-5">
                       {organizationAddress}
                     </div>
                   ) : null}
