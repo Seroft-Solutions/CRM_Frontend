@@ -45,11 +45,17 @@ export function useOrderTableData({
     if (normalizedSearch) {
       const numericOnly = /^\d+$/.test(normalizedSearch);
       const phoneLike = /^[+()\d\s-]+$/.test(normalizedSearch);
+      const looksLikeOrderNumber =
+        normalizedSearch.startsWith('#') ||
+        /order/i.test(normalizedSearch);
+      const extractedOrderId = normalizedSearch.replace(/\D/g, '');
 
       if (normalizedSearch.includes('@')) {
         params['email.contains'] = normalizedSearch;
       } else if (numericOnly) {
         params['id.equals'] = Number(normalizedSearch);
+      } else if (looksLikeOrderNumber && extractedOrderId) {
+        params['id.equals'] = Number(extractedOrderId);
       } else if (phoneLike) {
         params['phone.contains'] = normalizedSearch;
       }
@@ -74,6 +80,7 @@ export function useOrderTableData({
     {
       query: {
         refetchOnWindowFocus: false,
+        placeholderData: (previousData) => previousData,
         staleTime: 30_000,
       },
     }
@@ -82,6 +89,7 @@ export function useOrderTableData({
   const countQuery = useCountOrders(filterParams, {
     query: {
       refetchOnWindowFocus: false,
+      placeholderData: (previousData) => previousData,
       staleTime: 30_000,
     },
   });
@@ -103,6 +111,7 @@ export function useOrderTableData({
       query: {
         enabled: orderIds.length > 0,
         refetchOnWindowFocus: false,
+        placeholderData: (previousData) => previousData,
         staleTime: 30_000,
       },
     }
@@ -134,7 +143,9 @@ export function useOrderTableData({
     orders,
     totalCount,
     totalPages,
-    isLoading: ordersQuery.isLoading || shippingQuery.isLoading,
+    isLoading:
+      (ordersQuery.isLoading && !ordersQuery.data) ||
+      (shippingQuery.isLoading && orderIds.length > 0 && !shippingQuery.data),
     isError: ordersQuery.isError || countQuery.isError || shippingQuery.isError,
   };
 }

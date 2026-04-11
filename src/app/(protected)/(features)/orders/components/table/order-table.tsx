@@ -181,6 +181,9 @@ export function OrderTable({
       if (normalizedSearchTerm) {
         const searchableValues = [
           String(order.orderId),
+          `#${order.orderId}`,
+          `order ${order.orderId}`,
+          `order #${order.orderId}`,
           order.customer?.customerBusinessName ?? '',
           order.email ?? '',
           order.phone ?? '',
@@ -497,7 +500,7 @@ export function OrderTable({
           <div>
             <h3 className="font-bold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
-              Search by order ID, customer, email, or phone · {totalCount}{' '}
+              Search by order number, customer, email, or phone · {totalCount}{' '}
               {totalCount === 1 ? subtitle : `${subtitle}s`}
             </p>
           </div>

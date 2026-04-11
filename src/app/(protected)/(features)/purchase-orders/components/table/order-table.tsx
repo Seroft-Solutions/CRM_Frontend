@@ -136,6 +136,11 @@ export function OrderTable({
       if (normalizedSearchTerm) {
         const searchableValues = [
           String(order.orderId),
+          `#${order.orderId}`,
+          `purchase order ${order.orderId}`,
+          `purchase order #${order.orderId}`,
+          `order ${order.orderId}`,
+          `order #${order.orderId}`,
           order.sundryCreditor?.creditorName ?? '',
           order.email ?? '',
           order.phone ?? '',
@@ -365,7 +370,7 @@ export function OrderTable({
           <div>
             <h3 className="font-bold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
-              Search by order ID, creditor, email, or phone · {totalCount}{' '}
+              Search by order number, creditor, email, or phone · {totalCount}{' '}
               {totalCount === 1 ? subtitle : `${subtitle}s`}
             </p>
           </div>
