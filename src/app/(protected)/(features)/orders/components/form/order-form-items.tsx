@@ -257,6 +257,27 @@ function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWareho
   );
 }
 
+function SelectedVariantImagePreview({ variant }: { variant: ProductVariantWithWarehouseStocks }) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
+    query: {
+      enabled: !!variant.id,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <div className="mt-2 flex items-start">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={variant.sku}
+        size={72}
+        className="shrink-0 rounded-md"
+      />
+    </div>
+  );
+}
+
 function SelectedOrderItemPreview({
   item,
   selectedCatalog,
@@ -491,6 +512,7 @@ function ProductVariantSelector({
 
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
+  const showSecondaryVariantPreview = !showProductSelector && Boolean(selectedVariant);
 
   const applyVariantSelection = () => {
     if (!selectedProduct) {
@@ -663,7 +685,15 @@ function ProductVariantSelector({
           ) : null}
         </div>
       )}
-      {!showProductSelector ? <div aria-hidden="true" className="hidden sm:block" /> : null}
+      {!showProductSelector ? (
+        <div className="space-y-1.5">
+          {showSecondaryVariantPreview && selectedVariant ? (
+            <SelectedVariantImagePreview variant={selectedVariant} />
+          ) : (
+            <div aria-hidden="true" className="hidden sm:block" />
+          )}
+        </div>
+      ) : null}
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 ? (
@@ -747,7 +777,9 @@ function ProductVariantSelector({
               </div>
             </PopoverContent>
           </Popover>
-          {selectedVariant ? <SelectedVariantPreview variant={selectedVariant} /> : null}
+          {selectedVariant && !showSecondaryVariantPreview ? (
+            <SelectedVariantPreview variant={selectedVariant} />
+          ) : null}
         </div>
       ) : null}
     </div>
