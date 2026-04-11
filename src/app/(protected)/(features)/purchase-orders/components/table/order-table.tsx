@@ -47,6 +47,17 @@ function formatDateTime(value?: string) {
   return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
+function formatDate(value?: string) {
+  if (!value) return '—';
+  const parsed = new Date(value);
+
+  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
 type EntityStatus = 'ACTIVE' | 'DRAFT';
 
 type OrderTableProps = {
@@ -56,6 +67,8 @@ type OrderTableProps = {
   searchPlaceholder?: string;
   allTabLabel?: string;
   showStatusTabs?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 export function OrderTable({
@@ -65,6 +78,8 @@ export function OrderTable({
   searchPlaceholder = 'Search purchase orders...',
   allTabLabel = 'All Purchase Orders',
   showStatusTabs = true,
+  dateFrom = '',
+  dateTo = '',
 }: OrderTableProps) {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,9 +98,7 @@ export function OrderTable({
     email?: string;
     payment?: string;
     createdDateFrom?: string;
-    createdDateTo?: string;
     updatedDateFrom?: string;
-    updatedDateTo?: string;
   }>({});
 
   const handleFilterChange = (key: string, value: string) => {
@@ -141,7 +154,7 @@ export function OrderTable({
 
       // Payment filter
       if (filters.payment) {
-        const paymentStatusStr = order.paymentStatus !== undefined ? String(order.paymentStatus) : '';
+        const paymentStatusStr = order.paymentStatus || '';
         if (paymentStatusStr.trim().toLowerCase() !== filters.payment.trim().toLowerCase()) {
           return false;
         }
@@ -170,49 +183,48 @@ export function OrderTable({
         }
       }
 
-      // Created Date from filter
+      // Created Date filter - match exact date
       if (filters.createdDateFrom && order.createdDate) {
         const orderDate = new Date(order.createdDate);
-        const filterDate = new Date(filters.createdDateFrom);
-        filterDate.setHours(0, 0, 0, 0);
-        if (orderDate < filterDate) {
+        const orderDateStr = orderDate.toISOString().split('T')[0];
+        if (orderDateStr !== filters.createdDateFrom) {
           return false;
         }
       }
 
-      // Created Date to filter
-      if (filters.createdDateTo && order.createdDate) {
-        const orderDate = new Date(order.createdDate);
-        const filterDate = new Date(filters.createdDateTo);
-        filterDate.setHours(23, 59, 59, 999);
-        if (orderDate > filterDate) {
-          return false;
-        }
-      }
-
-      // Updated Date from filter
+      // Updated Date filter - match exact date
       if (filters.updatedDateFrom && order.lastModifiedDate) {
         const orderDate = new Date(order.lastModifiedDate);
-        const filterDate = new Date(filters.updatedDateFrom);
-        filterDate.setHours(0, 0, 0, 0);
-        if (orderDate < filterDate) {
+        const orderDateStr = orderDate.toISOString().split('T')[0];
+        if (orderDateStr !== filters.updatedDateFrom) {
           return false;
         }
       }
 
-      // Updated Date to filter
-      if (filters.updatedDateTo && order.lastModifiedDate) {
-        const orderDate = new Date(order.lastModifiedDate);
-        const filterDate = new Date(filters.updatedDateTo);
-        filterDate.setHours(23, 59, 59, 999);
-        if (orderDate > filterDate) {
-          return false;
+      // Date range filter (From - To)
+      if ((dateFrom || dateTo) && order.createdDate) {
+        const orderDate = new Date(order.createdDate);
+        const fromDate = dateFrom ? new Date(dateFrom) : null;
+        const toDate = dateTo ? new Date(dateTo) : null;
+        
+        if (fromDate) {
+          fromDate.setHours(0, 0, 0, 0);
+          if (orderDate < fromDate) {
+            return false;
+          }
+        }
+        
+        if (toDate) {
+          toDate.setHours(23, 59, 59, 999);
+          if (orderDate > toDate) {
+            return false;
+          }
         }
       }
 
       return true;
     });
-  }, [orders, filters]);
+  }, [orders, filters, dateFrom, dateTo]);
 
   const filteredCount = filteredOrders.length;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
@@ -260,6 +272,11 @@ export function OrderTable({
       setCurrentPage(filteredTotalPages);
     }
   }, [currentPage, filteredTotalPages]);
+
+  useEffect(() => {
+    if (!isMounted.current) return;
+    setCurrentPage(1);
+  }, [dateFrom, dateTo]);
 
   if (isLoading) {
     return (
@@ -468,36 +485,20 @@ export function OrderTable({
                 </Select>
               </TableHead>
               <TableHead className="py-2">
-                <div className="flex flex-row gap-1">
-                  <Input
-                    type="date"
-                    className="h-8 w-24 text-xs border-slate-300"
-                    value={filters.createdDateFrom || ''}
-                    onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
-                  />
-                  <Input
-                    type="date"
-                    className="h-8 w-24 text-xs border-slate-300"
-                    value={filters.createdDateTo || ''}
-                    onChange={(e) => handleFilterChange('createdDateTo', e.target.value)}
-                  />
-                </div>
+                <Input
+                  type="date"
+                  className="h-8 text-xs border-slate-300 w-full"
+                  value={filters.createdDateFrom || ''}
+                  onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
+                />
               </TableHead>
               <TableHead className="py-2">
-                <div className="flex flex-row gap-1">
-                  <Input
-                    type="date"
-                    className="h-8 w-24 text-xs border-slate-300"
-                    value={filters.updatedDateFrom || ''}
-                    onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
-                  />
-                  <Input
-                    type="date"
-                    className="h-8 w-24 text-xs border-slate-300"
-                    value={filters.updatedDateTo || ''}
-                    onChange={(e) => handleFilterChange('updatedDateTo', e.target.value)}
-                  />
-                </div>
+                <Input
+                  type="date"
+                  className="h-8 text-xs border-slate-300 w-full"
+                  value={filters.updatedDateFrom || ''}
+                  onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
+                />
               </TableHead>
               <TableHead className="py-2 text-right">
                 {hasActiveFilters && (
@@ -603,12 +604,12 @@ export function OrderTable({
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-slate-700">
-                        {order.createdDate ? formatDateTime(order.createdDate) : '—'}
+                        {formatDate(order.createdDate)}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-slate-700">
-                        {order.lastModifiedDate ? formatDateTime(order.lastModifiedDate) : '—'}
+                        {formatDate(order.lastModifiedDate)}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

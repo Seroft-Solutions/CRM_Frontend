@@ -112,6 +112,7 @@ export interface OrderRecord {
   createdDate: string;
   updatedBy?: string;
   lastUpdated?: string;
+  lastModifiedDate?: string;
   items: OrderDetailItem[];
   history: OrderHistoryEntry[];
   address: OrderAddressDetail;
@@ -189,6 +190,7 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
     createdDate: order.createdDate ?? '',
     updatedBy: toStringValue(order.updatedBy) || undefined,
     lastUpdated: order.lastUpdated ?? undefined,
+    lastModifiedDate: order.lastModifiedDate ?? undefined,
     items: [],
     history: [],
     address: {
