@@ -438,7 +438,10 @@ export function OrderFulfillmentHistoryDetail({
   const organizationDisplayName =
     organizationSettings?.name?.trim() || organizationName || 'Organization';
   const organizationLogoUrl =
-    organizationSettings?.logoUrl?.trim() || organizationSettings?.logo?.trim() || '';
+    organizationSettings?.logoUrl?.trim() ||
+    (organizationSettings?.logo?.trim()?.startsWith('http')
+      ? organizationSettings.logo.trim()
+      : '');
   const organizationWhatsApp = organizationSettings?.whatsApp?.trim() || '';
   const organizationWhatsAppHref = getWhatsAppHref(organizationWhatsApp);
 
@@ -995,7 +998,6 @@ export function OrderFulfillmentHistoryDetail({
                   <img
                     src={organizationLogoUrl}
                     alt={`${organizationDisplayName} logo`}
-                    crossOrigin="anonymous"
                     className="h-16 w-16 shrink-0 object-contain"
                   />
                 ) : null}

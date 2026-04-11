@@ -25,6 +25,7 @@ export interface OrganizationSettings {
   address?: string | null;
   logo?: string | null;
   logoUrl?: string | null;
+  whatsApp?: string | null;
   officeLatitude?: number | null;
   officeLongitude?: number | null;
   officeRadiusMeters?: number | null;
