@@ -53,6 +53,17 @@ function formatDateTime(value?: string) {
   return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
 }
 
+function getOrderStatusFromCode(code?: number): string {
+  const statusMap: Record<number, string> = {
+    0: 'Created',
+    1: 'Processing',
+    2: 'Shipped',
+    3: 'Delivered',
+    4: 'Cancelled',
+  };
+  return code !== undefined ? statusMap[code] || 'Unknown' : '—';
+}
+
 type EntityStatus = 'ACTIVE' | 'DRAFT';
 
 type OrderTableProps = {
@@ -86,6 +97,37 @@ export function OrderTable({
   const { mutateAsync: partialUpdateOrder } = usePartialUpdateOrder();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
 
+  // Filter states
+  const [filters, setFilters] = useState<{
+    orderId?: string;
+    status?: string;
+    total?: string;
+    shipping?: string;
+    customer?: string;
+    email?: string;
+    payment?: string;
+    createdDateFrom?: string;
+    createdDateTo?: string;
+    updatedDateFrom?: string;
+    updatedDateTo?: string;
+  }>({});
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value || undefined,
+    }));
+    setCurrentPage(1);
+  };
+
+  const clearAllFilters = () => {
+    setFilters({});
+    setSearchTerm('');
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
+
   const { orders, orderDtos, totalCount, totalPages, isLoading, isError } = useOrderTableData({
     entityStatus,
     statusFilter,
@@ -114,12 +156,96 @@ export function OrderTable({
     return Math.max(order.orderBaseAmount - taxableAmount, 0);
   };
 
-  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const endIndex = totalCount === 0 ? 0 : Math.min(currentPage * pageSize, totalCount);
-  const paginatedOrders = orders;
+  // Apply client-side filters
+  const filteredOrders = useMemo(() => {
+    if (!orders) return orders;
+
+    return orders.filter((order) => {
+      // Order ID filter
+      if (filters.orderId && !String(order.orderId).includes(filters.orderId)) {
+        return false;
+      }
+
+      // Status filter
+      if (filters.status) {
+        const orderStatusStr = order.orderStatus !== undefined ? getOrderStatusFromCode(order.orderStatus) : '';
+        if (!orderStatusStr.toLowerCase().includes(filters.status.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Customer filter
+      if (filters.customer) {
+        const customerName = order.customer?.customerBusinessName || '';
+        if (!customerName.toLowerCase().includes(filters.customer.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Email filter
+      if (filters.email && order.email) {
+        if (!order.email.toLowerCase().includes(filters.email.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Created Date from filter
+      if (filters.createdDateFrom && order.createdDate) {
+        const orderDate = new Date(order.createdDate);
+        const filterDate = new Date(filters.createdDateFrom);
+        filterDate.setHours(0, 0, 0, 0);
+        if (orderDate < filterDate) {
+          return false;
+        }
+      }
+
+      // Created Date to filter
+      if (filters.createdDateTo && order.createdDate) {
+        const orderDate = new Date(order.createdDate);
+        const filterDate = new Date(filters.createdDateTo);
+        filterDate.setHours(23, 59, 59, 999);
+        if (orderDate > filterDate) {
+          return false;
+        }
+      }
+
+      // Updated Date from filter
+      if (filters.updatedDateFrom && order.lastModifiedDate) {
+        const orderDate = new Date(order.lastModifiedDate);
+        const filterDate = new Date(filters.updatedDateFrom);
+        filterDate.setHours(0, 0, 0, 0);
+        if (orderDate < filterDate) {
+          return false;
+        }
+      }
+
+      // Updated Date to filter
+      if (filters.updatedDateTo && order.lastModifiedDate) {
+        const orderDate = new Date(order.lastModifiedDate);
+        const filterDate = new Date(filters.updatedDateTo);
+        filterDate.setHours(23, 59, 59, 999);
+        if (orderDate > filterDate) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [orders, filters]);
+
+  const filteredCount = filteredOrders.length;
+  const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
+  const startIndex = filteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endIndex = filteredCount === 0 ? 0 : Math.min(currentPage * pageSize, filteredCount);
+
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredOrders.slice(start, end);
+  }, [filteredOrders, currentPage, pageSize]);
 
   // Reset to page 1 when filters change
-  const handleFilterChange = (newFilter: OrderStatus | 'All') => {
+  const handleStatusFilterChange = (newFilter: OrderStatus | 'All') => {
     setStatusFilter(newFilter);
     setCurrentPage(1);
   };
@@ -139,12 +265,12 @@ export function OrderTable({
   };
 
   useEffect(() => {
-    if (totalPages === 0 && currentPage !== 1) {
+    if (filteredTotalPages === 1 && currentPage !== 1) {
       setCurrentPage(1);
-    } else if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
+    } else if (filteredTotalPages > 1 && currentPage > filteredTotalPages) {
+      setCurrentPage(filteredTotalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, filteredTotalPages]);
 
   const handleOrderStatusChange = async (
     order: (typeof orders)[number],
@@ -253,7 +379,7 @@ export function OrderTable({
         <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
           <Tabs
             value={statusFilter}
-            onValueChange={(value) => handleFilterChange(value as OrderStatus | 'All')}
+            onValueChange={(value) => handleStatusFilterChange(value as OrderStatus | 'All')}
             className="w-full"
           >
             <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
@@ -345,14 +471,116 @@ export function OrderTable({
       <div className="table-container overflow-x-auto">
         <Table>
           <TableHeader>
+            {/* Header Row */}
             <TableRow className="border-b-2 border-slate-200 bg-slate-50">
-              <TableHead className="w-28 font-bold text-slate-700">Order</TableHead>
-              <TableHead className="font-bold text-slate-700">Status</TableHead>
-              <TableHead className="font-bold text-slate-700">Total</TableHead>
-              <TableHead className="font-bold text-slate-700">Shipping</TableHead>
-              <TableHead className="font-bold text-slate-700">Customer</TableHead>
-              <TableHead className="font-bold text-slate-700">Payment</TableHead>
-              <TableHead className="text-right font-bold text-slate-700">Actions</TableHead>
+              <TableHead className="w-32 min-w-[128px] font-bold text-slate-700">Order</TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">Status</TableHead>
+              <TableHead className="min-w-[120px] font-bold text-slate-700">Total</TableHead>
+              <TableHead className="min-w-[140px] font-bold text-slate-700">Shipping</TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">Customer</TableHead>
+              <TableHead className="min-w-[120px] font-bold text-slate-700">Payment</TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">Created At</TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">Updated At</TableHead>
+              <TableHead className="w-[120px] text-right font-bold text-slate-700">Actions</TableHead>
+            </TableRow>
+            {/* Filter Row */}
+            <TableRow className="border-b border-slate-200 bg-white">
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300"
+                  value={filters.orderId || ''}
+                  onChange={(e) => handleFilterChange('orderId', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300"
+                  value={filters.status || ''}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300"
+                  value={filters.total || ''}
+                  onChange={(e) => handleFilterChange('total', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300"
+                  value={filters.shipping || ''}
+                  onChange={(e) => handleFilterChange('shipping', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300"
+                  value={filters.customer || ''}
+                  onChange={(e) => handleFilterChange('customer', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300"
+                  value={filters.payment || ''}
+                  onChange={(e) => handleFilterChange('payment', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <div className="flex flex-col gap-1">
+                  <Input
+                    type="date"
+                    className="h-7 text-xs border-slate-300"
+                    value={filters.createdDateFrom || ''}
+                    onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
+                    placeholder="From"
+                  />
+                  <Input
+                    type="date"
+                    className="h-7 text-xs border-slate-300"
+                    value={filters.createdDateTo || ''}
+                    onChange={(e) => handleFilterChange('createdDateTo', e.target.value)}
+                    placeholder="To"
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="py-2">
+                <div className="flex flex-col gap-1">
+                  <Input
+                    type="date"
+                    className="h-7 text-xs border-slate-300"
+                    value={filters.updatedDateFrom || ''}
+                    onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
+                    placeholder="From"
+                  />
+                  <Input
+                    type="date"
+                    className="h-7 text-xs border-slate-300"
+                    value={filters.updatedDateTo || ''}
+                    onChange={(e) => handleFilterChange('updatedDateTo', e.target.value)}
+                    placeholder="To"
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="py-2 text-right">
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -484,6 +712,16 @@ export function OrderTable({
                         ) : null}
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-slate-700">
+                        {order.createdDate ? formatDateTime(order.createdDate) : '—'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-slate-700">
+                        {order.lastModifiedDate ? formatDateTime(order.lastModifiedDate) : '—'}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button asChild size="sm" variant="outline" className="border-slate-300">
@@ -543,7 +781,7 @@ export function OrderTable({
 
             {paginatedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-16 text-center">
+                <TableCell colSpan={9} className="py-16 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                       <svg
@@ -574,7 +812,7 @@ export function OrderTable({
         </Table>
       </div>
 
-      {totalCount > 0 && (
+      {filteredCount > 0 && (
         <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -594,7 +832,10 @@ export function OrderTable({
             <div className="text-sm text-slate-600">
               Showing <span className="font-bold text-slate-900">{startIndex}</span> to{' '}
               <span className="font-bold text-slate-900">{endIndex}</span> of{' '}
-              <span className="font-bold text-slate-900">{totalCount}</span> orders
+              <span className="font-bold text-slate-900">{filteredCount}</span> orders
+              {filteredCount !== totalCount && (
+                <span className="ml-1 text-muted-foreground">(filtered from {totalCount})</span>
+              )}
             </div>
           </div>
 
@@ -637,13 +878,13 @@ export function OrderTable({
                 {currentPage}
               </span>
               <span className="text-sm text-slate-600">of</span>
-              <span className="text-sm font-bold text-slate-900">{totalPages}</span>
+              <span className="text-sm font-bold text-slate-900">{filteredTotalPages}</span>
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={totalPages === 0 || currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => Math.min(filteredTotalPages, prev + 1))}
+              disabled={filteredTotalPages === 0 || currentPage === filteredTotalPages}
               className="border-slate-300 disabled:opacity-50"
             >
               Next
@@ -659,8 +900,8 @@ export function OrderTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={totalPages === 0 || currentPage === totalPages}
+              onClick={() => setCurrentPage(filteredTotalPages)}
+              disabled={filteredTotalPages === 0 || currentPage === filteredTotalPages}
               className="border-slate-300 disabled:opacity-50"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -697,7 +938,7 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
 
   return (
     <TableRow className="hover:bg-slate-50/50">
-      <TableCell colSpan={7} className="p-0">
+      <TableCell colSpan={9} className="p-0">
         <div className="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
           {isLoading ? (
             <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
