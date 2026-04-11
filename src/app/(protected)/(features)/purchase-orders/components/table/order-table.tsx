@@ -130,7 +130,27 @@ export function OrderTable({
   const filteredOrders = useMemo(() => {
     if (!orders) return orders;
 
+    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
     return orders.filter((order) => {
+      if (normalizedSearchTerm) {
+        const searchableValues = [
+          String(order.orderId),
+          order.sundryCreditor?.creditorName ?? '',
+          order.email ?? '',
+          order.phone ?? '',
+          order.shipping?.shippingId ?? '',
+        ];
+
+        const matchesSearch = searchableValues.some((value) =>
+          String(value).toLowerCase().includes(normalizedSearchTerm)
+        );
+
+        if (!matchesSearch) {
+          return false;
+        }
+      }
+
       // Order ID filter
       if (filters.orderId && !String(order.orderId).includes(filters.orderId)) {
         return false;
@@ -225,7 +245,7 @@ export function OrderTable({
 
       return true;
     });
-  }, [orders, filters, dateFrom, dateTo]);
+  }, [orders, filters, dateFrom, dateTo, searchTerm]);
 
   const filteredCount = filteredOrders.length;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
@@ -345,7 +365,7 @@ export function OrderTable({
           <div>
             <h3 className="font-bold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
-              Search by ID, email, or phone · {totalCount}{' '}
+              Search by order ID, creditor, email, or phone · {totalCount}{' '}
               {totalCount === 1 ? subtitle : `${subtitle}s`}
             </p>
           </div>

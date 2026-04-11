@@ -536,7 +536,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       {generation.totalGeneratedQuantity ?? 0} units generated
                     </Badge>
                     <Badge className="bg-amber-100 text-amber-900">
-                      Outstanding after save: {generation.totalBacklogQuantity ?? 0}
+                      Remaining after save: {generation.totalBacklogQuantity ?? 0}
                     </Badge>
                     {generation.id ? (
                       <Button
@@ -573,7 +573,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           </span>
                           <span>Delivered: {item.deliveredQuantity ?? 0}</span>
                           <span>Available Before: {item.availableQuantityBefore ?? 0}</span>
-                          <span>Outstanding After: {item.remainingBacklogQuantity ?? 0}</span>
+                          <span>Remaining After: {item.remainingBacklogQuantity ?? 0}</span>
                         </div>
                       </div>
                     ))}

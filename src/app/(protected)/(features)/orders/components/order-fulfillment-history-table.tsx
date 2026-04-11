@@ -64,7 +64,7 @@ export function OrderFulfillmentHistoryTable({
                 <TableHead>Created</TableHead>
                 <TableHead className="text-center">Items</TableHead>
                 <TableHead className="text-center">Delivered</TableHead>
-                <TableHead className="text-center">Outstanding</TableHead>
+                <TableHead className="text-center">Remaining</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>

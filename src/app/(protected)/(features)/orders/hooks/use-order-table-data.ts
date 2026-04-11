@@ -46,14 +46,12 @@ export function useOrderTableData({
       const numericOnly = /^\d+$/.test(normalizedSearch);
       const phoneLike = /^[+()\d\s-]+$/.test(normalizedSearch);
 
-      if (numericOnly && normalizedSearch.length < 7) {
+      if (normalizedSearch.includes('@')) {
+        params['email.contains'] = normalizedSearch;
+      } else if (numericOnly) {
         params['id.equals'] = Number(normalizedSearch);
-      } else if (normalizedSearch.includes('@')) {
-        params['email.contains'] = normalizedSearch;
-      } else if (phoneLike || numericOnly) {
+      } else if (phoneLike) {
         params['phone.contains'] = normalizedSearch;
-      } else {
-        params['email.contains'] = normalizedSearch;
       }
     }
 
