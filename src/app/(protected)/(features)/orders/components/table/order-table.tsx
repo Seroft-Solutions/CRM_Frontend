@@ -30,7 +30,7 @@ import { type OrderDTO } from '@/core/api/generated/spring/schemas';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { InlinePermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
-import { getOrderStatusCode, OrderStatus, orderStatusOptions } from '../../data/order-data';
+import { getOrderStatusCode, OrderStatus, orderStatusOptions, PaymentStatus, paymentStatusOptions, ShippingMethod, shippingMethodOptions } from '../../data/order-data';
 import { useOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
@@ -169,7 +169,23 @@ export function OrderTable({
       // Status filter
       if (filters.status) {
         const orderStatusStr = order.orderStatus !== undefined ? getOrderStatusFromCode(order.orderStatus) : '';
-        if (!orderStatusStr.toLowerCase().includes(filters.status.toLowerCase())) {
+        if (orderStatusStr !== filters.status) {
+          return false;
+        }
+      }
+
+      // Payment filter
+      if (filters.payment) {
+        const paymentStatusStr = order.paymentStatus !== undefined ? String(order.paymentStatus) : '';
+        if (paymentStatusStr !== filters.payment) {
+          return false;
+        }
+      }
+
+      // Shipping filter
+      if (filters.shipping) {
+        const shippingMethod = order.shipping?.shippingMethod || '';
+        if (shippingMethod !== filters.shipping) {
           return false;
         }
       }
@@ -494,12 +510,22 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
-                  value={filters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                />
+                <Select 
+                  value={filters.status || 'all'} 
+                  onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {orderStatusOptions.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableHead>
               <TableHead className="py-2">
                 <Input
@@ -510,12 +536,22 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
-                  value={filters.shipping || ''}
-                  onChange={(e) => handleFilterChange('shipping', e.target.value)}
-                />
+                <Select 
+                  value={filters.shipping || 'all'} 
+                  onValueChange={(value) => handleFilterChange('shipping', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {shippingMethodOptions.map((method) => (
+                      <SelectItem key={method} value={method}>
+                        {method}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableHead>
               <TableHead className="py-2">
                 <Input
@@ -526,12 +562,22 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
-                  value={filters.payment || ''}
-                  onChange={(e) => handleFilterChange('payment', e.target.value)}
-                />
+                <Select 
+                  value={filters.payment || 'all'} 
+                  onValueChange={(value) => handleFilterChange('payment', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {paymentStatusOptions.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableHead>
               <TableHead className="py-2">
                 <div className="flex flex-col gap-1">

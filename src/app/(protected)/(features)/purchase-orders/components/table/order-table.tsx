@@ -7,6 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -117,7 +124,23 @@ export function OrderTable({
       // Status filter
       if (filters.status) {
         const orderStatusStr = order.orderStatus || '';
-        if (!orderStatusStr.toLowerCase().includes(filters.status.toLowerCase())) {
+        if (orderStatusStr !== filters.status) {
+          return false;
+        }
+      }
+
+      // Payment filter
+      if (filters.payment) {
+        const paymentStatusStr = order.paymentStatus !== undefined ? String(order.paymentStatus) : '';
+        if (paymentStatusStr !== filters.payment) {
+          return false;
+        }
+      }
+
+      // Shipping filter
+      if (filters.shipping) {
+        const shippingMethod = order.shipping?.shippingMethod || '';
+        if (shippingMethod !== filters.shipping) {
           return false;
         }
       }
@@ -357,12 +380,22 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
-                  value={filters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                />
+                <Select 
+                  value={filters.status || 'all'} 
+                  onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {orderStatusOptions.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableHead>
               <TableHead className="py-2">
                 <Input
@@ -373,12 +406,22 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
-                  value={filters.shipping || ''}
-                  onChange={(e) => handleFilterChange('shipping', e.target.value)}
-                />
+                <Select 
+                  value={filters.shipping || 'all'} 
+                  onValueChange={(value) => handleFilterChange('shipping', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {shippingMethodOptions.map((method) => (
+                      <SelectItem key={method} value={method}>
+                        {method}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableHead>
               <TableHead className="py-2">
                 <Input
@@ -389,12 +432,22 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300"
-                  value={filters.payment || ''}
-                  onChange={(e) => handleFilterChange('payment', e.target.value)}
-                />
+                <Select 
+                  value={filters.payment || 'all'} 
+                  onValueChange={(value) => handleFilterChange('payment', value === 'all' ? '' : value)}
+                >
+                  <SelectTrigger className="h-8 text-xs border-slate-300">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    {paymentStatusOptions.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableHead>
               <TableHead className="py-2">
                 <div className="flex flex-col gap-1">
