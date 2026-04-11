@@ -40,8 +40,8 @@ export function VariantsTableHeader({
 
   return (
     <TableHeader>
-      <TableRow className="bg-muted/50">
-        {selection && (
+        <TableRow className="bg-muted/50">
+          {selection && (
           <TableHead className="font-semibold w-10">
             {selection.onToggleAll ? (
               <div className="flex items-center justify-center">

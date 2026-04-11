@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { SystemConfigAttributeDTO } from '@/core/api/generated/spring/schemas/SystemConfigAttributeDTO';
@@ -10,6 +11,16 @@ import {
 } from './types';
 import { VariantsTableHeader } from './VariantsTableHeader';
 import { VariantTableRow } from './VariantTableRow';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 import { Loader2 } from 'lucide-react';
 
@@ -38,6 +49,8 @@ interface VariantsTableProps {
   selection?: VariantTableSelection;
   validationErrors?: Record<string, string[]>;
   onCopySalePriceToAll?: () => void;
+  onBulkPriceUpdate?: (price: number) => void;
+  onBulkStockUpdate?: (warehouseId: number, stock: number) => void;
 }
 
 /**
@@ -68,6 +81,8 @@ export function VariantsTable({
   selection,
   validationErrors = {},
   onCopySalePriceToAll,
+  onBulkPriceUpdate,
+  onBulkStockUpdate,
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
@@ -75,6 +90,27 @@ export function VariantsTable({
   const duplicateDraftVariants = draftVariants.filter((v) => v.isDuplicate);
   const hasDrafts = newDraftVariants.length > 0;
   const hasDuplicates = duplicateDraftVariants.length > 0;
+
+  const [bulkPrice, setBulkPrice] = useState('');
+  const [bulkWarehouseId, setBulkWarehouseId] = useState<number | undefined>(undefined);
+  const [bulkStock, setBulkStock] = useState('');
+
+  const handleBulkPriceAdd = () => {
+    const price = Number(bulkPrice);
+    if (!isNaN(price) && price > 0 && onBulkPriceUpdate) {
+      onBulkPriceUpdate(price);
+      setBulkPrice('');
+    }
+  };
+
+  const handleBulkStockAdd = () => {
+    const stock = Number(bulkStock);
+    if (!isNaN(stock) && stock >= 0 && bulkWarehouseId !== undefined && onBulkStockUpdate) {
+      onBulkStockUpdate(bulkWarehouseId, stock);
+      setBulkStock('');
+      setBulkWarehouseId(undefined);
+    }
+  };
 
   const showTable = hasDrafts || totalExistingRows > 0;
 
@@ -94,7 +130,7 @@ export function VariantsTable({
 
   return (
     <div className="rounded-lg border bg-card">
-      <div className="flex items-center gap-3 px-4 py-3 border-b bg-muted/30">
+      <div className="flex flex-wrap items-center gap-4 px-4 py-3 border-b bg-muted/30">
         <h4 className="text-sm font-semibold text-foreground">Variants</h4>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs border-green-300 bg-green-50 text-green-700">
@@ -110,6 +146,70 @@ export function VariantsTable({
             </Badge>
           )}
         </div>
+        {!isViewMode && (
+          <>
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Price:</span>
+              <Input
+                type="number"
+                placeholder="Enter price"
+                value={bulkPrice}
+                onChange={(e) => setBulkPrice(e.target.value)}
+                className="w-24 h-7 text-xs"
+                min="0"
+                step="0.01"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs"
+                onClick={handleBulkPriceAdd}
+                disabled={!bulkPrice || Number(bulkPrice) <= 0}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Add
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Warehouse + Stock:</span>
+              <Select
+                value={bulkWarehouseId?.toString() || ''}
+                onValueChange={(val) => setBulkWarehouseId(Number(val))}
+              >
+                <SelectTrigger className="w-32 h-7 text-xs">
+                  <SelectValue placeholder="Select warehouse" />
+                </SelectTrigger>
+                <SelectContent>
+                  {warehouses.map((wh) => (
+                    <SelectItem key={wh.id} value={wh.id.toString()}>
+                      {wh.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                type="number"
+                placeholder="Stock"
+                value={bulkStock}
+                onChange={(e) => setBulkStock(e.target.value)}
+                className="w-20 h-7 text-xs"
+                min="0"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs"
+                onClick={handleBulkStockAdd}
+                disabled={!bulkWarehouseId || bulkStock === '' || Number(bulkStock) < 0}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Add
+              </Button>
+            </div>
+          </>
+        )}
       </div>
       <div className="overflow-x-auto">
         <Table className="table-fixed w-full min-w-[1200px]">

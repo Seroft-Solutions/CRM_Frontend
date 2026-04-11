@@ -1381,6 +1381,57 @@ export function ProductVariantManager({
     toast.success(`Sale price (${salePrice}) copied to all variants`);
   };
 
+  const handleBulkPriceUpdate = (price: number) => {
+    setDraftVariantsByKey((prev) => {
+      const next: Record<string, DraftVariantRow> = {};
+
+      Object.entries(prev).forEach(([key, row]) => {
+        next[key] = {
+          ...row,
+          price: price,
+        };
+      });
+
+      return next;
+    });
+
+    toast.success(`Price (${price}) set for all variants`);
+  };
+
+  const handleBulkStockUpdate = (warehouseId: number, stockToAdd: number) => {
+    setDraftVariantsByKey((prev) => {
+      const next: Record<string, DraftVariantRow> = {};
+
+      Object.entries(prev).forEach(([key, row]) => {
+        const updatedVariantStocks = (row.variantStocks || []).map((variantStock) => {
+          if (variantStock.warehouseId === warehouseId) {
+            return {
+              ...variantStock,
+              stockQuantity: (variantStock.stockQuantity || 0) + stockToAdd,
+            };
+          }
+          return variantStock;
+        });
+
+        const stockQuantity = updatedVariantStocks.reduce(
+          (sum, vs) => sum + (vs.stockQuantity || 0),
+          0
+        );
+
+        next[key] = {
+          ...row,
+          variantStocks: updatedVariantStocks,
+          stockQuantity,
+        };
+      });
+
+      return next;
+    });
+
+    const warehouseName = warehouses.find((w) => w.id === warehouseId)?.name || 'Unknown';
+    toast.success(`Added ${stockToAdd} stock to warehouse "${warehouseName}" for all variants`);
+  };
+
   // #endregion
 
   if (!variantConfigId) {
@@ -1428,6 +1479,8 @@ export function ProductVariantManager({
         selection={selection}
         validationErrors={(form?.formState.submitCount ?? 0) > 0 ? variantValidationErrors : {}}
         onCopySalePriceToAll={copySalePriceToAllVariants}
+        onBulkPriceUpdate={handleBulkPriceUpdate}
+        onBulkStockUpdate={handleBulkStockUpdate}
       />
     </div>
   );
