@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Eye, Package, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import { OrderStatus, orderStatusOptions } from '../../data/purchase-order-data';
@@ -402,7 +403,7 @@ export function OrderTable({
               <TableHead className="min-w-[120px] font-bold text-slate-700">Payment</TableHead>
               <TableHead className="min-w-[150px] font-bold text-slate-700">Created At</TableHead>
               <TableHead className="min-w-[150px] font-bold text-slate-700">Updated At</TableHead>
-              <TableHead className="w-[120px] text-right font-bold text-slate-700">Actions</TableHead>
+              <TableHead className="w-[150px] text-right font-bold text-slate-700">Actions</TableHead>
             </TableRow>
             {/* Filter Row */}
             <TableRow className="border-b border-slate-200 bg-white">
@@ -613,54 +614,48 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button asChild size="sm" variant="outline" className="border-slate-300">
-                          <Link href={`/purchase-orders/${order.orderId}`}>
-                            <svg
-                              className="mr-1 h-3 w-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                              />
-                            </svg>
-                            View
-                          </Link>
-                        </Button>
-                        <Button
-                          asChild
-                          size="sm"
-                          className="bg-slate-600 text-white hover:bg-slate-700"
-                        >
-                          <Link href={`/purchase-orders/${order.orderId}/edit`}>
-                            <svg
-                              className="mr-1 h-3 w-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                            Edit
-                          </Link>
-                        </Button>
-                      </div>
+                      <TooltipProvider delayDuration={0}>
+                        <div className="flex justify-end gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Link
+                                href={`/purchase-orders/${order.orderId}`}
+                                aria-label={`View purchase order ${order.orderId}`}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>View</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Link
+                                href={`/purchase-orders/${order.orderId}/fulfillment`}
+                                aria-label={`Open fulfillment for purchase order ${order.orderId}`}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                              >
+                                <Package className="h-4 w-4" />
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>Fulfillment</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Link
+                                href={`/purchase-orders/${order.orderId}/edit`}
+                                aria-label={`Edit purchase order ${order.orderId}`}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
 
