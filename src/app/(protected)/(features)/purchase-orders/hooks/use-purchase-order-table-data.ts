@@ -49,8 +49,9 @@ export function usePurchaseOrderTableData({
       const phoneLike = /^[+()\d\s-]+$/.test(normalizedSearch);
       const looksLikeOrderNumber =
         normalizedSearch.startsWith('#') ||
-        /order/i.test(normalizedSearch);
-      const extractedOrderId = normalizedSearch.replace(/\D/g, '');
+        /order/i.test(normalizedSearch) ||
+        /^(ord|po|so)[-/\s]?\d+/i.test(normalizedSearch);
+      const extractedOrderId = normalizedSearch.match(/\d+/)?.[0];
 
       if (normalizedSearch.includes('@')) {
         params['email.contains'] = normalizedSearch;

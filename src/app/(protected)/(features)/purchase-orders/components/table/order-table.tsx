@@ -137,6 +137,9 @@ export function OrderTable({
         const searchableValues = [
           String(order.orderId),
           `#${order.orderId}`,
+          `ord/${order.orderId}`,
+          `po-${order.orderId}`,
+          `po/${order.orderId}`,
           `purchase order ${order.orderId}`,
           `purchase order #${order.orderId}`,
           `order ${order.orderId}`,

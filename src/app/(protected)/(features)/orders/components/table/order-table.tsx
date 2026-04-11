@@ -182,6 +182,9 @@ export function OrderTable({
         const searchableValues = [
           String(order.orderId),
           `#${order.orderId}`,
+          `ord/${order.orderId}`,
+          `so-${order.orderId}`,
+          `so/${order.orderId}`,
           `order ${order.orderId}`,
           `order #${order.orderId}`,
           order.customer?.customerBusinessName ?? '',
