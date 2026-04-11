@@ -25,7 +25,12 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
-import { OrderStatus, orderStatusOptions } from '../../data/purchase-order-data';
+import {
+  OrderStatus,
+  orderStatusOptions,
+  paymentStatusOptions,
+  shippingMethodOptions,
+} from '../../data/purchase-order-data';
 import { usePurchaseOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
