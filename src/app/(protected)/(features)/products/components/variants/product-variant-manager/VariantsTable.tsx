@@ -148,22 +148,22 @@ export function VariantsTable({
         </div>
         {!isViewMode && (
           <>
-            <div className="flex items-center gap-2 ml-auto">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Price:</span>
+            <div className="flex items-center gap-2 ml-auto border-l pl-4">
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">Price:</span>
               <Input
                 type="number"
                 placeholder="Enter price"
                 value={bulkPrice}
                 onChange={(e) => setBulkPrice(e.target.value)}
-                className="w-24 h-7 text-xs"
+                className="w-32 h-8 text-sm font-medium"
                 min="0"
                 step="0.01"
               />
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
-                className="h-7 px-2 text-xs"
+                variant="default"
+                className="h-8 px-3 text-xs font-semibold"
                 onClick={handleBulkPriceAdd}
                 disabled={!bulkPrice || Number(bulkPrice) <= 0}
               >
@@ -171,13 +171,13 @@ export function VariantsTable({
                 Add
               </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Warehouse + Stock:</span>
+            <div className="flex items-center gap-2 border-l pl-4">
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">Warehouse:</span>
               <Select
                 value={bulkWarehouseId?.toString() || ''}
                 onValueChange={(val) => setBulkWarehouseId(Number(val))}
               >
-                <SelectTrigger className="w-32 h-7 text-xs">
+                <SelectTrigger className="w-40 h-8 text-sm font-medium">
                   <SelectValue placeholder="Select warehouse" />
                 </SelectTrigger>
                 <SelectContent>
@@ -193,14 +193,14 @@ export function VariantsTable({
                 placeholder="Stock"
                 value={bulkStock}
                 onChange={(e) => setBulkStock(e.target.value)}
-                className="w-20 h-7 text-xs"
+                className="w-28 h-8 text-sm font-medium"
                 min="0"
               />
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
-                className="h-7 px-2 text-xs"
+                variant="default"
+                className="h-8 px-3 text-xs font-semibold"
                 onClick={handleBulkStockAdd}
                 disabled={!bulkWarehouseId || bulkStock === '' || Number(bulkStock) < 0}
               >

@@ -1386,16 +1386,17 @@ export function ProductVariantManager({
       const next: Record<string, DraftVariantRow> = {};
 
       Object.entries(prev).forEach(([key, row]) => {
+        const existingPrice = row.price || 0;
         next[key] = {
           ...row,
-          price: price,
+          price: existingPrice + price,
         };
       });
 
       return next;
     });
 
-    toast.success(`Price (${price}) set for all variants`);
+    toast.success(`Added ${price} to price for all variants`);
   };
 
   const handleBulkStockUpdate = (warehouseId: number, stockToAdd: number) => {
