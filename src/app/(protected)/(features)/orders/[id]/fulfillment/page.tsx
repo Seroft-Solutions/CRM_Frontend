@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { use } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, History, PackageCheck } from 'lucide-react';
 import { PermissionGuard } from '@/core/auth';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,17 @@ interface OrderFulfillmentPageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    from?: string;
+  }>;
 }
 
-export default function OrderFulfillmentPage({ params }: OrderFulfillmentPageProps) {
+export default function OrderFulfillmentPage({ params, searchParams }: OrderFulfillmentPageProps) {
   const { id: idParam } = use(params);
+  const { from } = use(searchParams);
   const id = Number.parseInt(idParam, 10);
+  const router = useRouter();
+  const navigationSource = from === 'list' ? 'list' : 'order';
   const { orderRecord, isLoading, isError } = useOrderRecord(id, { includeHistory: true });
 
   return (
@@ -48,22 +55,42 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
                 variant="outline"
                 className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
               >
-                <Link href={`/orders/${id}/fulfillment/history`}>
+                <Link href={`/orders/${id}/fulfillment/history?from=${navigationSource}`}>
                   <History className="h-4 w-4" />
                   Fulfillment History
                 </Link>
               </Button>
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
-              >
-                <Link href={`/orders/${id}`}>
+              {navigationSource === 'order' ? (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
+                >
+                  <Link href={`/orders/${id}`}>
+                    <ArrowLeft className="h-4 w-4" />
+                    Back To Order
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
+                  onClick={() => {
+                    if (window.history.length > 1) {
+                      router.back();
+
+                      return;
+                    }
+
+                    router.push('/orders');
+                  }}
+                >
                   <ArrowLeft className="h-4 w-4" />
-                  Back To Order
-                </Link>
-              </Button>
+                  Back
+                </Button>
+              )}
             </div>
 
             <div className="flex flex-1 justify-end">

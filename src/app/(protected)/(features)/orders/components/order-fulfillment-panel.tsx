@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Eye, History, Pencil, PackageCheck, RefreshCcw, Sparkles } from 'lucide-react';
@@ -60,7 +61,9 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
   );
 
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const navigationSource = searchParams.get('from') === 'list' ? 'list' : 'order';
   const [isEditing, setIsEditing] = useState(false);
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
@@ -499,7 +502,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
             variant="outline"
             className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
           >
-            <Link href={`/orders/${order.orderId}/fulfillment/history`}>
+            <Link href={`/orders/${order.orderId}/fulfillment/history?from=${navigationSource}`}>
               <History className="h-4 w-4" />
               View Full History
             </Link>

@@ -1060,7 +1060,7 @@ export function OrderTable({
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Link
-                                href={`/orders/${order.orderId}/fulfillment`}
+                                href={`/orders/${order.orderId}/fulfillment?from=list`}
                                 aria-label={`Open fulfillment for order ${order.orderId}`}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                               >

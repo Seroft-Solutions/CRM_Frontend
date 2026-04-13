@@ -260,7 +260,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 variant="outline"
                 className="gap-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               >
-                <Link href={`/orders/${order.orderId}/fulfillment/history`}>
+                <Link href={`/orders/${order.orderId}/fulfillment/history?from=order`}>
                   <History className="h-4 w-4" />
                   Fulfillment History
                 </Link>
@@ -271,7 +271,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 variant="outline"
                 className="gap-2 border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50"
               >
-                <Link href={`/orders/${order.orderId}/fulfillment`}>
+                <Link href={`/orders/${order.orderId}/fulfillment?from=order`}>
                   <PackageCheck className="h-4 w-4" />
                   Order Fulfillment
                 </Link>
