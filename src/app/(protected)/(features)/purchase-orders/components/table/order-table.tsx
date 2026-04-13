@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, Eye, Package, Pencil } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Eye, Package, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +65,35 @@ function formatDate(value?: string) {
 }
 
 type EntityStatus = 'ACTIVE' | 'DRAFT';
+type SortDirection = 'asc' | 'desc';
+type SortColumn =
+  | 'orderId'
+  | 'status'
+  | 'total'
+  | 'shipping'
+  | 'sundryCreditor'
+  | 'payment'
+  | 'createdDate'
+  | 'updatedDate';
+
+function compareSortValues(
+  a: string | number,
+  b: string | number,
+  direction: SortDirection
+) {
+  const multiplier = direction === 'asc' ? 1 : -1;
+
+  if (typeof a === 'number' && typeof b === 'number') {
+    return (a - b) * multiplier;
+  }
+
+  return (
+    String(a).localeCompare(String(b), undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    }) * multiplier
+  );
+}
 
 type OrderTableProps = {
   entityStatus?: EntityStatus;
@@ -91,6 +120,8 @@ export function OrderTable({
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const isMounted = useRef(false);
 
@@ -260,7 +291,52 @@ export function OrderTable({
     });
   }, [orders, filters, dateFrom, dateTo, searchTerm]);
 
-  const filteredCount = filteredOrders.length;
+  const sortedOrders = useMemo(() => {
+    if (!sortColumn) {
+      return filteredOrders;
+    }
+
+    return [...filteredOrders].sort((a, b) => {
+      switch (sortColumn) {
+        case 'orderId':
+          return compareSortValues(a.orderId, b.orderId, sortDirection);
+        case 'status':
+          return compareSortValues(a.orderStatus ?? '', b.orderStatus ?? '', sortDirection);
+        case 'total':
+          return compareSortValues(a.orderTotalAmount ?? 0, b.orderTotalAmount ?? 0, sortDirection);
+        case 'shipping':
+          return compareSortValues(
+            a.shipping?.shippingMethod ?? '',
+            b.shipping?.shippingMethod ?? '',
+            sortDirection
+          );
+        case 'sundryCreditor':
+          return compareSortValues(
+            a.sundryCreditor?.creditorName ?? a.email ?? a.phone ?? '',
+            b.sundryCreditor?.creditorName ?? b.email ?? b.phone ?? '',
+            sortDirection
+          );
+        case 'payment':
+          return compareSortValues(a.paymentStatus ?? '', b.paymentStatus ?? '', sortDirection);
+        case 'createdDate':
+          return compareSortValues(
+            a.createdDate ? new Date(a.createdDate).getTime() : 0,
+            b.createdDate ? new Date(b.createdDate).getTime() : 0,
+            sortDirection
+          );
+        case 'updatedDate':
+          return compareSortValues(
+            a.lastModifiedDate ? new Date(a.lastModifiedDate).getTime() : 0,
+            b.lastModifiedDate ? new Date(b.lastModifiedDate).getTime() : 0,
+            sortDirection
+          );
+        default:
+          return 0;
+      }
+    });
+  }, [filteredOrders, sortColumn, sortDirection]);
+
+  const filteredCount = sortedOrders.length;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
   const startIndex = filteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endIndex = filteredCount === 0 ? 0 : Math.min(currentPage * pageSize, filteredCount);
@@ -268,8 +344,8 @@ export function OrderTable({
   const paginatedOrders = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
-    return filteredOrders.slice(start, end);
-  }, [filteredOrders, currentPage, pageSize]);
+    return sortedOrders.slice(start, end);
+  }, [sortedOrders, currentPage, pageSize]);
 
   // Reset to page 1 when status filter changes
   const handleStatusFilterChange = (newFilter: OrderStatus | 'All') => {
@@ -280,6 +356,29 @@ export function OrderTable({
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
+  };
+
+  const handleSort = (column: SortColumn) => {
+    setCurrentPage(1);
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    setSortColumn(column);
+    setSortDirection('asc');
+  };
+
+  const getSortIcon = (column: SortColumn) => {
+    if (sortColumn !== column) {
+      return <ChevronsUpDown className="h-4 w-4 text-slate-400" />;
+    }
+
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="h-4 w-4 text-slate-600" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-slate-600" />
+    );
   };
 
   const toggleOrderHistory = (orderId: number) => {
@@ -428,14 +527,86 @@ export function OrderTable({
           <TableHeader>
             {/* Header Row */}
             <TableRow className="border-b-2 border-slate-200 bg-slate-50">
-              <TableHead className="w-32 min-w-[128px] font-bold text-slate-700">Order</TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">Status</TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-700">Total</TableHead>
-              <TableHead className="min-w-[140px] font-bold text-slate-700">Shipping</TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">Sundry Creditor</TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-700">Payment</TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">Created At</TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">Updated At</TableHead>
+              <TableHead className="w-32 min-w-[128px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('orderId')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Order</span>
+                  {getSortIcon('orderId')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('status')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Status</span>
+                  {getSortIcon('status')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[120px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('total')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Total</span>
+                  {getSortIcon('total')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[140px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('shipping')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Shipping</span>
+                  {getSortIcon('shipping')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('sundryCreditor')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Sundry Creditor</span>
+                  {getSortIcon('sundryCreditor')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[120px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('payment')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Payment</span>
+                  {getSortIcon('payment')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('createdDate')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Created At</span>
+                  {getSortIcon('createdDate')}
+                </Button>
+              </TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('updatedDate')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Updated At</span>
+                  {getSortIcon('updatedDate')}
+                </Button>
+              </TableHead>
               <TableHead className="w-[150px] text-right font-bold text-slate-700">Actions</TableHead>
             </TableRow>
             {/* Filter Row */}
