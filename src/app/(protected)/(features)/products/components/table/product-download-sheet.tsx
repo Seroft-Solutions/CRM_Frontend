@@ -107,8 +107,8 @@ function formatRate(price?: number) {
   }
 
   return Number.isInteger(price)
-    ? `${price}/- (Inc. of GST)`
-    : `${price.toFixed(2)}/- (Inc. of GST)`;
+    ? `${price}/- (Exc. of GST)`
+    : `${price.toFixed(2)}/- (Exc. of GST)`;
 }
 
 function sortLabels(values: Array<{ label: string; sortOrder: number }>) {
