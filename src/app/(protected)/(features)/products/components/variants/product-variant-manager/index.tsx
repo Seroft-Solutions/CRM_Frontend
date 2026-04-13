@@ -1508,6 +1508,9 @@ export function ProductVariantManager({
         onCopySalePriceToAll={copySalePriceToAllVariants}
         onBulkPriceUpdate={handleBulkPriceUpdate}
         onBulkStockUpdate={handleBulkStockUpdate}
+        viewPriceHistoryHref={
+          isViewMode && productId ? `/products/${productId}/variant-price-history` : undefined
+        }
       />
     </div>
   );

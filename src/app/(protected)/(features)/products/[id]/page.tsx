@@ -1,7 +1,7 @@
 import { ProductViewForm } from '../components/product-view-form';
 import { InlinePermissionGuard, PermissionGuard } from '@/core/auth';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil } from 'lucide-react';
+import { Eye, History, Pencil } from 'lucide-react';
 import Link from 'next/link';
 
 interface ProductPageProps {
@@ -39,8 +39,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Center Section: Prominent Edit Product Button */}
-            <div className="flex-1 flex justify-center">
+            {/* Center Section: View History and Edit Product Buttons */}
+            <div className="flex-1 flex justify-center gap-3">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-10 gap-2 px-5 text-sm font-semibold"
+              >
+                <Link href={`/products/${id}/price-history`}>
+                  <History className="h-4 w-4" />
+                  <span className="hidden sm:inline">View Price History</span>
+                </Link>
+              </Button>
               <InlinePermissionGuard requiredPermission="product:update">
                 <Button
                   asChild

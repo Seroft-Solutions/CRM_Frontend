@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -51,6 +52,7 @@ interface VariantsTableProps {
   onCopySalePriceToAll?: () => void;
   onBulkPriceUpdate?: (price: number) => void;
   onBulkStockUpdate?: (warehouseId: number, stock: number) => void;
+  viewPriceHistoryHref?: string;
 }
 
 /**
@@ -83,6 +85,7 @@ export function VariantsTable({
   onCopySalePriceToAll,
   onBulkPriceUpdate,
   onBulkStockUpdate,
+  viewPriceHistoryHref,
 }: VariantsTableProps) {
   const totalExistingRows = existingVariantRows.length;
   const totalRowsToDisplay = rows.length;
@@ -97,6 +100,7 @@ export function VariantsTable({
 
   const handleBulkPriceAdd = () => {
     const price = Number(bulkPrice);
+
     if (!isNaN(price) && price > 0 && onBulkPriceUpdate) {
       onBulkPriceUpdate(price);
       setBulkPrice('');
@@ -105,6 +109,7 @@ export function VariantsTable({
 
   const handleBulkStockAdd = () => {
     const stock = Number(bulkStock);
+
     if (!isNaN(stock) && stock >= 0 && bulkWarehouseId !== undefined && onBulkStockUpdate) {
       onBulkStockUpdate(bulkWarehouseId, stock);
       setBulkStock('');
@@ -146,10 +151,22 @@ export function VariantsTable({
             </Badge>
           )}
         </div>
+        {isViewMode && viewPriceHistoryHref && (
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="ml-auto h-8 px-3 text-xs font-semibold"
+          >
+            <Link href={viewPriceHistoryHref}>View Price History</Link>
+          </Button>
+        )}
         {!isViewMode && (
           <>
             <div className="flex items-center gap-2 ml-auto border-l pl-4">
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">Price:</span>
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                Price:
+              </span>
               <Input
                 type="number"
                 placeholder="Enter price"
@@ -172,7 +189,9 @@ export function VariantsTable({
               </Button>
             </div>
             <div className="flex items-center gap-2 border-l pl-4">
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">Warehouse:</span>
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                Warehouse:
+              </span>
               <Select
                 value={bulkWarehouseId?.toString() || ''}
                 onValueChange={(val) => setBulkWarehouseId(Number(val))}
