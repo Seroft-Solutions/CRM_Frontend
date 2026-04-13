@@ -12,8 +12,26 @@ type OrdersPageProps = {
 };
 
 export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [draftDateFrom, setDraftDateFrom] = useState('');
+  const [draftDateTo, setDraftDateTo] = useState('');
+  const [appliedDateFrom, setAppliedDateFrom] = useState('');
+  const [appliedDateTo, setAppliedDateTo] = useState('');
+
+  const hasPendingDateChanges =
+    draftDateFrom !== appliedDateFrom || draftDateTo !== appliedDateTo;
+  const hasAppliedDateFilter = Boolean(appliedDateFrom) || Boolean(appliedDateTo);
+
+  const handleApplyDateFilter = () => {
+    setAppliedDateFrom(draftDateFrom);
+    setAppliedDateTo(draftDateTo);
+  };
+
+  const handleClearDateFilter = () => {
+    setDraftDateFrom('');
+    setDraftDateTo('');
+    setAppliedDateFrom('');
+    setAppliedDateTo('');
+  };
 
   return (
     <div className="space-y-4">
@@ -54,48 +72,42 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
                 </InlinePermissionGuard>
               </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center lg:flex-1 lg:justify-end">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="h-4 w-4 text-sidebar-foreground/70"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+              <div className="flex flex-col gap-2 lg:flex-1 lg:items-end">
+                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                  <span className="text-sm font-medium text-sidebar-foreground/80">From</span>
                   <Input
                     type="date"
-                    value={dateFrom}
-                    onChange={(event) => setDateFrom(event.target.value)}
-                    className="h-10 w-full min-w-[150px] border-sidebar-border bg-background text-sm sm:w-[170px]"
+                    value={draftDateFrom}
+                    onChange={(event) => setDraftDateFrom(event.target.value)}
+                    className="h-10 w-full min-w-[150px] border-sidebar-border bg-background text-sm sm:w-[170px] sm:min-w-[170px]"
                   />
-                  <span className="text-sm text-sidebar-foreground/80">to</span>
+                  <span className="text-sm font-medium text-sidebar-foreground/80">To</span>
                   <Input
                     type="date"
-                    value={dateTo}
-                    onChange={(event) => setDateTo(event.target.value)}
-                    className="h-10 w-full min-w-[150px] border-sidebar-border bg-background text-sm sm:w-[170px]"
+                    value={draftDateTo}
+                    onChange={(event) => setDraftDateTo(event.target.value)}
+                    className="h-10 w-full min-w-[150px] border-sidebar-border bg-background text-sm sm:w-[170px] sm:min-w-[170px]"
                   />
+                  {hasAppliedDateFilter && !hasPendingDateChanges ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearDateFilter}
+                      className="h-10 px-4 text-sm font-semibold text-sidebar-foreground/80 hover:bg-sidebar-accent/10 hover:text-sidebar-foreground"
+                    >
+                      Clear
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={handleApplyDateFilter}
+                      disabled={!hasPendingDateChanges}
+                      className="h-10 px-4 text-sm font-semibold"
+                    >
+                      Apply
+                    </Button>
+                  )}
                 </div>
-                {(dateFrom || dateTo) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setDateFrom('');
-                      setDateTo('');
-                    }}
-                    className="h-10 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent/10 hover:text-sidebar-foreground"
-                  >
-                    Clear dates
-                  </Button>
-                )}
               </div>
             </>
           ) : null}
@@ -109,8 +121,8 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         searchPlaceholder={draftOnly ? 'Search draft orders...' : 'Search orders...'}
         allTabLabel={draftOnly ? 'All Draft Orders' : 'All Orders'}
         showStatusTabs={false}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
+        dateFrom={appliedDateFrom}
+        dateTo={appliedDateTo}
       />
     </div>
   );
