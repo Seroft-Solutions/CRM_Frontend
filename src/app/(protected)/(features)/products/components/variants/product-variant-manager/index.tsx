@@ -1356,12 +1356,14 @@ export function ProductVariantManager({
 
   const copySalePriceToAllVariants = () => {
     const salePriceRaw = form?.watch?.('salePrice');
-    const salePrice = salePriceRaw !== undefined && salePriceRaw !== null && String(salePriceRaw).trim() !== ''
-      ? Number(salePriceRaw)
-      : undefined;
+    const salePrice =
+      salePriceRaw !== undefined && salePriceRaw !== null && String(salePriceRaw).trim() !== ''
+        ? Number(salePriceRaw)
+        : undefined;
 
     if (!Number.isFinite(salePrice) || salePrice <= 0) {
       toast.error('Please enter a valid sale price first');
+
       return;
     }
 
@@ -1387,6 +1389,7 @@ export function ProductVariantManager({
 
       Object.entries(prev).forEach(([key, row]) => {
         const existingPrice = row.price || 0;
+
         next[key] = {
           ...row,
           price: existingPrice + price,
@@ -1400,19 +1403,41 @@ export function ProductVariantManager({
   };
 
   const handleBulkStockUpdate = (warehouseId: number, stockToAdd: number) => {
+    const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === warehouseId);
+
     setDraftVariantsByKey((prev) => {
       const next: Record<string, DraftVariantRow> = {};
+      const warehouseAlreadyUsed = Object.values(prev).some((row) =>
+        (row.variantStocks || []).some((variantStock) => variantStock.warehouseId === warehouseId)
+      );
 
       Object.entries(prev).forEach(([key, row]) => {
-        const updatedVariantStocks = (row.variantStocks || []).map((variantStock) => {
-          if (variantStock.warehouseId === warehouseId) {
-            return {
-              ...variantStock,
-              stockQuantity: (variantStock.stockQuantity || 0) + stockToAdd,
-            };
-          }
-          return variantStock;
-        });
+        const existingVariantStocks = row.variantStocks || [];
+        const hasSelectedWarehouse = existingVariantStocks.some(
+          (variantStock) => variantStock.warehouseId === warehouseId
+        );
+
+        const updatedVariantStocks = hasSelectedWarehouse
+          ? existingVariantStocks.map((variantStock) => {
+              if (variantStock.warehouseId === warehouseId) {
+                return {
+                  ...variantStock,
+                  stockQuantity: (variantStock.stockQuantity || 0) + stockToAdd,
+                };
+              }
+
+              return variantStock;
+            })
+          : warehouseAlreadyUsed
+            ? existingVariantStocks
+            : [
+                ...existingVariantStocks,
+                {
+                  warehouseId,
+                  warehouseName: selectedWarehouse?.name,
+                  stockQuantity: stockToAdd,
+                },
+              ];
 
         const stockQuantity = updatedVariantStocks.reduce(
           (sum, vs) => sum + (vs.stockQuantity || 0),
@@ -1429,7 +1454,8 @@ export function ProductVariantManager({
       return next;
     });
 
-    const warehouseName = warehouses.find((w) => w.id === warehouseId)?.name || 'Unknown';
+    const warehouseName = selectedWarehouse?.name || 'Unknown';
+
     toast.success(`Added ${stockToAdd} stock to warehouse "${warehouseName}" for all variants`);
   };
 
