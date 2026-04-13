@@ -168,7 +168,7 @@ export function VariantsTable({
                 disabled={!bulkPrice || Number(bulkPrice) <= 0}
               >
                 <Plus className="h-3 w-3 mr-1" />
-                Add
+                Add to all
               </Button>
             </div>
             <div className="flex items-center gap-2 border-l pl-4">
@@ -205,7 +205,7 @@ export function VariantsTable({
                 disabled={!bulkWarehouseId || bulkStock === '' || Number(bulkStock) < 0}
               >
                 <Plus className="h-3 w-3 mr-1" />
-                Add
+                Add to all
               </Button>
             </div>
           </>
