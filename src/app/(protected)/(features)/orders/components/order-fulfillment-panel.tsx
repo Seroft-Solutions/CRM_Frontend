@@ -232,6 +232,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       });
 
       await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/orders'] }),
         queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.orderId}`] }),
         queryClient.invalidateQueries({ queryKey: ['/api/order-details'] }),
         queryClient.invalidateQueries({ queryKey: ['/api/order-histories'] }),
