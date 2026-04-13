@@ -26,6 +26,86 @@ export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNO
 
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
 
+const allowedOrderStatusTransitions: Record<
+  Exclude<OrderStatus, typeof UNKNOWN_LABEL>,
+  Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]
+> = {
+  Created: ['Processing', 'Cancelled'],
+  Processing: ['Shipped', 'Cancelled'],
+  Shipped: ['Delivered', 'Cancelled'],
+  Delivered: [],
+  Cancelled: [],
+};
+
+const formatOrderStatusList = (statuses: readonly Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]) => {
+  if (statuses.length === 0) {
+    return '';
+  }
+
+  if (statuses.length === 1) {
+    return statuses[0];
+  }
+
+  return `${statuses.slice(0, -1).join(', ')} or ${statuses[statuses.length - 1]}`;
+};
+
+export function getNextAllowedOrderStatuses(currentStatus?: OrderStatus) {
+  if (!currentStatus || currentStatus === UNKNOWN_LABEL) {
+    return [...orderStatusOptions];
+  }
+
+  return allowedOrderStatusTransitions[currentStatus] ?? [];
+}
+
+export function getSelectableOrderStatuses(
+  currentStatus?: OrderStatus,
+  options?: { isEditing?: boolean; includeUnknown?: boolean }
+): OrderStatus[] {
+  if (!options?.isEditing) {
+    return [options?.includeUnknown ? UNKNOWN_LABEL : 'Created'].filter(
+      (status): status is OrderStatus => Boolean(status)
+    );
+  }
+
+  if (!currentStatus || currentStatus === UNKNOWN_LABEL) {
+    return options?.includeUnknown
+      ? [...orderStatusOptions, UNKNOWN_LABEL]
+      : [...orderStatusOptions];
+  }
+
+  return [currentStatus, ...getNextAllowedOrderStatuses(currentStatus)];
+}
+
+export function getOrderStatusTransitionError(
+  currentStatus: OrderStatus | undefined,
+  nextStatus: OrderStatus,
+  options?: { isEditing?: boolean }
+) {
+  if (!options?.isEditing) {
+    return nextStatus === 'Created' ? undefined : 'New orders must start with Created status.';
+  }
+
+  if (!currentStatus || currentStatus === UNKNOWN_LABEL || currentStatus === nextStatus) {
+    return undefined;
+  }
+
+  const allowedStatuses = getNextAllowedOrderStatuses(currentStatus);
+
+  if (allowedStatuses.includes(nextStatus)) {
+    return undefined;
+  }
+
+  if (allowedStatuses.length === 0) {
+    return currentStatus === 'Delivered'
+      ? 'Delivered orders cannot change status.'
+      : currentStatus === 'Cancelled'
+        ? 'Cancelled orders cannot change status.'
+        : `Orders in ${currentStatus} cannot change status.`;
+  }
+
+  return `Order status can only move from ${currentStatus} to ${formatOrderStatusList(allowedStatuses)}.`;
+}
+
 export interface OrderDetailItem {
   orderDetailId: number;
   orderId: number;

@@ -15,10 +15,11 @@ import {
 } from '@/components/ui/select';
 import {
   OrderRecord,
+  getOrderStatusTransitionError,
   getOrderStatusCode,
   getPaymentStatusCode,
+  getSelectableOrderStatuses,
   getShippingMethodCode,
-  orderStatusOptions,
   paymentStatusOptions,
   shippingMethodOptions,
 } from '../../data/order-data';
@@ -81,6 +82,33 @@ export interface OrderFormProps {
   callId?: number;
   customerId?: number;
 }
+
+const getOrderStatusErrorDescription = (error: unknown, fallback: string) => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeAxiosError = error as {
+      response?: {
+        data?: {
+          detail?: string;
+          title?: string;
+          message?: string;
+        };
+      };
+    };
+
+    return (
+      maybeAxiosError.response?.data?.detail ||
+      maybeAxiosError.response?.data?.title ||
+      maybeAxiosError.response?.data?.message ||
+      fallback
+    );
+  }
+
+  return fallback;
+};
 
 const taxRateOptions = ['6', '12', '18'] as const;
 
@@ -1108,8 +1136,13 @@ export function OrderFormContent({
     return nextErrors;
   };
 
-  const orderStatusSelectOptions: OrderStatus[] =
-    formState.orderStatus === 'Unknown' ? [...orderStatusOptions, 'Unknown'] : orderStatusOptions;
+  const orderStatusSelectOptions: OrderStatus[] = getSelectableOrderStatuses(
+    initialOrder?.orderStatus ?? formState.orderStatus,
+    {
+      isEditing,
+      includeUnknown: formState.orderStatus === 'Unknown',
+    }
+  );
   const paymentStatusSelectOptions: PaymentStatus[] =
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
@@ -1121,6 +1154,18 @@ export function OrderFormContent({
 
   const saveDraft = async (): Promise<boolean> => {
     if (isEditing) return false;
+
+    const statusTransitionError = getOrderStatusTransitionError(undefined, formState.orderStatus, {
+      isEditing: false,
+    });
+
+    if (statusTransitionError) {
+      toast.error('Invalid order status.', {
+        description: statusTransitionError,
+      });
+
+      return false;
+    }
 
     setSubmitting(true);
 
@@ -1303,7 +1348,12 @@ export function OrderFormContent({
       return true;
     } catch (error) {
       console.error('Failed to save order draft:', error);
-      toast.error('Unable to save order draft.');
+      toast.error('Unable to save order draft.', {
+        description: getOrderStatusErrorDescription(
+          error,
+          'Please check the details and try again.'
+        ),
+      });
 
       return false;
     } finally {
@@ -1330,6 +1380,20 @@ export function OrderFormContent({
     if (hasErrors) {
       setErrors(validationErrors);
       toast.error('Please fix the highlighted fields.');
+
+      return;
+    }
+
+    const statusTransitionError = getOrderStatusTransitionError(
+      initialOrder?.orderStatus,
+      formState.orderStatus,
+      { isEditing }
+    );
+
+    if (statusTransitionError) {
+      toast.error('Invalid order status.', {
+        description: statusTransitionError,
+      });
 
       return;
     }
@@ -1612,9 +1676,12 @@ export function OrderFormContent({
       } else {
         router.push('/orders');
       }
-    } catch {
+    } catch (error) {
       toast.error('Unable to save order', {
-        description: 'Please check the details and try again.',
+        description: getOrderStatusErrorDescription(
+          error,
+          'Please check the details and try again.'
+        ),
       });
     } finally {
       setSubmitting(false);

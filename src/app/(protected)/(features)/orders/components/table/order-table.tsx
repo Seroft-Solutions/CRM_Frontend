@@ -31,7 +31,17 @@ import { type OrderDTO } from '@/core/api/generated/spring/schemas';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { InlinePermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
-import { getOrderStatusCode, OrderStatus, orderStatusOptions, PaymentStatus, paymentStatusOptions, ShippingMethod, shippingMethodOptions } from '../../data/order-data';
+import {
+  getOrderStatusCode,
+  getOrderStatusTransitionError,
+  getSelectableOrderStatuses,
+  OrderStatus,
+  orderStatusOptions,
+  PaymentStatus,
+  paymentStatusOptions,
+  ShippingMethod,
+  shippingMethodOptions,
+} from '../../data/order-data';
 import { useOrderRecord, useOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
@@ -63,6 +73,33 @@ function formatDate(value?: string) {
     month: 'short',
     year: 'numeric'
   });
+}
+
+function getOrderStatusErrorDescription(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeAxiosError = error as {
+      response?: {
+        data?: {
+          detail?: string;
+          title?: string;
+          message?: string;
+        };
+      };
+    };
+
+    return (
+      maybeAxiosError.response?.data?.detail ||
+      maybeAxiosError.response?.data?.title ||
+      maybeAxiosError.response?.data?.message ||
+      fallback
+    );
+  }
+
+  return fallback;
 }
 
 function getOrderStatusFromCode(code?: number): string {
@@ -469,6 +506,18 @@ export function OrderTable({
       return;
     }
 
+    const transitionError = getOrderStatusTransitionError(currentStatus, nextStatus, {
+      isEditing: true,
+    });
+
+    if (transitionError) {
+      toast.error('Invalid status change.', {
+        description: transitionError,
+      });
+
+      return;
+    }
+
     const hasOrderDto = orderDtoById.has(order.orderId);
 
     if (!hasOrderDto) {
@@ -533,7 +582,10 @@ export function OrderTable({
         [order.orderId]: currentStatus,
       }));
       toast.error('Unable to update order status.', {
-        description: `Order #${order.orderId} could not be updated.`,
+        description: getOrderStatusErrorDescription(
+          error,
+          `Order #${order.orderId} could not be updated.`
+        ),
       });
     } finally {
       setUpdatingOrderId((currentId) => (currentId === order.orderId ? null : currentId));
@@ -915,11 +967,13 @@ export function OrderTable({
                             <SelectValue placeholder={displayedStatus} />
                           </SelectTrigger>
                           <SelectContent>
-                            {orderStatusOptions.map((status) => (
+                            {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
+                              (status) => (
                               <SelectItem key={status} value={status}>
                                 {status}
                               </SelectItem>
-                            ))}
+                              )
+                            )}
                           </SelectContent>
                         </Select>
                       </InlinePermissionGuard>
