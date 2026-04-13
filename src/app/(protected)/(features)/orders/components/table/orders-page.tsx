@@ -108,7 +108,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         subtitle="order"
         searchPlaceholder={draftOnly ? 'Search draft orders...' : 'Search orders...'}
         allTabLabel={draftOnly ? 'All Draft Orders' : 'All Orders'}
-        showStatusTabs={!draftOnly}
+        showStatusTabs={false}
         dateFrom={dateFrom}
         dateTo={dateTo}
       />
