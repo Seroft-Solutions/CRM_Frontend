@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, LogOut, Search } from 'lucide-react';
 import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
+import { useSession } from 'next-auth/react';
 import {
   Table,
   TableBody,
@@ -24,12 +25,15 @@ interface OrganizationSelectorProps {
 export function OrganizationSelector({ organizations }: OrganizationSelectorProps) {
   const [selectedOrgId, setSelectedOrgId] = useState<string>(organizations[0]?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: session } = useSession();
   const router = useRouter();
+  const currentUserEmail = session?.user?.email?.trim().toLowerCase() || '';
 
   const filteredOrganizations = useMemo(() => {
     if (!searchQuery.trim()) return organizations;
 
     const query = searchQuery.toLowerCase();
+
     return organizations.filter(
       (org) =>
         org.name.toLowerCase().includes(query) ||
@@ -113,48 +117,73 @@ export function OrganizationSelector({ organizations }: OrganizationSelectorProp
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredOrganizations.map((org) => (
-                  <TableRow
-                    key={org.id}
-                    className={`cursor-pointer ${
-                      selectedOrgId === org.id ? 'bg-primary/5' : ''
-                    }`}
-                    onClick={() => setSelectedOrgId(org.id)}
-                  >
-                    <TableCell>
-                      <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedOrgId === org.id
-                            ? 'bg-primary border-primary'
-                            : 'border-muted-foreground/30'
-                        }`}
+                filteredOrganizations.map((org) => {
+                  const organizationEmail = org.email?.trim().toLowerCase() || '';
+                  const isEmailMismatch =
+                    Boolean(currentUserEmail) &&
+                    Boolean(organizationEmail) &&
+                    organizationEmail !== currentUserEmail;
+
+                  return (
+                    <TableRow
+                      key={org.id}
+                      className={`cursor-pointer ${
+                        selectedOrgId === org.id
+                          ? isEmailMismatch
+                            ? 'bg-amber-50'
+                            : 'bg-primary/5'
+                          : isEmailMismatch
+                            ? 'bg-amber-50/60'
+                            : ''
+                      }`}
+                      onClick={() => setSelectedOrgId(org.id)}
+                    >
+                      <TableCell>
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            selectedOrgId === org.id
+                              ? 'bg-primary border-primary'
+                              : 'border-muted-foreground/30'
+                          }`}
+                        >
+                          {selectedOrgId === org.id && (
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{org.name}</TableCell>
+                      <TableCell
+                        className={
+                          isEmailMismatch ? 'font-medium text-amber-700' : 'text-muted-foreground'
+                        }
                       >
-                        {selectedOrgId === org.id && (
-                          <div className="w-2 h-2 bg-white rounded-full" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{org.name}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {org.email || '-'}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          org.enabled !== false
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {org.enabled !== false ? 'Active' : 'Inactive'}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
+                        {org.email || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            org.enabled !== false
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {org.enabled !== false ? 'Active' : 'Inactive'}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
         </div>
+
+        {currentUserEmail && (
+          <p className="text-xs text-muted-foreground">
+            Rows highlighted in amber have an organization email that does not match your current
+            logged-in email.
+          </p>
+        )}
 
         <Button onClick={handleContinue} disabled={!selectedOrgId} size="lg" className="w-full">
           Continue to Dashboard
