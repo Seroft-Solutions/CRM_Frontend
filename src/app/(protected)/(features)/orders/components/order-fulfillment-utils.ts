@@ -1,5 +1,6 @@
 'use client';
 
+import type { OrderFulfillmentGenerationResponse } from '@/core/api/order-fulfillment-generations';
 import type { AddressFields, OrderRecord } from '../data/order-data';
 
 export function formatOrderDateTime(value?: string) {
@@ -39,6 +40,29 @@ export function getOrderDiscountAmount(order: OrderRecord) {
   const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
 
   return Math.max(order.orderBaseAmount - taxableAmount, 0);
+}
+
+export function getOrderFulfillmentTotalAmount(
+  order: OrderRecord,
+  generation: OrderFulfillmentGenerationResponse
+) {
+  const invoiceSubtotal = (generation.items ?? []).reduce((sum, item) => {
+    const deliveredQuantity = item.deliveredQuantity ?? item.requestedQuantity ?? 0;
+    const unitPrice =
+      order.items.find((candidate) => candidate.orderDetailId === item.orderDetailId)?.itemPrice ??
+      0;
+
+    return sum + deliveredQuantity * unitPrice;
+  }, 0);
+
+  const fulfillmentShare =
+    order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
+  const allocatedDiscountAmount = getOrderDiscountAmount(order) * fulfillmentShare;
+  const allocatedShippingAmount = (order.shipping.shippingAmount ?? 0) * fulfillmentShare;
+  const taxableAmount = Math.max(invoiceSubtotal - allocatedDiscountAmount, 0);
+  const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
+
+  return Math.max(taxableAmount + taxAmount + allocatedShippingAmount, 0);
 }
 
 export function getCustomerDisplayName(order: OrderRecord) {

@@ -32,7 +32,7 @@ import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-
 import { InlinePermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import { getOrderStatusCode, OrderStatus, orderStatusOptions, PaymentStatus, paymentStatusOptions, ShippingMethod, shippingMethodOptions } from '../../data/order-data';
-import { useOrderTableData } from '../../hooks';
+import { useOrderRecord, useOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -1194,20 +1194,26 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
       staleTime: 30_000,
     },
   });
+  const {
+    orderRecord: detailedOrder,
+    isLoading: isOrderLoading,
+    isError: isOrderError,
+  } = useOrderRecord(order.orderId, { includeHistory: false });
+  const resolvedOrder = detailedOrder ?? order;
 
   return (
     <TableRow className="hover:bg-slate-50/50">
       <TableCell colSpan={9} className="p-0">
         <div className="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
-          {isLoading ? (
+          {isLoading || isOrderLoading ? (
             <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
-          ) : isError ? (
+          ) : isError || isOrderError ? (
             <div className="text-sm text-red-600">
               Failed to load fulfillment history. Please try again.
             </div>
           ) : (
             <OrderFulfillmentHistoryTable
-              order={order}
+              order={resolvedOrder}
               generations={generations}
               showHeader={false}
             />

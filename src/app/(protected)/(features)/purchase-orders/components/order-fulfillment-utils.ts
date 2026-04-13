@@ -1,5 +1,6 @@
 'use client';
 
+import type { PurchaseOrderFulfillmentGenerationResponse } from '@/core/api/purchase-order-fulfillment-generations';
 import type { AddressFields, OrderRecord } from '../data/purchase-order-data';
 
 export function formatOrderDateTime(value?: string) {
@@ -24,6 +25,28 @@ export function getFulfillmentRecordLabel(
 
 export function getSundryCreditorDisplayName(order: OrderRecord) {
   return order.sundryCreditor?.creditorName || order.email || '—';
+}
+
+export function getPurchaseOrderFulfillmentTotalAmount(
+  order: OrderRecord,
+  generation: PurchaseOrderFulfillmentGenerationResponse
+) {
+  const invoiceSubtotal = (generation.items ?? []).reduce((sum, item) => {
+    const receivedQuantity = item.deliveredQuantity ?? item.requestedQuantity ?? 0;
+    const unitPrice =
+      order.items.find((candidate) => candidate.orderDetailId === item.orderDetailId)?.itemPrice ??
+      0;
+
+    return sum + receivedQuantity * unitPrice;
+  }, 0);
+
+  const fulfillmentShare =
+    order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
+  const allocatedShippingAmount = (order.shipping.shippingAmount ?? 0) * fulfillmentShare;
+  const taxableAmount = Math.max(invoiceSubtotal, 0);
+  const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
+
+  return Math.max(taxableAmount + taxAmount + allocatedShippingAmount, 0);
 }
 
 export function getAddressLines(address?: AddressFields) {

@@ -15,8 +15,10 @@ import {
 import type { OrderFulfillmentGenerationResponse } from '@/core/api/order-fulfillment-generations';
 import type { OrderRecord } from '../data/order-data';
 import {
+  formatOrderCurrency,
   formatOrderDateTime,
   getCustomerDisplayName,
+  getOrderFulfillmentTotalAmount,
   getFulfillmentRecordLabel,
 } from './order-fulfillment-utils';
 
@@ -65,6 +67,7 @@ export function OrderFulfillmentHistoryTable({
                 <TableHead className="text-center">Items</TableHead>
                 <TableHead className="text-center">Delivered</TableHead>
                 <TableHead className="text-center">Remaining</TableHead>
+                <TableHead className="text-right">Total Amount</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -102,6 +105,9 @@ export function OrderFulfillmentHistoryTable({
                     <TableCell className="text-center font-semibold text-amber-700">
                       {generation.totalBacklogQuantity ?? 0}
                     </TableCell>
+                    <TableCell className="text-right font-semibold text-slate-900">
+                      {formatOrderCurrency(getOrderFulfillmentTotalAmount(order, generation))}
+                    </TableCell>
                     <TableCell className="text-right">
                       {generation.id ? (
                         <Button
@@ -113,7 +119,7 @@ export function OrderFulfillmentHistoryTable({
                             href={`/orders/${order.orderId}/fulfillment/history/${generation.id}`}
                           >
                             <Eye className="h-4 w-4" />
-                            View
+                            View Invoice
                           </Link>
                         </Button>
                       ) : (
@@ -124,7 +130,7 @@ export function OrderFulfillmentHistoryTable({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-16 text-center">
+                  <TableCell colSpan={7} className="py-16 text-center">
                     <div className="space-y-2">
                       <div className="text-lg font-semibold text-slate-900">
                         No fulfillment history found
