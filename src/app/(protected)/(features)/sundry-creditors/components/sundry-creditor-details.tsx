@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Pencil } from 'lucide-react';
+import { BookOpen, Pencil } from 'lucide-react';
 import { sundryCreditorToast, handleSundryCreditorError } from './sundry-creditor-toast';
 import { sundryCreditorFormConfig } from './form/sundry-creditor-form-config';
 import { Button } from '@/components/ui/button';
@@ -19,10 +19,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-import {
-  useDeleteSundryCreditor,
-  useGetSundryCreditor,
-} from '../api/sundry-creditor';
+import { useDeleteSundryCreditor, useGetSundryCreditor } from '../api/sundry-creditor';
 
 interface SundryCreditorDetailsProps {
   id: number;
@@ -183,7 +180,9 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
 
                 {/* Render Relationships */}
                 {step.relationships.map((relationshipName) => {
-                  const relConfig = formConfig.relationships.find((r) => r.name === relationshipName);
+                  const relConfig = formConfig.relationships.find(
+                    (r) => r.name === relationshipName
+                  );
                   if (!relConfig) return null;
 
                   const value = (entity as any)[relationshipName];
@@ -209,31 +208,53 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
           <div className="flex items-center gap-3 mb-3 pb-2 border-b border-border/50">
             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
               </svg>
             </div>
             <div>
               <h4 className="font-semibold text-sm text-foreground">Addresses</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">Manage and view sundry creditor delivery locations</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Manage and view sundry creditor delivery locations
+              </p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {((entity as any).addresses || []).length > 0 ? (
               (entity as any).addresses.map((address: any, idx: number) => (
-                <div key={address.id || idx} className={`p-3 rounded-md border ${address.isDefault ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50/50 border-slate-200'}`}>
+                <div
+                  key={address.id || idx}
+                  className={`p-3 rounded-md border ${address.isDefault ? 'bg-blue-50/50 border-blue-200' : 'bg-slate-50/50 border-slate-200'}`}
+                >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Address {idx + 1}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Address {idx + 1}
+                    </span>
                     {address.isDefault && (
-                      <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">DEFAULT</span>
+                      <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                        DEFAULT
+                      </span>
                     )}
                   </div>
-                  <p className="text-sm font-medium text-slate-900 mb-1">{address.completeAddress}</p>
+                  <p className="text-sm font-medium text-slate-900 mb-1">
+                    {address.completeAddress}
+                  </p>
                   <p className="text-xs text-slate-600">
                     {address.area
                       ? [
                           (address.area as any).city?.name || (address.area as any).cityName,
-                          (address.area as any).city?.district?.state?.name || (address.area as any).stateName,
+                          (address.area as any).city?.district?.state?.name ||
+                            (address.area as any).stateName,
                           address.area.pincode,
                         ]
                           .filter(Boolean)
@@ -255,6 +276,12 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
       <div className="mt-8 pt-6 border-t">
         <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
           <Button variant="outline" asChild className="flex items-center gap-2 justify-center">
+            <Link href={`/sundry-creditors/${id}/ledger`}>
+              <BookOpen className="h-4 w-4" />
+              Ledger
+            </Link>
+          </Button>
+          <Button variant="outline" asChild className="flex items-center gap-2 justify-center">
             <Link href={`/sundry-creditors/${id}/edit`}>
               <Pencil className="h-4 w-4" />
               Edit
@@ -268,8 +295,8 @@ export function SundryCreditorDetails({ id }: SundryCreditorDetailsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the sundry creditor and remove its
-              data from the server.
+              This action cannot be undone. This will permanently delete the sundry creditor and
+              remove its data from the server.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
