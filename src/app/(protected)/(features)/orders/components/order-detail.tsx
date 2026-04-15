@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { OrderRecord, OrderStatus } from '../data/order-data';
 import { History, PackageCheck } from 'lucide-react';
 import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
@@ -48,6 +50,55 @@ interface OrderDetailProps {
 
 export function OrderDetail({ order }: OrderDetailProps) {
   const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
+  const { data: generations = [] } = useGetOrderFulfillmentGenerations(order.orderId, {
+    query: {
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
+  });
+  const deliveredQuantityByOrderDetailId = useMemo(() => {
+    const deliveredMap = new Map<number, number>();
+
+    generations.forEach((generation) => {
+      generation.items?.forEach((item) => {
+        if (typeof item.orderDetailId !== 'number') {
+          return;
+        }
+
+        const deliveredQuantity = Math.max(0, item.deliveredQuantity ?? 0);
+
+        deliveredMap.set(
+          item.orderDetailId,
+          (deliveredMap.get(item.orderDetailId) ?? 0) + deliveredQuantity
+        );
+      });
+    });
+
+    return deliveredMap;
+  }, [generations]);
+  const orderedQuantityByOrderDetailId = useMemo(() => {
+    const orderedQuantityMap = new Map<number, number>();
+
+    order.items.forEach((item) => {
+      const orderedQuantity =
+        Math.max(0, item.quantity) +
+        Math.max(0, item.backOrderQuantity) +
+        (deliveredQuantityByOrderDetailId.get(item.orderDetailId) ?? 0);
+
+      orderedQuantityMap.set(item.orderDetailId, orderedQuantity);
+    });
+
+    return orderedQuantityMap;
+  }, [deliveredQuantityByOrderDetailId, order.items]);
+  const recalculatedBaseAmount = useMemo(
+    () =>
+      order.items.reduce((sum, item) => {
+        const orderedQuantity = orderedQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
+
+        return sum + Math.max(orderedQuantity * item.itemPrice + item.itemTaxAmount, 0);
+      }, 0),
+    [order.items, orderedQuantityByOrderDetailId]
+  );
   const taxRate = order.orderTaxRate ?? 0;
   const discountAmount = (() => {
     if (!order.discountCode) {
@@ -60,10 +111,14 @@ export function OrderDetail({ order }: OrderDetailProps) {
     if (divisor <= 0) return 0;
     const taxableAmount = Math.max((totalAmount - shippingAmount) / divisor, 0);
 
-    return Math.max(order.orderBaseAmount - taxableAmount, 0);
+    return Math.max(recalculatedBaseAmount - taxableAmount, 0);
   })();
-  const taxableAmount = Math.max(order.orderBaseAmount - discountAmount, 0);
+  const taxableAmount = Math.max(recalculatedBaseAmount - discountAmount, 0);
   const taxAmount = (taxRate / 100) * taxableAmount;
+  const recalculatedOrderTotalAmount = Math.max(
+    taxableAmount + (order.shipping.shippingAmount ?? 0) + taxAmount,
+    0
+  );
   const customerName = order.customer?.customerBusinessName || order.email || '—';
   const customerPhone = order.customer?.mobile || order.phone || '—';
   const customerEmail = order.customer?.email || order.email || '—';
@@ -104,7 +159,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Base</span>
               <span className="font-semibold text-slate-800">
-                {formatCurrency(order.orderBaseAmount)}
+                {formatCurrency(recalculatedBaseAmount)}
               </span>
             </div>
             <div className="flex items-center justify-between text-red-600">
@@ -126,7 +181,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between rounded-lg border-2 border-yellow-500/30 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2.5">
               <span className="font-bold text-slate-900">Total</span>
               <span className="text-lg font-bold text-slate-900">
-                {formatCurrency(order.orderTotalAmount)}
+                {formatCurrency(recalculatedOrderTotalAmount)}
               </span>
             </div>
             {order.discountCode ? (
@@ -294,78 +349,85 @@ export function OrderDetail({ order }: OrderDetailProps) {
               </TableHeader>
               <TableBody>
                 {order.items.length > 0 ? (
-                  order.items.map((item, index) => (
-                    <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                            {index + 1}
-                          </div>
-                          <div>
-                            {item.productName ? (
-                              <>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {item.productCatalogId ? (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Catalog
-                                    </Badge>
-                                  ) : null}
+                  order.items.map((item, index) => {
+                    const orderedQuantity =
+                      orderedQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
+                    const calculatedItemTotal =
+                      orderedQuantity * item.itemPrice + item.itemTaxAmount;
+
+                    return (
+                      <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
+                              {index + 1}
+                            </div>
+                            <div>
+                              {item.productName ? (
+                                <>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {item.productCatalogId ? (
+                                      <Badge variant="secondary" className="text-xs">
+                                        Catalog
+                                      </Badge>
+                                    ) : null}
+                                    <div className="font-semibold text-slate-800">
+                                      {item.productName}
+                                    </div>
+                                  </div>
+                                  {item.sku && (
+                                    <div className="text-xs text-muted-foreground">
+                                      SKU: {item.sku}
+                                    </div>
+                                  )}
+                                  {item.variantAttributes && (
+                                    <div className="text-xs text-blue-600">
+                                      {item.variantAttributes.split(',').map((attr, i) => (
+                                        <div key={i}>{attr.trim()}</div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {item.itemComment && (
+                                    <div className="text-xs italic text-muted-foreground">
+                                      {item.itemComment}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
                                   <div className="font-semibold text-slate-800">
-                                    {item.productName}
+                                    {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
                                   </div>
-                                </div>
-                                {item.sku && (
                                   <div className="text-xs text-muted-foreground">
-                                    SKU: {item.sku}
+                                    {item.itemComment || 'No product selected'}
                                   </div>
-                                )}
-                                {item.variantAttributes && (
-                                  <div className="text-xs text-blue-600">
-                                    {item.variantAttributes.split(',').map((attr, i) => (
-                                      <div key={i}>{attr.trim()}</div>
-                                    ))}
-                                  </div>
-                                )}
-                                {item.itemComment && (
-                                  <div className="text-xs italic text-muted-foreground">
-                                    {item.itemComment}
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <div className="font-semibold text-slate-800">
-                                  {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {item.itemComment || 'No product selected'}
-                                </div>
-                              </>
-                            )}
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        <div>{item.quantity}</div>
-                        <div className="text-xs text-slate-500">
-                          Available {typeof item.variantId === 'number' ? 'variant' : 'product'}{' '}
-                          main stock:{' '}
-                          {stocksLoading
-                            ? '...'
-                            : (stockByItemId.get(item.orderDetailId)?.availableQuantity ?? 0)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {formatCurrency(item.itemPrice)}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {formatCurrency(item.itemTaxAmount)}
-                      </TableCell>
-                      <TableCell className="font-bold text-slate-900">
-                        {formatCurrency(item.itemTotalAmount)}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-800">
+                          <div>{orderedQuantity}</div>
+                          <div className="text-xs text-slate-500">
+                            Available {typeof item.variantId === 'number' ? 'variant' : 'product'}{' '}
+                            main stock:{' '}
+                            {stocksLoading
+                              ? '...'
+                              : (stockByItemId.get(item.orderDetailId)?.availableQuantity ?? 0)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-800">
+                          {formatCurrency(item.itemPrice)}
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-800">
+                          {formatCurrency(item.itemTaxAmount)}
+                        </TableCell>
+                        <TableCell className="font-bold text-slate-900">
+                          {formatCurrency(calculatedItemTotal)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} className="py-12 text-center">

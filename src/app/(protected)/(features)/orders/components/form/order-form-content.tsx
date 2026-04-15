@@ -1212,9 +1212,7 @@ export function OrderFormContent({
 
     try {
       const itemsTotal = calculateItemsTotal(items);
-      const baseAmount = formState.orderBaseAmount.trim()
-        ? parseAmount(formState.orderBaseAmount)
-        : itemsTotal;
+      const baseAmount = itemsTotal;
       const shippingAmount = parseAmount(formState.shippingAmount || '0');
       const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
       const taxAmount = (taxRate / 100) * Math.max(baseAmount, 0);
@@ -1444,9 +1442,7 @@ export function OrderFormContent({
     };
 
     const itemsTotal = calculateItemsTotal(items);
-    const baseAmount = formState.orderBaseAmount.trim()
-      ? parseAmount(formState.orderBaseAmount)
-      : itemsTotal;
+    const baseAmount = itemsTotal;
     const discountCode = formState.discountCode?.trim() || '';
     let resolvedDiscount = discountData;
 
@@ -1689,9 +1685,7 @@ export function OrderFormContent({
   };
 
   const itemsTotal = calculateItemsTotal(items);
-  const baseAmount = formState.orderBaseAmount.trim()
-    ? Number.parseFloat(formState.orderBaseAmount) || 0
-    : itemsTotal;
+  const baseAmount = itemsTotal;
   const discountCodeValue = formState.discountCode?.trim() || '';
   const activeDiscount =
     discountCodeValue &&
