@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { History, PackageCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import {
   Table,
   TableBody,
@@ -46,9 +48,53 @@ interface OrderDetailProps {
 }
 
 export function OrderDetail({ order }: OrderDetailProps) {
+  const { data: fulfillmentGenerations = [] } = useGetPurchaseOrderFulfillmentGenerations(
+    order.orderId
+  );
+  const displayItems = useMemo(() => {
+    const originalQuantityByDetailId = new Map<number, number>();
+
+    order.items.forEach((item) => {
+      originalQuantityByDetailId.set(item.orderDetailId, Math.max(0, item.quantity));
+    });
+
+    fulfillmentGenerations.forEach((generation) => {
+      generation.items?.forEach((item) => {
+        if (!item.orderDetailId) {
+          return;
+        }
+
+        const deliveredQuantity = Math.max(
+          0,
+          item.deliveredQuantity ?? item.requestedQuantity ?? 0
+        );
+
+        originalQuantityByDetailId.set(
+          item.orderDetailId,
+          (originalQuantityByDetailId.get(item.orderDetailId) ?? 0) + deliveredQuantity
+        );
+      });
+    });
+
+    return order.items.map((item) => {
+      const originalOrderedQuantity =
+        originalQuantityByDetailId.get(item.orderDetailId) ?? Math.max(0, item.quantity);
+      const displayTotal = Math.max(
+        originalOrderedQuantity * item.itemPrice + item.itemTaxAmount,
+        0
+      );
+
+      return {
+        ...item,
+        originalOrderedQuantity,
+        displayTotal,
+      };
+    });
+  }, [fulfillmentGenerations, order.items]);
   const taxRate = order.orderTaxRate ?? 0;
-  const taxableAmount = order.orderBaseAmount;
+  const taxableAmount = displayItems.reduce((sum, item) => sum + item.displayTotal, 0);
   const taxAmount = (taxRate / 100) * taxableAmount;
+  const orderTotalAmount = Math.max(taxableAmount + order.shipping.shippingAmount + taxAmount, 0);
   const sundryCreditorName = order.sundryCreditor?.creditorName || order.email || '—';
   const sundryCreditorPhone = order.sundryCreditor?.mobile || order.phone || '—';
   const sundryCreditorEmail = order.sundryCreditor?.email || order.email || '—';
@@ -89,7 +135,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Base</span>
               <span className="font-semibold text-slate-800">
-                {formatCurrency(order.orderBaseAmount)}
+                {formatCurrency(taxableAmount)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -107,7 +153,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <div className="flex items-center justify-between rounded-lg border-2 border-yellow-500/30 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2.5">
               <span className="font-bold text-slate-900">Total</span>
               <span className="text-lg font-bold text-slate-900">
-                {formatCurrency(order.orderTotalAmount)}
+                {formatCurrency(orderTotalAmount)}
               </span>
             </div>
           </CardContent>
@@ -248,7 +294,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                   Order Fulfillment
                 </Link>
               </Button>
-              <Badge className="bg-cyan-100 text-cyan-900">{order.items.length} items</Badge>
+              <Badge className="bg-cyan-100 text-cyan-900">{displayItems.length} items</Badge>
             </div>
           </CardTitle>
         </CardHeader>
@@ -264,8 +310,8 @@ export function OrderDetail({ order }: OrderDetailProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {order.items.length > 0 ? (
-                order.items.map((item, index) => (
+              {displayItems.length > 0 ? (
+                displayItems.map((item, index) => (
                   <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -314,7 +360,9 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-semibold text-slate-800">{item.quantity}</TableCell>
+                    <TableCell className="font-semibold text-slate-800">
+                      {item.originalOrderedQuantity}
+                    </TableCell>
                     <TableCell className="font-semibold text-slate-800">
                       {formatCurrency(item.itemPrice)}
                     </TableCell>
@@ -322,7 +370,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                       {formatCurrency(item.itemTaxAmount)}
                     </TableCell>
                     <TableCell className="font-bold text-slate-900">
-                      {formatCurrency(item.itemTotalAmount)}
+                      {formatCurrency(item.displayTotal)}
                     </TableCell>
                   </TableRow>
                 ))

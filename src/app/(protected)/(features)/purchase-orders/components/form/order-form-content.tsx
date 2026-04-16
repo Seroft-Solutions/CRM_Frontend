@@ -831,9 +831,7 @@ export function OrderFormContent({
 
     try {
       const itemsTotal = calculateItemsTotal(items);
-      const baseAmount = formState.orderBaseAmount.trim()
-        ? parseAmount(formState.orderBaseAmount)
-        : itemsTotal;
+      const baseAmount = itemsTotal;
       const shippingAmount = parseAmount(formState.shippingAmount || '0');
       const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
       const taxAmount = (taxRate / 100) * Math.max(baseAmount, 0);
@@ -1010,9 +1008,7 @@ export function OrderFormContent({
     };
 
     const itemsTotal = calculateItemsTotal(items);
-    const baseAmount = formState.orderBaseAmount.trim()
-      ? parseAmount(formState.orderBaseAmount)
-      : itemsTotal;
+    const baseAmount = itemsTotal;
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
     const taxableAmount = baseAmount;
@@ -1207,9 +1203,7 @@ export function OrderFormContent({
   };
 
   const itemsTotal = calculateItemsTotal(items);
-  const baseAmount = formState.orderBaseAmount.trim()
-    ? Number.parseFloat(formState.orderBaseAmount) || 0
-    : itemsTotal;
+  const baseAmount = itemsTotal;
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const taxRateValue = Math.min(Math.max(Number.parseFloat(formState.orderTaxRate) || 0, 0), 100);
   const taxableAmount = baseAmount;

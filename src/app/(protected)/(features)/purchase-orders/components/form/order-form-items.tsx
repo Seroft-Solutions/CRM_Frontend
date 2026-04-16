@@ -239,11 +239,11 @@ function ProductVariantSelector({
     return product.variants.reduce((total, variant) => total + (variant.stockQuantity ?? 0), 0);
   };
 
-  const getProductPrice = (product: ProductDTO) =>
-    product.salePrice ?? product.discountedPrice ?? product.basePrice;
+  const getProductBasePrice = (product: ProductDTO) =>
+    product.basePrice ?? product.salePrice ?? product.discountedPrice;
 
   const buildProductItem = (product: ProductDTO): OrderItemForm => {
-    const price = getProductPrice(product);
+    const price = getProductBasePrice(product);
 
     return {
       ...item,
@@ -277,10 +277,10 @@ function ProductVariantSelector({
     sku: variant.sku,
     variantAttributes: `Variant: ${variant.sku}`,
     itemPrice:
-      variant.price !== undefined && variant.price !== null
-        ? String(variant.price)
-        : getProductPrice(product) !== undefined && getProductPrice(product) !== null
-          ? String(getProductPrice(product))
+      getProductBasePrice(product) !== undefined && getProductBasePrice(product) !== null
+        ? String(getProductBasePrice(product))
+        : variant.price !== undefined && variant.price !== null
+          ? String(variant.price)
           : baseItem.itemPrice,
   });
 
@@ -406,8 +406,11 @@ function ProductVariantSelector({
                           <span className="font-medium text-sm">{product.name}</span>
                           <span className="text-xs text-muted-foreground">
                             SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • QTY:{' '}
-                            {getProductQuantity(product)} • Price: ₹
-                            {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+                            {getProductQuantity(product)} • Base Price: ₹
+                            {product.basePrice ??
+                              product.salePrice ??
+                              product.discountedPrice ??
+                              0}
                           </span>
                         </div>
                         <Check
@@ -477,7 +480,8 @@ function ProductVariantSelector({
                         <div className="flex flex-1 flex-col">
                           <span className="font-medium text-sm">{variant.sku}</span>
                           <span className="text-xs text-muted-foreground">
-                            Stock: {variant.stockQuantity ?? 0} • ₹{variant.price ?? 0}
+                            Stock: {variant.stockQuantity ?? 0} • Base Price: ₹
+                            {selectedProduct?.basePrice ?? variant.price ?? 0}
                           </span>
                         </div>
                         <Check
