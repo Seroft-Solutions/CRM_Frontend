@@ -615,7 +615,7 @@ function ProductVariantSelector({
         : `${pendingVariantIds.length} variants selected`;
 
   if (!showProductSelector) {
-    return <SelectedVariantSection variant={selectedVariant} />;
+    return null;
   }
 
   return (
@@ -1049,115 +1049,206 @@ export function OrderFormItems({
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
         : undefined;
+    const selectedVariantPreview =
+      item.itemType === 'product' && item.variantId
+        ? {
+            id: item.variantId,
+            sku: item.sku ?? item.productName ?? 'Variant',
+          }
+        : undefined;
 
     return (
       <div
         key={`desktop-entry-${index}`}
         className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
       >
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2.6fr)_104px_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto] lg:gap-x-1 lg:gap-y-4">
-          <div className="min-w-0">
-            {item.itemType === 'catalog' ? (
-              <>
-                <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
-                {(item.productName || item.sku) && (
-                  <SelectedOrderItemPreview
-                    item={item}
-                    selectedCatalog={selectedCatalog}
-                    onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
-                    catalogDisplayLabel={getCatalogDisplayLabel(item)}
-                  />
-                )}
-              </>
-            ) : (
-              <ProductVariantSelector
-                item={item}
-                index={index}
-                onApplyVariantSelection={onApplyVariantSelection}
-                onItemChange={onItemChange}
-                showProductSelector={entryIndex === 0}
-              />
-            )}
-          </div>
+        {item.itemType === 'catalog' ? (
+          <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2.6fr)_104px_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto] lg:gap-x-1 lg:gap-y-4">
+            <div className="min-w-0">
+              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+              {(item.productName || item.sku) && (
+                <SelectedOrderItemPreview
+                  item={item}
+                  selectedCatalog={selectedCatalog}
+                  onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
+                  catalogDisplayLabel={getCatalogDisplayLabel(item)}
+                />
+              )}
+            </div>
 
-          <div className="lg:col-start-3">
-            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={item.quantity}
-              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-              className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
+            <div className="lg:col-start-3">
+              <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={item.quantity}
+                onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
+              />
+              {availableQuantity !== undefined && (
+                <p className="mt-1 text-[11px] text-slate-500">
+                  {availableSalesStockLabel}: {availableQuantity}
+                </p>
+              )}
+              {showWarehouseStocks && (
+                <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                  <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
+                  <div className="mt-0.5 space-y-0.5">
+                    {warehouseStocks.map((entry, stockIndex) => (
+                      <p
+                        key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
+                        className="text-[11px] text-slate-600"
+                      >
+                        {entry.warehouseName ||
+                          entry.warehouseCode ||
+                          `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
+                        {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {backOrderMessage && (
+                <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+              )}
+              <FieldError message={quantityErrorMessage} />
+            </div>
+
+            <div className="lg:col-start-4">
+              <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={item.itemPrice}
+                readOnly
+                className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+              />
+              <FieldError message={itemErrors?.[index]?.itemPrice} />
+            </div>
+
+            <div className="flex flex-col gap-2 lg:col-start-5 lg:min-w-[88px]">
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground mb-1">Total</div>
+                <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+              </div>
+              <div className="flex gap-1 justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemoveItem(index)}
+                  className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <ProductVariantSelector
+              item={item}
+              index={index}
+              onApplyVariantSelection={onApplyVariantSelection}
+              onItemChange={onItemChange}
+              showProductSelector={entryIndex === 0}
             />
-            {availableQuantity !== undefined && (
-              <p className="mt-1 text-[11px] text-slate-500">
-                {availableSalesStockLabel}: {availableQuantity}
-              </p>
-            )}
-            {showWarehouseStocks && (
-              <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
-                <div className="mt-0.5 space-y-0.5">
-                  {warehouseStocks.map((entry, stockIndex) => (
-                    <p
-                      key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
-                      className="text-[11px] text-slate-600"
-                    >
-                      {entry.warehouseName ||
-                        entry.warehouseCode ||
-                        `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
-                      {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+
+            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.8fr)_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto] lg:gap-x-3">
+              <SelectedVariantSection variant={selectedVariantPreview} />
+
+              <div>
+                <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={item.quantity}
+                  onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                  className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
+                />
+                {availableQuantity !== undefined && (
+                  <p className="mt-1 text-[11px] text-slate-500">
+                    {availableSalesStockLabel}: {availableQuantity}
+                  </p>
+                )}
+                {showWarehouseStocks && (
+                  <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                    <p className="text-[11px] font-semibold text-slate-600">
+                      Warehouse sales stock
                     </p>
-                  ))}
+                    <div className="mt-0.5 space-y-0.5">
+                      {warehouseStocks.map((entry, stockIndex) => (
+                        <p
+                          key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
+                          className="text-[11px] text-slate-600"
+                        >
+                          {entry.warehouseName ||
+                            entry.warehouseCode ||
+                            `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
+                          {': '}Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {backOrderMessage && (
+                  <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+                )}
+                <FieldError message={quantityErrorMessage} />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="0.00"
+                  value={item.itemPrice}
+                  readOnly
+                  className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+                />
+                <FieldError message={itemErrors?.[index]?.itemPrice} />
+              </div>
+
+              <div className="flex flex-col gap-2 lg:min-w-[88px]">
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground mb-1">Total</div>
+                  <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                </div>
+                <div className="flex gap-1 justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemoveItem(index)}
+                    className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </Button>
                 </div>
               </div>
-            )}
-            {backOrderMessage && (
-              <p className="mt-1 text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
-            )}
-            <FieldError message={quantityErrorMessage} />
-          </div>
-
-          <div className="lg:col-start-4">
-            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={item.itemPrice}
-              readOnly
-              className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
-            />
-            <FieldError message={itemErrors?.[index]?.itemPrice} />
-          </div>
-
-          <div className="flex flex-col gap-2 lg:col-start-5 lg:min-w-[88px]">
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground mb-1">Total</div>
-              <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
-            </div>
-            <div className="flex gap-1 justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemoveItem(index)}
-                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-              </Button>
             </div>
           </div>
-        </div>
+        )}
       </div>
     );
   };
@@ -1189,6 +1280,13 @@ export function OrderFormItems({
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
+        : undefined;
+    const selectedVariantPreview =
+      item.itemType === 'product' && item.variantId
+        ? {
+            id: item.variantId,
+            sku: item.sku ?? item.productName ?? 'Variant',
+          }
         : undefined;
 
     return (
@@ -1242,13 +1340,16 @@ export function OrderFormItems({
               )}
             </>
           ) : (
-            <ProductVariantSelector
-              item={item}
-              index={index}
-              onApplyVariantSelection={onApplyVariantSelection}
-              onItemChange={onItemChange}
-              showProductSelector={entryIndex === 0}
-            />
+            <div className="space-y-4">
+              <ProductVariantSelector
+                item={item}
+                index={index}
+                onApplyVariantSelection={onApplyVariantSelection}
+                onItemChange={onItemChange}
+                showProductSelector={entryIndex === 0}
+              />
+              <SelectedVariantSection variant={selectedVariantPreview} />
+            </div>
           )}
         </div>
 
