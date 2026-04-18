@@ -1285,11 +1285,10 @@ export function OrderFormItems({
             {itemGroups.map((group, groupIndex) => (
               <div key={group.key} className="hover:bg-slate-50/50 transition-colors">
                 {(() => {
-                  const isMultiVariantProductGroup =
-                    group.entries.length > 1 &&
+                  const isProductVariantGroup =
                     group.entries.every(
                       ({ item }) => item.itemType === 'product' && Boolean(item.productId)
-                    );
+                    ) && group.entries.some(({ item }) => Boolean(item.variantId));
 
                   return (
                     <>
@@ -1300,26 +1299,22 @@ export function OrderFormItems({
                           </div>
                         </div>
                         <div className="col-span-11 space-y-4">
-                          {isMultiVariantProductGroup
-                            ? renderProductGroupHeader(group.entries)
-                            : null}
+                          {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
                           {group.entries.map(({ item, index }, entryIndex) =>
                             renderDesktopEntry(item, index, entryIndex, group.entries.length, {
-                              forceHideProductSelector: isMultiVariantProductGroup,
-                              hasGroupHeader: isMultiVariantProductGroup,
+                              forceHideProductSelector: isProductVariantGroup,
+                              hasGroupHeader: isProductVariantGroup,
                             })
                           )}
                         </div>
                       </div>
 
                       <div className="lg:hidden p-4 space-y-4">
-                        {isMultiVariantProductGroup
-                          ? renderProductGroupHeader(group.entries)
-                          : null}
+                        {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
                         {group.entries.map(({ item, index }, entryIndex) =>
                           renderMobileEntry(item, index, entryIndex, group.entries.length, {
-                            forceHideProductSelector: isMultiVariantProductGroup,
-                            hasGroupHeader: isMultiVariantProductGroup,
+                            forceHideProductSelector: isProductVariantGroup,
+                            hasGroupHeader: isProductVariantGroup,
                           })
                         )}
                       </div>
