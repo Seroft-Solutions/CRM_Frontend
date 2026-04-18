@@ -65,6 +65,14 @@ function buildSearchableCommandValue(...parts: Array<string | number | null | un
     .join(' ');
 }
 
+function haveSameIds(left: number[], right: number[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, index) => value === right[index]);
+}
+
 function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
   if (!images?.length) {
     return null;
@@ -286,21 +294,6 @@ function SelectedVariantNameCard({ name }: { name: string }) {
   );
 }
 
-function SelectedVariantSection({ variant }: { variant?: ProductVariantWithWarehouseStocks }) {
-  return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
-      {variant ? (
-        <SelectedVariantPreview variant={variant} />
-      ) : (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
-          No variant selected
-        </div>
-      )}
-    </div>
-  );
-}
-
 function SelectedOrderItemPreview({
   item,
   selectedCatalog,
@@ -353,7 +346,11 @@ type OrderFormItemsProps = {
   onAddItem: () => void;
   onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
-  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
+  onApplyVariantSelection: (
+    index: number,
+    nextItems: OrderItemForm[],
+    replaceCount?: number
+  ) => void;
   onItemChange: (
     index: number,
     key: keyof OrderItemForm,
@@ -372,16 +369,28 @@ function ProductVariantSelector({
   onApplyVariantSelection,
   onItemChange,
   showProductSelector = true,
+  selectedVariantIdsOverride,
+  existingVariantItems,
+  replaceCount = 1,
+  hideSelectedVariantPreview = false,
 }: {
   item: OrderItemForm;
   index: number;
-  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
+  onApplyVariantSelection: (
+    index: number,
+    nextItems: OrderItemForm[],
+    replaceCount?: number
+  ) => void;
   onItemChange: (
     index: number,
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
   showProductSelector?: boolean;
+  selectedVariantIdsOverride?: number[];
+  existingVariantItems?: OrderItemForm[];
+  replaceCount?: number;
+  hideSelectedVariantPreview?: boolean;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
@@ -536,6 +545,17 @@ function ProductVariantSelector({
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
   const showSecondaryVariantPreview = !showProductSelector && Boolean(selectedVariant);
+  const existingItemsByVariantId = useMemo(
+    () =>
+      new Map(
+        (existingVariantItems ?? [])
+          .filter((entry): entry is OrderItemForm & { variantId: number } =>
+            Boolean(entry.variantId)
+          )
+          .map((entry) => [entry.variantId, entry])
+      ),
+    [existingVariantItems]
+  );
 
   const applyVariantSelection = () => {
     if (!selectedProduct) {
@@ -543,7 +563,7 @@ function ProductVariantSelector({
     }
 
     if (pendingVariantIds.length === 0) {
-      onApplyVariantSelection(index, [buildProductItem(selectedProduct)]);
+      onApplyVariantSelection(index, [buildProductItem(selectedProduct)], replaceCount);
       setVariantOpen(false);
 
       return;
@@ -557,20 +577,25 @@ function ProductVariantSelector({
       return;
     }
 
-    const [firstVariant, ...remainingVariants] = selectedVariants;
-    const currentRow = buildVariantItem(selectedProduct, firstVariant, item);
-    const additionalRows = remainingVariants.map((variant) =>
-      buildVariantItem(selectedProduct, variant, {
-        itemType: 'product',
-        itemStatus: '',
-        quantity: '',
-        itemPrice: '',
-        itemTaxAmount: '',
-        itemComment: '',
-      })
+    const nextRows = selectedVariants.map((variant, variantIndex) =>
+      buildVariantItem(
+        selectedProduct,
+        variant,
+        existingItemsByVariantId.get(variant.id ?? -1) ??
+          (variantIndex === 0
+            ? item
+            : {
+                itemType: 'product',
+                itemStatus: '',
+                quantity: '',
+                itemPrice: '',
+                itemTaxAmount: '',
+                itemComment: '',
+              })
+      )
     );
 
-    onApplyVariantSelection(index, [currentRow, ...additionalRows]);
+    onApplyVariantSelection(index, nextRows, replaceCount);
     setVariantOpen(false);
   };
 
@@ -634,8 +659,17 @@ function ProductVariantSelector({
   ]);
 
   useEffect(() => {
-    setPendingVariantIds(item.variantId ? [item.variantId] : []);
-  }, [item.productId, item.variantId]);
+    const nextPendingVariantIds =
+      selectedVariantIdsOverride && selectedVariantIdsOverride.length > 0
+        ? selectedVariantIdsOverride
+        : item.variantId
+          ? [item.variantId]
+          : [];
+
+    setPendingVariantIds((current) =>
+      haveSameIds(current, nextPendingVariantIds) ? current : nextPendingVariantIds
+    );
+  }, [item.productId, item.variantId, selectedVariantIdsOverride]);
 
   const selectedVariantLabel =
     pendingVariantIds.length === 0
@@ -649,9 +683,9 @@ function ProductVariantSelector({
     : 'grid-cols-1 sm:grid-cols-2';
 
   return (
-    <>
+    <div className={cn('grid gap-3', selectorLayoutClass)}>
       {showProductSelector ? (
-        <div className={cn('grid gap-3', selectorLayoutClass)}>
+        <div className="space-y-1.5">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
             <Popover open={productOpen} onOpenChange={setProductOpen}>
@@ -704,9 +738,26 @@ function ProductVariantSelector({
               </PopoverContent>
             </Popover>
           </div>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {showSecondaryVariantPreview && selectedVariant ? (
+            <SelectedVariantImagePreview variant={selectedVariant} />
+          ) : (
+            <div aria-hidden="true" className="hidden sm:block" />
+          )}
+        </div>
+      )}
 
-          {item.productId && variants.length > 0 ? (
-            <div className="space-y-1.5 lg:col-start-2 lg:row-start-1">
+      {item.productId && variants.length > 0 && (
+        <div
+          className={cn(
+            'space-y-1.5',
+            showProductSelector ? 'lg:col-start-2 lg:row-start-1' : 'sm:col-start-2'
+          )}
+        >
+          {showProductSelector ? (
+            <>
               <Label className="text-xs font-semibold text-slate-600">
                 Select Variant(s) (Optional)
               </Label>
@@ -790,43 +841,39 @@ function ProductVariantSelector({
                   </div>
                 </PopoverContent>
               </Popover>
-            </div>
-          ) : null}
-
-          <div
-            className={cn(
-              'space-y-1.5',
-              item.productId && variants.length > 0
-                ? 'lg:col-start-3 lg:row-start-1'
-                : 'lg:col-start-2'
-            )}
-          >
-            <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
-            {selectedProduct ? (
-              <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
-            ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
-                No product selected
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            {showSecondaryVariantPreview && selectedVariant ? (
-              <SelectedVariantImagePreview variant={selectedVariant} />
-            ) : (
-              <div aria-hidden="true" className="hidden sm:block" />
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
-            <SelectedVariantNameCard name={secondaryVariantName} />
-          </div>
+              {selectedVariant && !showSecondaryVariantPreview && !hideSelectedVariantPreview ? (
+                <SelectedVariantPreview variant={selectedVariant} />
+              ) : null}
+            </>
+          ) : (
+            <>
+              <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
+              <SelectedVariantNameCard name={secondaryVariantName} />
+            </>
+          )}
         </div>
       )}
-    </>
+
+      {showProductSelector ? (
+        <div
+          className={cn(
+            'space-y-1.5',
+            item.productId && variants.length > 0
+              ? 'lg:col-start-3 lg:row-start-1'
+              : 'lg:col-start-2'
+          )}
+        >
+          <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
+          {selectedProduct ? (
+            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              No product selected
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -1082,7 +1129,11 @@ export function OrderFormItems({
     item: OrderItemForm,
     index: number,
     entryIndex: number,
-    groupSize: number
+    groupSize: number,
+    options?: {
+      forceHideProductSelector?: boolean;
+      hasGroupHeader?: boolean;
+    }
   ) => {
     const itemTotal = calculateItemTotal(item);
     const breakdown = getOrderItemBillingBreakdown(item);
@@ -1106,18 +1157,20 @@ export function OrderFormItems({
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
         : undefined;
-    const selectedVariantPreview =
-      item.itemType === 'product' && item.variantId
-        ? {
-            id: item.variantId,
-            sku: item.sku ?? item.productName ?? 'Variant',
-          }
-        : undefined;
+    const showProductSelector = !(options?.forceHideProductSelector ?? false) && entryIndex === 0;
+    const hasGroupHeader = options?.hasGroupHeader ?? false;
+    const showLineItemFields =
+      item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
+    const productGridClass = showLineItemFields
+      ? 'lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(120px,0.75fr)_auto]'
+      : 'lg:grid-cols-[minmax(0,2.6fr)_auto]';
 
     return (
       <div
         key={`desktop-entry-${index}`}
-        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+        className={cn(
+          ((entryIndex > 0 && groupSize > 1) || hasGroupHeader) && 'border-t border-slate-200 pt-4'
+        )}
       >
         {item.itemType === 'catalog' ? (
           <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2.6fr)_104px_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto] lg:gap-x-1 lg:gap-y-4">
@@ -1212,20 +1265,18 @@ export function OrderFormItems({
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            <ProductVariantSelector
-              item={item}
-              index={index}
-              onApplyVariantSelection={onApplyVariantSelection}
-              onItemChange={onItemChange}
-              showProductSelector={entryIndex === 0}
-            />
+          <div className={cn('grid items-start gap-4 lg:gap-x-3 lg:gap-y-4', productGridClass)}>
+            <div className="min-w-0">
+              <ProductVariantSelector
+                item={item}
+                index={index}
+                onApplyVariantSelection={onApplyVariantSelection}
+                onItemChange={onItemChange}
+                showProductSelector={showProductSelector}
+              />
+            </div>
 
-            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.8fr)_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto] lg:gap-x-3">
-              {entryIndex === 0 ? (
-                <SelectedVariantSection variant={selectedVariantPreview} />
-              ) : null}
-
+            {showLineItemFields ? (
               <div>
                 <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
                 <Input
@@ -1266,7 +1317,9 @@ export function OrderFormItems({
                 )}
                 <FieldError message={quantityErrorMessage} />
               </div>
+            ) : null}
 
+            {showLineItemFields ? (
               <div>
                 <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
                 <Input
@@ -1280,30 +1333,32 @@ export function OrderFormItems({
                 />
                 <FieldError message={itemErrors?.[index]?.itemPrice} />
               </div>
+            ) : null}
 
-              <div className="flex flex-col gap-2 lg:min-w-[88px]">
+            <div className={cn('flex flex-col gap-2', !showLineItemFields && 'lg:items-end')}>
+              {showLineItemFields ? (
                 <div className="text-right">
                   <div className="text-xs text-muted-foreground mb-1">Total</div>
                   <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
                 </div>
-                <div className="flex gap-1 justify-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveItem(index)}
-                    className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </Button>
-                </div>
+              ) : null}
+              <div className="flex gap-1 justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemoveItem(index)}
+                  className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </Button>
               </div>
             </div>
           </div>
@@ -1316,7 +1371,11 @@ export function OrderFormItems({
     item: OrderItemForm,
     index: number,
     entryIndex: number,
-    groupSize: number
+    groupSize: number,
+    options?: {
+      forceHideProductSelector?: boolean;
+      hasGroupHeader?: boolean;
+    }
   ) => {
     const itemTotal = calculateItemTotal(item);
     const breakdown = getOrderItemBillingBreakdown(item);
@@ -1340,18 +1399,17 @@ export function OrderFormItems({
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
         : undefined;
-    const selectedVariantPreview =
-      item.itemType === 'product' && item.variantId
-        ? {
-            id: item.variantId,
-            sku: item.sku ?? item.productName ?? 'Variant',
-          }
-        : undefined;
+    const showProductSelector = !(options?.forceHideProductSelector ?? false) && entryIndex === 0;
+    const hasGroupHeader = options?.hasGroupHeader ?? false;
+    const showLineItemFields =
+      item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
 
     return (
       <div
         key={`mobile-entry-${index}`}
-        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+        className={cn(
+          ((entryIndex > 0 && groupSize > 1) || hasGroupHeader) && 'border-t border-slate-200 pt-4'
+        )}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1362,7 +1420,7 @@ export function OrderFormItems({
               <div className="text-sm font-bold text-slate-900">
                 {groupSize > 1 ? `Variant #${entryIndex + 1}` : `Item #${index + 1}`}
               </div>
-              {itemTotal > 0 && (
+              {showLineItemFields && itemTotal > 0 && (
                 <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
               )}
             </div>
@@ -1399,75 +1457,100 @@ export function OrderFormItems({
               )}
             </>
           ) : (
-            <div className="space-y-4">
-              <ProductVariantSelector
-                item={item}
-                index={index}
-                onApplyVariantSelection={onApplyVariantSelection}
-                onItemChange={onItemChange}
-                showProductSelector={entryIndex === 0}
-              />
-              {entryIndex === 0 ? (
-                <SelectedVariantSection variant={selectedVariantPreview} />
-              ) : null}
-            </div>
+            <ProductVariantSelector
+              item={item}
+              index={index}
+              onApplyVariantSelection={onApplyVariantSelection}
+              onItemChange={onItemChange}
+              showProductSelector={showProductSelector}
+            />
           )}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={item.quantity}
-              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-              className="h-8 border-slate-300 px-2 text-sm"
-            />
-            {availableQuantity !== undefined && (
-              <p className="text-[11px] text-slate-500">
-                {availableSalesStockLabel}: {availableQuantity}
-              </p>
-            )}
-            {showWarehouseStocks && (
-              <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
-                <div className="mt-0.5 space-y-0.5">
-                  {warehouseStocks.map((entry, stockIndex) => (
-                    <p
-                      key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
-                      className="text-[11px] text-slate-600"
-                    >
-                      {entry.warehouseName ||
-                        entry.warehouseCode ||
-                        `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
-                      {': '}
-                      Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
-                    </p>
-                  ))}
+        {showLineItemFields ? (
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={item.quantity}
+                onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                className="h-8 border-slate-300 px-2 text-sm"
+              />
+              {availableQuantity !== undefined && (
+                <p className="text-[11px] text-slate-500">
+                  {availableSalesStockLabel}: {availableQuantity}
+                </p>
+              )}
+              {showWarehouseStocks && (
+                <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                  <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
+                  <div className="mt-0.5 space-y-0.5">
+                    {warehouseStocks.map((entry, stockIndex) => (
+                      <p
+                        key={`${entry.warehouseId ?? entry.warehouseCode ?? stockIndex}`}
+                        className="text-[11px] text-slate-600"
+                      >
+                        {entry.warehouseName ||
+                          entry.warehouseCode ||
+                          `Warehouse ${entry.warehouseId ?? stockIndex + 1}`}
+                        {': '}
+                        Stock: {entry.salesStockQuantity ?? entry.stockQuantity}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-            {backOrderMessage && (
-              <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
-            )}
-            <FieldError message={quantityErrorMessage} />
+              )}
+              {backOrderMessage && (
+                <p className="text-[11px] font-medium text-amber-700">{backOrderMessage}</p>
+              )}
+              <FieldError message={quantityErrorMessage} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-600">Price</Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={item.itemPrice}
+                readOnly
+                className="h-8 border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+              />
+              <FieldError message={itemErrors?.[index]?.itemPrice} />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Price</Label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={item.itemPrice}
-              readOnly
-              className="h-8 border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
-            />
-            <FieldError message={itemErrors?.[index]?.itemPrice} />
-          </div>
-        </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderProductGroupHeader = (entries: Array<{ item: OrderItemForm; index: number }>) => {
+    const firstEntry = entries[0];
+
+    if (!firstEntry) {
+      return null;
+    }
+
+    const selectedVariantIds = entries
+      .map(({ item }) => item.variantId)
+      .filter((variantId): variantId is number => typeof variantId === 'number');
+
+    return (
+      <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+        <ProductVariantSelector
+          item={firstEntry.item}
+          index={firstEntry.index}
+          onApplyVariantSelection={onApplyVariantSelection}
+          onItemChange={onItemChange}
+          showProductSelector
+          selectedVariantIdsOverride={selectedVariantIds}
+          existingVariantItems={entries.map(({ item }) => item)}
+          replaceCount={entries.length}
+          hideSelectedVariantPreview
+        />
       </div>
     );
   };
@@ -1586,24 +1669,43 @@ export function OrderFormItems({
           <div className="divide-y divide-slate-200">
             {itemGroups.map((group, groupIndex) => (
               <div key={group.key} className="hover:bg-slate-50/50 transition-colors">
-                <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
-                  <div className="col-span-1 flex items-start">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                      {groupIndex + 1}
-                    </div>
-                  </div>
-                  <div className="col-span-11 space-y-4">
-                    {group.entries.map(({ item, index }, entryIndex) =>
-                      renderDesktopEntry(item, index, entryIndex, group.entries.length)
-                    )}
-                  </div>
-                </div>
+                {(() => {
+                  const isProductVariantGroup =
+                    group.entries.every(
+                      ({ item }) => item.itemType === 'product' && Boolean(item.productId)
+                    ) && group.entries.some(({ item }) => Boolean(item.variantId));
 
-                <div className="lg:hidden p-4 space-y-4">
-                  {group.entries.map(({ item, index }, entryIndex) =>
-                    renderMobileEntry(item, index, entryIndex, group.entries.length)
-                  )}
-                </div>
+                  return (
+                    <>
+                      <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
+                        <div className="col-span-1 flex items-start">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+                            {groupIndex + 1}
+                          </div>
+                        </div>
+                        <div className="col-span-11 space-y-4">
+                          {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
+                          {group.entries.map(({ item, index }, entryIndex) =>
+                            renderDesktopEntry(item, index, entryIndex, group.entries.length, {
+                              forceHideProductSelector: isProductVariantGroup,
+                              hasGroupHeader: isProductVariantGroup,
+                            })
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="lg:hidden p-4 space-y-4">
+                        {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
+                        {group.entries.map(({ item, index }, entryIndex) =>
+                          renderMobileEntry(item, index, entryIndex, group.entries.length, {
+                            forceHideProductSelector: isProductVariantGroup,
+                            hasGroupHeader: isProductVariantGroup,
+                          })
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             ))}
           </div>
