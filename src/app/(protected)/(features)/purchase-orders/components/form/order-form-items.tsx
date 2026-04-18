@@ -53,6 +53,19 @@ type OrderFormItemsProps = {
   referrerCatalogField?: string;
 };
 
+function buildSearchableCommandValue(...parts: Array<string | number | null | undefined>) {
+  return parts
+    .map((part) => {
+      if (part === null || part === undefined) {
+        return '';
+      }
+
+      return String(part).trim();
+    })
+    .filter(Boolean)
+    .join(' ');
+}
+
 function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
   if (!images?.length) {
     return null;
@@ -70,6 +83,104 @@ function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
     sortedImages[0]?.thumbnailUrl ||
     sortedImages[0]?.cdnUrl ||
     null
+  );
+}
+
+function ProductOptionRow({
+  product,
+  isSelected,
+  stockQuantity,
+}: {
+  product: ProductDTO;
+  isSelected: boolean;
+  stockQuantity: number;
+}) {
+  const primaryVariantId =
+    product.variants?.find((variant) => variant.isPrimary)?.id ?? product.variants?.[0]?.id;
+  const { data: primaryVariantImages } = useGetAllProductVariantImagesByVariant(
+    primaryVariantId ?? 0,
+    {
+      query: { enabled: !!primaryVariantId },
+    }
+  );
+  const imageUrl = useMemo(
+    () => resolveVariantImageUrl(primaryVariantImages),
+    [primaryVariantImages]
+  );
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <ProductImageThumbnail imageUrl={imageUrl} productName={product.name} size={28} />
+        <div className="flex flex-1 flex-col">
+          <span className="font-medium text-sm">{product.name}</span>
+          <span className="text-xs text-muted-foreground">
+            SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • QTY: {stockQuantity}
+            {' • Base Price: ₹'}
+            {product.basePrice ?? product.salePrice ?? product.discountedPrice ?? 0}
+          </span>
+        </div>
+      </div>
+      <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </>
+  );
+}
+
+function VariantOptionRow({
+  variant,
+  isSelected,
+  displayPrice,
+}: {
+  variant: ProductVariantDTO;
+  isSelected: boolean;
+  displayPrice: number;
+}) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
+    query: { enabled: !!variant.id },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <ProductImageThumbnail imageUrl={imageUrl} productName={variant.sku} size={28} />
+        <div className="flex flex-1 flex-col">
+          <span className="font-medium text-sm">{variant.sku}</span>
+          <span className="text-xs text-muted-foreground">
+            Stock: {variant.stockQuantity ?? 0} • Base Price: ₹{displayPrice}
+          </span>
+        </div>
+      </div>
+      <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </>
+  );
+}
+
+function CatalogOptionRow({
+  catalog,
+  isSelected,
+}: {
+  catalog: ProductCatalogDTO;
+  isSelected: boolean;
+}) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <ProductImageThumbnail
+          imageUrl={resolveCatalogImageUrl(catalog.image)}
+          productName={catalog.productCatalogName || 'Catalog'}
+          size={28}
+        />
+        <div className="flex flex-1 flex-col">
+          <span className="font-medium text-sm">{catalog.productCatalogName}</span>
+          <span className="text-xs text-muted-foreground">
+            Product: {catalog.product?.name ?? 'N/A'} • Items: {catalog.variants?.length ?? 0} • ₹
+            {catalog.price ?? 0}
+          </span>
+        </div>
+      </div>
+      <Check className={cn('ml-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+    </>
   );
 }
 
@@ -399,25 +510,19 @@ function ProductVariantSelector({
                     {products.map((product) => (
                       <CommandItem
                         key={product.id}
-                        value={`${product.name} ${product.barcodeText} ${product.articleNumber ?? ''} ${product.articalNumber ?? ''}`}
+                        value={buildSearchableCommandValue(
+                          product.name,
+                          product.id,
+                          product.barcodeText,
+                          product.articleNumber,
+                          product.articalNumber
+                        )}
                         onSelect={() => handleProductSelect(product.id!)}
                       >
-                        <div className="flex flex-1 flex-col">
-                          <span className="font-medium text-sm">{product.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • QTY:{' '}
-                            {getProductQuantity(product)} • Base Price: ₹
-                            {product.basePrice ??
-                              product.salePrice ??
-                              product.discountedPrice ??
-                              0}
-                          </span>
-                        </div>
-                        <Check
-                          className={cn(
-                            'ml-2 h-4 w-4',
-                            item.productId === product.id ? 'opacity-100' : 'opacity-0'
-                          )}
+                        <ProductOptionRow
+                          product={product}
+                          stockQuantity={getProductQuantity(product)}
+                          isSelected={item.productId === product.id}
                         />
                       </CommandItem>
                     ))}
@@ -474,23 +579,13 @@ function ProductVariantSelector({
                     {variants.map((variant) => (
                       <CommandItem
                         key={variant.id}
-                        value={variant.sku}
+                        value={buildSearchableCommandValue(variant.sku, variant.id)}
                         onSelect={() => togglePendingVariant(variant.id!)}
                       >
-                        <div className="flex flex-1 flex-col">
-                          <span className="font-medium text-sm">{variant.sku}</span>
-                          <span className="text-xs text-muted-foreground">
-                            Stock: {variant.stockQuantity ?? 0} • Base Price: ₹
-                            {selectedProduct?.basePrice ?? variant.price ?? 0}
-                          </span>
-                        </div>
-                        <Check
-                          className={cn(
-                            'ml-2 h-4 w-4',
-                            pendingVariantIds.includes(variant.id ?? -1)
-                              ? 'opacity-100'
-                              : 'opacity-0'
-                          )}
+                        <VariantOptionRow
+                          variant={variant}
+                          isSelected={pendingVariantIds.includes(variant.id ?? -1)}
+                          displayPrice={selectedProduct?.basePrice ?? variant.price ?? 0}
                         />
                       </CommandItem>
                     ))}
@@ -625,21 +720,16 @@ function ProductCatalogSelector({
                 {catalogs.map((catalog) => (
                   <CommandItem
                     key={catalog.id}
-                    value={`${catalog.productCatalogName} ${catalog.product?.name ?? ''}`}
+                    value={buildSearchableCommandValue(
+                      catalog.productCatalogName,
+                      catalog.id,
+                      catalog.product?.name
+                    )}
                     onSelect={() => handleCatalogSelect(catalog.id!)}
                   >
-                    <div className="flex flex-1 flex-col">
-                      <span className="font-medium text-sm">{catalog.productCatalogName}</span>
-                      <span className="text-xs text-muted-foreground">
-                        Product: {catalog.product?.name ?? 'N/A'} • Items:{' '}
-                        {catalog.variants?.length ?? 0} • ₹{catalog.price ?? 0}
-                      </span>
-                    </div>
-                    <Check
-                      className={cn(
-                        'ml-2 h-4 w-4',
-                        item.productCatalogId === catalog.id ? 'opacity-100' : 'opacity-0'
-                      )}
+                    <CatalogOptionRow
+                      catalog={catalog}
+                      isSelected={item.productCatalogId === catalog.id}
                     />
                   </CommandItem>
                 ))}
