@@ -257,27 +257,6 @@ function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWareho
   );
 }
 
-function SelectedVariantImagePreview({ variant }: { variant: ProductVariantWithWarehouseStocks }) {
-  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
-    query: {
-      enabled: !!variant.id,
-      staleTime: 5 * 60 * 1000,
-    },
-  });
-  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
-
-  return (
-    <div className="mt-2 flex items-start">
-      <ProductImageThumbnail
-        imageUrl={imageUrl}
-        productName={variant.sku}
-        size={72}
-        className="shrink-0 rounded-md"
-      />
-    </div>
-  );
-}
-
 function SelectedOrderItemPreview({
   item,
   selectedCatalog,
@@ -512,7 +491,6 @@ function ProductVariantSelector({
 
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
-  const showSecondaryVariantPreview = !showProductSelector && Boolean(selectedVariant);
 
   const applyVariantSelection = () => {
     if (!selectedProduct) {
@@ -621,83 +599,83 @@ function ProductVariantSelector({
         ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
         : `${pendingVariantIds.length} variants selected`;
 
+  if (!showProductSelector) {
+    return (
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
+        {selectedVariant ? (
+          <SelectedVariantPreview variant={selectedVariant} />
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+            No variant selected
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {/* Product Combobox */}
-      {showProductSelector && (
-        <div className="space-y-1.5">
-          {showProductSelector ? (
-            <>
-              <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
-              <Popover open={productOpen} onOpenChange={setProductOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={productOpen}
-                    className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
-                  >
-                    {selectedProduct ? (
-                      <span className="truncate text-sm">{selectedProduct.name}</span>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">Choose a product...</span>
-                    )}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-                  align="start"
-                >
-                  <Command>
-                    <CommandInput placeholder="Search products..." className="h-9" />
-                    <CommandList>
-                      <CommandEmpty>No product found.</CommandEmpty>
-                      <CommandGroup>
-                        {products.map((product) => (
-                          <CommandItem
-                            key={product.id}
-                            value={buildSearchableCommandValue(
-                              product.name,
-                              product.id,
-                              product.barcodeText,
-                              product.articleNumber,
-                              product.articalNumber
-                            )}
-                            onSelect={() => handleProductSelect(product.id!)}
-                          >
-                            <ProductOptionRow
-                              product={product}
-                              stockQuantity={getProductQuantity(product)}
-                              isSelected={item.productId === product.id}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </>
-          ) : null}
-          {showProductSelector && selectedProduct ? (
-            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
-          ) : null}
-        </div>
-      )}
-      {!showProductSelector ? (
-        <div className="space-y-1.5">
-          {showSecondaryVariantPreview && selectedVariant ? (
-            <SelectedVariantImagePreview variant={selectedVariant} />
-          ) : (
-            <div aria-hidden="true" className="hidden sm:block" />
-          )}
-        </div>
-      ) : null}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
+        <Popover open={productOpen} onOpenChange={setProductOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={productOpen}
+              className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+            >
+              {selectedProduct ? (
+                <span className="truncate text-sm">{selectedProduct.name}</span>
+              ) : (
+                <span className="text-muted-foreground text-sm">Choose a product...</span>
+              )}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+            align="start"
+          >
+            <Command>
+              <CommandInput placeholder="Search products..." className="h-9" />
+              <CommandList>
+                <CommandEmpty>No product found.</CommandEmpty>
+                <CommandGroup>
+                  {products.map((product) => (
+                    <CommandItem
+                      key={product.id}
+                      value={buildSearchableCommandValue(
+                        product.name,
+                        product.id,
+                        product.barcodeText,
+                        product.articleNumber,
+                        product.articalNumber
+                      )}
+                      onSelect={() => handleProductSelect(product.id!)}
+                    >
+                      <ProductOptionRow
+                        product={product}
+                        stockQuantity={getProductQuantity(product)}
+                        isSelected={item.productId === product.id}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {selectedProduct ? (
+          <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+        ) : null}
+      </div>
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 ? (
-        <div className={cn('space-y-1.5', !showProductSelector && 'sm:col-start-2')}>
+        <div className="space-y-1.5">
           <Label className="text-xs font-semibold text-slate-600">
             Select Variant(s) (Optional)
           </Label>
@@ -741,7 +719,11 @@ function ProductVariantSelector({
                       return (
                         <CommandItem
                           key={variant.id}
-                          value={buildSearchableCommandValue(variant.sku, variant.linkId, variant.id)}
+                          value={buildSearchableCommandValue(
+                            variant.sku,
+                            variant.linkId,
+                            variant.id
+                          )}
                           onSelect={() => togglePendingVariant(variant.id!)}
                         >
                           <VariantOptionRow
@@ -777,9 +759,7 @@ function ProductVariantSelector({
               </div>
             </PopoverContent>
           </Popover>
-          {selectedVariant && !showSecondaryVariantPreview ? (
-            <SelectedVariantPreview variant={selectedVariant} />
-          ) : null}
+          {selectedVariant ? <SelectedVariantPreview variant={selectedVariant} /> : null}
         </div>
       ) : null}
     </div>
