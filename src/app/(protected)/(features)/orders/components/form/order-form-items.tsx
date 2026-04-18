@@ -620,8 +620,7 @@ function ProductVariantSelector({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {/* Product Combobox */}
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
           <Popover open={productOpen} onOpenChange={setProductOpen}>
@@ -673,17 +672,13 @@ function ProductVariantSelector({
               </Command>
             </PopoverContent>
           </Popover>
-          {selectedProduct ? (
-            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
-          ) : null}
         </div>
 
-        {/* Variant Combobox */}
-        {item.productId && variants.length > 0 ? (
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">
-              Select Variant(s) (Optional)
-            </Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-600">
+            Select Variant(s) (Optional)
+          </Label>
+          {item.productId && variants.length > 0 ? (
             <Popover open={variantOpen} onOpenChange={setVariantOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -764,8 +759,23 @@ function ProductVariantSelector({
                 </div>
               </PopoverContent>
             </Popover>
-          </div>
-        ) : null}
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              Select a product to see variants
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
+          {selectedProduct ? (
+            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              No product selected
+            </div>
+          )}
+        </div>
       </div>
 
       {selectedVariant ? <SelectedVariantSection variant={selectedVariant} /> : null}
