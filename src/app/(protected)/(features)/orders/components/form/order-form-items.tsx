@@ -1194,7 +1194,7 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
+                className="h-9 border-slate-300"
               />
               {availableQuantity !== undefined && (
                 <p className="mt-1 text-[11px] text-slate-500">
@@ -1234,7 +1234,7 @@ export function OrderFormItems({
                 placeholder="0.00"
                 value={item.itemPrice}
                 readOnly
-                className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+                className="h-9 border-slate-300 bg-slate-100 text-slate-700"
               />
               <FieldError message={itemErrors?.[index]?.itemPrice} />
             </div>
@@ -1285,7 +1285,7 @@ export function OrderFormItems({
                   placeholder="0"
                   value={item.quantity}
                   onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                  className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
+                  className="h-9 border-slate-300"
                 />
                 {availableQuantity !== undefined && (
                   <p className="mt-1 text-[11px] text-slate-500">
@@ -1329,7 +1329,7 @@ export function OrderFormItems({
                   placeholder="0.00"
                   value={item.itemPrice}
                   readOnly
-                  className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+                  className="h-9 border-slate-300 bg-slate-100 text-slate-700"
                 />
                 <FieldError message={itemErrors?.[index]?.itemPrice} />
               </div>
@@ -1477,7 +1477,7 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-8 border-slate-300 px-2 text-sm"
+                className="h-9 border-slate-300"
               />
               {availableQuantity !== undefined && (
                 <p className="text-[11px] text-slate-500">
@@ -1517,7 +1517,7 @@ export function OrderFormItems({
                 placeholder="0.00"
                 value={item.itemPrice}
                 readOnly
-                className="h-8 border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+                className="h-9 border-slate-300 bg-slate-100 text-slate-700"
               />
               <FieldError message={itemErrors?.[index]?.itemPrice} />
             </div>
