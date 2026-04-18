@@ -778,7 +778,6 @@ function ProductVariantSelector({
         </div>
       </div>
 
-      {selectedVariant ? <SelectedVariantSection variant={selectedVariant} /> : null}
     </div>
   );
 }
