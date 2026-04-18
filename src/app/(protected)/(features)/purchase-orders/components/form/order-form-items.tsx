@@ -951,6 +951,11 @@ export function OrderFormItems({
         : undefined;
     const showProductSelector = !(options?.forceHideProductSelector ?? false) && entryIndex === 0;
     const hasGroupHeader = options?.hasGroupHeader ?? false;
+    const showLineItemFields =
+      item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
+    const desktopGridClass = showLineItemFields
+      ? 'lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(120px,0.75fr)_auto]'
+      : 'lg:grid-cols-[minmax(0,2.6fr)_auto]';
 
     return (
       <div
@@ -959,7 +964,7 @@ export function OrderFormItems({
           ((entryIndex > 0 && groupSize > 1) || hasGroupHeader) && 'border-t border-slate-200 pt-4'
         )}
       >
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(120px,0.75fr)_auto] lg:gap-x-3 lg:gap-y-4">
+        <div className={cn('grid items-start gap-4 lg:gap-x-3 lg:gap-y-4', desktopGridClass)}>
           <div className="min-w-0">
             {item.itemType === 'catalog' ? (
               <>
@@ -979,38 +984,44 @@ export function OrderFormItems({
             )}
           </div>
 
-          <div>
-            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={item.quantity}
-              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-              className="h-9 border-slate-300"
-            />
-            <FieldError message={itemErrors?.[index]?.quantity} />
-          </div>
-
-          <div>
-            <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={item.itemPrice}
-              readOnly
-              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
-            />
-            <FieldError message={itemErrors?.[index]?.itemPrice} />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="text-right">
-              <div className="text-xs text-muted-foreground mb-1">Total</div>
-              <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+          {showLineItemFields ? (
+            <div>
+              <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={item.quantity}
+                onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                className="h-9 border-slate-300"
+              />
+              <FieldError message={itemErrors?.[index]?.quantity} />
             </div>
+          ) : null}
+
+          {showLineItemFields ? (
+            <div>
+              <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={item.itemPrice}
+                readOnly
+                className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+              />
+              <FieldError message={itemErrors?.[index]?.itemPrice} />
+            </div>
+          ) : null}
+
+          <div className={cn('flex flex-col gap-2', !showLineItemFields && 'lg:items-end')}>
+            {showLineItemFields ? (
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground mb-1">Total</div>
+                <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+              </div>
+            ) : null}
             <div className="flex gap-1 justify-end">
               <Button
                 type="button"
@@ -1052,6 +1063,8 @@ export function OrderFormItems({
         : undefined;
     const showProductSelector = !(options?.forceHideProductSelector ?? false) && entryIndex === 0;
     const hasGroupHeader = options?.hasGroupHeader ?? false;
+    const showLineItemFields =
+      item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
 
     return (
       <div
@@ -1069,7 +1082,7 @@ export function OrderFormItems({
               <div className="text-sm font-bold text-slate-900">
                 {groupSize > 1 ? `Variant #${entryIndex + 1}` : `Item #${index + 1}`}
               </div>
-              {itemTotal > 0 && (
+              {showLineItemFields && itemTotal > 0 && (
                 <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
               )}
             </div>
@@ -1111,33 +1124,35 @@ export function OrderFormItems({
           )}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={item.quantity}
-              onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-              className="h-9 border-slate-300"
-            />
-            <FieldError message={itemErrors?.[index]?.quantity} />
+        {showLineItemFields ? (
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-600">Quantity</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={item.quantity}
+                onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+                className="h-9 border-slate-300"
+              />
+              <FieldError message={itemErrors?.[index]?.quantity} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-600">Price</Label>
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={item.itemPrice}
+                readOnly
+                className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+              />
+              <FieldError message={itemErrors?.[index]?.itemPrice} />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Price</Label>
-            <Input
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={item.itemPrice}
-              readOnly
-              className="h-9 border-slate-300 bg-slate-100 text-slate-700"
-            />
-            <FieldError message={itemErrors?.[index]?.itemPrice} />
-          </div>
-        </div>
+        ) : null}
       </div>
     );
   };
