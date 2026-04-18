@@ -596,7 +596,7 @@ export function OrderFormContent({
     setItems((prev) => [...prev, emptyOrderItem('catalog')]);
   };
 
-  const applyVariantSelection = (index: number, nextItems: OrderItemForm[]) => {
+  const applyVariantSelection = (index: number, nextItems: OrderItemForm[], replaceCount = 1) => {
     if (nextItems.length === 0) {
       return;
     }
@@ -606,7 +606,7 @@ export function OrderFormContent({
         return prev;
       }
 
-      return [...prev.slice(0, index), ...nextItems, ...prev.slice(index + 1)];
+      return [...prev.slice(0, index), ...nextItems, ...prev.slice(index + replaceCount)];
     });
     setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
   };

@@ -41,7 +41,11 @@ type OrderFormItemsProps = {
   onAddItem: () => void;
   onAddCatalogItem: () => void;
   onRemoveItem: (index: number) => void;
-  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
+  onApplyVariantSelection: (
+    index: number,
+    nextItems: OrderItemForm[],
+    replaceCount?: number
+  ) => void;
   onItemChange: (
     index: number,
     key: keyof OrderItemForm,
@@ -64,6 +68,14 @@ function buildSearchableCommandValue(...parts: Array<string | number | null | un
     })
     .filter(Boolean)
     .join(' ');
+}
+
+function haveSameIds(left: number[], right: number[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((value, index) => value === right[index]);
 }
 
 function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
@@ -314,16 +326,28 @@ function ProductVariantSelector({
   onApplyVariantSelection,
   onItemChange,
   showProductSelector = true,
+  selectedVariantIdsOverride,
+  existingVariantItems,
+  replaceCount = 1,
+  hideSelectedVariantPreview = false,
 }: {
   item: OrderItemForm;
   index: number;
-  onApplyVariantSelection: (index: number, nextItems: OrderItemForm[]) => void;
+  onApplyVariantSelection: (
+    index: number,
+    nextItems: OrderItemForm[],
+    replaceCount?: number
+  ) => void;
   onItemChange: (
     index: number,
     key: keyof OrderItemForm,
     value: string | number | undefined
   ) => void;
   showProductSelector?: boolean;
+  selectedVariantIdsOverride?: number[];
+  existingVariantItems?: OrderItemForm[];
+  replaceCount?: number;
+  hideSelectedVariantPreview?: boolean;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
@@ -360,6 +384,14 @@ function ProductVariantSelector({
 
   const getProductBasePrice = (product: ProductDTO) =>
     product.basePrice ?? product.salePrice ?? product.discountedPrice;
+  const emptyVariantItem = (): OrderItemForm => ({
+    itemType: 'product',
+    itemStatus: '',
+    quantity: '',
+    itemPrice: '',
+    itemTaxAmount: '',
+    itemComment: '',
+  });
 
   const buildProductItem = (product: ProductDTO): OrderItemForm => {
     const price = getProductBasePrice(product);
@@ -435,6 +467,17 @@ function ProductVariantSelector({
   const selectedProduct = products.find((p) => p.id === item.productId);
   const selectedVariant = variants.find((v) => v.id === item.variantId);
   const showSecondaryVariantPreview = !showProductSelector && Boolean(selectedVariant);
+  const existingItemsByVariantId = useMemo(
+    () =>
+      new Map(
+        (existingVariantItems ?? [])
+          .filter((entry): entry is OrderItemForm & { variantId: number } =>
+            Boolean(entry.variantId)
+          )
+          .map((entry) => [entry.variantId, entry])
+      ),
+    [existingVariantItems]
+  );
 
   const applyVariantSelection = () => {
     if (!selectedProduct) {
@@ -442,7 +485,7 @@ function ProductVariantSelector({
     }
 
     if (pendingVariantIds.length === 0) {
-      onApplyVariantSelection(index, [buildProductItem(selectedProduct)]);
+      onApplyVariantSelection(index, [buildProductItem(selectedProduct)], replaceCount);
       setVariantOpen(false);
 
       return;
@@ -456,26 +499,31 @@ function ProductVariantSelector({
       return;
     }
 
-    const [firstVariant, ...remainingVariants] = selectedVariants;
-    const currentRow = buildVariantItem(selectedProduct, firstVariant, item);
-    const additionalRows = remainingVariants.map((variant) =>
-      buildVariantItem(selectedProduct, variant, {
-        itemType: 'product',
-        itemStatus: '',
-        quantity: '',
-        itemPrice: '',
-        itemTaxAmount: '',
-        itemComment: '',
-      })
+    const nextRows = selectedVariants.map((variant, variantIndex) =>
+      buildVariantItem(
+        selectedProduct,
+        variant,
+        existingItemsByVariantId.get(variant.id ?? -1) ??
+          (variantIndex === 0 ? item : emptyVariantItem())
+      )
     );
 
-    onApplyVariantSelection(index, [currentRow, ...additionalRows]);
+    onApplyVariantSelection(index, nextRows, replaceCount);
     setVariantOpen(false);
   };
 
   useEffect(() => {
-    setPendingVariantIds(item.variantId ? [item.variantId] : []);
-  }, [item.productId, item.variantId]);
+    const nextPendingVariantIds =
+      selectedVariantIdsOverride && selectedVariantIdsOverride.length > 0
+        ? selectedVariantIdsOverride
+        : item.variantId
+          ? [item.variantId]
+          : [];
+
+    setPendingVariantIds((current) =>
+      haveSameIds(current, nextPendingVariantIds) ? current : nextPendingVariantIds
+    );
+  }, [item.productId, item.variantId, selectedVariantIdsOverride]);
 
   const selectedVariantLabel =
     pendingVariantIds.length === 0
@@ -625,7 +673,7 @@ function ProductVariantSelector({
                   </div>
                 </PopoverContent>
               </Popover>
-              {selectedVariant && !showSecondaryVariantPreview ? (
+              {selectedVariant && !showSecondaryVariantPreview && !hideSelectedVariantPreview ? (
                 <SelectedVariantPreview variant={selectedVariant} />
               ) : null}
             </>
@@ -865,18 +913,26 @@ export function OrderFormItems({
     item: OrderItemForm,
     index: number,
     entryIndex: number,
-    groupSize: number
+    groupSize: number,
+    options?: {
+      forceHideProductSelector?: boolean;
+      hasGroupHeader?: boolean;
+    }
   ) => {
     const itemTotal = calculateItemTotal(item);
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
         : undefined;
+    const showProductSelector = !(options?.forceHideProductSelector ?? false) && entryIndex === 0;
+    const hasGroupHeader = options?.hasGroupHeader ?? false;
 
     return (
       <div
         key={`desktop-entry-${index}`}
-        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+        className={cn(
+          ((entryIndex > 0 && groupSize > 1) || hasGroupHeader) && 'border-t border-slate-200 pt-4'
+        )}
       >
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(120px,0.75fr)_auto] lg:gap-x-3 lg:gap-y-4">
           <div className="min-w-0">
@@ -893,7 +949,7 @@ export function OrderFormItems({
                 index={index}
                 onApplyVariantSelection={onApplyVariantSelection}
                 onItemChange={onItemChange}
-                showProductSelector={entryIndex === 0}
+                showProductSelector={showProductSelector}
               />
             )}
           </div>
@@ -958,18 +1014,26 @@ export function OrderFormItems({
     item: OrderItemForm,
     index: number,
     entryIndex: number,
-    groupSize: number
+    groupSize: number,
+    options?: {
+      forceHideProductSelector?: boolean;
+      hasGroupHeader?: boolean;
+    }
   ) => {
     const itemTotal = calculateItemTotal(item);
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
         : undefined;
+    const showProductSelector = !(options?.forceHideProductSelector ?? false) && entryIndex === 0;
+    const hasGroupHeader = options?.hasGroupHeader ?? false;
 
     return (
       <div
         key={`mobile-entry-${index}`}
-        className={cn(entryIndex > 0 && groupSize > 1 && 'border-t border-slate-200 pt-4')}
+        className={cn(
+          ((entryIndex > 0 && groupSize > 1) || hasGroupHeader) && 'border-t border-slate-200 pt-4'
+        )}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1017,7 +1081,7 @@ export function OrderFormItems({
               index={index}
               onApplyVariantSelection={onApplyVariantSelection}
               onItemChange={onItemChange}
-              showProductSelector={entryIndex === 0}
+              showProductSelector={showProductSelector}
             />
           )}
         </div>
@@ -1049,6 +1113,34 @@ export function OrderFormItems({
             <FieldError message={itemErrors?.[index]?.itemPrice} />
           </div>
         </div>
+      </div>
+    );
+  };
+
+  const renderProductGroupHeader = (entries: Array<{ item: OrderItemForm; index: number }>) => {
+    const firstEntry = entries[0];
+
+    if (!firstEntry) {
+      return null;
+    }
+
+    const selectedVariantIds = entries
+      .map(({ item }) => item.variantId)
+      .filter((variantId): variantId is number => typeof variantId === 'number');
+
+    return (
+      <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3">
+        <ProductVariantSelector
+          item={firstEntry.item}
+          index={firstEntry.index}
+          onApplyVariantSelection={onApplyVariantSelection}
+          onItemChange={onItemChange}
+          showProductSelector
+          selectedVariantIdsOverride={selectedVariantIds}
+          existingVariantItems={entries.map(({ item }) => item)}
+          replaceCount={entries.length}
+          hideSelectedVariantPreview
+        />
       </div>
     );
   };
@@ -1167,24 +1259,48 @@ export function OrderFormItems({
           <div className="divide-y divide-slate-200">
             {itemGroups.map((group, groupIndex) => (
               <div key={group.key} className="hover:bg-slate-50/50 transition-colors">
-                <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
-                  <div className="col-span-1 flex items-start">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                      {groupIndex + 1}
-                    </div>
-                  </div>
-                  <div className="col-span-11 space-y-4">
-                    {group.entries.map(({ item, index }, entryIndex) =>
-                      renderDesktopEntry(item, index, entryIndex, group.entries.length)
-                    )}
-                  </div>
-                </div>
+                {(() => {
+                  const isMultiVariantProductGroup =
+                    group.entries.length > 1 &&
+                    group.entries.every(
+                      ({ item }) => item.itemType === 'product' && Boolean(item.productId)
+                    );
 
-                <div className="lg:hidden p-4 space-y-4">
-                  {group.entries.map(({ item, index }, entryIndex) =>
-                    renderMobileEntry(item, index, entryIndex, group.entries.length)
-                  )}
-                </div>
+                  return (
+                    <>
+                      <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
+                        <div className="col-span-1 flex items-start">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+                            {groupIndex + 1}
+                          </div>
+                        </div>
+                        <div className="col-span-11 space-y-4">
+                          {isMultiVariantProductGroup
+                            ? renderProductGroupHeader(group.entries)
+                            : null}
+                          {group.entries.map(({ item, index }, entryIndex) =>
+                            renderDesktopEntry(item, index, entryIndex, group.entries.length, {
+                              forceHideProductSelector: isMultiVariantProductGroup,
+                              hasGroupHeader: isMultiVariantProductGroup,
+                            })
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="lg:hidden p-4 space-y-4">
+                        {isMultiVariantProductGroup
+                          ? renderProductGroupHeader(group.entries)
+                          : null}
+                        {group.entries.map(({ item, index }, entryIndex) =>
+                          renderMobileEntry(item, index, entryIndex, group.entries.length, {
+                            forceHideProductSelector: isMultiVariantProductGroup,
+                            hasGroupHeader: isMultiVariantProductGroup,
+                          })
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             ))}
           </div>
