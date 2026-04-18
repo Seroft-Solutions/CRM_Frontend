@@ -230,27 +230,47 @@ function SelectedProductPreview({
   );
 }
 
-function VariantImageCell({ variantId, sku }: { variantId?: number; sku: string }) {
-  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variantId ?? 0, {
+function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWarehouseStocks }) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant.id ?? 0, {
     query: {
-      enabled: !!variantId,
+      enabled: !!variant.id,
       staleTime: 5 * 60 * 1000,
     },
   });
   const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="mt-2 flex min-w-0 items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
       <ProductImageThumbnail
         imageUrl={imageUrl}
-        productName={sku}
+        productName={variant.sku}
         size={48}
         className="shrink-0 rounded-md"
       />
+      <div className="min-w-0 space-y-1">
+        <div className="truncate text-sm font-medium text-slate-900">{variant.sku}</div>
+        {variant.linkId ? (
+          <div className="text-xs text-slate-500">Link ID: {variant.linkId}</div>
+        ) : null}
+      </div>
     </div>
   );
 }
 
+function SelectedVariantSection({ variant }: { variant?: ProductVariantWithWarehouseStocks }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
+      {variant ? (
+        <SelectedVariantPreview variant={variant} />
+      ) : (
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+          No variant selected
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SelectedOrderItemPreview({
   item,
@@ -594,122 +614,13 @@ function ProductVariantSelector({
         ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
         : `${pendingVariantIds.length} variants selected`;
 
-  const variantSelector = (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold text-slate-600">
-        Select Variant(s) (Optional)
-      </Label>
-      {item.productId && variants.length > 0 ? (
-        <Popover open={variantOpen} onOpenChange={setVariantOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={variantOpen}
-              className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
-            >
-              {selectedVariantLabel ? (
-                <span className="truncate text-sm">{selectedVariantLabel}</span>
-              ) : (
-                <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
-              )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-            align="start"
-          >
-            <Command>
-              <CommandInput placeholder="Search variants..." className="h-9" />
-              <CommandList>
-                <CommandEmpty>No variant found.</CommandEmpty>
-                <CommandGroup>
-                  {variants.map((variant) => {
-                    const variantWarehouseStocks = mapVariantWarehouseStocks(variant);
-                    const warehousePreview = variantWarehouseStocks
-                      .map(
-                        (entry) =>
-                          entry.warehouseName ||
-                          entry.warehouseCode ||
-                          `W${entry.warehouseId ?? ''}`
-                      )
-                      .filter((entry) => entry)
-                      .join(', ');
-
-                    return (
-                      <CommandItem
-                        key={variant.id}
-                        value={buildSearchableCommandValue(
-                          variant.sku,
-                          variant.linkId,
-                          variant.id
-                        )}
-                        onSelect={() => togglePendingVariant(variant.id!)}
-                      >
-                        <VariantOptionRow
-                          variant={variant}
-                          warehousePreview={warehousePreview}
-                          isSelected={pendingVariantIds.includes(variant.id ?? -1)}
-                        />
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-            <div className="flex items-center justify-between border-t border-slate-200 p-2">
-              <span className="text-xs text-muted-foreground">
-                {pendingVariantIds.length === 0
-                  ? 'No variants selected'
-                  : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setPendingVariantIds([])}
-                >
-                  Clear
-                </Button>
-                <Button type="button" size="sm" onClick={applyVariantSelection}>
-                  {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
-                </Button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      ) : (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
-          Select a product to see variants
-        </div>
-      )}
-    </div>
-  );
-
   if (!showProductSelector) {
-    return (
-      <div className="grid grid-cols-[60px_1fr] gap-3 items-start">
-        {selectedVariant ? (
-          <VariantImageCell variantId={selectedVariant.id} sku={selectedVariant.sku ?? ''} />
-        ) : (
-          <div className="flex items-center justify-center h-[48px]">
-            <div className="h-12 w-12 rounded-md bg-slate-100 flex items-center justify-center">
-              <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-          </div>
-        )}
-        {variantSelector}
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
           <Popover open={productOpen} onOpenChange={setProductOpen}>
@@ -763,30 +674,110 @@ function ProductVariantSelector({
           </Popover>
         </div>
 
-        {variantSelector}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-600">
+            Select Variant(s) (Optional)
+          </Label>
+          {item.productId && variants.length > 0 ? (
+            <Popover open={variantOpen} onOpenChange={setVariantOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={variantOpen}
+                  className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+                >
+                  {selectedVariantLabel ? (
+                    <span className="truncate text-sm">{selectedVariantLabel}</span>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+                align="start"
+              >
+                <Command>
+                  <CommandInput placeholder="Search variants..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No variant found.</CommandEmpty>
+                    <CommandGroup>
+                      {variants.map((variant) => {
+                        const variantWarehouseStocks = mapVariantWarehouseStocks(variant);
+                        const warehousePreview = variantWarehouseStocks
+                          .map(
+                            (entry) =>
+                              entry.warehouseName ||
+                              entry.warehouseCode ||
+                              `W${entry.warehouseId ?? ''}`
+                          )
+                          .filter((entry) => entry)
+                          .join(', ');
+
+                        return (
+                          <CommandItem
+                            key={variant.id}
+                            value={buildSearchableCommandValue(
+                              variant.sku,
+                              variant.linkId,
+                              variant.id
+                            )}
+                            onSelect={() => togglePendingVariant(variant.id!)}
+                          >
+                            <VariantOptionRow
+                              variant={variant}
+                              warehousePreview={warehousePreview}
+                              isSelected={pendingVariantIds.includes(variant.id ?? -1)}
+                            />
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+                <div className="flex items-center justify-between border-t border-slate-200 p-2">
+                  <span className="text-xs text-muted-foreground">
+                    {pendingVariantIds.length === 0
+                      ? 'No variants selected'
+                      : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPendingVariantIds([])}
+                    >
+                      Clear
+                    </Button>
+                    <Button type="button" size="sm" onClick={applyVariantSelection}>
+                      {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              Select a product to see variants
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
+          {selectedProduct ? (
+            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              No product selected
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Preview cards row */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {selectedProduct ? (
-          <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
-        ) : (
-          <div />
-        )}
-        {selectedVariant ? (
-          <div className="mt-0 flex min-w-0 items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
-            <VariantImageCell variantId={selectedVariant.id} sku={selectedVariant.sku ?? ''} />
-            <div className="min-w-0 space-y-1">
-              <div className="truncate text-sm font-medium text-slate-900">{selectedVariant.sku}</div>
-              {selectedVariant.linkId ? (
-                <div className="text-xs text-slate-500">Link ID: {selectedVariant.linkId}</div>
-              ) : null}
-            </div>
-          </div>
-        ) : (
-          <div />
-        )}
-      </div>
     </div>
   );
 }
@@ -1173,21 +1164,19 @@ export function OrderFormItems({
             </div>
           </div>
         ) : (
-          <div className="flex items-start gap-5">
-            {/* Left: Product/Variant selectors */}
-            <div className="flex-1 min-w-0">
-              <ProductVariantSelector
-                item={item}
-                index={index}
-                onApplyVariantSelection={onApplyVariantSelection}
-                onItemChange={onItemChange}
-                showProductSelector={entryIndex === 0}
-              />
-            </div>
+          <div className="space-y-4">
+            <ProductVariantSelector
+              item={item}
+              index={index}
+              onApplyVariantSelection={onApplyVariantSelection}
+              onItemChange={onItemChange}
+              showProductSelector={entryIndex === 0}
+            />
 
-            {/* Right: Qty, Price, Total */}
-            <div className="flex items-start gap-4 shrink-0 pt-5">
-              <div className="w-[90px]">
+            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.8fr)_minmax(110px,0.65fr)_minmax(120px,0.75fr)_auto] lg:gap-x-3">
+              <SelectedVariantSection variant={selectedVariantPreview} />
+
+              <div>
                 <Label className="text-xs font-semibold text-slate-600 mb-1.5">Qty</Label>
                 <Input
                   type="number"
@@ -1195,11 +1184,11 @@ export function OrderFormItems({
                   placeholder="0"
                   value={item.quantity}
                   onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                  className="h-8 border-slate-300 px-2 text-sm"
+                  className="h-8 max-w-[108px] border-slate-300 px-2 text-sm"
                 />
                 {availableQuantity !== undefined && (
                   <p className="mt-1 text-[11px] text-slate-500">
-                    {availableSalesStockLabel}:{' '}{availableQuantity}
+                    {availableSalesStockLabel}: {availableQuantity}
                   </p>
                 )}
                 {showWarehouseStocks && (
@@ -1228,7 +1217,7 @@ export function OrderFormItems({
                 <FieldError message={quantityErrorMessage} />
               </div>
 
-              <div className="w-[90px]">
+              <div>
                 <Label className="text-xs font-semibold text-slate-600 mb-1.5">Price</Label>
                 <Input
                   type="number"
@@ -1237,15 +1226,17 @@ export function OrderFormItems({
                   placeholder="0.00"
                   value={item.itemPrice}
                   readOnly
-                  className="h-8 border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
+                  className="h-8 max-w-[118px] border-slate-300 bg-slate-100 px-2 text-sm text-slate-700"
                 />
                 <FieldError message={itemErrors?.[index]?.itemPrice} />
               </div>
 
-              <div className="w-[88px] text-right">
-                <div className="text-xs text-muted-foreground mb-1">Total</div>
-                <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
-                <div className="flex gap-1 justify-end mt-1">
+              <div className="flex flex-col gap-2 lg:min-w-[88px]">
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground mb-1">Total</div>
+                  <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                </div>
+                <div className="flex gap-1 justify-end">
                   <Button
                     type="button"
                     variant="ghost"
@@ -1358,13 +1349,16 @@ export function OrderFormItems({
               )}
             </>
           ) : (
-            <ProductVariantSelector
-              item={item}
-              index={index}
-              onApplyVariantSelection={onApplyVariantSelection}
-              onItemChange={onItemChange}
-              showProductSelector={entryIndex === 0}
-            />
+            <div className="space-y-4">
+              <ProductVariantSelector
+                item={item}
+                index={index}
+                onApplyVariantSelection={onApplyVariantSelection}
+                onItemChange={onItemChange}
+                showProductSelector={entryIndex === 0}
+              />
+              <SelectedVariantSection variant={selectedVariantPreview} />
+            </div>
           )}
         </div>
 
