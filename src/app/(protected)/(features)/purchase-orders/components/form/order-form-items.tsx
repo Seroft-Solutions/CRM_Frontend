@@ -269,6 +269,14 @@ function SelectedVariantImagePreview({ variant }: { variant: ProductVariantDTO }
   );
 }
 
+function SelectedVariantNameCard({ name }: { name: string }) {
+  return (
+    <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+      <div className="text-sm font-medium text-slate-900">{name}</div>
+    </div>
+  );
+}
+
 function SelectedOrderItemPreview({
   item,
   selectedCatalog,
@@ -475,6 +483,7 @@ function ProductVariantSelector({
       : pendingVariantIds.length === 1
         ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
         : `${pendingVariantIds.length} variants selected`;
+  const secondaryVariantName = selectedVariant?.sku ?? item.sku ?? item.productName ?? 'Variant';
 
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
@@ -548,75 +557,84 @@ function ProductVariantSelector({
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
         <div className={cn('space-y-1.5', !showProductSelector && 'sm:col-start-2')}>
-          <Label className="text-xs font-semibold text-slate-600">
-            Select Variant(s) (Optional)
-          </Label>
-          <Popover open={variantOpen} onOpenChange={setVariantOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={variantOpen}
-                className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
-              >
-                {selectedVariantLabel ? (
-                  <span className="truncate text-sm">{selectedVariantLabel}</span>
-                ) : (
-                  <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
-                )}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
-              align="start"
-            >
-              <Command>
-                <CommandInput placeholder="Search variants..." className="h-9" />
-                <CommandList>
-                  <CommandEmpty>No variant found.</CommandEmpty>
-                  <CommandGroup>
-                    {variants.map((variant) => (
-                      <CommandItem
-                        key={variant.id}
-                        value={buildSearchableCommandValue(variant.sku, variant.id)}
-                        onSelect={() => togglePendingVariant(variant.id!)}
-                      >
-                        <VariantOptionRow
-                          variant={variant}
-                          isSelected={pendingVariantIds.includes(variant.id ?? -1)}
-                          displayPrice={selectedProduct?.basePrice ?? variant.price ?? 0}
-                        />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-              <div className="flex items-center justify-between border-t border-slate-200 p-2">
-                <span className="text-xs text-muted-foreground">
-                  {pendingVariantIds.length === 0
-                    ? 'No variants selected'
-                    : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
-                </span>
-                <div className="flex items-center gap-2">
+          {showProductSelector ? (
+            <>
+              <Label className="text-xs font-semibold text-slate-600">
+                Select Variant(s) (Optional)
+              </Label>
+              <Popover open={variantOpen} onOpenChange={setVariantOpen}>
+                <PopoverTrigger asChild>
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPendingVariantIds([])}
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={variantOpen}
+                    className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
                   >
-                    Clear
+                    {selectedVariantLabel ? (
+                      <span className="truncate text-sm">{selectedVariantLabel}</span>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">Choose variant(s)...</span>
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
-                  <Button type="button" size="sm" onClick={applyVariantSelection}>
-                    {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          {selectedVariant && !showSecondaryVariantPreview ? (
-            <SelectedVariantPreview variant={selectedVariant} />
-          ) : null}
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[var(--radix-popover-trigger-width)] sm:w-[400px] p-0"
+                  align="start"
+                >
+                  <Command>
+                    <CommandInput placeholder="Search variants..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No variant found.</CommandEmpty>
+                      <CommandGroup>
+                        {variants.map((variant) => (
+                          <CommandItem
+                            key={variant.id}
+                            value={buildSearchableCommandValue(variant.sku, variant.id)}
+                            onSelect={() => togglePendingVariant(variant.id!)}
+                          >
+                            <VariantOptionRow
+                              variant={variant}
+                              isSelected={pendingVariantIds.includes(variant.id ?? -1)}
+                              displayPrice={selectedProduct?.basePrice ?? variant.price ?? 0}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                  <div className="flex items-center justify-between border-t border-slate-200 p-2">
+                    <span className="text-xs text-muted-foreground">
+                      {pendingVariantIds.length === 0
+                        ? 'No variants selected'
+                        : `${pendingVariantIds.length} variant${pendingVariantIds.length === 1 ? '' : 's'} selected`}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPendingVariantIds([])}
+                      >
+                        Clear
+                      </Button>
+                      <Button type="button" size="sm" onClick={applyVariantSelection}>
+                        {pendingVariantIds.length > 1 ? 'Add Selected Variants' : 'Apply'}
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {selectedVariant && !showSecondaryVariantPreview ? (
+                <SelectedVariantPreview variant={selectedVariant} />
+              ) : null}
+            </>
+          ) : (
+            <>
+              <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
+              <SelectedVariantNameCard name={secondaryVariantName} />
+            </>
+          )}
         </div>
       )}
     </div>
