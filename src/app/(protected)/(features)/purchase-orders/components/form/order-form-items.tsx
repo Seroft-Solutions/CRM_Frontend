@@ -532,9 +532,12 @@ function ProductVariantSelector({
         ? (variants.find((variant) => variant.id === pendingVariantIds[0])?.sku ?? null)
         : `${pendingVariantIds.length} variants selected`;
   const secondaryVariantName = selectedVariant?.sku ?? item.sku ?? item.productName ?? 'Variant';
+  const selectorLayoutClass = showProductSelector
+    ? 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(240px,1.1fr)]'
+    : 'grid-cols-1 sm:grid-cols-2';
 
   return (
-    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+    <div className={cn('grid gap-3', selectorLayoutClass)}>
       {/* Product Combobox */}
       {showProductSelector ? (
         <div className="space-y-1.5">
@@ -588,9 +591,6 @@ function ProductVariantSelector({
               </Command>
             </PopoverContent>
           </Popover>
-          {selectedProduct ? (
-            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
-          ) : null}
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -604,7 +604,12 @@ function ProductVariantSelector({
 
       {/* Variant Combobox */}
       {item.productId && variants.length > 0 && (
-        <div className={cn('space-y-1.5', !showProductSelector && 'sm:col-start-2')}>
+        <div
+          className={cn(
+            'space-y-1.5',
+            showProductSelector ? 'lg:col-start-2 lg:row-start-1' : 'sm:col-start-2'
+          )}
+        >
           {showProductSelector ? (
             <>
               <Label className="text-xs font-semibold text-slate-600">
@@ -685,6 +690,26 @@ function ProductVariantSelector({
           )}
         </div>
       )}
+
+      {showProductSelector ? (
+        <div
+          className={cn(
+            'space-y-1.5',
+            item.productId && variants.length > 0
+              ? 'lg:col-start-3 lg:row-start-1'
+              : 'lg:col-start-2'
+          )}
+        >
+          <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
+          {selectedProduct ? (
+            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              No product selected
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
