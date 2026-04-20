@@ -1354,6 +1354,41 @@ export function ProductVariantManager({
     }));
   };
 
+  const applyDraftImagesToVariants = (keys: string[], files: VariantImageSlotMap<File | null>) => {
+    if (!keys.length) {
+      return;
+    }
+
+    setDraftVariantsByKey((prev) => {
+      const next = { ...prev };
+
+      keys.forEach((key) => {
+        const currentRow = next[key];
+
+        if (!currentRow) {
+          return;
+        }
+
+        const currentFiles = currentRow.imageFiles
+          ? { ...currentRow.imageFiles }
+          : createEmptyImageFiles();
+
+        VARIANT_IMAGE_ORDER.forEach((slot) => {
+          if (files[slot]) {
+            currentFiles[slot] = files[slot];
+          }
+        });
+
+        next[key] = {
+          ...currentRow,
+          imageFiles: currentFiles,
+        };
+      });
+
+      return next;
+    });
+  };
+
   const copySalePriceToAllVariants = () => {
     const salePriceRaw = form?.watch?.('salePrice');
     const salePrice =
@@ -1493,6 +1528,7 @@ export function ProductVariantManager({
         productName={productName}
         existingSkus={existingSkus}
         onUpdateDraft={updateDraft}
+        onApplyDraftImagesToVariants={applyDraftImagesToVariants}
         editingRowData={editingRowData}
         onEditRow={setEditingRowData}
         onMarkPrimaryExisting={handleMarkPrimaryExisting}

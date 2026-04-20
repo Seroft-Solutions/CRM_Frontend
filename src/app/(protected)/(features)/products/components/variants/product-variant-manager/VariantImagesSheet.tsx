@@ -15,9 +15,20 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import { useUploadProductVariantImage } from '@/core/api/generated/spring';
-import { getGetAllProductVariantImagesByVariantQueryKey } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
+import {
+  getAllProductVariantImagesByVariant,
+  getGetAllProductVariantImagesByVariantQueryKey,
+} from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 import {
   mapVariantImagesToSlots,
   VARIANT_IMAGE_ORDER,
@@ -25,6 +36,7 @@ import {
   type VariantImageSlotMap,
 } from '@/features/product-variant-images/utils/variant-image-slots';
 import {
+  createVariantImageReference,
   useHardDeleteVariantImage,
   useReorderVariantImages,
 } from '@/features/product-variant-images/hooks/useProductVariantImages';
@@ -46,13 +58,11 @@ interface VariantImagesSheetProps {
   existingImages?: ProductVariantImageDTO[];
   initialFiles?: VariantImageSlotMap<File | null>;
   onSaveDraft?: (files: VariantImageSlotMap<File | null>) => void;
+  sameColorLabel?: string;
+  sameColorDraftTargets?: Array<{ key: string; label: string }>;
+  sameColorExistingTargets?: Array<{ id: number; label: string }>;
+  onCopyDraftImagesToVariants?: (files: VariantImageSlotMap<File | null>) => void;
 }
-
-const emptySlotFiles: VariantImageSlotMap<File | null> = {
-  front: null,
-  back: null,
-  side: null,
-};
 
 const VARIANT_IMAGE_MIME_EXTENSION_MAP: Record<string, string> = {
   'image/jpeg': '.jpg',
@@ -106,12 +116,17 @@ export function VariantImagesSheet({
   existingImages,
   initialFiles,
   onSaveDraft,
+  sameColorLabel,
+  sameColorDraftTargets = [],
+  sameColorExistingTargets = [],
+  onCopyDraftImagesToVariants,
 }: VariantImagesSheetProps) {
   const queryClient = useQueryClient();
   const uploadImageMutation = useUploadProductVariantImage();
   const deleteImageMutation = useHardDeleteVariantImage();
   const reorderImagesMutation = useReorderVariantImages();
   const [isSaving, setIsSaving] = useState(false);
+  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
   const variantNamePart = useMemo(
     () => normalizeNamePart(variantLabel || productName, 'variant'),
     [variantLabel, productName]
@@ -120,7 +135,9 @@ export function VariantImagesSheet({
     return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
       const slotPrefix =
         slot === 'front' ? 'Front' : slot === 'back' ? 'Back' : slot === 'side' ? 'Side' : 'Image';
+
       acc[slot] = `${slotPrefix}_${variantNamePart}`;
+
       return acc;
     }, {} as VariantImageSlotMap<string>);
   }, [variantNamePart]);
@@ -130,14 +147,14 @@ export function VariantImagesSheet({
 
     return VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
       const initialFile = initialFiles?.[slot] ?? null;
-      const initialName = initialFile
-        ? stripExtension(initialFile.name)
-        : defaultNameBySlot[slot];
+      const initialName = initialFile ? stripExtension(initialFile.name) : defaultNameBySlot[slot];
+
       acc[slot] = {
         existing: mappedExisting[slot] ?? null,
         file: initialFile,
         name: initialName,
       };
+
       return acc;
     }, {} as VariantImageSlotStateMap);
   }, [existingImages, initialFiles, defaultNameBySlot]);
@@ -150,17 +167,94 @@ export function VariantImagesSheet({
     }
   }, [open, initialSlotState]);
 
-  const handleSave = async () => {
-    if (!variantId) {
-      const filesToSave = VARIANT_IMAGE_ORDER.reduce((acc, slot) => {
+  const getSelectedFilesForSave = () =>
+    VARIANT_IMAGE_ORDER.reduce(
+      (acc, slot) => {
         const file = slotState[slot].file;
         const desiredName = slotState[slot].name || defaultNameBySlot[slot];
+
         acc[slot] = file ? renameVariantImageFile(file, desiredName) : null;
+
         return acc;
-      }, {} as VariantImageSlotMap<File | null>);
+      },
+      {} as VariantImageSlotMap<File | null>
+    );
+
+  const copyImagesToExistingVariants = async (
+    uploadsBySlot: VariantImageSlotMap<ProductVariantImageDTO | undefined>
+  ) => {
+    const changedSlots = VARIANT_IMAGE_ORDER.filter((slot) => Boolean(uploadsBySlot[slot]));
+
+    if (!changedSlots.length || !sameColorExistingTargets.length) {
+      return 0;
+    }
+
+    let updatedTargetCount = 0;
+
+    for (const target of sameColorExistingTargets) {
+      const targetImages = await getAllProductVariantImagesByVariant(target.id);
+      const targetImagesBySlot = mapVariantImagesToSlots(targetImages);
+      let targetChanged = false;
+
+      for (const slot of changedSlots) {
+        const sourceImage = uploadsBySlot[slot];
+
+        if (!sourceImage) {
+          continue;
+        }
+
+        const targetImage = targetImagesBySlot[slot];
+
+        if (targetImage?.gumletPath === sourceImage.gumletPath) {
+          continue;
+        }
+
+        if (targetImage?.id) {
+          await deleteImageMutation.mutateAsync(targetImage.id);
+        }
+
+        await createVariantImageReference({
+          variantId: target.id,
+          gumletAssetId: sourceImage.gumletAssetId,
+          gumletPath: sourceImage.gumletPath,
+          displayOrder: VARIANT_IMAGE_ORDER.indexOf(slot),
+          originalFilename: sourceImage.originalFilename,
+          format: sourceImage.format,
+          fileSizeBytes: sourceImage.fileSizeBytes,
+          width: sourceImage.width,
+          height: sourceImage.height,
+          organizationId: sourceImage.organizationId,
+        });
+
+        targetChanged = true;
+      }
+
+      if (targetChanged) {
+        updatedTargetCount += 1;
+        await queryClient.invalidateQueries({
+          queryKey: getGetAllProductVariantImagesByVariantQueryKey(target.id),
+        });
+      }
+    }
+
+    return updatedTargetCount;
+  };
+
+  const performSave = async (copyToSameColor: boolean) => {
+    if (!variantId) {
+      const filesToSave = getSelectedFilesForSave();
 
       onSaveDraft?.(filesToSave);
+
+      if (copyToSameColor && sameColorDraftTargets.length > 0) {
+        onCopyDraftImagesToVariants?.(filesToSave);
+        toast.success(
+          `Images copied to ${sameColorDraftTargets.length} other ${sameColorLabel} variant(s).`
+        );
+      }
+
       onOpenChange(false);
+
       return;
     }
 
@@ -200,17 +294,19 @@ export function VariantImagesSheet({
           data: { file: renamedFile },
           params: { variantId },
         });
+
         uploadsBySlot[slot] = uploaded;
       }
 
       const finalImages = VARIANT_IMAGE_ORDER.map((slot) => {
         const { existing } = slotState[slot];
+
         return uploadsBySlot[slot] ?? existing ?? undefined;
       }).filter((image): image is ProductVariantImageDTO => Boolean(image));
 
-      const reorderIds = finalImages.map((image) => image.id!).filter(
-        (id) => typeof id === 'number'
-      );
+      const reorderIds = finalImages
+        .map((image) => image.id!)
+        .filter((id) => typeof id === 'number');
 
       if (reorderIds.length > 0) {
         await reorderImagesMutation.mutateAsync({ variantId, imageIds: reorderIds });
@@ -220,106 +316,169 @@ export function VariantImagesSheet({
         queryKey: getGetAllProductVariantImagesByVariantQueryKey(variantId),
       });
 
+      if (copyToSameColor) {
+        if (sameColorDraftTargets.length > 0) {
+          onCopyDraftImagesToVariants?.(getSelectedFilesForSave());
+        }
+
+        const copiedExistingTargets = await copyImagesToExistingVariants(uploadsBySlot);
+
+        if (copiedExistingTargets > 0 || sameColorDraftTargets.length > 0) {
+          const totalTargets = copiedExistingTargets + sameColorDraftTargets.length;
+
+          toast.success(`Images copied to ${totalTargets} other ${sameColorLabel} variant(s).`);
+        }
+      }
+
       toast.success('Variant images updated.');
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to update variant images.');
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleSave = async () => {
+    const hasFreshUploads = VARIANT_IMAGE_ORDER.some(
+      (slot) => slotState[slot].file instanceof File
+    );
+    const hasSameColorTargets =
+      sameColorDraftTargets.length > 0 || sameColorExistingTargets.length > 0;
+
+    if (hasFreshUploads && hasSameColorTargets && sameColorLabel) {
+      setIsCopyDialogOpen(true);
+
+      return;
+    }
+
+    await performSave(false);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto bg-white p-0">
-        <div className="border-b bg-slate-50 px-6 py-5">
-          <SheetHeader>
-            <SheetTitle className="text-lg font-semibold text-slate-900">
-              Variant Images
-            </SheetTitle>
-            <SheetDescription className="text-sm text-slate-600">
-              Upload front, back, and side images for {variantLabel}.
-            </SheetDescription>
-          </SheetHeader>
-        </div>
-
-        <div className="px-6 py-5 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {VARIANT_IMAGE_SLOTS.map((slot) => (
-              <VariantImageSlotCard
-                key={slot.key}
-                label={slot.label}
-                badge={slot.badge}
-                state={slotState[slot.key]}
-                onFileChange={(file) =>
-                  setSlotState((prev) => ({
-                    ...prev,
-                    [slot.key]: {
-                      existing: prev[slot.key].existing,
-                      file,
-                      name: file
-                        ? prev[slot.key].name || defaultNameBySlot[slot.key]
-                        : defaultNameBySlot[slot.key],
-                    },
-                  }))
-                }
-                onNameChange={(name) =>
-                  setSlotState((prev) => ({
-                    ...prev,
-                    [slot.key]: {
-                      ...prev[slot.key],
-                      name,
-                    },
-                  }))
-                }
-                onClear={() =>
-                  setSlotState((prev) => ({
-                    ...prev,
-                    [slot.key]: {
-                      existing: null,
-                      file: null,
-                      name: defaultNameBySlot[slot.key],
-                    },
-                  }))
-                }
-                defaultName={defaultNameBySlot[slot.key]}
-              />
-            ))}
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto bg-white p-0">
+          <div className="border-b bg-slate-50 px-6 py-5">
+            <SheetHeader>
+              <SheetTitle className="text-lg font-semibold text-slate-900">
+                Variant Images
+              </SheetTitle>
+              <SheetDescription className="text-sm text-slate-600">
+                Upload front, back, and side images for {variantLabel}.
+              </SheetDescription>
+            </SheetHeader>
           </div>
 
-          <div className="rounded-md bg-slate-50 p-3 text-[11px] text-slate-600">
-            <p className="font-semibold text-slate-700">Guidelines</p>
-            <ul className="mt-1 space-y-1">
-              <li>• Front, Back, Side image slots</li>
-              <li>• Max 5 MB per image</li>
-              <li>• JPG, PNG, WebP</li>
-            </ul>
-          </div>
-        </div>
+          <div className="px-6 py-5 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              {VARIANT_IMAGE_SLOTS.map((slot) => (
+                <VariantImageSlotCard
+                  key={slot.key}
+                  label={slot.label}
+                  badge={slot.badge}
+                  state={slotState[slot.key]}
+                  onFileChange={(file) =>
+                    setSlotState((prev) => ({
+                      ...prev,
+                      [slot.key]: {
+                        existing: prev[slot.key].existing,
+                        file,
+                        name: file
+                          ? prev[slot.key].name || defaultNameBySlot[slot.key]
+                          : defaultNameBySlot[slot.key],
+                      },
+                    }))
+                  }
+                  onNameChange={(name) =>
+                    setSlotState((prev) => ({
+                      ...prev,
+                      [slot.key]: {
+                        ...prev[slot.key],
+                        name,
+                      },
+                    }))
+                  }
+                  onClear={() =>
+                    setSlotState((prev) => ({
+                      ...prev,
+                      [slot.key]: {
+                        existing: null,
+                        file: null,
+                        name: defaultNameBySlot[slot.key],
+                      },
+                    }))
+                  }
+                  defaultName={defaultNameBySlot[slot.key]}
+                />
+              ))}
+            </div>
 
-        <SheetFooter className="border-t bg-white px-6 py-4">
-          <div className="flex w-full gap-2">
+            <div className="rounded-md bg-slate-50 p-3 text-[11px] text-slate-600">
+              <p className="font-semibold text-slate-700">Guidelines</p>
+              <ul className="mt-1 space-y-1">
+                <li>• Front, Back, Side image slots</li>
+                <li>• Max 5 MB per image</li>
+                <li>• JPG, PNG, WebP</li>
+              </ul>
+            </div>
+          </div>
+
+          <SheetFooter className="border-t bg-white px-6 py-4">
+            <div className="flex w-full gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => onOpenChange(false)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button type="button" className="flex-1" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Copy To Same Color Variants</DialogTitle>
+            <DialogDescription>
+              Do you want to copy the same image to other {sameColorLabel} variants?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+            {sameColorDraftTargets.length + sameColorExistingTargets.length} matching variant(s)
+            will receive the same image.
+          </div>
+          <DialogFooter className="gap-2">
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
+              onClick={async () => {
+                setIsCopyDialogOpen(false);
+                await performSave(false);
+              }}
             >
-              Cancel
+              Only This Variant
             </Button>
             <Button
               type="button"
-              className="flex-1"
-              onClick={handleSave}
-              disabled={isSaving}
+              onClick={async () => {
+                setIsCopyDialogOpen(false);
+                await performSave(true);
+              }}
             >
-              {isSaving ? 'Saving...' : 'Save'}
+              Copy To All {sameColorLabel}
             </Button>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -350,7 +509,9 @@ function VariantImageSlotCard({
   useEffect(() => {
     if (state.file) {
       const url = URL.createObjectURL(state.file);
+
       setPreviewUrl(url);
+
       return () => URL.revokeObjectURL(url);
     }
     setPreviewUrl(null);
@@ -369,8 +530,7 @@ function VariantImageSlotCard({
     }
   }, [isEditingName]);
 
-  const imageUrl =
-    previewUrl || state.existing?.thumbnailUrl || state.existing?.cdnUrl || null;
+  const imageUrl = previewUrl || state.existing?.thumbnailUrl || state.existing?.cdnUrl || null;
   const extension = state.file ? resolveFileExtension(state.file) : '';
   const displayName = state.file ? `${state.name || defaultName}${extension}` : '';
 
@@ -426,6 +586,7 @@ function VariantImageSlotCard({
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0] ?? null;
+
           onFileChange(file);
           if (file) {
             onNameChange(defaultName);

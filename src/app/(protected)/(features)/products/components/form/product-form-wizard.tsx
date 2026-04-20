@@ -24,7 +24,11 @@ import {
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUploadImages, useHardDeleteImage, useReorderImages } from '@/features/product-images';
-import type { ProductDTO, ProductImageDTO } from '@/core/api/generated/spring/schemas';
+import type {
+  ProductDTO,
+  ProductImageDTO,
+  ProductVariantImageDTO,
+} from '@/core/api/generated/spring/schemas';
 import { toast } from 'sonner';
 import {
   ORIENTATION_FILENAME_SUFFIX,
@@ -37,6 +41,7 @@ import {
   VARIANT_IMAGE_ORDER,
   type VariantImageSlotMap,
 } from '@/features/product-variant-images/utils/variant-image-slots';
+import { createVariantImageReference } from '@/features/product-variant-images/hooks/useProductVariantImages';
 
 interface ProductFormProps {
   id?: number;
@@ -501,6 +506,7 @@ export function ProductForm({ id }: ProductFormProps) {
             .map((variant) => [variant.sku!, variant.id!])
         );
 
+        const uploadedImageBySignature = new Map<string, ProductVariantImageDTO>();
         const uploadJobs: Array<Promise<unknown>> = [];
 
         variantsWithImages.forEach((variant) => {
@@ -510,18 +516,45 @@ export function ProductForm({ id }: ProductFormProps) {
             return;
           }
 
-          VARIANT_IMAGE_ORDER.forEach((slot) => {
+          VARIANT_IMAGE_ORDER.forEach((slot, slotIndex) => {
             const file = variant.imageFiles?.[slot];
 
             if (!file) {
               return;
             }
 
+            const fileSignature = [slot, file.name, file.size, file.type, file.lastModified].join(
+              ':'
+            );
+
             uploadJobs.push(
-              uploadVariantImageMutation.mutateAsync({
-                data: { file },
-                params: { variantId: resolvedVariantId },
-              })
+              (async () => {
+                const existingUpload = uploadedImageBySignature.get(fileSignature);
+
+                if (existingUpload) {
+                  await createVariantImageReference({
+                    variantId: resolvedVariantId,
+                    gumletAssetId: existingUpload.gumletAssetId,
+                    gumletPath: existingUpload.gumletPath,
+                    displayOrder: slotIndex,
+                    originalFilename: existingUpload.originalFilename,
+                    format: existingUpload.format,
+                    fileSizeBytes: existingUpload.fileSizeBytes,
+                    width: existingUpload.width,
+                    height: existingUpload.height,
+                    organizationId: existingUpload.organizationId,
+                  });
+
+                  return;
+                }
+
+                const uploadedImage = await uploadVariantImageMutation.mutateAsync({
+                  data: { file },
+                  params: { variantId: resolvedVariantId },
+                });
+
+                uploadedImageBySignature.set(fileSignature, uploadedImage);
+              })()
             );
           });
         });

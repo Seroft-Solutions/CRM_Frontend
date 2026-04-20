@@ -29,6 +29,7 @@ import {
   CombinedVariantRow,
   DraftVariantRow,
   ExistingVariantRow,
+  VariantSelection,
   VariantTableSelection,
   VariantWarehouseOption,
 } from './types';
@@ -39,16 +40,24 @@ import {
   type VariantImageSlotMap,
 } from '@/features/product-variant-images/utils/variant-image-slots';
 
+const isColorSelection = (selection: VariantSelection) =>
+  selection.attributeLabel.trim().toLowerCase() === 'color';
+
+const getColorSelection = (selections: VariantSelection[]) =>
+  selections.find((selection) => isColorSelection(selection));
+
 /**
  * @interface VariantTableRowProps
  * @description Props for the VariantTableRow component.
  */
 interface VariantTableRowProps {
   item: CombinedVariantRow;
+  allRows: CombinedVariantRow[];
   visibleEnumAttributes: SystemConfigAttributeDTO[];
   productName: string;
   existingSkus: Set<string>;
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
+  onApplyDraftImagesToVariants: (keys: string[], files: VariantImageSlotMap<File | null>) => void;
   editingRowData: ExistingVariantRow | null;
   onEditRow: (row: ExistingVariantRow) => void;
   onMarkPrimaryExisting: (row: ExistingVariantRow) => void;
@@ -70,10 +79,12 @@ interface VariantTableRowProps {
  */
 export function VariantTableRow({
   item,
+  allRows,
   visibleEnumAttributes,
   productName,
   existingSkus,
   onUpdateDraft,
+  onApplyDraftImagesToVariants,
   editingRowData,
   onEditRow,
   onMarkPrimaryExisting,
@@ -355,6 +366,49 @@ export function VariantTableRow({
   const handleDraftImagesSave =
     isDraft || isDuplicate
       ? (files: VariantImageSlotMap<File | null>) => onUpdateDraft(row.key, { imageFiles: files })
+      : undefined;
+  const sourceColorSelection = useMemo(() => getColorSelection(row.selections), [row.selections]);
+  const sameColorDraftTargets = useMemo(() => {
+    if (!sourceColorSelection) {
+      return [];
+    }
+
+    return allRows
+      .filter((candidate) => candidate.rowKey !== item.rowKey && candidate.kind === 'draft')
+      .map((candidate) => candidate.row)
+      .filter(
+        (candidate) =>
+          getColorSelection(candidate.selections)?.optionId === sourceColorSelection.optionId
+      )
+      .map((candidate) => ({
+        key: candidate.key,
+        label: candidate.sku || sourceColorSelection.optionLabel,
+      }));
+  }, [allRows, item.rowKey, sourceColorSelection]);
+  const sameColorExistingTargets = useMemo(() => {
+    if (!sourceColorSelection || !isExisting) {
+      return [];
+    }
+
+    return allRows
+      .filter((candidate) => candidate.rowKey !== item.rowKey && candidate.kind === 'existing')
+      .map((candidate) => candidate.row)
+      .filter(
+        (candidate) =>
+          getColorSelection(candidate.selections)?.optionId === sourceColorSelection.optionId
+      )
+      .map((candidate) => ({
+        id: candidate.id,
+        label: candidate.sku || sourceColorSelection.optionLabel,
+      }));
+  }, [allRows, isExisting, item.rowKey, sourceColorSelection]);
+  const handleCopyDraftImagesToSameColorVariants =
+    sameColorDraftTargets.length > 0
+      ? (files: VariantImageSlotMap<File | null>) =>
+          onApplyDraftImagesToVariants(
+            sameColorDraftTargets.map((target) => target.key),
+            files
+          )
       : undefined;
   const canEditImages = !isViewMode && !isDuplicate;
   const isColorAttribute = (attr: SystemConfigAttributeDTO) =>
@@ -918,6 +972,10 @@ export function VariantTableRow({
         existingImages={variantImages ?? []}
         initialFiles={draftImageFiles}
         onSaveDraft={handleDraftImagesSave}
+        sameColorLabel={sourceColorSelection?.optionLabel}
+        sameColorDraftTargets={sameColorDraftTargets}
+        sameColorExistingTargets={sameColorExistingTargets}
+        onCopyDraftImagesToVariants={handleCopyDraftImagesToSameColorVariants}
       />
     </>
   );

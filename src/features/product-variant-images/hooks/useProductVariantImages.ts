@@ -2,6 +2,24 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
+import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
+
+export async function createVariantImageReference(
+  data: ProductVariantImageDTO
+): Promise<ProductVariantImageDTO> {
+  return springServiceMutator<ProductVariantImageDTO>({
+    url: '/api/product-variant-images',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data,
+  });
+}
+
+export function useCreateVariantImageReference() {
+  return useMutation({
+    mutationFn: createVariantImageReference,
+  });
+}
 
 export function useHardDeleteVariantImage() {
   return useMutation({

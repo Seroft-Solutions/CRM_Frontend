@@ -10,6 +10,7 @@ import {
   VariantTableSelection,
   VariantWarehouseOption,
 } from './types';
+import type { VariantImageSlotMap } from '@/features/product-variant-images/utils/variant-image-slots';
 import { VariantsTableHeader } from './VariantsTableHeader';
 import { VariantTableRow } from './VariantTableRow';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,7 @@ interface VariantsTableProps {
   productName: string;
   existingSkus: Set<string>;
   onUpdateDraft: (key: string, updatedValues: Partial<DraftVariantRow>) => void;
+  onApplyDraftImagesToVariants: (keys: string[], files: VariantImageSlotMap<File | null>) => void;
   editingRowData: ExistingVariantRow | null;
   onEditRow: (row: ExistingVariantRow) => void;
   onMarkPrimaryExisting: (row: ExistingVariantRow) => void;
@@ -70,6 +72,7 @@ export function VariantsTable({
   productName,
   existingSkus,
   onUpdateDraft,
+  onApplyDraftImagesToVariants,
   editingRowData,
   onEditRow,
   onMarkPrimaryExisting,
@@ -256,10 +259,12 @@ export function VariantsTable({
                   <VariantTableRow
                     key={item.rowKey}
                     item={item}
+                    allRows={rows}
                     visibleEnumAttributes={visibleEnumAttributes}
                     productName={productName}
                     existingSkus={existingSkus}
                     onUpdateDraft={onUpdateDraft}
+                    onApplyDraftImagesToVariants={onApplyDraftImagesToVariants}
                     editingRowData={editingRowData}
                     onEditRow={onEditRow}
                     onMarkPrimaryExisting={onMarkPrimaryExisting}
