@@ -467,6 +467,22 @@ export function ProductFormProvider({
         entityToSave.variants = data.variants;
       }
 
+      if (typeof data.saveAsCatalog === 'boolean') {
+        entityToSave.saveAsCatalog = data.saveAsCatalog;
+      }
+
+      if (typeof data.productCatalogName === 'string' && data.productCatalogName.trim() !== '') {
+        entityToSave.productCatalogName = data.productCatalogName.trim();
+      }
+
+      if (
+        data.productCatalogPrice !== undefined &&
+        data.productCatalogPrice !== null &&
+        String(data.productCatalogPrice).trim() !== ''
+      ) {
+        entityToSave.productCatalogPrice = String(data.productCatalogPrice).trim();
+      }
+
       if (typeof data.status === 'string' && data.status.trim() !== '') {
         entityToSave.status = data.status;
       } else {
