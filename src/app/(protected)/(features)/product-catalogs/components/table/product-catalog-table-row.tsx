@@ -2,18 +2,23 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Eye, Loader2, Pencil } from 'lucide-react';
+import { Eye, Loader2, Pencil, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import { ClickableId } from '@/components/clickable-id';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
+import { resolveSelectedOrganizationName } from '@/lib/utils/organization';
 import { ProductVariantManagerWrapper } from '@/app/(protected)/(features)/products/components/variants/ProductVariantManagerWrapper';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { getGetAllProductVariantsQueryOptions } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas/ProductCatalogDTO';
+import { downloadCatalogSheetPdf } from './catalog-download-sheet';
 
 interface ProductCatalogTableRowProps {
   productCatalog: ProductCatalogDTO;
@@ -36,6 +41,8 @@ export function ProductCatalogTableRow({
   visibleColumns,
 }: ProductCatalogTableRowProps) {
   const [isVariantsExpanded, setIsVariantsExpanded] = useState(false);
+  const [isDownloadingSheet, setIsDownloadingSheet] = useState(false);
+  const queryClient = useQueryClient();
 
   const productId = productCatalog.product?.id;
   const productName =
@@ -68,6 +75,45 @@ export function ProductCatalogTableRow({
     if (value === null || value === undefined) return '';
 
     return Number(value).toFixed(2);
+  };
+
+  const handleDownloadSheet = async () => {
+    if (!productCatalog.id || isDownloadingSheet) {
+      return;
+    }
+
+    setIsDownloadingSheet(true);
+
+    try {
+      const variantsForSheet =
+        productCatalog.variants && productCatalog.variants.length > 0
+          ? productCatalog.variants
+          : await queryClient.fetchQuery(
+              getGetAllProductVariantsQueryOptions(
+                {
+                  'productId.equals': productId,
+                  size: 200,
+                  sort: ['id,asc'],
+                },
+                {
+                  query: {
+                    staleTime: 60_000,
+                  },
+                }
+              )
+            );
+
+      await downloadCatalogSheetPdf(
+        resolveSelectedOrganizationName(),
+        productCatalog,
+        variantsForSheet ?? []
+      );
+    } catch (error) {
+      console.error('Failed to download catalog sheet', error);
+      toast.error('Unable to download catalog sheet. Please try again.');
+    } finally {
+      setIsDownloadingSheet(false);
+    }
   };
 
   return (
@@ -168,6 +214,18 @@ export function ProductCatalogTableRow({
         })}
         <TableCell className="sticky right-0 bg-white px-2 sm:px-3 py-2 border-l border-gray-200 z-10 w-[140px] sm:w-[160px]">
           <div className="flex items-center justify-center gap-0.5 sm:gap-1">
+            <InlinePermissionGuard requiredPermission="productCatalog:read">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 sm:h-7 sm:w-7 p-0"
+                onClick={() => void handleDownloadSheet()}
+                disabled={isDownloadingSheet}
+              >
+                <Download className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <span className="sr-only">Download catalog sheet</span>
+              </Button>
+            </InlinePermissionGuard>
             <InlinePermissionGuard requiredPermission="productCatalog:read">
               <Button variant="ghost" size="sm" asChild className="h-6 w-6 sm:h-7 sm:w-7 p-0">
                 <Link href={`/product-catalogs/${productCatalog.id}`}>
