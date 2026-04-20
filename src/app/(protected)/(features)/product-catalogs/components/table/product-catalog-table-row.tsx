@@ -13,7 +13,13 @@ import { InlinePermissionGuard } from '@/core/auth';
 import { ClickableId } from '@/components/clickable-id';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
-import { resolveSelectedOrganizationName } from '@/lib/utils/organization';
+function resolveSelectedOrganizationName() {
+  if (typeof window === 'undefined') {
+    return 'Organization';
+  }
+
+  return localStorage.getItem('selectedOrganizationName') || 'Organization';
+}
 import { ProductVariantManagerWrapper } from '@/app/(protected)/(features)/products/components/variants/ProductVariantManagerWrapper';
 import { useGetProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { getGetAllProductVariantsQueryOptions } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
