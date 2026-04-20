@@ -340,13 +340,11 @@ export function VariantImagesSheet({
   };
 
   const handleSave = async () => {
-    const hasFreshUploads = VARIANT_IMAGE_ORDER.some(
-      (slot) => slotState[slot].file instanceof File
-    );
-    const hasSameColorTargets =
-      sameColorDraftTargets.length > 0 || sameColorExistingTargets.length > 0;
+    const draftTargets = sameColorDraftTargets.length;
+    const existingTargets = sameColorExistingTargets.length;
+    const totalTargets = draftTargets + existingTargets;
 
-    if (hasFreshUploads && hasSameColorTargets && sameColorLabel) {
+    if (totalTargets > 0) {
       setIsCopyDialogOpen(true);
 
       return;
@@ -444,16 +442,16 @@ export function VariantImagesSheet({
       </Sheet>
 
       <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md z-[100]">
           <DialogHeader>
-            <DialogTitle>Copy To Same Color Variants</DialogTitle>
+            <DialogTitle>Copy Images To Other Variants</DialogTitle>
             <DialogDescription>
-              Do you want to copy the same image to other {sameColorLabel} variants?
+              Do you want to copy these images to other variants as well?
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
-            {sameColorDraftTargets.length + sameColorExistingTargets.length} matching variant(s)
-            will receive the same image.
+            {sameColorDraftTargets.length + sameColorExistingTargets.length} other variant(s) will
+            receive these images.
           </div>
           <DialogFooter className="gap-2">
             <Button
@@ -473,7 +471,7 @@ export function VariantImagesSheet({
                 await performSave(true);
               }}
             >
-              Copy To All {sameColorLabel}
+              Copy To Other Variants
             </Button>
           </DialogFooter>
         </DialogContent>

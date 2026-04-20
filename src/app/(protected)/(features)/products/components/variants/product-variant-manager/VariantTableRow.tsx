@@ -40,8 +40,18 @@ import {
   type VariantImageSlotMap,
 } from '@/features/product-variant-images/utils/variant-image-slots';
 
-const isColorSelection = (selection: VariantSelection) =>
-  selection.attributeLabel.trim().toLowerCase() === 'color';
+const isColorSelection = (selection: VariantSelection) => {
+  const label = (selection.attributeLabel ?? '').trim().toLowerCase();
+
+  return (
+    label === 'c' ||
+    label === 'clr' ||
+    label === 'color' ||
+    label === 'colour' ||
+    label.includes('color') ||
+    label.includes('colour')
+  );
+};
 
 const getColorSelection = (selections: VariantSelection[]) =>
   selections.find((selection) => isColorSelection(selection));
@@ -373,13 +383,24 @@ export function VariantTableRow({
       return [];
     }
 
+    const sourceOptionId = sourceColorSelection.optionId;
+
+    if (!sourceOptionId) {
+      return [];
+    }
+
     return allRows
-      .filter((candidate) => candidate.rowKey !== item.rowKey && candidate.kind === 'draft')
-      .map((candidate) => candidate.row)
       .filter(
         (candidate) =>
-          getColorSelection(candidate.selections)?.optionId === sourceColorSelection.optionId
+          candidate.rowKey !== item.rowKey &&
+          (candidate.kind === 'draft' || candidate.kind === 'duplicate')
       )
+      .map((candidate) => candidate.row)
+      .filter((candidate) => {
+        const colorSelection = getColorSelection(candidate.selections);
+
+        return colorSelection?.optionId === sourceOptionId;
+      })
       .map((candidate) => ({
         key: candidate.key,
         label: candidate.sku || sourceColorSelection.optionLabel,
@@ -390,13 +411,20 @@ export function VariantTableRow({
       return [];
     }
 
+    const sourceOptionId = sourceColorSelection.optionId;
+
+    if (!sourceOptionId) {
+      return [];
+    }
+
     return allRows
       .filter((candidate) => candidate.rowKey !== item.rowKey && candidate.kind === 'existing')
       .map((candidate) => candidate.row)
-      .filter(
-        (candidate) =>
-          getColorSelection(candidate.selections)?.optionId === sourceColorSelection.optionId
-      )
+      .filter((candidate) => {
+        const colorSelection = getColorSelection(candidate.selections);
+
+        return colorSelection?.optionId === sourceOptionId;
+      })
       .map((candidate) => ({
         id: candidate.id,
         label: candidate.sku || sourceColorSelection.optionLabel,
