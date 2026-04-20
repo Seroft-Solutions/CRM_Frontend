@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/select';
 import { useEntityForm } from './product-catalog-form-provider';
 import { RelationshipRenderer } from './relationship-renderer';
-import { VariantImagesStep } from './variant-images-step';
 import { useGetAllProducts } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
@@ -361,14 +360,6 @@ export function FormStepRenderer({ entity }: FormStepRendererProps) {
 
   const renderCurrentStep = () => {
     if (!currentStepConfig) return null;
-
-    if (currentStepConfig.id === 'variant-images') {
-      return (
-        <div className="space-y-6">
-          <VariantImagesStep />
-        </div>
-      );
-    }
 
     if (currentStepConfig.id === 'review') {
       return (

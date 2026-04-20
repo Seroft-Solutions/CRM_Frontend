@@ -10,9 +10,10 @@ import {
   useGetProduct,
   useSearchProducts,
 } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import {
-  useGetAllProductVariants,
-} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { getGetAllProductVariantImagesByVariantQueryOptions } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
+import { useQueries } from '@tanstack/react-query';
+import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 import { ProductVariantManagerWrapper } from '@/app/(protected)/(features)/products/components/variants/ProductVariantManagerWrapper';
 
 import type { RelationshipConfig } from './form-types';
@@ -55,10 +56,10 @@ export function RelationshipRenderer({
   const { data: variantsData, isLoading: isLoadingVariants } = useGetAllProductVariants(
     productId
       ? {
-        'productId.equals': productId,
-        size: 1000,
-        sort: ['sku,asc'],
-      }
+          'productId.equals': productId,
+          size: 1000,
+          sort: ['sku,asc'],
+        }
       : undefined,
     {
       query: {
@@ -69,6 +70,7 @@ export function RelationshipRenderer({
 
   const variants = useMemo(() => {
     if (!variantsData) return [];
+
     return Array.isArray(variantsData)
       ? variantsData
       : variantsData.content
@@ -88,6 +90,7 @@ export function RelationshipRenderer({
     const updated = checked
       ? [...selectedVariantIds, variantId]
       : selectedVariantIds.filter((id: number) => id !== variantId);
+
     field.onChange(updated);
   };
 
@@ -97,11 +100,13 @@ export function RelationshipRenderer({
     }
     if (!checked) {
       field.onChange([]);
+
       return;
     }
     const variantIds = variants
       .map((variant: any) => variant.id)
       .filter((id: number | undefined) => typeof id === 'number');
+
     field.onChange(variantIds);
   };
 
@@ -112,6 +117,7 @@ export function RelationshipRenderer({
 
     if (!productId) {
       autoSelectedProductId.current = null;
+
       return;
     }
 
@@ -125,12 +131,95 @@ export function RelationshipRenderer({
 
     if (selectedVariantIds.length > 0) {
       autoSelectedProductId.current = productId;
+
       return;
     }
 
     handleSelectAll(true);
     autoSelectedProductId.current = productId;
+
+    const primaryVariant = variants.find((v: any) => v.isPrimary) || variants[0];
+
+    if (primaryVariant?.id) {
+      fetchPrimaryVariantImage(primaryVariant.id);
+    }
   }, [productId, variants, selectedVariantIds]);
+
+  const fetchPrimaryVariantImage = async (variantId: number) => {
+    try {
+      const queryOptions = getGetAllProductVariantImagesByVariantQueryOptions(variantId);
+      const images = await queryOptions.queryFn({ queryKey: queryOptions.queryKey });
+
+      if (images && images.length > 0) {
+        const sortedImages = [...images].sort(
+          (a, b) =>
+            (a.displayOrder ?? Number.MAX_SAFE_INTEGER) -
+            (b.displayOrder ?? Number.MAX_SAFE_INTEGER)
+        );
+        const primaryImage = sortedImages.find((img) => img.isPrimary) || sortedImages[0];
+
+        if (primaryImage) {
+          const imageUrl =
+            primaryImage.thumbnailUrl || primaryImage.cdnUrl || primaryImage.gumletPath;
+
+          if (imageUrl) {
+            const resolvedUrl = primaryImage.gumletPath
+              ? resolveCatalogImageUrl(primaryImage.gumletPath)
+              : imageUrl;
+
+            form.setValue('image', resolvedUrl);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch primary variant image:', error);
+    }
+  };
+
+  const imageQueryOptions = useQueries({
+    queries: selectedVariantIds.map((variantId: number) =>
+      getGetAllProductVariantImagesByVariantQueryOptions(variantId, {
+        query: { enabled: !!variantId },
+      })
+    ),
+  });
+
+  useEffect(() => {
+    if (!isVariantsField || selectedVariantIds.length === 0 || imageQueryOptions.length === 0) {
+      return;
+    }
+
+    const firstVariantImageQuery = imageQueryOptions[0];
+
+    if (firstVariantImageQuery?.isLoading || !firstVariantImageQuery?.data?.length) {
+      return;
+    }
+
+    const existingImage = form.getValues('image');
+
+    if (existingImage) {
+      return;
+    }
+
+    const images = firstVariantImageQuery.data;
+    const sortedImages = [...images].sort(
+      (a, b) =>
+        (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER)
+    );
+    const primaryImage = sortedImages.find((img) => img.isPrimary) || sortedImages[0];
+
+    if (primaryImage) {
+      const imageUrl = primaryImage.thumbnailUrl || primaryImage.cdnUrl || primaryImage.gumletPath;
+
+      if (imageUrl) {
+        const resolvedUrl = primaryImage.gumletPath
+          ? resolveCatalogImageUrl(primaryImage.gumletPath)
+          : imageUrl;
+
+        form.setValue('image', resolvedUrl);
+      }
+    }
+  }, [selectedVariantIds, imageQueryOptions, isVariantsField, form]);
 
   const renderRelationshipWithHooks = () => {
     switch (relConfig.name) {
@@ -144,6 +233,7 @@ export function RelationshipRenderer({
                 const dependentRelationships = config.relationships.filter(
                   (depRel: any) => depRel.cascadingFilter?.parentField === relConfig.name
                 );
+
                 dependentRelationships.forEach((depRel: any) => {
                   form.setValue(depRel.name, relConfig.multiple ? [] : undefined);
                 });
@@ -153,6 +243,7 @@ export function RelationshipRenderer({
             getOptionLabel={(option) => {
               const name = option?.[relConfig.displayField] ?? '';
               const barcode = option?.barcodeText ?? '';
+
               return barcode ? `${name} (${barcode})` : name;
             }}
             placeholder={relConfig.ui.placeholder}
@@ -245,6 +336,7 @@ export function RelationshipRenderer({
                   selection={{
                     isRowSelected: (item) => {
                       if (item.kind !== 'existing') return false;
+
                       return selectedVariantIds.includes(item.row.id);
                     },
                     onRowToggle: (item, checked) => {

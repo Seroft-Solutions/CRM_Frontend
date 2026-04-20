@@ -65,9 +65,6 @@ export const productCatalogStepSchemas = {
     product: productCatalogFieldSchemas.product,
     variants: productCatalogFieldSchemas.variants,
   }),
-  'variant-images': z.object({
-    image: productCatalogFieldSchemas.image,
-  }),
   review: productCatalogFormSchema,
 };
 
