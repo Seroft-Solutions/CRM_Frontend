@@ -17,12 +17,9 @@ import type { FormContextValue } from './form-types';
 import { productFormConfig } from './product-form-config';
 import { productFormSchema } from './product-form-schema';
 import { handleProductError, productToast } from '../product-toast';
-import { useCreateProduct } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
 import { useCrossFormNavigation, useNavigationFromUrl } from '@/context/cross-form-navigation';
 import { useEntityDrafts } from '@/core/hooks/use-entity-drafts';
 import { DraftRestorationDialog, SaveDraftDialog } from '@/components/form-drafts';
-import type { ProductDTO } from '@/core/api/generated/spring/schemas';
-import { ProductDTOStatus } from '@/core/api/generated/spring/schemas';
 
 const FormContext = createContext<FormContextValue | null>(null);
 
@@ -35,6 +32,7 @@ interface ProductFormProviderProps {
   children: React.ReactNode;
   id?: number;
   onSuccess?: (data: ProductFormSubmissionPayload) => void | Promise<void>;
+  onSaveDraft?: (data: ProductFormSubmissionPayload) => Promise<boolean>;
   onError?: (error: unknown) => void;
 }
 
@@ -42,6 +40,7 @@ export function ProductFormProvider({
   children,
   id,
   onSuccess,
+  onSaveDraft,
   onError,
 }: ProductFormProviderProps) {
   const router = useRouter();
@@ -85,14 +84,6 @@ export function ProductFormProvider({
     entityType: config.entity,
     enabled: draftsEnabled && isNew,
     maxDrafts: config.behavior?.drafts?.maxDrafts ?? 5,
-  });
-
-  const { mutateAsync: createProductDraftAsync } = useCreateProduct({
-    mutation: {
-      onError: (error) => {
-        handleProductError(error);
-      },
-    },
   });
 
   const [formSessionId] = useState(() => {
@@ -891,40 +882,23 @@ export function ProductFormProvider({
 
     try {
       const currentFormValues = form.getValues();
-      const completeFormData = sanitizeFormValues({ ...allFormData, ...currentFormValues });
-      const { entityToSave } = transformFormDataForSubmission(completeFormData);
-      const productDraftData = { ...entityToSave };
+      const completeFormData = { ...allFormData, ...currentFormValues };
+      const { entityToSave, attachmentData } = transformFormDataForSubmission(completeFormData);
 
-      delete productDraftData.variants;
-      delete productDraftData.saveAsCatalog;
-      delete productDraftData.productCatalogName;
-      delete productDraftData.productCatalogPrice;
+      if (onSaveDraft) {
+        return await onSaveDraft({ entity: entityToSave, attachments: attachmentData });
+      }
 
-      await createProductDraftAsync({
-        data: {
-          ...productDraftData,
-          status: ProductDTOStatus.DRAFT,
-        } as ProductDTO,
-      });
+      toast.error('Draft saving is not configured for this form');
 
-      toast.success('Draft saved successfully');
-
-      return true;
+      return false;
     } catch (error) {
       console.error('Failed to save draft:', error);
       toast.error('Failed to save draft');
 
       return false;
     }
-  }, [
-    draftsEnabled,
-    isNew,
-    form,
-    allFormData,
-    sanitizeFormValues,
-    transformFormDataForSubmission,
-    createProductDraftAsync,
-  ]);
+  }, [draftsEnabled, isNew, form, allFormData, transformFormDataForSubmission, onSaveDraft]);
 
   const handleLoadDraft = useCallback(
     async (draftId: number, suppressToast = false): Promise<boolean> => {

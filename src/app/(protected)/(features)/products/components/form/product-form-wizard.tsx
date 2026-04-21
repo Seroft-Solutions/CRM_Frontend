@@ -764,6 +764,56 @@ export function ProductForm({ id }: ProductFormProps) {
   return (
     <ProductFormProvider
       id={id}
+      onSaveDraft={async ({ entity, attachments }) => {
+        const productData = entity as Record<string, unknown>;
+        const productVariants = Array.isArray(productData.variants)
+          ? (productData.variants as Array<Record<string, unknown>>)
+          : undefined;
+        const productDataWithoutVariants = { ...productData };
+
+        delete productDataWithoutVariants.variants;
+        delete productDataWithoutVariants.saveAsCatalog;
+        delete productDataWithoutVariants.productCatalogName;
+        delete productDataWithoutVariants.productCatalogPrice;
+
+        const preparedVariants =
+          productVariants && productVariants.length > 0
+            ? prepareVariantsForPersistence(productVariants)
+            : undefined;
+        const draftProductData = {
+          ...productDataWithoutVariants,
+          status: 'DRAFT',
+          ...(preparedVariants?.length ? { variants: preparedVariants } : {}),
+        };
+
+        try {
+          const createdDraft = await createProductAsync({
+            data: draftProductData as ProductDTO,
+          });
+
+          await handleImageUploads(
+            createdDraft?.id,
+            attachments,
+            undefined,
+            createdDraft?.name ?? draftProductData.name
+          );
+          if (productVariants && productVariants.length > 0) {
+            await handleVariantImageUploads(createdDraft?.id, productVariants);
+          }
+
+          await invalidateProductQueries();
+          await queryClient.invalidateQueries({
+            queryKey: ['getAllProductVariants'],
+            refetchType: 'active',
+          });
+
+          toast.success('Draft saved successfully');
+
+          return true;
+        } catch {
+          return false;
+        }
+      }}
       onSuccess={async ({ entity, attachments }) => {
         const productData = entity as Record<string, unknown>;
 
