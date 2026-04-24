@@ -356,6 +356,8 @@ type OrderFormItemsProps = {
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
+  selectedItemIndex?: number | null;
+  onSelectItem?: (index: number) => void;
   referrerForm?: string;
   referrerSessionId?: string;
   referrerField?: string;
@@ -761,7 +763,7 @@ function ProductVariantSelector({
         </div>
       )}
 
-      {item.productId && variants.length > 0 && (
+      {item.productId && variants.length > 0 && !tableRowMode && (
         <div
           className={cn(
             'space-y-1.5',
@@ -1031,6 +1033,8 @@ export function OrderFormItems({
   onRemoveItem,
   onApplyVariantSelection,
   onItemChange,
+  selectedItemIndex,
+  onSelectItem,
   referrerForm,
   referrerSessionId,
   referrerField,
@@ -1592,9 +1596,17 @@ export function OrderFormItems({
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
         : undefined;
+    const isSelected = selectedItemIndex === index;
 
     return (
-      <tr key={`legacy-item-${index}`} className="h-[34px] align-top text-blue-900">
+      <tr
+        key={`legacy-item-${index}`}
+        onClick={() => onSelectItem?.(index)}
+        className={cn(
+          'h-[34px] cursor-pointer align-top text-blue-900',
+          isSelected && 'outline outline-2 -outline-offset-2 outline-blue-700 bg-blue-50'
+        )}
+      >
         <td className="border border-slate-300 px-1 py-1 text-center font-semibold">
           {rowIndex + 1}
         </td>
@@ -1656,7 +1668,10 @@ export function OrderFormItems({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => onRemoveItem(index)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onRemoveItem(index);
+            }}
             className="h-7 w-7 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

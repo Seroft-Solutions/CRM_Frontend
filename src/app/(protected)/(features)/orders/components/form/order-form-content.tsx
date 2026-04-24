@@ -38,12 +38,13 @@ import {
   useUpdateOrder,
 } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import type { CustomerDTO, OrderDTO } from '@/core/api/generated/spring/schemas';
+import type { CustomerDTO, OrderDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import {
   useCreateOrderDetail,
   useDeleteOrderDetail,
   useUpdateOrderDetail,
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
+import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import {
   useCreateOrderAddressDetail,
   useUpdateOrderAddressDetail,
@@ -73,6 +74,7 @@ import { OrderFormItems } from './order-form-items';
 import { FieldError } from './order-form-field-error';
 import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCallId } from './order-form-provider';
+import { cn } from '@/lib/utils';
 
 export interface OrderFormProps {
   initialOrder?: OrderRecord;
@@ -169,54 +171,173 @@ const formatStockQuantity = (value?: number) => {
   return Number.isInteger(value) ? String(value) : value.toFixed(2);
 };
 
-function VariantWarehousePanel({ items }: { items: OrderItemForm[] }) {
-  const selectedVariantItems = items.filter(
-    (item) => item.itemType === 'product' && Boolean(item.variantId)
+function getVariantDisplayParts(variant: ProductVariantDTO, index: number) {
+  const variantLabel = variant.sku || `Variant ${index + 1}`;
+  const selectionValues = (variant.selections ?? [])
+    .map((selection) => selection.option?.label || selection.option?.code || selection.rawValue)
+    .filter((value): value is string => Boolean(value));
+  const [color = selectionValues[0] ?? variantLabel, size = selectionValues[1] ?? '-'] =
+    selectionValues.length > 0
+      ? selectionValues
+      : variantLabel
+          .split(/[|,/]/)
+          .map((part) => part.trim())
+          .filter(Boolean);
+
+  return { color, size, label: variantLabel };
+}
+
+function mapVariantWarehouseStocks(variant: ProductVariantDTO): WarehouseStockEntry[] {
+  return (variant.variantStocks ?? [])
+    .map((entry) => ({
+      warehouseId: entry.warehouse?.id,
+      warehouseName: entry.warehouse?.name,
+      warehouseCode: undefined,
+      variantLabel: variant.sku,
+      stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
+      salesStockQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+    }))
+    .sort((left, right) =>
+      (left.warehouseName || left.warehouseCode || '').localeCompare(
+        right.warehouseName || right.warehouseCode || ''
+      )
+    );
+}
+
+function VariantWarehousePanel({
+  selectedItem,
+  selectedItemIndex,
+  onSelectVariant,
+}: {
+  selectedItem?: OrderItemForm;
+  selectedItemIndex: number | null;
+  onSelectVariant: (variant: ProductVariantDTO) => void;
+}) {
+  const selectedProductId =
+    selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
+  const { data: variantsData = [], isFetching } = useGetAllProductVariants(
+    {
+      'productId.equals': selectedProductId,
+      'status.equals': 'ACTIVE',
+      size: 1000,
+    },
+    {
+      query: {
+        enabled: Boolean(selectedProductId),
+      },
+    }
   );
-  const itemParamRows = selectedVariantItems.map((item, index) => {
-    const requestedQuantity = Number.parseFloat(item.quantity) || 0;
-    const variantLabel = item.variantAttributes || item.sku || `Variant ${index + 1}`;
-    const [color = variantLabel, size = '-'] = variantLabel
-      .split(/[|,/]/)
-      .map((part) => part.trim())
-      .filter(Boolean);
+  const variants = variantsData as ProductVariantDTO[];
+  const itemParamRows = variants.map((variant, index) => {
+    const requestedQuantity =
+      selectedItem?.variantId === variant.id ? Number.parseFloat(selectedItem.quantity) || 0 : 0;
+    const { color, size, label } = getVariantDisplayParts(variant, index);
 
     return {
-      key: `${item.variantId ?? 'variant'}-${index}`,
+      key: `${variant.id ?? 'variant'}-${index}`,
       color,
       size,
       quantity: requestedQuantity,
-      mc: item.sku || '-',
-      availableQuantity: item.availableQuantity ?? 0,
-      stocks: item.warehouseStocks ?? [],
+      mc: label,
     };
   });
-  const warehouseRows = itemParamRows.flatMap((item) =>
-    item.stocks.length > 0
-      ? item.stocks.map((stock, stockIndex) => ({
-          key: `${item.key}-${stock.warehouseId ?? stock.warehouseCode ?? stockIndex}`,
-          color: item.color,
-          size: item.size,
-          quantity: stock.salesStockQuantity ?? stock.stockQuantity,
-        }))
-      : [
-          {
-            key: `${item.key}-available`,
-            color: item.color,
-            size: item.size,
-            quantity: item.availableQuantity,
-          },
-        ]
-  );
+  const warehouses = variants.reduce<
+    Map<
+      string,
+      {
+        title: string;
+        rows: Array<{
+          key: string;
+          variant: ProductVariantDTO;
+          color: string;
+          size: string;
+          quantity: number;
+        }>;
+      }
+    >
+  >((accumulator, variant, variantIndex) => {
+    const { color, size } = getVariantDisplayParts(variant, variantIndex);
+    const stocks = variant.variantStocks ?? [];
+
+    stocks.forEach((stock, stockIndex) => {
+      const warehouseName =
+        stock.warehouse?.name || `Warehouse ${stock.warehouse?.id ?? stockIndex + 1}`;
+      const warehouseKey = `${stock.warehouse?.id ?? warehouseName}`;
+      const warehouse = accumulator.get(warehouseKey) ?? {
+        title: warehouseName,
+        rows: [],
+      };
+
+      warehouse.rows.push({
+        key: `${variant.id ?? variantIndex}-${warehouseKey}-${stockIndex}`,
+        variant,
+        color,
+        size,
+        quantity: stock.stockQuantity ?? 0,
+      });
+      accumulator.set(warehouseKey, warehouse);
+    });
+
+    return accumulator;
+  }, new Map());
+
+  const warehouseTables = Array.from(warehouses.values());
+  const stockGridClass =
+    warehouseTables.length <= 1
+      ? 'md:grid-cols-[1fr_1fr]'
+      : warehouseTables.length === 2
+        ? 'md:grid-cols-[1fr_1fr_1fr]'
+        : 'md:grid-cols-[0.9fr_repeat(3,minmax(0,1fr))]';
+
+  if (!selectedProductId) {
+    return (
+      <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
+        <div className="grid min-h-[520px] grid-cols-1 divide-y divide-slate-400 md:grid-cols-[1fr_1fr_1fr] md:divide-x md:divide-y-0">
+          <LegacyStockTable
+            title="Item Params"
+            titleClassName="bg-orange-500 text-white"
+            columns={['Color', 'Size', 'Qty', 'MC']}
+            emptyMessage="Select a product row"
+            rows={[]}
+          />
+          <LegacyStockTable
+            title="Warehouse Stock"
+            titleClassName="bg-blue-900 text-white"
+            columns={['Color', 'Size', 'Qty']}
+            emptyMessage="No selected product"
+            rows={[]}
+          />
+          <LegacyStockTable
+            title="Warehouse Stock"
+            titleClassName="bg-teal-700 text-white"
+            columns={['Color', 'Size', 'Qty']}
+            emptyMessage="No selected product"
+            rows={[]}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (isFetching && variants.length === 0) {
+    return (
+      <div className="border border-slate-400 bg-white p-4 text-xs text-slate-600">
+        Loading variants for selected row {selectedItemIndex !== null ? selectedItemIndex + 1 : ''}
+        ...
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
-      <div className="grid min-h-[520px] grid-cols-1 divide-y divide-slate-400 md:grid-cols-[1fr_1fr_0.9fr] md:divide-x md:divide-y-0">
+      <div
+        className={`grid min-h-[520px] grid-cols-1 divide-y divide-slate-400 ${stockGridClass} md:divide-x md:divide-y-0`}
+      >
         <LegacyStockTable
           title="Item Params"
           titleClassName="bg-orange-500 text-white"
           columns={['Color', 'Size', 'Qty', 'MC']}
-          emptyMessage="Select product variants"
+          emptyMessage="No variants found"
           rows={itemParamRows.map((row) => [
             row.color,
             row.size,
@@ -224,25 +345,33 @@ function VariantWarehousePanel({ items }: { items: OrderItemForm[] }) {
             row.mc,
           ])}
         />
-        <LegacyStockTable
-          title="Main Store Stock"
-          titleClassName="bg-blue-900 text-white"
-          columns={['Color', 'Size', 'Qty']}
-          emptyMessage="No warehouse stock"
-          rows={warehouseRows.map((row) => [
-            row.color,
-            row.size,
-            formatStockQuantity(row.quantity),
-          ])}
-          highlightNegative
-        />
-        <LegacyStockTable
-          title="BJ Stock"
-          titleClassName="bg-teal-700 text-white"
-          columns={['Color', 'Size', 'Qty']}
-          emptyMessage="No BJ stock"
-          rows={[]}
-        />
+        {warehouseTables.length === 0 ? (
+          <LegacyStockTable
+            title="Warehouse Stock"
+            titleClassName="bg-blue-900 text-white"
+            columns={['Color', 'Size', 'Qty']}
+            emptyMessage="No warehouse stock"
+            rows={[]}
+          />
+        ) : (
+          warehouseTables.map((warehouse, warehouseIndex) => (
+            <LegacyStockTable
+              key={warehouse.title}
+              title={warehouse.title}
+              titleClassName={
+                warehouseIndex % 2 === 0 ? 'bg-blue-900 text-white' : 'bg-teal-700 text-white'
+              }
+              columns={['Color', 'Size', 'Qty']}
+              emptyMessage="No warehouse stock"
+              rows={warehouse.rows.map((row) => [
+                row.color,
+                row.size,
+                formatStockQuantity(row.quantity),
+              ])}
+              onRowClick={(rowIndex) => onSelectVariant(warehouse.rows[rowIndex].variant)}
+            />
+          ))
+        )}
       </div>
     </div>
   );
@@ -255,6 +384,7 @@ function LegacyStockTable({
   rows,
   emptyMessage,
   highlightNegative = false,
+  onRowClick,
 }: {
   title: string;
   titleClassName: string;
@@ -262,6 +392,7 @@ function LegacyStockTable({
   rows: Array<Array<string | number>>;
   emptyMessage: string;
   highlightNegative?: boolean;
+  onRowClick?: (rowIndex: number) => void;
 }) {
   return (
     <div className="min-w-0 bg-white">
@@ -291,7 +422,11 @@ function LegacyStockTable({
               return (
                 <tr
                   key={`${title}-${rowIndex}`}
-                  className={shouldHighlight ? 'bg-red-600 font-bold text-white' : 'text-blue-900'}
+                  onClick={() => onRowClick?.(rowIndex)}
+                  className={cn(
+                    shouldHighlight ? 'bg-red-600 font-bold text-white' : 'text-blue-900',
+                    onRowClick && 'cursor-pointer hover:bg-blue-50'
+                  )}
                 >
                   {row.map((cell, cellIndex) => (
                     <td
@@ -421,6 +556,9 @@ export function OrderFormContent({
       itemComment: item.itemComment || '',
     }));
   });
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(() =>
+    initialOrder?.items?.length ? 0 : null
+  );
   const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
   const [address, setAddress] = useState<OrderAddressForm>(() => {
     const initial = initialOrder?.address;
@@ -841,11 +979,19 @@ export function OrderFormContent({
   };
 
   const addItem = () => {
-    setItems((prev) => [...prev, emptyOrderItem()]);
+    setItems((prev) => {
+      setSelectedItemIndex(prev.length);
+
+      return [...prev, emptyOrderItem()];
+    });
   };
 
   const addCatalogItem = () => {
-    setItems((prev) => [...prev, emptyOrderItem('catalog')]);
+    setItems((prev) => {
+      setSelectedItemIndex(prev.length);
+
+      return [...prev, emptyOrderItem('catalog')];
+    });
   };
 
   const applyVariantSelection = (index: number, nextItems: OrderItemForm[], replaceCount = 1) => {
@@ -876,6 +1022,63 @@ export function OrderFormContent({
 
       return next;
     });
+    setSelectedItemIndex((current) => {
+      if (current === null) {
+        return null;
+      }
+      if (current === index) {
+        return Math.max(index - 1, 0);
+      }
+      if (current > index) {
+        return current - 1;
+      }
+
+      return current;
+    });
+  };
+
+  useEffect(() => {
+    setSelectedItemIndex((current) => {
+      if (items.length === 0) {
+        return null;
+      }
+      if (current === null) {
+        return 0;
+      }
+
+      return Math.min(current, items.length - 1);
+    });
+  }, [items.length]);
+
+  const handleSelectVariantForSelectedRow = (variant: ProductVariantDTO) => {
+    if (selectedItemIndex === null) {
+      return;
+    }
+
+    const selectedItem = items[selectedItemIndex];
+
+    if (!selectedItem?.productId) {
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((item, index) =>
+        index === selectedItemIndex
+          ? {
+              ...item,
+              variantId: variant.id,
+              sku: variant.sku,
+              availableQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+              warehouseStocks: mapVariantWarehouseStocks(variant),
+              variantAttributes: `Variant: ${variant.sku}`,
+              itemPrice:
+                variant.price !== undefined && variant.price !== null
+                  ? String(variant.price)
+                  : item.itemPrice,
+            }
+          : item
+      )
+    );
   };
 
   useEffect(() => {
@@ -1938,6 +2141,8 @@ export function OrderFormContent({
               onRemoveItem={removeItem}
               onApplyVariantSelection={applyVariantSelection}
               onItemChange={handleItemChange}
+              selectedItemIndex={selectedItemIndex}
+              onSelectItem={setSelectedItemIndex}
               referrerForm="orders"
               referrerSessionId={formSessionId}
               referrerField="productId"
@@ -1947,7 +2152,11 @@ export function OrderFormContent({
 
           <div className="space-y-2 bg-white p-2">
             <div className="space-y-2 xl:sticky xl:top-2">
-              <VariantWarehousePanel items={items} />
+              <VariantWarehousePanel
+                selectedItem={selectedItemIndex !== null ? items[selectedItemIndex] : undefined}
+                selectedItemIndex={selectedItemIndex}
+                onSelectVariant={handleSelectVariantForSelectedRow}
+              />
 
               <div className="rounded-none border border-slate-400 bg-[#efefef] p-3 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
