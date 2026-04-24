@@ -373,6 +373,8 @@ function ProductVariantSelector({
   existingVariantItems,
   replaceCount = 1,
   hideSelectedVariantPreview = false,
+  hideSelectedProductPreview = false,
+  tableRowMode = false,
 }: {
   item: OrderItemForm;
   index: number;
@@ -391,6 +393,8 @@ function ProductVariantSelector({
   existingVariantItems?: OrderItemForm[];
   replaceCount?: number;
   hideSelectedVariantPreview?: boolean;
+  hideSelectedProductPreview?: boolean;
+  tableRowMode?: boolean;
 }) {
   const [productOpen, setProductOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
@@ -679,22 +683,30 @@ function ProductVariantSelector({
         : `${pendingVariantIds.length} variants selected`;
   const secondaryVariantName = selectedVariant?.sku ?? item.sku ?? item.productName ?? 'Variant';
   const selectorLayoutClass = showProductSelector
-    ? 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(240px,1.1fr)]'
+    ? tableRowMode || hideSelectedProductPreview
+      ? 'grid-cols-1'
+      : 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(240px,1.1fr)]'
     : 'grid-cols-1 sm:grid-cols-2';
 
   return (
-    <div className={cn('grid gap-3', selectorLayoutClass)}>
+    <div className={cn('grid gap-3', tableRowMode && 'gap-1', selectorLayoutClass)}>
       {showProductSelector ? (
-        <div className="space-y-1.5">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
+        <div className={cn('space-y-1.5', tableRowMode && 'space-y-0')}>
+          <div className={cn('space-y-1.5', tableRowMode && 'space-y-0')}>
+            {!tableRowMode ? (
+              <Label className="text-xs font-semibold text-slate-600">Select Product</Label>
+            ) : null}
             <Popover open={productOpen} onOpenChange={setProductOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={productOpen}
-                  className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+                  className={cn(
+                    'w-full justify-between border-slate-300 hover:border-blue-400 h-9',
+                    tableRowMode &&
+                      'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-blue-900 shadow-none hover:bg-blue-50'
+                  )}
                 >
                   {selectedProduct ? (
                     <span className="truncate text-sm">{selectedProduct.name}</span>
@@ -753,21 +765,32 @@ function ProductVariantSelector({
         <div
           className={cn(
             'space-y-1.5',
-            showProductSelector ? 'lg:col-start-2 lg:row-start-1' : 'sm:col-start-2'
+            tableRowMode && 'space-y-0',
+            showProductSelector && !tableRowMode
+              ? 'lg:col-start-2 lg:row-start-1'
+              : !showProductSelector
+                ? 'sm:col-start-2'
+                : ''
           )}
         >
           {showProductSelector ? (
             <>
-              <Label className="text-xs font-semibold text-slate-600">
-                Select Variant(s) (Optional)
-              </Label>
+              {!tableRowMode ? (
+                <Label className="text-xs font-semibold text-slate-600">
+                  Select Variant(s) (Optional)
+                </Label>
+              ) : null}
               <Popover open={variantOpen} onOpenChange={setVariantOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={variantOpen}
-                    className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+                    className={cn(
+                      'w-full justify-between border-slate-300 hover:border-blue-400 h-9',
+                      tableRowMode &&
+                        'mt-1 h-7 rounded-none border-slate-300 bg-white px-1 text-left text-xs text-blue-900 shadow-none'
+                    )}
                   >
                     {selectedVariantLabel ? (
                       <span className="truncate text-sm">{selectedVariantLabel}</span>
@@ -855,23 +878,25 @@ function ProductVariantSelector({
       )}
 
       {showProductSelector ? (
-        <div
-          className={cn(
-            'space-y-1.5',
-            item.productId && variants.length > 0
-              ? 'lg:col-start-3 lg:row-start-1'
-              : 'lg:col-start-2'
-          )}
-        >
-          <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
-          {selectedProduct ? (
-            <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
-          ) : (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
-              No product selected
-            </div>
-          )}
-        </div>
+        !hideSelectedProductPreview && !tableRowMode ? (
+          <div
+            className={cn(
+              'space-y-1.5',
+              item.productId && variants.length > 0
+                ? 'lg:col-start-3 lg:row-start-1'
+                : 'lg:col-start-2'
+            )}
+          >
+            <Label className="text-xs font-semibold text-slate-600">Selected Product</Label>
+            {selectedProduct ? (
+              <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
+            ) : (
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+                No product selected
+              </div>
+            )}
+          </div>
+        ) : null
       ) : null}
     </div>
   );
@@ -1555,13 +1580,109 @@ export function OrderFormItems({
     );
   };
 
+  void renderDesktopEntry;
+
+  const legacyItemRows = itemGroups.flatMap((group) => group.entries);
+  const blankLegacyRows = Array.from({ length: Math.max(15 - legacyItemRows.length, 0) });
+  const legacyItemsTotal = items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+
+  const renderLegacyItemRow = (item: OrderItemForm, index: number, rowIndex: number) => {
+    const itemTotal = calculateItemTotal(item);
+    const selectedCatalog =
+      item.itemType === 'catalog'
+        ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
+        : undefined;
+
+    return (
+      <tr key={`legacy-item-${index}`} className="h-[34px] align-top text-blue-900">
+        <td className="border border-slate-300 px-1 py-1 text-center font-semibold">
+          {rowIndex + 1}
+        </td>
+        <td className="border border-slate-300 px-1 py-1 font-bold">
+          {item.itemType === 'catalog' ? (
+            <div className="space-y-1">
+              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
+              {(item.productName || item.sku) && (
+                <SelectedOrderItemPreview
+                  item={item}
+                  selectedCatalog={selectedCatalog}
+                  onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
+                  catalogDisplayLabel={getCatalogDisplayLabel(item)}
+                />
+              )}
+            </div>
+          ) : (
+            <ProductVariantSelector
+              item={item}
+              index={index}
+              onApplyVariantSelection={onApplyVariantSelection}
+              onItemChange={onItemChange}
+              showProductSelector
+              hideSelectedProductPreview
+              hideSelectedVariantPreview
+              tableRowMode
+            />
+          )}
+        </td>
+        <td className="border border-slate-300 px-1 py-1 text-center font-semibold">Pcs.</td>
+        <td className="border border-slate-300 px-1 py-1">
+          <Input
+            type="number"
+            min={0}
+            placeholder="0"
+            value={item.quantity}
+            onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-blue-900 shadow-none focus-visible:ring-1"
+          />
+          <FieldError message={itemErrors?.[index]?.quantity} />
+        </td>
+        <td className="border border-slate-300 px-1 py-1">
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            placeholder="0.00"
+            value={item.itemPrice}
+            readOnly
+            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-blue-900 shadow-none"
+          />
+          <FieldError message={itemErrors?.[index]?.itemPrice} />
+        </td>
+        <td className="border border-slate-300 px-2 py-2 text-right font-bold">
+          {itemTotal > 0 ? itemTotal.toFixed(2) : '0'}
+        </td>
+        <td className="border border-slate-300 px-1 py-1 text-center">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemoveItem(index)}
+            className="h-7 w-7 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </Button>
+        </td>
+      </tr>
+    );
+  };
+
   return (
-    <div className="space-y-4 rounded-lg border-2 border-cyan-200 bg-gradient-to-br from-white to-cyan-50/30 p-6 shadow-lg">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
+      <div className="bg-slate-500 px-3 py-1 text-center text-xs font-bold text-white">
+        Items Order Details
+      </div>
+      <div className="flex flex-col gap-2 bg-[#efefef] p-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
+          <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-cyan-100">
             <svg
-              className="h-5 w-5 text-cyan-700"
+              className="h-4 w-4 text-cyan-700"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -1575,8 +1696,8 @@ export function OrderFormItems({
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800">Shopping Cart</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="text-sm font-bold text-slate-800">Product Selection</h3>
+            <p className="text-[11px] text-muted-foreground">
               {items.length === 0
                 ? 'No items added'
                 : `${items.length} item${items.length !== 1 ? 's' : ''} in cart`}
@@ -1588,7 +1709,7 @@ export function OrderFormItems({
             <Button
               type="button"
               onClick={onAddItem}
-              className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-teal-600 text-white hover:from-cyan-700 hover:to-teal-700 shadow-md"
+              className="h-8 w-full rounded-none bg-blue-700 px-3 text-xs text-white shadow-sm hover:bg-blue-800 sm:w-auto"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -1604,7 +1725,7 @@ export function OrderFormItems({
               type="button"
               size="sm"
               variant="outline"
-              className="h-9 gap-1.5 border-dashed border-cyan-300 text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800"
+              className="h-8 gap-1.5 rounded-none border-dashed border-cyan-300 text-xs text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800"
               onClick={handleCreateProduct}
             >
               <Plus className="h-4 w-4" />
@@ -1615,7 +1736,7 @@ export function OrderFormItems({
             <Button
               type="button"
               onClick={onAddCatalogItem}
-              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 shadow-md"
+              className="h-8 w-full rounded-none bg-blue-700 px-3 text-xs text-white shadow-sm hover:bg-blue-800 sm:w-auto"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -1631,7 +1752,7 @@ export function OrderFormItems({
               type="button"
               size="sm"
               variant="outline"
-              className="h-9 gap-1.5 border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
+              className="h-8 gap-1.5 rounded-none border-dashed border-indigo-300 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
               onClick={handleCreateCatalog}
             >
               <Plus className="h-4 w-4" />
@@ -1642,7 +1763,7 @@ export function OrderFormItems({
       </div>
 
       {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-cyan-300 bg-cyan-50/50 p-12 text-center">
+        <div className="m-2 flex flex-col items-center justify-center border border-dashed border-cyan-300 bg-cyan-50/50 p-8 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100">
             <svg
               className="h-8 w-8 text-cyan-600"
@@ -1664,10 +1785,69 @@ export function OrderFormItems({
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          {/* Cart Items */}
-          <div className="divide-y divide-slate-200">
-            {itemGroups.map((group, groupIndex) => (
+        <div className="overflow-hidden border-t border-slate-300 bg-white">
+          <div className="hidden lg:block">
+            <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
+              <colgroup>
+                <col className="w-[34px]" />
+                <col />
+                <col className="w-[74px]" />
+                <col className="w-[82px]" />
+                <col className="w-[94px]" />
+                <col className="w-[104px]" />
+                <col className="w-[42px]" />
+              </colgroup>
+              <thead>
+                <tr className="bg-slate-200 text-slate-900">
+                  <th className="border border-slate-400 px-1 py-1"></th>
+                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">
+                    Item Name
+                  </th>
+                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Unit</th>
+                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Qty</th>
+                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Rate</th>
+                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">
+                    Amount
+                  </th>
+                  <th className="border border-slate-400 px-1 py-1"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {legacyItemRows.map(({ item, index }, rowIndex) =>
+                  renderLegacyItemRow(item, index, rowIndex)
+                )}
+                {blankLegacyRows.map((_, rowIndex) => (
+                  <tr key={`legacy-blank-${rowIndex}`} className="h-[28px]">
+                    <td className="border border-slate-300 px-1 text-center text-slate-700">
+                      {legacyItemRows.length + rowIndex + 1}
+                    </td>
+                    <td className="border border-slate-300"></td>
+                    <td className="border border-slate-300"></td>
+                    <td className="border border-slate-300 text-right text-blue-900">0</td>
+                    <td className="border border-slate-300"></td>
+                    <td className="border border-slate-300"></td>
+                    <td className="border border-slate-300"></td>
+                  </tr>
+                ))}
+                <tr className="bg-white text-blue-900">
+                  <td className="border border-slate-300"></td>
+                  <td className="border border-slate-300"></td>
+                  <td className="border border-slate-300"></td>
+                  <td className="border border-slate-300 px-2 py-1 text-right font-bold">
+                    {items.reduce((sum, item) => sum + (Number.parseFloat(item.quantity) || 0), 0)}
+                  </td>
+                  <td className="border border-slate-300"></td>
+                  <td className="border border-slate-300 px-2 py-1 text-right font-bold">
+                    {legacyItemsTotal.toFixed(2)}
+                  </td>
+                  <td className="border border-slate-300"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="divide-y divide-slate-200 lg:hidden">
+            {itemGroups.map((group) => (
               <div key={group.key} className="hover:bg-slate-50/50 transition-colors">
                 {(() => {
                   const isProductVariantGroup =
@@ -1677,23 +1857,6 @@ export function OrderFormItems({
 
                   return (
                     <>
-                      <div className="hidden lg:grid lg:grid-cols-12 gap-3 p-4 items-start">
-                        <div className="col-span-1 flex items-start">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
-                            {groupIndex + 1}
-                          </div>
-                        </div>
-                        <div className="col-span-11 space-y-4">
-                          {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
-                          {group.entries.map(({ item, index }, entryIndex) =>
-                            renderDesktopEntry(item, index, entryIndex, group.entries.length, {
-                              forceHideProductSelector: isProductVariantGroup,
-                              hasGroupHeader: isProductVariantGroup,
-                            })
-                          )}
-                        </div>
-                      </div>
-
                       <div className="lg:hidden p-4 space-y-4">
                         {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
                         {group.entries.map(({ item, index }, entryIndex) =>

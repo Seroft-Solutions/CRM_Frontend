@@ -161,6 +161,156 @@ const parseItemStatusValue = (value?: string) => {
   return match ? match[0] : '';
 };
 
+const formatStockQuantity = (value?: number) => {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return '0';
+  }
+
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+};
+
+function VariantWarehousePanel({ items }: { items: OrderItemForm[] }) {
+  const selectedVariantItems = items.filter(
+    (item) => item.itemType === 'product' && Boolean(item.variantId)
+  );
+  const itemParamRows = selectedVariantItems.map((item, index) => {
+    const requestedQuantity = Number.parseFloat(item.quantity) || 0;
+    const variantLabel = item.variantAttributes || item.sku || `Variant ${index + 1}`;
+    const [color = variantLabel, size = '-'] = variantLabel
+      .split(/[|,/]/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    return {
+      key: `${item.variantId ?? 'variant'}-${index}`,
+      color,
+      size,
+      quantity: requestedQuantity,
+      mc: item.sku || '-',
+      availableQuantity: item.availableQuantity ?? 0,
+      stocks: item.warehouseStocks ?? [],
+    };
+  });
+  const warehouseRows = itemParamRows.flatMap((item) =>
+    item.stocks.length > 0
+      ? item.stocks.map((stock, stockIndex) => ({
+          key: `${item.key}-${stock.warehouseId ?? stock.warehouseCode ?? stockIndex}`,
+          color: item.color,
+          size: item.size,
+          quantity: stock.salesStockQuantity ?? stock.stockQuantity,
+        }))
+      : [
+          {
+            key: `${item.key}-available`,
+            color: item.color,
+            size: item.size,
+            quantity: item.availableQuantity,
+          },
+        ]
+  );
+
+  return (
+    <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
+      <div className="grid min-h-[520px] grid-cols-1 divide-y divide-slate-400 md:grid-cols-[1fr_1fr_0.9fr] md:divide-x md:divide-y-0">
+        <LegacyStockTable
+          title="Item Params"
+          titleClassName="bg-orange-500 text-white"
+          columns={['Color', 'Size', 'Qty', 'MC']}
+          emptyMessage="Select product variants"
+          rows={itemParamRows.map((row) => [
+            row.color,
+            row.size,
+            formatStockQuantity(row.quantity),
+            row.mc,
+          ])}
+        />
+        <LegacyStockTable
+          title="Main Store Stock"
+          titleClassName="bg-blue-900 text-white"
+          columns={['Color', 'Size', 'Qty']}
+          emptyMessage="No warehouse stock"
+          rows={warehouseRows.map((row) => [
+            row.color,
+            row.size,
+            formatStockQuantity(row.quantity),
+          ])}
+          highlightNegative
+        />
+        <LegacyStockTable
+          title="BJ Stock"
+          titleClassName="bg-teal-700 text-white"
+          columns={['Color', 'Size', 'Qty']}
+          emptyMessage="No BJ stock"
+          rows={[]}
+        />
+      </div>
+    </div>
+  );
+}
+
+function LegacyStockTable({
+  title,
+  titleClassName,
+  columns,
+  rows,
+  emptyMessage,
+  highlightNegative = false,
+}: {
+  title: string;
+  titleClassName: string;
+  columns: string[];
+  rows: Array<Array<string | number>>;
+  emptyMessage: string;
+  highlightNegative?: boolean;
+}) {
+  return (
+    <div className="min-w-0 bg-white">
+      <div className={`px-2 py-1 text-center text-xs font-bold ${titleClassName}`}>{title}</div>
+      <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
+        <thead>
+          <tr className="bg-slate-100">
+            {columns.map((column) => (
+              <th key={column} className="border border-slate-300 px-1 py-0.5 text-left font-bold">
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td className="px-2 py-3 text-slate-500" colSpan={columns.length}>
+                {emptyMessage}
+              </td>
+            </tr>
+          ) : (
+            rows.map((row, rowIndex) => {
+              const quantity = Number(row[row.length - 1]);
+              const shouldHighlight = highlightNegative && quantity < 0;
+
+              return (
+                <tr
+                  key={`${title}-${rowIndex}`}
+                  className={shouldHighlight ? 'bg-red-600 font-bold text-white' : 'text-blue-900'}
+                >
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={`${title}-${rowIndex}-${cellIndex}`}
+                      className="border border-slate-300 px-1 py-0.5"
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function OrderFormContent({
   initialOrder,
   addressExists,
@@ -1730,25 +1880,17 @@ export function OrderFormContent({
 
   return (
     <>
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <div className="space-y-6">
-            <OrderFormItems
-              items={items}
-              itemErrors={errors.items}
-              onAddItem={addItem}
-              onAddCatalogItem={addCatalogItem}
-              onRemoveItem={removeItem}
-              onApplyVariantSelection={applyVariantSelection}
-              onItemChange={handleItemChange}
-              referrerForm="orders"
-              referrerSessionId={formSessionId}
-              referrerField="productId"
-              referrerCatalogField="productCatalogId"
-            />
-
-            <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
-              <div className="flex items-center gap-3">
+      <form
+        className="overflow-hidden border border-slate-500 bg-[#e6e6e6] text-xs shadow-sm"
+        onSubmit={handleSubmit}
+      >
+        <div className="border-b border-slate-500 bg-[#3f7770] px-3 py-1 text-center text-xs font-bold text-white">
+          Sale Order
+        </div>
+        <div className="grid gap-0 xl:grid-cols-[46%_54%]">
+          <div className="space-y-2 border-slate-500 bg-[#efefef] p-2 xl:border-r">
+            <div className="space-y-3 border border-slate-400 bg-[#f8f8d8] p-3 shadow-sm">
+              <div className="flex items-center gap-2">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                   <svg
                     className="h-5 w-5 text-blue-700"
@@ -1765,10 +1907,8 @@ export function OrderFormContent({
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Order Details</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Set status, pricing, and customer information
-                  </p>
+                  <h3 className="text-sm font-bold text-slate-800">Sale Order Details</h3>
+                  <p className="text-[11px] text-slate-600">Customer, status, discount, shipping</p>
                 </div>
               </div>
               <OrderFormFields
@@ -1780,21 +1920,36 @@ export function OrderFormContent({
                 onChange={handleChange}
                 onVerifyDiscount={handleVerifyDiscount}
               />
+              <OrderFormAddress
+                address={address}
+                errors={errors}
+                onAddressChange={handleAddressChange}
+                onToggleBillToSame={toggleBillToSame}
+                shippingEditable={shippingEditable}
+                onToggleShippingEditable={setShippingEditable}
+              />
             </div>
 
-            <OrderFormAddress
-              address={address}
-              errors={errors}
-              onAddressChange={handleAddressChange}
-              onToggleBillToSame={toggleBillToSame}
-              shippingEditable={shippingEditable}
-              onToggleShippingEditable={setShippingEditable}
+            <OrderFormItems
+              items={items}
+              itemErrors={errors.items}
+              onAddItem={addItem}
+              onAddCatalogItem={addCatalogItem}
+              onRemoveItem={removeItem}
+              onApplyVariantSelection={applyVariantSelection}
+              onItemChange={handleItemChange}
+              referrerForm="orders"
+              referrerSessionId={formSessionId}
+              referrerField="productId"
+              referrerCatalogField="productCatalogId"
             />
           </div>
 
-          <div className="space-y-6">
-            <div className="sticky top-6 space-y-6">
-              <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
+          <div className="space-y-2 bg-white p-2">
+            <div className="space-y-2 xl:sticky xl:top-2">
+              <VariantWarehousePanel items={items} />
+
+              <div className="rounded-none border border-slate-400 bg-[#efefef] p-3 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
                     <svg
@@ -1811,7 +1966,7 @@ export function OrderFormContent({
                       />
                     </svg>
                   </div>
-                  <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
+                  <h3 className="text-sm font-bold text-slate-800">Order Summary</h3>
                 </div>
 
                 <div className="space-y-3">
