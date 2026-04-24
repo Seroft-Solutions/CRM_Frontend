@@ -31,143 +31,123 @@ export function OrderFormAddress({
   const shipToLocked = !shippingEditable;
 
   return (
-    <div className="space-y-3 border-t border-slate-300 pt-3">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <svg
-                className="h-5 w-5 text-emerald-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
-              <h4 className="text-sm font-bold text-slate-800">Shipping Address</h4>
-            </div>
+    <div className="border-t border-slate-300 pt-2">
+      <div className="grid gap-x-3 gap-y-2 md:grid-cols-2">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-[11px] font-bold uppercase text-slate-700">Shipping Address</h4>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onToggleShippingEditable(!shippingEditable)}
-              className="border-emerald-300 text-xs"
+              className="h-6 rounded-none border-slate-400 px-2 text-[11px]"
             >
-              {shippingEditable ? 'Lock shipping address' : 'Edit shipping address'}
+              {shippingEditable ? 'Lock' : 'Edit'}
             </Button>
           </div>
-          <div className="grid gap-2 md:grid-cols-4">
-            <div className="space-y-1">
-              <Label className="text-xs">First Name</Label>
+          <div className="grid gap-x-2 gap-y-1 md:grid-cols-2">
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">First</Label>
               <Input
                 value={address.shipTo.firstName}
                 onChange={(event) => onAddressChange('shipTo', 'firstName', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Middle Name</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Middle</Label>
               <Input
                 value={address.shipTo.middleName}
                 onChange={(event) => onAddressChange('shipTo', 'middleName', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Last Name</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Last</Label>
               <Input
                 value={address.shipTo.lastName}
                 onChange={(event) => onAddressChange('shipTo', 'lastName', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Contact</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Contact</Label>
               <Input
                 value={address.shipTo.contact}
                 onChange={(event) => onAddressChange('shipTo', 'contact', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
               <FieldError message={errors.shipToContact} />
             </div>
-            <div className="space-y-1 md:col-span-4">
-              <Label className="text-xs">Address Line 1</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1 md:col-span-2">
+              <Label className="text-[11px]">Address 1</Label>
               <Input
                 value={address.shipTo.addrLine1}
                 onChange={(event) => onAddressChange('shipTo', 'addrLine1', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1 md:col-span-4">
-              <Label className="text-xs">Address Line 2</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1 md:col-span-2">
+              <Label className="text-[11px]">Address 2</Label>
               <Input
                 value={address.shipTo.addrLine2}
                 onChange={(event) => onAddressChange('shipTo', 'addrLine2', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">City</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">City</Label>
               <Input
                 value={address.shipTo.city}
                 onChange={(event) => onAddressChange('shipTo', 'city', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">State</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">State</Label>
               <Input
                 value={address.shipTo.state}
                 onChange={(event) => onAddressChange('shipTo', 'state', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Zipcode</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Zipcode</Label>
               <Input
                 value={address.shipTo.zipcode}
                 onChange={(event) => onAddressChange('shipTo', 'zipcode', event.target.value)}
                 maxLength={10}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
               <FieldError message={errors.shipToZipcode} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Country</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Country</Label>
               <Input
                 value={address.shipTo.country}
                 onChange={(event) => onAddressChange('shipTo', 'country', event.target.value)}
                 disabled={shipToLocked}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
           </div>
         </div>
 
-        <div className="space-y-2 border-t border-slate-300 pt-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <svg
-                className="h-5 w-5 text-emerald-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                />
-              </svg>
-              <h4 className="text-sm font-bold text-slate-800">Billing Address</h4>
-            </div>
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-[11px] font-bold uppercase text-slate-700">Billing Address</h4>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2 bg-emerald-50 px-2 py-1">
+              <div className="flex h-6 items-center gap-2 bg-emerald-50 px-2">
                 <Checkbox
                   id="billToSame"
                   checked={address.billToSameFlag}
@@ -183,88 +163,98 @@ export function OrderFormAddress({
               </div>
             </div>
           </div>
-          <div className="grid gap-2 md:grid-cols-4">
-            <div className="space-y-1">
-              <Label className="text-xs">First Name</Label>
+          <div className="grid gap-x-2 gap-y-1 md:grid-cols-2">
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">First</Label>
               <Input
                 value={address.billTo.firstName}
                 onChange={(event) => onAddressChange('billTo', 'firstName', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Middle Name</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Middle</Label>
               <Input
                 value={address.billTo.middleName}
                 onChange={(event) => onAddressChange('billTo', 'middleName', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Last Name</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Last</Label>
               <Input
                 value={address.billTo.lastName}
                 onChange={(event) => onAddressChange('billTo', 'lastName', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Contact</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Contact</Label>
               <Input
                 value={address.billTo.contact}
                 onChange={(event) => onAddressChange('billTo', 'contact', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
               <FieldError message={errors.billToContact} />
             </div>
-            <div className="space-y-1 md:col-span-4">
-              <Label className="text-xs">Address Line 1</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1 md:col-span-2">
+              <Label className="text-[11px]">Address 1</Label>
               <Input
                 value={address.billTo.addrLine1}
                 onChange={(event) => onAddressChange('billTo', 'addrLine1', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1 md:col-span-4">
-              <Label className="text-xs">Address Line 2</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1 md:col-span-2">
+              <Label className="text-[11px]">Address 2</Label>
               <Input
                 value={address.billTo.addrLine2}
                 onChange={(event) => onAddressChange('billTo', 'addrLine2', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">City</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">City</Label>
               <Input
                 value={address.billTo.city}
                 onChange={(event) => onAddressChange('billTo', 'city', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">State</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">State</Label>
               <Input
                 value={address.billTo.state}
                 onChange={(event) => onAddressChange('billTo', 'state', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Zipcode</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Zipcode</Label>
               <Input
                 value={address.billTo.zipcode}
                 onChange={(event) => onAddressChange('billTo', 'zipcode', event.target.value)}
                 disabled={address.billToSameFlag}
                 maxLength={10}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
               <FieldError message={errors.billToZipcode} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Country</Label>
+            <div className="grid grid-cols-[70px_minmax(0,1fr)] items-center gap-1">
+              <Label className="text-[11px]">Country</Label>
               <Input
                 value={address.billTo.country}
                 onChange={(event) => onAddressChange('billTo', 'country', event.target.value)}
                 disabled={address.billToSameFlag}
+                className="h-6 rounded-none border-slate-400 bg-[#ffffcc] px-2 text-[11px]"
               />
             </div>
           </div>
