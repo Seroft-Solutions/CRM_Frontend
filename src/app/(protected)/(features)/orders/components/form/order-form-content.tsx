@@ -195,13 +195,26 @@ function mapVariantWarehouseStocks(variant: ProductVariantDTO): WarehouseStockEn
       warehouseCode: undefined,
       variantLabel: variant.sku,
       stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-      salesStockQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+      salesStockQuantity: entry.salesStockQuantity ?? entry.stockQuantity ?? 0,
     }))
     .sort((left, right) =>
       (left.warehouseName || left.warehouseCode || '').localeCompare(
         right.warehouseName || right.warehouseCode || ''
       )
     );
+}
+
+function getVariantAvailableQuantity(variant: ProductVariantDTO) {
+  const warehouseStocks = mapVariantWarehouseStocks(variant);
+
+  if (warehouseStocks.length === 0) {
+    return Math.max(0, variant.stockQuantity ?? 0);
+  }
+
+  return warehouseStocks.reduce(
+    (sum, entry) => sum + (entry.salesStockQuantity ?? entry.stockQuantity ?? 0),
+    0
+  );
 }
 
 function VariantWarehousePanel({
@@ -1068,7 +1081,7 @@ export function OrderFormContent({
               ...item,
               variantId: variant.id,
               sku: variant.sku,
-              availableQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+              availableQuantity: getVariantAvailableQuantity(variant),
               warehouseStocks: mapVariantWarehouseStocks(variant),
               variantAttributes: `Variant: ${variant.sku}`,
               itemPrice:

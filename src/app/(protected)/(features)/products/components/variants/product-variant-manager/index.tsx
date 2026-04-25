@@ -57,7 +57,6 @@ const sizeRankByToken = (() => {
 })();
 
 type ProductVariantWithStocks = ProductVariantDTO & {
-  salesStockQuantity?: number;
   warehouse?: {
     id?: number;
     name?: string;
@@ -521,7 +520,6 @@ export function ProductVariantManager({
           linkId: variant.linkId,
           price: variant.price,
           stockQuantity,
-          salesStockQuantity: Number(variant.salesStockQuantity ?? stockQuantity) || 0,
           variantStocks,
           status: variant.status,
           isPrimary: variant.isPrimary,
@@ -695,7 +693,6 @@ export function ProductVariantManager({
           sku,
           price: 0,
           stockQuantity: 0,
-          salesStockQuantity: 0,
           variantStocks: [
             {
               warehouseId: defaultWarehouse?.id,

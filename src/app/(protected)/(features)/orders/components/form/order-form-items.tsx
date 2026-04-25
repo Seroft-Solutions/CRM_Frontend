@@ -39,11 +39,11 @@ type ProductVariantWithWarehouseStocks = {
   linkId?: string;
   price?: number;
   stockQuantity?: number;
-  salesStockQuantity?: number;
   isPrimary?: boolean;
   variantStocks?: {
     id?: number;
     stockQuantity?: number;
+    salesStockQuantity?: number;
     warehouse?: {
       id?: number;
       name?: string;
@@ -51,6 +51,17 @@ type ProductVariantWithWarehouseStocks = {
     };
   }[];
 };
+
+function getVariantQuantity(variant?: ProductVariantWithWarehouseStocks) {
+  if (!variant?.variantStocks?.length) {
+    return Math.max(0, variant?.stockQuantity ?? 0);
+  }
+
+  return variant.variantStocks.reduce(
+    (total, entry) => total + (entry.salesStockQuantity ?? entry.stockQuantity ?? 0),
+    0
+  );
+}
 
 function buildSearchableCommandValue(...parts: Array<string | number | null | undefined>) {
   return parts
@@ -122,9 +133,8 @@ function ProductOptionRow({
         <div className="flex flex-1 flex-col">
           <span className="font-medium text-sm">{product.name}</span>
           <span className="text-xs text-muted-foreground">
-            SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • Sales Stock:{' '}
-            {stockQuantity} • Price: ₹
-            {product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
+            SKU: {product.articleNumber ?? product.articalNumber ?? 'N/A'} • Stock: {stockQuantity}{' '}
+            • Price: ₹{product.salePrice ?? product.discountedPrice ?? product.basePrice ?? 0}
           </span>
         </div>
       </div>
@@ -157,8 +167,7 @@ function VariantOptionRow({
             <span className="text-xs text-slate-500">Link ID: {variant.linkId}</span>
           ) : null}
           <span className="text-xs text-muted-foreground">
-            Sales Stock: {variant.salesStockQuantity ?? variant.stockQuantity ?? 0} • ₹
-            {variant.price ?? 0}
+            Stock: {getVariantQuantity(variant)} • ₹{variant.price ?? 0}
           </span>
           {warehousePreview ? (
             <span className="text-[11px] text-slate-500">Warehouses: {warehousePreview}</span>
@@ -439,7 +448,7 @@ function ProductVariantSelector({
         warehouseCode: entry.warehouse?.code,
         variantLabel: variant.sku,
         stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-        salesStockQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+        salesStockQuantity: entry.salesStockQuantity ?? entry.stockQuantity ?? 0,
       }))
       .sort((a, b) => {
         const aName = (a.warehouseName || a.warehouseCode || '').toLowerCase();
@@ -463,7 +472,7 @@ function ProductVariantSelector({
     if (!product.variants?.length) return 0;
 
     return product.variants.reduce(
-      (total, variant) => total + (variant.salesStockQuantity ?? variant.stockQuantity ?? 0),
+      (total, variant) => total + getVariantQuantity(variant as ProductVariantWithWarehouseStocks),
       0
     );
   };
@@ -506,7 +515,7 @@ function ProductVariantSelector({
     productName: product.name,
     variantId: variant.id,
     sku: variant.sku,
-    availableQuantity: variant.salesStockQuantity ?? variant.stockQuantity ?? 0,
+    availableQuantity: getVariantQuantity(variant),
     warehouseStocks: mapVariantWarehouseStocks(variant),
     variantAttributes: `Variant: ${variant.sku}`,
     itemPrice:
@@ -606,7 +615,7 @@ function ProductVariantSelector({
   };
 
   const effectiveQuantity = selectedVariant
-    ? (selectedVariant.salesStockQuantity ?? selectedVariant.stockQuantity ?? 0)
+    ? getVariantQuantity(selectedVariant)
     : selectedProduct
       ? getProductQuantity(selectedProduct)
       : undefined;
@@ -1178,10 +1187,10 @@ export function OrderFormItems({
         : undefined;
     const showWarehouseStocks =
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
-    const availableSalesStockLabel =
+    const availableStockLabel =
       item.itemType === 'product' && Boolean(item.variantId)
-        ? 'Available variant sales stock'
-        : 'Available product sales stock';
+        ? 'Available variant stock'
+        : 'Available product stock';
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
@@ -1227,12 +1236,12 @@ export function OrderFormItems({
               />
               {availableQuantity !== undefined && (
                 <p className="mt-1 text-[11px] text-slate-500">
-                  {availableSalesStockLabel}: {availableQuantity}
+                  {availableStockLabel}: {availableQuantity}
                 </p>
               )}
               {showWarehouseStocks && (
                 <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                  <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
+                  <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
                   <div className="mt-0.5 space-y-0.5">
                     {warehouseStocks.map((entry, stockIndex) => (
                       <p
@@ -1318,14 +1327,12 @@ export function OrderFormItems({
                 />
                 {availableQuantity !== undefined && (
                   <p className="mt-1 text-[11px] text-slate-500">
-                    {availableSalesStockLabel}: {availableQuantity}
+                    {availableStockLabel}: {availableQuantity}
                   </p>
                 )}
                 {showWarehouseStocks && (
                   <div className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                    <p className="text-[11px] font-semibold text-slate-600">
-                      Warehouse sales stock
-                    </p>
+                    <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
                     <div className="mt-0.5 space-y-0.5">
                       {warehouseStocks.map((entry, stockIndex) => (
                         <p
@@ -1420,10 +1427,10 @@ export function OrderFormItems({
         : undefined;
     const showWarehouseStocks =
       item.itemType === 'product' && Boolean(item.variantId) && warehouseStocks.length > 0;
-    const availableSalesStockLabel =
+    const availableStockLabel =
       item.itemType === 'product' && Boolean(item.variantId)
-        ? 'Available variant sales stock'
-        : 'Available product sales stock';
+        ? 'Available variant stock'
+        : 'Available product stock';
     const backOrderMessage =
       breakdown.backOrderQuantity > 0
         ? `Warning: ${breakdown.backOrderQuantity} qty exceeds available stock and will save in backlog.`
@@ -1510,12 +1517,12 @@ export function OrderFormItems({
               />
               {availableQuantity !== undefined && (
                 <p className="text-[11px] text-slate-500">
-                  {availableSalesStockLabel}: {availableQuantity}
+                  {availableStockLabel}: {availableQuantity}
                 </p>
               )}
               {showWarehouseStocks && (
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
-                  <p className="text-[11px] font-semibold text-slate-600">Warehouse sales stock</p>
+                  <p className="text-[11px] font-semibold text-slate-600">Warehouse stock</p>
                   <div className="mt-0.5 space-y-0.5">
                     {warehouseStocks.map((entry, stockIndex) => (
                       <p

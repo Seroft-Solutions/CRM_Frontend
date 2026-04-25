@@ -37,7 +37,6 @@ export interface DraftVariantRow {
   linkId?: string;
   price?: number;
   stockQuantity: number;
-  salesStockQuantity: number;
   variantStocks: VariantWarehouseStock[];
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
@@ -63,7 +62,6 @@ export interface ExistingVariantRow {
   linkId?: string;
   price?: number;
   stockQuantity: number;
-  salesStockQuantity: number;
   variantStocks: VariantWarehouseStock[];
   status: ProductVariantDTOStatus;
   selections: VariantSelection[];
