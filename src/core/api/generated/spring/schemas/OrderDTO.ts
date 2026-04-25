@@ -41,6 +41,21 @@ export interface OrderDTO {
    * @maxLength 20
    */
   discountCode?: string;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  assignee?: string;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  picker?: string;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  packer?: string;
   updatedBy?: number;
   lastUpdated?: string;
   /**

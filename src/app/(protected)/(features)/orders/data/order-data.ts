@@ -188,6 +188,9 @@ export interface OrderRecord {
   orderTaxRate: number;
   orderBaseAmount: number;
   discountCode?: string;
+  assignee?: string;
+  picker?: string;
+  packer?: string;
   customer?: OrderDTO['customer'];
   phone: string;
   email: string;
@@ -268,6 +271,9 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
     orderTaxRate: order.orderTaxRate ?? 0,
     orderBaseAmount: order.orderBaseAmount ?? 0,
     discountCode: order.discountCode ?? undefined,
+    assignee: order.assignee ?? undefined,
+    picker: order.picker ?? undefined,
+    packer: order.packer ?? undefined,
     customer: order.customer ?? undefined,
     phone: order.phone ?? '',
     email: order.email ?? '',

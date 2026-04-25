@@ -317,6 +317,7 @@ export const sidebarItems: SidebarItem[] = [
     label: 'Attendance',
     path: '/attendance',
     icon: Clock3,
+    requiredPermission: 'attendance:sidebar',
   },
   {
     key: 'productManagement',

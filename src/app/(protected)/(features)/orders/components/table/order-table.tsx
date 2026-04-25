@@ -121,6 +121,7 @@ type SortColumn =
   | 'total'
   | 'shipping'
   | 'customer'
+  | 'assignee'
   | 'payment'
   | 'createdDate'
   | 'updatedDate';
@@ -189,6 +190,7 @@ export function OrderTable({
     total?: string;
     shipping?: string;
     customer?: string;
+    assignee?: string;
     email?: string;
     payment?: string;
     createdDateFrom?: string;
@@ -256,6 +258,9 @@ export function OrderTable({
           `order ${order.orderId}`,
           `order #${order.orderId}`,
           order.customer?.customerBusinessName ?? '',
+          order.assignee ?? '',
+          order.picker ?? '',
+          order.packer ?? '',
           order.email ?? '',
           order.phone ?? '',
           order.discountCode ?? '',
@@ -313,6 +318,14 @@ export function OrderTable({
       if (filters.customer) {
         const customerName = order.customer?.customerBusinessName || '';
         if (!customerName.toLowerCase().includes(filters.customer.toLowerCase())) {
+          return false;
+        }
+      }
+
+      // Assignee filter
+      if (filters.assignee) {
+        const assigneeName = order.assignee || '';
+        if (!assigneeName.toLowerCase().includes(filters.assignee.toLowerCase())) {
           return false;
         }
       }
@@ -397,6 +410,8 @@ export function OrderTable({
             b.customer?.customerBusinessName ?? b.email ?? b.phone ?? '',
             sortDirection
           );
+        case 'assignee':
+          return compareSortValues(a.assignee ?? '', b.assignee ?? '', sortDirection);
         case 'payment':
           return compareSortValues(a.paymentStatus ?? '', b.paymentStatus ?? '', sortDirection);
         case 'createdDate':
@@ -758,6 +773,16 @@ export function OrderTable({
                   {getSortIcon('customer')}
                 </Button>
               </TableHead>
+              <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('assignee')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Assignee</span>
+                  {getSortIcon('assignee')}
+                </Button>
+              </TableHead>
               <TableHead className="min-w-[120px] font-bold text-slate-700">
                 <Button
                   variant="ghost"
@@ -850,6 +875,14 @@ export function OrderTable({
                   className="h-8 text-xs border-slate-300 w-full"
                   value={filters.customer || ''}
                   onChange={(e) => handleFilterChange('customer', e.target.value)}
+                />
+              </TableHead>
+              <TableHead className="py-2">
+                <Input
+                  placeholder="Filter..."
+                  className="h-8 text-xs border-slate-300 w-full"
+                  value={filters.assignee || ''}
+                  onChange={(e) => handleFilterChange('assignee', e.target.value)}
                 />
               </TableHead>
               <TableHead className="py-2">
@@ -1021,6 +1054,14 @@ export function OrderTable({
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
+                        <div className="font-semibold text-slate-800">{order.assignee || '—'}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Picker {order.picker || '—'} · Packer {order.packer || '—'}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
                         <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
                           {order.paymentStatus}
                         </Badge>
@@ -1094,7 +1135,7 @@ export function OrderTable({
 
             {paginatedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="py-16 text-center">
+                <TableCell colSpan={10} className="py-16 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                       <svg
@@ -1257,7 +1298,7 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
 
   return (
     <TableRow className="hover:bg-slate-50/50">
-      <TableCell colSpan={9} className="p-0">
+      <TableCell colSpan={10} className="p-0">
         <div className="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
           {isLoading || isOrderLoading ? (
             <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
