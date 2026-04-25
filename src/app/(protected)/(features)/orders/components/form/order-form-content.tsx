@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Minus, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -50,6 +50,7 @@ import {
   useUpdateOrderAddressDetail,
 } from '@/core/api/generated/spring/endpoints/order-address-detail-resource/order-address-detail-resource.gen';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
+import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
 import {
   useCreateOrderShippingDetail,
   useUpdateOrderShippingDetail,
@@ -171,10 +172,33 @@ const formatStockQuantity = (value?: number) => {
   return Number.isInteger(value) ? String(value) : value.toFixed(2);
 };
 
-function getVariantDisplayParts(variant: ProductVariantDTO, index: number) {
+type OptionLabelsById = Map<number, string>;
+
+function getSelectionDisplayValue(
+  selection: NonNullable<ProductVariantDTO['selections']>[number],
+  optionLabelsById?: OptionLabelsById
+) {
+  const optionId = selection.option?.id;
+  const resolvedOptionLabel =
+    typeof optionId === 'number' ? optionLabelsById?.get(optionId) : undefined;
+
+  return (
+    selection.option?.label ||
+    resolvedOptionLabel ||
+    selection.rawValue ||
+    selection.option?.code ||
+    ''
+  );
+}
+
+function getVariantDisplayParts(
+  variant: ProductVariantDTO,
+  index: number,
+  optionLabelsById?: OptionLabelsById
+) {
   const variantLabel = variant.sku || `Variant ${index + 1}`;
   const selectionValues = (variant.selections ?? [])
-    .map((selection) => selection.option?.label || selection.option?.code || selection.rawValue)
+    .map((selection) => getSelectionDisplayValue(selection, optionLabelsById))
     .filter((value): value is string => Boolean(value));
   const [color = selectionValues[0] ?? variantLabel, size = selectionValues[1] ?? '-'] =
     selectionValues.length > 0
@@ -187,44 +211,22 @@ function getVariantDisplayParts(variant: ProductVariantDTO, index: number) {
   return { color, size, label: variantLabel };
 }
 
-function mapVariantWarehouseStocks(variant: ProductVariantDTO): WarehouseStockEntry[] {
-  return (variant.variantStocks ?? [])
-    .map((entry) => ({
-      warehouseId: entry.warehouse?.id,
-      warehouseName: entry.warehouse?.name,
-      warehouseCode: undefined,
-      variantLabel: variant.sku,
-      stockQuantity: Math.max(0, entry.stockQuantity ?? 0),
-      salesStockQuantity: entry.salesStockQuantity ?? entry.stockQuantity ?? 0,
-    }))
-    .sort((left, right) =>
-      (left.warehouseName || left.warehouseCode || '').localeCompare(
-        right.warehouseName || right.warehouseCode || ''
-      )
-    );
-}
-
-function getVariantAvailableQuantity(variant: ProductVariantDTO) {
-  const warehouseStocks = mapVariantWarehouseStocks(variant);
-
-  if (warehouseStocks.length === 0) {
-    return Math.max(0, variant.stockQuantity ?? 0);
-  }
-
-  return warehouseStocks.reduce(
-    (sum, entry) => sum + (entry.salesStockQuantity ?? entry.stockQuantity ?? 0),
-    0
-  );
-}
-
 function VariantWarehousePanel({
   selectedItem,
   selectedItemIndex,
-  onSelectVariant,
+  items,
+  onToggleWarehouseVariant,
+  onAdjustItemQuantity,
 }: {
   selectedItem?: OrderItemForm;
   selectedItemIndex: number | null;
-  onSelectVariant: (variant: ProductVariantDTO) => void;
+  items: OrderItemForm[];
+  onToggleWarehouseVariant: (
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number],
+    checked: boolean
+  ) => void;
+  onAdjustItemQuantity: (itemIndex: number, delta: number) => void;
 }) {
   const selectedProductId =
     selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
@@ -241,19 +243,78 @@ function VariantWarehousePanel({
     }
   );
   const variants = variantsData as ProductVariantDTO[];
-  const itemParamRows = variants.map((variant, index) => {
-    const requestedQuantity =
-      selectedItem?.variantId === variant.id ? Number.parseFloat(selectedItem.quantity) || 0 : 0;
-    const { color, size, label } = getVariantDisplayParts(variant, index);
+  const optionIdsMissingLabels = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          variants
+            .flatMap((variant) => variant.selections ?? [])
+            .map((selection) => {
+              const optionId = selection.option?.id;
 
-    return {
-      key: `${variant.id ?? 'variant'}-${index}`,
-      color,
-      size,
-      quantity: requestedQuantity,
-      mc: label,
-    };
-  });
+              if (typeof optionId !== 'number' || selection.option?.label) {
+                return null;
+              }
+
+              return optionId;
+            })
+            .filter((optionId): optionId is number => typeof optionId === 'number')
+        )
+      ),
+    [variants]
+  );
+  const { data: optionLabelOptions = [] } = useGetAllSystemConfigAttributeOptions(
+    optionIdsMissingLabels.length > 0
+      ? {
+          'id.in': optionIdsMissingLabels,
+          size: optionIdsMissingLabels.length,
+        }
+      : undefined,
+    {
+      query: {
+        enabled: optionIdsMissingLabels.length > 0,
+        staleTime: 60_000,
+      },
+    }
+  );
+  const optionLabelsById = useMemo(
+    () =>
+      new Map(
+        optionLabelOptions
+          .filter((option) => typeof option.id === 'number' && Boolean(option.label))
+          .map((option) => [option.id!, option.label] as const)
+      ),
+    [optionLabelOptions]
+  );
+  const selectedProductItems = items
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.itemType === 'product' && item.productId === selectedProductId)
+    .filter(({ item }) => typeof item.variantId === 'number');
+  const getItemParamParts = (item: OrderItemForm) => {
+    const variantIndex = variants.findIndex((variant) => variant.id === item.variantId);
+    const variant = variantIndex >= 0 ? variants[variantIndex] : undefined;
+
+    if (variant) {
+      const { color, size } = getVariantDisplayParts(variant, variantIndex, optionLabelsById);
+
+      return { color, size };
+    }
+
+    const [color = item.sku || '-', size = '-'] = (item.variantAttributes || '')
+      .replace(/^Variant:\s*/, '')
+      .split('/')
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    return { color, size };
+  };
+  const isWarehouseVariantSelected = (
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number]
+  ) =>
+    selectedProductItems.some(
+      ({ item }) => item.variantId === variant.id && item.warehouseId === stock.warehouse?.id
+    );
   const warehouses = variants.reduce<
     Map<
       string,
@@ -262,6 +323,7 @@ function VariantWarehousePanel({
         rows: Array<{
           key: string;
           variant: ProductVariantDTO;
+          stock: NonNullable<ProductVariantDTO['variantStocks']>[number];
           color: string;
           size: string;
           quantity: number;
@@ -269,7 +331,7 @@ function VariantWarehousePanel({
       }
     >
   >((accumulator, variant, variantIndex) => {
-    const { color, size } = getVariantDisplayParts(variant, variantIndex);
+    const { color, size } = getVariantDisplayParts(variant, variantIndex, optionLabelsById);
     const stocks = variant.variantStocks ?? [];
 
     stocks.forEach((stock, stockIndex) => {
@@ -284,9 +346,10 @@ function VariantWarehousePanel({
       warehouse.rows.push({
         key: `${variant.id ?? variantIndex}-${warehouseKey}-${stockIndex}`,
         variant,
+        stock,
         color,
         size,
-        quantity: stock.stockQuantity ?? 0,
+        quantity: stock.salesStockQuantity ?? stock.stockQuantity ?? 0,
       });
       accumulator.set(warehouseKey, warehouse);
     });
@@ -309,7 +372,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Item Params"
             titleClassName="bg-orange-500 text-white"
-            columns={['Color', 'Size', 'Qty', 'MC']}
+            columns={['Color', 'Size', 'Qty', 'Warehouse']}
             emptyMessage="Select a product row"
             rows={[]}
           />
@@ -349,14 +412,23 @@ function VariantWarehousePanel({
         <LegacyStockTable
           title="Item Params"
           titleClassName="bg-orange-500 text-white"
-          columns={['Color', 'Size', 'Qty', 'MC']}
-          emptyMessage="No variants found"
-          rows={itemParamRows.map((row) => [
-            row.color,
-            row.size,
-            formatStockQuantity(row.quantity),
-            row.mc,
-          ])}
+          columns={['Color', 'Size', 'Qty', 'Warehouse']}
+          emptyMessage="Select warehouse variants"
+          rows={selectedProductItems.map(({ item, index }) => {
+            const { color, size } = getItemParamParts(item);
+
+            return [
+              color,
+              size,
+              <QuantityStepper
+                key={`qty-${index}`}
+                quantity={Number.parseInt(item.quantity, 10) || 0}
+                onDecrease={() => onAdjustItemQuantity(index, -1)}
+                onIncrease={() => onAdjustItemQuantity(index, 1)}
+              />,
+              item.warehouseName || item.warehouseCode || '-',
+            ];
+          })}
         />
         {warehouseTables.length === 0 ? (
           <LegacyStockTable
@@ -381,11 +453,62 @@ function VariantWarehousePanel({
                 row.size,
                 formatStockQuantity(row.quantity),
               ])}
-              onRowClick={(rowIndex) => onSelectVariant(warehouse.rows[rowIndex].variant)}
+              rowClassName={(rowIndex) => {
+                const row = warehouse.rows[rowIndex];
+
+                return isWarehouseVariantSelected(row.variant, row.stock)
+                  ? 'bg-orange-100 text-blue-950'
+                  : undefined;
+              }}
+              onRowClick={(rowIndex) => {
+                const row = warehouse.rows[rowIndex];
+                const selected = isWarehouseVariantSelected(row.variant, row.stock);
+
+                onToggleWarehouseVariant(row.variant, row.stock, !selected);
+              }}
             />
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+function QuantityStepper({
+  quantity,
+  onDecrease,
+  onIncrease,
+}: {
+  quantity: number;
+  onDecrease: () => void;
+  onIncrease: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onDecrease();
+        }}
+        className="inline-flex h-5 w-5 items-center justify-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+        disabled={quantity <= 0}
+        aria-label="Decrease quantity"
+      >
+        <Minus className="h-3 w-3" />
+      </button>
+      <span className="min-w-5 text-center font-semibold">{quantity}</span>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          onIncrease();
+        }}
+        className="inline-flex h-5 w-5 items-center justify-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+        aria-label="Increase quantity"
+      >
+        <Plus className="h-3 w-3" />
+      </button>
     </div>
   );
 }
@@ -398,14 +521,16 @@ function LegacyStockTable({
   emptyMessage,
   highlightNegative = false,
   onRowClick,
+  rowClassName,
 }: {
   title: string;
   titleClassName: string;
   columns: string[];
-  rows: Array<Array<string | number>>;
+  rows: Array<Array<ReactNode>>;
   emptyMessage: string;
   highlightNegative?: boolean;
   onRowClick?: (rowIndex: number) => void;
+  rowClassName?: (rowIndex: number) => string | undefined;
 }) {
   return (
     <div className="min-w-0 bg-white">
@@ -429,7 +554,9 @@ function LegacyStockTable({
             </tr>
           ) : (
             rows.map((row, rowIndex) => {
-              const quantity = Number(row[row.length - 1]);
+              const lastCell = row[row.length - 1];
+              const quantity =
+                typeof lastCell === 'number' || typeof lastCell === 'string' ? Number(lastCell) : 0;
               const shouldHighlight = highlightNegative && quantity < 0;
 
               return (
@@ -438,6 +565,7 @@ function LegacyStockTable({
                   onClick={() => onRowClick?.(rowIndex)}
                   className={cn(
                     shouldHighlight ? 'bg-red-600 font-bold text-white' : 'text-blue-900',
+                    rowClassName?.(rowIndex),
                     onRowClick && 'cursor-pointer hover:bg-blue-50'
                   )}
                 >
@@ -1063,7 +1191,47 @@ export function OrderFormContent({
     });
   }, [items.length]);
 
-  const handleSelectVariantForSelectedRow = (variant: ProductVariantDTO) => {
+  const buildWarehouseVariantItem = (
+    baseItem: OrderItemForm,
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number]
+  ): OrderItemForm => {
+    const warehouseStock: WarehouseStockEntry = {
+      warehouseId: stock.warehouse?.id,
+      warehouseName: stock.warehouse?.name,
+      warehouseCode: undefined,
+      variantLabel: variant.sku,
+      stockQuantity: Math.max(0, stock.stockQuantity ?? 0),
+      salesStockQuantity: stock.salesStockQuantity ?? stock.stockQuantity ?? 0,
+    };
+    const availableQuantity = warehouseStock.salesStockQuantity ?? warehouseStock.stockQuantity;
+    const { color, size } = getVariantDisplayParts(variant, 0);
+
+    return {
+      ...emptyOrderItem('product'),
+      productId: baseItem.productId,
+      productName: baseItem.productName,
+      variantId: variant.id,
+      sku: variant.sku,
+      warehouseId: stock.warehouse?.id,
+      warehouseName: stock.warehouse?.name,
+      warehouseCode: undefined,
+      availableQuantity,
+      warehouseStocks: [warehouseStock],
+      variantAttributes: `${color} / ${size}`,
+      quantity: '1',
+      itemPrice:
+        variant.price !== undefined && variant.price !== null
+          ? String(variant.price)
+          : baseItem.itemPrice,
+    };
+  };
+
+  const handleToggleWarehouseVariant = (
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number],
+    checked: boolean
+  ) => {
     if (selectedItemIndex === null) {
       return;
     }
@@ -1074,24 +1242,112 @@ export function OrderFormContent({
       return;
     }
 
+    const warehouseId = stock.warehouse?.id;
+
+    setItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) =>
+          item.itemType === 'product' &&
+          item.productId === selectedItem.productId &&
+          item.variantId === variant.id &&
+          item.warehouseId === warehouseId
+      );
+
+      if (!checked) {
+        if (existingIndex === -1) {
+          return prev;
+        }
+
+        const next = [...prev];
+        const [removed] = next.splice(existingIndex, 1);
+
+        if (removed?.id) {
+          setRemovedItemIds((current) => [...current, removed.id!]);
+        }
+
+        setSelectedItemIndex((current) => {
+          if (current === null) {
+            return null;
+          }
+          if (current === existingIndex) {
+            return Math.max(existingIndex - 1, 0);
+          }
+          if (current > existingIndex) {
+            return current - 1;
+          }
+
+          return current;
+        });
+
+        return next.length > 0 ? next : [emptyOrderItem()];
+      }
+
+      if (existingIndex !== -1) {
+        return prev;
+      }
+
+      const nextItem = buildWarehouseVariantItem(selectedItem, variant, stock);
+      const canReplaceSelected =
+        selectedItem.itemType === 'product' &&
+        selectedItem.productId === nextItem.productId &&
+        selectedItem.variantId === undefined &&
+        !selectedItem.id;
+
+      if (canReplaceSelected) {
+        const next = [...prev];
+
+        next[selectedItemIndex] = nextItem;
+
+        return next;
+      }
+
+      const insertAfterIndex = Math.max(
+        ...prev
+          .map((item, index) =>
+            item.itemType === 'product' && item.productId === selectedItem.productId ? index : -1
+          )
+          .filter((index) => index >= 0),
+        selectedItemIndex
+      );
+      const next = [
+        ...prev.slice(0, insertAfterIndex + 1),
+        nextItem,
+        ...prev.slice(insertAfterIndex + 1),
+      ];
+
+      setSelectedItemIndex(insertAfterIndex + 1);
+
+      return next;
+    });
+    setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
+  };
+
+  const handleAdjustItemQuantity = (itemIndex: number, delta: number) => {
     setItems((prev) =>
-      prev.map((item, index) =>
-        index === selectedItemIndex
-          ? {
-              ...item,
-              variantId: variant.id,
-              sku: variant.sku,
-              availableQuantity: getVariantAvailableQuantity(variant),
-              warehouseStocks: mapVariantWarehouseStocks(variant),
-              variantAttributes: `Variant: ${variant.sku}`,
-              itemPrice:
-                variant.price !== undefined && variant.price !== null
-                  ? String(variant.price)
-                  : item.itemPrice,
-            }
-          : item
-      )
+      prev.map((item, index) => {
+        if (index !== itemIndex) {
+          return item;
+        }
+
+        const currentQuantity = Number.parseInt(item.quantity, 10) || 0;
+        const nextQuantity = Math.max(0, currentQuantity + delta);
+
+        return { ...item, quantity: String(nextQuantity) };
+      })
     );
+    setErrors((prev) => {
+      if (!prev.items?.[itemIndex]?.quantity) {
+        return prev;
+      }
+
+      const nextItems = [...prev.items];
+      const nextItem = { ...nextItems[itemIndex] };
+
+      delete nextItem.quantity;
+      nextItems[itemIndex] = nextItem;
+
+      return { ...prev, items: nextItems };
+    });
   };
 
   useEffect(() => {
@@ -2150,7 +2406,9 @@ export function OrderFormContent({
               <VariantWarehousePanel
                 selectedItem={selectedItemIndex !== null ? items[selectedItemIndex] : undefined}
                 selectedItemIndex={selectedItemIndex}
-                onSelectVariant={handleSelectVariantForSelectedRow}
+                items={items}
+                onToggleWarehouseVariant={handleToggleWarehouseVariant}
+                onAdjustItemQuantity={handleAdjustItemQuantity}
               />
 
               <div className="rounded-none border border-slate-400 bg-[#efefef] p-3 shadow-sm">

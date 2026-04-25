@@ -1593,21 +1593,45 @@ export function OrderFormItems({
 
   void renderDesktopEntry;
 
-  const legacyItemRows = itemGroups.flatMap((group) => group.entries);
+  const legacyItemRows = itemGroups.map((group) => {
+    const isProductVariantGroup =
+      group.entries.every(({ item }) => item.itemType === 'product' && Boolean(item.productId)) &&
+      group.entries.some(({ item }) => Boolean(item.variantId));
+
+    return {
+      entries: group.entries,
+      item: group.entries[0]?.item,
+      index: group.entries[0]?.index ?? 0,
+      isProductVariantGroup,
+    };
+  });
   const blankLegacyRows = Array.from({ length: Math.max(15 - legacyItemRows.length, 0) });
   const legacyItemsTotal = items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
 
-  const renderLegacyItemRow = (item: OrderItemForm, index: number, rowIndex: number) => {
-    const itemTotal = calculateItemTotal(item);
+  const renderLegacyItemRow = (legacyRow: (typeof legacyItemRows)[number], rowIndex: number) => {
+    const { entries, item, index, isProductVariantGroup } = legacyRow;
+
+    if (!item) {
+      return null;
+    }
+
+    const itemTotal = entries.reduce((sum, entry) => sum + calculateItemTotal(entry.item), 0);
+    const itemQuantity = entries.reduce(
+      (sum, entry) => sum + (Number.parseFloat(entry.item.quantity) || 0),
+      0
+    );
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
         : undefined;
-    const isSelected = selectedItemIndex === index;
+    const isSelected = entries.some((entry) => selectedItemIndex === entry.index);
+    const selectedVariantIds = entries
+      .map((entry) => entry.item.variantId)
+      .filter((variantId): variantId is number => typeof variantId === 'number');
 
     return (
       <tr
-        key={`legacy-item-${index}`}
+        key={`legacy-item-${index}-${entries.length}`}
         onClick={() => onSelectItem?.(index)}
         className={cn(
           'h-[34px] cursor-pointer align-top text-blue-900',
@@ -1637,6 +1661,11 @@ export function OrderFormItems({
               onApplyVariantSelection={onApplyVariantSelection}
               onItemChange={onItemChange}
               showProductSelector
+              selectedVariantIdsOverride={isProductVariantGroup ? selectedVariantIds : undefined}
+              existingVariantItems={
+                isProductVariantGroup ? entries.map((entry) => entry.item) : undefined
+              }
+              replaceCount={isProductVariantGroup ? entries.length : 1}
               hideSelectedProductPreview
               hideSelectedVariantPreview
               tableRowMode
@@ -1649,8 +1678,13 @@ export function OrderFormItems({
             type="number"
             min={0}
             placeholder="0"
-            value={item.quantity}
-            onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
+            value={isProductVariantGroup ? String(itemQuantity) : item.quantity}
+            onChange={(event) => {
+              if (!isProductVariantGroup) {
+                onItemChange(index, 'quantity', event.target.value);
+              }
+            }}
+            readOnly={isProductVariantGroup}
             className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-blue-900 shadow-none focus-visible:ring-1"
           />
           <FieldError message={itemErrors?.[index]?.quantity} />
@@ -1677,7 +1711,10 @@ export function OrderFormItems({
             size="sm"
             onClick={(event) => {
               event.stopPropagation();
-              onRemoveItem(index);
+              entries
+                .map((entry) => entry.index)
+                .sort((left, right) => right - left)
+                .forEach((entryIndex) => onRemoveItem(entryIndex));
             }}
             className="h-7 w-7 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
           >
@@ -1835,8 +1872,8 @@ export function OrderFormItems({
                 </tr>
               </thead>
               <tbody>
-                {legacyItemRows.map(({ item, index }, rowIndex) =>
-                  renderLegacyItemRow(item, index, rowIndex)
+                {legacyItemRows.map((legacyRow, rowIndex) =>
+                  renderLegacyItemRow(legacyRow, rowIndex)
                 )}
                 {blankLegacyRows.map((_, rowIndex) => (
                   <tr key={`legacy-blank-${rowIndex}`} className="h-[28px]">

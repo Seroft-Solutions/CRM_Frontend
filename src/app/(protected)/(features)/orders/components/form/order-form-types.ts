@@ -23,6 +23,9 @@ export type OrderItemForm = {
   variantId?: number;
   initialVariantId?: number;
   productCatalogId?: number;
+  warehouseId?: number;
+  warehouseName?: string;
+  warehouseCode?: string;
   availableQuantity?: number;
   warehouseStocks?: WarehouseStockEntry[];
   existingQuantity?: number;
