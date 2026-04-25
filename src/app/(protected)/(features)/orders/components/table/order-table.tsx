@@ -6,7 +6,16 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -23,13 +32,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Eye, Package, Pencil } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { type OrderDTO } from '@/core/api/generated/spring/schemas';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { InlinePermissionGuard, useAccount, useUserAuthorities } from '@/core/auth';
+import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
+import type { OrganizationUser } from '@/features/user-management/types';
+import { cn } from '@/lib/utils';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
   getOrderStatusCode,
@@ -37,12 +48,12 @@ import {
   getSelectableOrderStatuses,
   OrderStatus,
   orderStatusOptions,
-  PaymentStatus,
   paymentStatusOptions,
-  ShippingMethod,
   shippingMethodOptions,
 } from '../../data/order-data';
 import { useOrderRecord, useOrderTableData } from '../../hooks';
+
+const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -61,11 +72,13 @@ function formatDate(value?: string) {
   if (!value) return '—';
   const parsed = new Date(value);
 
-  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  return Number.isNaN(parsed.getTime())
+    ? '—'
+    : parsed.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
 }
 
 function getOrderStatusErrorDescription(error: unknown, fallback: string) {
@@ -95,17 +108,6 @@ function getOrderStatusErrorDescription(error: unknown, fallback: string) {
   return fallback;
 }
 
-function getOrderStatusFromCode(code?: number): string {
-  const statusMap: Record<number, string> = {
-    0: 'Created',
-    1: 'Processing',
-    2: 'Shipped',
-    3: 'Delivered',
-    4: 'Cancelled',
-  };
-  return code !== undefined ? statusMap[code] || 'Unknown' : '—';
-}
-
 type EntityStatus = 'ACTIVE' | 'DRAFT';
 type SortDirection = 'asc' | 'desc';
 type SortColumn =
@@ -119,11 +121,7 @@ type SortColumn =
   | 'createdDate'
   | 'updatedDate';
 
-function compareSortValues(
-  a: string | number,
-  b: string | number,
-  direction: SortDirection
-) {
+function compareSortValues(a: string | number, b: string | number, direction: SortDirection) {
   const multiplier = direction === 'asc' ? 1 : -1;
 
   if (typeof a === 'number' && typeof b === 'number') {
@@ -170,10 +168,20 @@ export function OrderTable({
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [statusOverrides, setStatusOverrides] = useState<Record<number, OrderStatus>>({});
+  const [assigneeOverrides, setAssigneeOverrides] = useState<Record<number, string>>({});
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const [updatingAssigneeOrderId, setUpdatingAssigneeOrderId] = useState<number | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const { mutateAsync: partialUpdateOrder } = usePartialUpdateOrder();
   const { mutateAsync: createOrderHistory } = useCreateOrderHistory();
+  const { organizationId } = useOrganizationContext();
+  const { users: organizationMembers, isLoading: isOrganizationMembersLoading } =
+    useOrganizationUsers(organizationId, {
+      page: 1,
+      size: 1000,
+      sortBy: 'user',
+      sortDirection: 'asc',
+    });
   const isMounted = useRef(false);
 
   // Filter states
@@ -204,9 +212,10 @@ export function OrderTable({
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
+  const hasActiveFilters =
+    Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
 
-  const { orders, orderDtos, totalCount, totalPages, isLoading, isError } = useOrderTableData({
+  const { orders, orderDtos, totalCount, isLoading, isError } = useOrderTableData({
     entityStatus,
     statusFilter,
     searchTerm,
@@ -217,6 +226,13 @@ export function OrderTable({
   const orderDtoById = useMemo(
     () => new Map(orderDtos.map((order) => [order.id ?? 0, order] as const)),
     [orderDtos]
+  );
+  const assigneeOptions = useMemo(
+    () =>
+      (organizationMembers || []).filter(
+        (user) => user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
+      ),
+    [organizationMembers]
   );
 
   const resolveDiscountAmount = (order: (typeof orders)[number]) => {
@@ -277,6 +293,7 @@ export function OrderTable({
       // Status filter
       if (filters.status) {
         const orderStatusStr = order.orderStatus || '';
+
         if (orderStatusStr.trim().toLowerCase() !== filters.status.trim().toLowerCase()) {
           return false;
         }
@@ -286,6 +303,7 @@ export function OrderTable({
       if (filters.total) {
         const totalAmount = order.orderTotalAmount || 0;
         const filterValue = parseFloat(filters.total);
+
         if (!isNaN(filterValue) && totalAmount !== filterValue) {
           return false;
         }
@@ -294,6 +312,7 @@ export function OrderTable({
       // Payment filter
       if (filters.payment) {
         const paymentStatusStr = order.paymentStatus || '';
+
         if (paymentStatusStr.trim().toLowerCase() !== filters.payment.trim().toLowerCase()) {
           return false;
         }
@@ -302,6 +321,7 @@ export function OrderTable({
       // Shipping filter
       if (filters.shipping) {
         const shippingMethod = order.shipping?.shippingMethod || '';
+
         if (shippingMethod.trim().toLowerCase() !== filters.shipping.trim().toLowerCase()) {
           return false;
         }
@@ -310,6 +330,7 @@ export function OrderTable({
       // Customer filter
       if (filters.customer) {
         const customerName = order.customer?.customerBusinessName || '';
+
         if (!customerName.toLowerCase().includes(filters.customer.toLowerCase())) {
           return false;
         }
@@ -318,6 +339,7 @@ export function OrderTable({
       // Assignee filter
       if (filters.assignee) {
         const assigneeName = order.assignee || '';
+
         if (!assigneeName.toLowerCase().includes(filters.assignee.toLowerCase())) {
           return false;
         }
@@ -333,8 +355,8 @@ export function OrderTable({
       // Created Date filter - match exact date
       if (filters.createdDateFrom && order.createdDate) {
         const orderDate = new Date(order.createdDate);
-        const filterDate = new Date(filters.createdDateFrom);
         const orderDateStr = orderDate.toISOString().split('T')[0];
+
         if (orderDateStr !== filters.createdDateFrom) {
           return false;
         }
@@ -344,6 +366,7 @@ export function OrderTable({
       if (filters.updatedDateFrom && order.lastModifiedDate) {
         const orderDate = new Date(order.lastModifiedDate);
         const orderDateStr = orderDate.toISOString().split('T')[0];
+
         if (orderDateStr !== filters.updatedDateFrom) {
           return false;
         }
@@ -354,14 +377,14 @@ export function OrderTable({
         const orderDate = new Date(order.createdDate);
         const fromDate = dateFrom ? new Date(dateFrom) : null;
         const toDate = dateTo ? new Date(dateTo) : null;
-        
+
         if (fromDate) {
           fromDate.setHours(0, 0, 0, 0);
           if (orderDate < fromDate) {
             return false;
           }
         }
-        
+
         if (toDate) {
           toDate.setHours(23, 59, 59, 999);
           if (orderDate > toDate) {
@@ -404,7 +427,11 @@ export function OrderTable({
             sortDirection
           );
         case 'assignee':
-          return compareSortValues(a.assignee ?? '', b.assignee ?? '', sortDirection);
+          return compareSortValues(
+            assigneeOverrides[a.orderId] ?? a.assignee ?? '',
+            assigneeOverrides[b.orderId] ?? b.assignee ?? '',
+            sortDirection
+          );
         case 'payment':
           return compareSortValues(a.paymentStatus ?? '', b.paymentStatus ?? '', sortDirection);
         case 'createdDate':
@@ -423,7 +450,7 @@ export function OrderTable({
           return 0;
       }
     });
-  }, [filteredOrders, sortColumn, sortDirection, statusOverrides]);
+  }, [assigneeOverrides, filteredOrders, sortColumn, sortDirection, statusOverrides]);
 
   const filteredCount = sortedOrders.length;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
@@ -433,6 +460,7 @@ export function OrderTable({
   const paginatedOrders = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
+
     return sortedOrders.slice(start, end);
   }, [sortedOrders, currentPage, pageSize]);
 
@@ -451,6 +479,7 @@ export function OrderTable({
     setCurrentPage(1);
     if (sortColumn === column) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+
       return;
     }
 
@@ -481,6 +510,7 @@ export function OrderTable({
 
   useEffect(() => {
     isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -597,6 +627,63 @@ export function OrderTable({
       });
     } finally {
       setUpdatingOrderId((currentId) => (currentId === order.orderId ? null : currentId));
+    }
+  };
+
+  const handleOrderAssigneeChange = async (
+    order: (typeof orders)[number],
+    nextAssignee: string | null
+  ) => {
+    if (order.orderId <= 0) {
+      return;
+    }
+
+    const normalizedAssignee = nextAssignee ?? '';
+    const currentAssignee = assigneeOverrides[order.orderId] ?? order.assignee ?? '';
+
+    if (currentAssignee === normalizedAssignee) {
+      return;
+    }
+
+    setAssigneeOverrides((prev) => ({
+      ...prev,
+      [order.orderId]: normalizedAssignee,
+    }));
+    setUpdatingAssigneeOrderId(order.orderId);
+
+    try {
+      await partialUpdateOrder({
+        id: order.orderId,
+        data: {
+          id: order.orderId,
+          assignee: normalizedAssignee,
+        } satisfies OrderDTO,
+      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/orders'] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.orderId}`] }),
+      ]);
+
+      toast.success('Order assignee updated.', {
+        description: normalizedAssignee
+          ? `Order #${order.orderId} assigned to ${normalizedAssignee}.`
+          : `Order #${order.orderId} is now unassigned.`,
+      });
+    } catch (error) {
+      console.error('Failed to update order assignee:', error);
+      setAssigneeOverrides((prev) => ({
+        ...prev,
+        [order.orderId]: currentAssignee,
+      }));
+      toast.error('Unable to update order assignee.', {
+        description: getOrderStatusErrorDescription(
+          error,
+          `Order #${order.orderId} assignee could not be updated.`
+        ),
+      });
+    } finally {
+      setUpdatingAssigneeOrderId((currentId) => (currentId === order.orderId ? null : currentId));
     }
   };
 
@@ -806,7 +893,9 @@ export function OrderTable({
                   {getSortIcon('updatedDate')}
                 </Button>
               </TableHead>
-              <TableHead className="w-[150px] text-right font-bold text-slate-700">Actions</TableHead>
+              <TableHead className="w-[260px] text-right font-bold text-slate-700">
+                Actions
+              </TableHead>
             </TableRow>
             {/* Filter Row */}
             <TableRow className="border-b border-slate-200 bg-white">
@@ -819,9 +908,11 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Select 
-                  value={filters.status || 'all'} 
-                  onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
+                <Select
+                  value={filters.status || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('status', value === 'all' ? '' : value)
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
@@ -845,9 +936,11 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Select 
-                  value={filters.shipping || 'all'} 
-                  onValueChange={(value) => handleFilterChange('shipping', value === 'all' ? '' : value)}
+                <Select
+                  value={filters.shipping || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('shipping', value === 'all' ? '' : value)
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
@@ -879,9 +972,11 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Select 
-                  value={filters.payment || 'all'} 
-                  onValueChange={(value) => handleFilterChange('payment', value === 'all' ? '' : value)}
+                <Select
+                  value={filters.payment || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('payment', value === 'all' ? '' : value)
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
@@ -931,7 +1026,9 @@ export function OrderTable({
               const customerName = order.customer?.customerBusinessName || order.email || '—';
               const customerContact = order.customer?.mobile || order.phone || '—';
               const displayedStatus = statusOverrides[order.orderId] ?? order.orderStatus;
+              const displayedAssignee = assigneeOverrides[order.orderId] ?? order.assignee ?? '';
               const isUpdatingThisRow = updatingOrderId === order.orderId;
+              const isUpdatingAssignee = updatingAssigneeOrderId === order.orderId;
               const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
 
               const isExpanded = expandedOrderId === order.orderId;
@@ -992,9 +1089,9 @@ export function OrderTable({
                           <SelectContent>
                             {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
                               (status) => (
-                              <SelectItem key={status} value={status}>
-                                {status}
-                              </SelectItem>
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
                               )
                             )}
                           </SelectContent>
@@ -1043,11 +1140,16 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-semibold text-slate-800">{order.assignee || '—'}</div>
-                        <div className="text-xs text-muted-foreground">
-                          Picker {order.picker || '—'} · Packer {order.packer || '—'}
-                        </div>
+                      <div className="space-y-1 min-w-[170px]">
+                        <OrderAssigneeCell
+                          orderId={order.orderId}
+                          currentAssignee={displayedAssignee}
+                          options={assigneeOptions}
+                          isLoading={isOrganizationMembersLoading || isUpdatingAssignee}
+                          onUpdate={(nextAssignee) =>
+                            handleOrderAssigneeChange(order, nextAssignee)
+                          }
+                        />
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1063,9 +1165,7 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-slate-700">
-                        {formatDate(order.createdDate)}
-                      </div>
+                      <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-slate-700">
@@ -1073,48 +1173,19 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <TooltipProvider delayDuration={0}>
-                        <div className="flex justify-end gap-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Link
-                                href={`/orders/${order.orderId}`}
-                                aria-label={`View order ${order.orderId}`}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>View</TooltipContent>
-                          </Tooltip>
-
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Link
-                                href={`/orders/${order.orderId}/fulfillment?from=list`}
-                                aria-label={`Open fulfillment for order ${order.orderId}`}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-                              >
-                                <Package className="h-4 w-4" />
-                              </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>Fulfillment</TooltipContent>
-                          </Tooltip>
-
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Link
-                                href={`/orders/${order.orderId}/edit`}
-                                aria-label={`Edit order ${order.orderId}`}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit</TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </TooltipProvider>
+                      <div className="flex justify-end gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/orders/${order.orderId}`}>View</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
+                            Fulfillment
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={`/orders/${order.orderId}/edit`}>Edit</Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
 
@@ -1306,5 +1377,131 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
         </div>
       </TableCell>
     </TableRow>
+  );
+}
+
+function getOrganizationMemberAssigneeValue(user: OrganizationUser) {
+  return (
+    user.email ||
+    [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+    user.username ||
+    user.id ||
+    ''
+  );
+}
+
+function OrderAssigneeCell({
+  orderId,
+  currentAssignee,
+  options,
+  isLoading,
+  onUpdate,
+}: {
+  orderId: number;
+  currentAssignee: string;
+  options: OrganizationUser[];
+  isLoading: boolean;
+  onUpdate: (nextAssignee: string | null) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [optimisticAssignee, setOptimisticAssignee] = useState(currentAssignee);
+
+  useEffect(() => {
+    setOptimisticAssignee(currentAssignee);
+  }, [currentAssignee]);
+
+  const handleSelect = async (nextAssignee: string | null) => {
+    if (updating) {
+      return;
+    }
+
+    const normalizedAssignee = nextAssignee ?? '';
+
+    setUpdating(true);
+    setOpen(false);
+    setOptimisticAssignee(normalizedAssignee);
+
+    try {
+      await onUpdate(normalizedAssignee || null);
+    } catch {
+      setOptimisticAssignee(currentAssignee);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const selectedAssignee = optimisticAssignee || '';
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          role="combobox"
+          aria-expanded={open}
+          aria-label={`Update assignee for order ${orderId}`}
+          className={cn(
+            'h-7 w-full justify-between px-2 py-0 text-left font-normal hover:bg-muted',
+            (updating || isLoading) && 'opacity-75'
+          )}
+          disabled={updating || isLoading}
+        >
+          <span className="truncate text-sm font-semibold text-slate-800">
+            {updating || isLoading ? (
+              <span className="flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                {updating ? 'Updating...' : 'Loading...'}
+              </span>
+            ) : (
+              selectedAssignee || 'Select...'
+            )}
+          </span>
+          <ChevronDown
+            className={cn(
+              'ml-1 h-3 w-3 shrink-0 opacity-50 transition-transform duration-200',
+              open && 'rotate-180'
+            )}
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[240px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search assignee..." className="h-8" />
+          <CommandList>
+            <CommandEmpty>No users found.</CommandEmpty>
+            <CommandGroup>
+              <CommandItem value="__none__" onSelect={() => handleSelect(null)}>
+                <Check
+                  className={cn('mr-2 h-3 w-3', !selectedAssignee ? 'opacity-100' : 'opacity-0')}
+                />
+                <span className="text-muted-foreground">None</span>
+              </CommandItem>
+              {options.map((user) => {
+                const assigneeValue = getOrganizationMemberAssigneeValue(user);
+                const isSelected = selectedAssignee === assigneeValue;
+
+                if (!assigneeValue) {
+                  return null;
+                }
+
+                return (
+                  <CommandItem
+                    key={user.id ?? assigneeValue}
+                    value={assigneeValue}
+                    onSelect={() => handleSelect(assigneeValue)}
+                  >
+                    <Check
+                      className={cn('mr-2 h-3 w-3', isSelected ? 'opacity-100' : 'opacity-0')}
+                    />
+                    {assigneeValue}
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

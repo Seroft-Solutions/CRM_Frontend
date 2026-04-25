@@ -16,9 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
-import { useGetAllUserProfiles } from '@/core/api/generated/spring/endpoints/user-profile-resource/user-profile-resource.gen';
-import type { OrderDTO, UserProfileDTO } from '@/core/api/generated/spring/schemas';
-import { UserProfileDTOStatus } from '@/core/api/generated/spring/schemas/UserProfileDTOStatus';
+import type { OrderDTO } from '@/core/api/generated/spring/schemas';
 import {
   Table,
   TableBody,
@@ -28,6 +26,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
+import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
+import type { OrganizationUser } from '@/features/user-management/types';
 import { OrderRecord, OrderStatus } from '../data/order-data';
 import { History, PackageCheck, UserRoundCog } from 'lucide-react';
 
@@ -65,11 +65,11 @@ function normalizeAssignment(value?: string | null) {
   return trimmed ? trimmed : undefined;
 }
 
-function getUserProfileDisplayName(profile: UserProfileDTO) {
+function getOrganizationMemberDisplayName(profile: OrganizationUser) {
   return (
-    normalizeAssignment(profile.displayName) ||
     normalizeAssignment([profile.firstName, profile.lastName].filter(Boolean).join(' ')) ||
     profile.email ||
+    profile.username ||
     profile.id ||
     'Unnamed user'
   );
@@ -89,14 +89,13 @@ export function OrderDetail({ order }: OrderDetailProps) {
   });
   const [staffSearch, setStaffSearch] = useState('');
   const [isSavingAssignments, setIsSavingAssignments] = useState(false);
-  const { data: staffProfiles = [], isLoading: isStaffLoading } = useGetAllUserProfiles(
-    { 'status.equals': UserProfileDTOStatus.ACTIVE, size: 100, sort: ['displayName,asc'] },
-    {
-      query: {
-        staleTime: 60_000,
-      },
-    }
-  );
+  const { organizationId } = useOrganizationContext();
+  const { users: staffProfiles, isLoading: isStaffLoading } = useOrganizationUsers(organizationId, {
+    page: 1,
+    size: 1000,
+    sortBy: 'user',
+    sortDirection: 'asc',
+  });
   const { data: generations = [] } = useGetOrderFulfillmentGenerations(order.orderId, {
     query: {
       refetchOnWindowFocus: false,
@@ -170,12 +169,13 @@ export function OrderDetail({ order }: OrderDetailProps) {
   const customerPhone = order.customer?.mobile || order.phone || '—';
   const customerEmail = order.customer?.email || order.email || '—';
   const normalizedStaffSearch = staffSearch.trim().toLowerCase();
+
   const staffOptions = useMemo(
     () =>
       staffProfiles
         .map((profile) => ({
-          id: profile.id ?? getUserProfileDisplayName(profile),
-          label: getUserProfileDisplayName(profile),
+          id: profile.id ?? getOrganizationMemberDisplayName(profile),
+          label: getOrganizationMemberDisplayName(profile),
           email: profile.email,
         }))
         .filter((profile) => {
@@ -194,10 +194,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
     assignmentDraft.picker !== (normalizeAssignment(order.picker) ?? '') ||
     assignmentDraft.packer !== (normalizeAssignment(order.packer) ?? '');
 
-  const handleAssignmentChange = (
-    field: 'assignee' | 'picker' | 'packer',
-    value: string
-  ) => {
+  const handleAssignmentChange = (field: 'assignee' | 'picker' | 'packer', value: string) => {
     setAssignmentDraft((current) => ({
       ...current,
       [field]: value === UNASSIGNED_VALUE ? '' : value,
