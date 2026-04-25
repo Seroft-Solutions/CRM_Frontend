@@ -57,13 +57,6 @@ function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 }
 
-function formatDateTime(value?: string) {
-  if (!value) return '—';
-  const parsed = new Date(value);
-
-  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
-}
-
 function formatDate(value?: string) {
   if (!value) return '—';
   const parsed = new Date(value);
@@ -967,9 +960,6 @@ export function OrderTable({
                                 <ChevronRight className="h-4 w-4" />
                               )}
                             </Button>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatDateTime(order.createdDate)}
                           </div>
                         </div>
                       </div>
