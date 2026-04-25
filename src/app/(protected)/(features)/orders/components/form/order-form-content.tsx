@@ -39,12 +39,14 @@ import {
 } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
 import type { CustomerDTO, OrderDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import {
   useCreateOrderDetail,
   useDeleteOrderDetail,
   useUpdateOrderDetail,
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 import {
   useCreateOrderAddressDetail,
   useUpdateOrderAddressDetail,
@@ -76,6 +78,7 @@ import { FieldError } from './order-form-field-error';
 import { getOrderItemBillingBreakdown } from './order-item-stock';
 import { useCallId } from './order-form-provider';
 import { cn } from '@/lib/utils';
+import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 
 export interface OrderFormProps {
   initialOrder?: OrderRecord;
@@ -171,6 +174,47 @@ const formatStockQuantity = (value?: number) => {
 
   return Number.isInteger(value) ? String(value) : value.toFixed(2);
 };
+
+function resolveVariantImageUrl(images?: ProductVariantImageDTO[]) {
+  if (!images?.length) {
+    return null;
+  }
+
+  const sortedImages = [...images].sort(
+    (left, right) =>
+      (left.displayOrder ?? Number.MAX_SAFE_INTEGER) -
+      (right.displayOrder ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  return (
+    sortedImages.find((image) => image.isPrimary)?.thumbnailUrl ||
+    sortedImages.find((image) => image.isPrimary)?.cdnUrl ||
+    sortedImages[0]?.thumbnailUrl ||
+    sortedImages[0]?.cdnUrl ||
+    null
+  );
+}
+
+function VariantImageCell({ variant }: { variant?: ProductVariantDTO }) {
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(variant?.id ?? 0, {
+    query: {
+      enabled: typeof variant?.id === 'number',
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const imageUrl = useMemo(() => resolveVariantImageUrl(variantImages), [variantImages]);
+
+  return (
+    <div className="flex justify-center">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={variant?.sku ?? 'Variant'}
+        size={30}
+        className="shrink-0 rounded-sm"
+      />
+    </div>
+  );
+}
 
 type OptionLabelsById = Map<number, string>;
 
@@ -388,21 +432,21 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Item Params"
             titleClassName="bg-orange-500 text-white"
-            columns={['Color', 'Size', 'Qty', 'Warehouse']}
+            columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
             emptyMessage="Select a product row"
             rows={[]}
           />
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-blue-900 text-white"
-            columns={['Color', 'Size', 'Sales Qty']}
+            columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
             rows={[]}
           />
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-teal-700 text-white"
-            columns={['Color', 'Size', 'Sales Qty']}
+            columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
             rows={[]}
           />
@@ -428,12 +472,14 @@ function VariantWarehousePanel({
         <LegacyStockTable
           title="Item Params"
           titleClassName="bg-orange-500 text-white"
-          columns={['Color', 'Size', 'Qty', 'Warehouse']}
+          columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
           emptyMessage="Select warehouse variants"
           rows={selectedProductItems.map(({ item, index }) => {
             const { color, size } = getItemParamParts(item);
+            const variant = variants.find((entry) => entry.id === item.variantId);
 
             return [
+              <VariantImageCell key={`image-${index}`} variant={variant} />,
               color,
               size,
               <QuantityStepper
@@ -450,7 +496,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-blue-900 text-white"
-            columns={['Color', 'Size', 'Sales Qty']}
+            columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No warehouse stock"
             rows={[]}
           />
@@ -462,9 +508,10 @@ function VariantWarehousePanel({
               titleClassName={
                 warehouseIndex % 2 === 0 ? 'bg-blue-900 text-white' : 'bg-teal-700 text-white'
               }
-              columns={['Color', 'Size', 'Sales Qty']}
+              columns={['Image', 'Color', 'Size', 'Sales Qty']}
               emptyMessage="No warehouse stock"
               rows={warehouse.rows.map((row) => [
+                <VariantImageCell key={`warehouse-image-${row.key}`} variant={row.variant} />,
                 row.color,
                 row.size,
                 formatStockQuantity(row.quantity),

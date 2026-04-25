@@ -16,7 +16,6 @@ import {
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { OrderRecord, OrderStatus } from '../data/order-data';
 import { History, PackageCheck } from 'lucide-react';
-import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -49,7 +48,6 @@ interface OrderDetailProps {
 }
 
 export function OrderDetail({ order }: OrderDetailProps) {
-  const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
   const { data: generations = [] } = useGetOrderFulfillmentGenerations(order.orderId, {
     query: {
       refetchOnWindowFocus: false,
@@ -408,13 +406,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
                         </TableCell>
                         <TableCell className="font-semibold text-slate-800">
                           <div>{orderedQuantity}</div>
-                          <div className="text-xs text-slate-500">
-                            Available {typeof item.variantId === 'number' ? 'variant' : 'product'}{' '}
-                            main stock:{' '}
-                            {stocksLoading
-                              ? '...'
-                              : (stockByItemId.get(item.orderDetailId)?.availableQuantity ?? 0)}
-                          </div>
                         </TableCell>
                         <TableCell className="font-semibold text-slate-800">
                           {formatCurrency(item.itemPrice)}

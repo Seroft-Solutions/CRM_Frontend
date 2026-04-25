@@ -295,6 +295,54 @@ function SelectedVariantImagePreview({ variant }: { variant: ProductVariantWithW
   );
 }
 
+function OrderItemImageCell({
+  item,
+  selectedCatalog,
+}: {
+  item: OrderItemForm;
+  selectedCatalog?: ProductCatalogDTO;
+}) {
+  const { data: productVariantsData = [] } = useGetAllProductVariants(
+    {
+      'productId.equals': item.productId,
+      'status.equals': 'ACTIVE',
+      size: 1000,
+    },
+    {
+      query: {
+        enabled: item.itemType === 'product' && typeof item.productId === 'number',
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+  const productVariants = productVariantsData as ProductVariantWithWarehouseStocks[];
+  const primaryVariantId =
+    item.variantId ??
+    productVariants.find((variant) => variant.isPrimary)?.id ??
+    productVariants[0]?.id;
+  const { data: variantImages } = useGetAllProductVariantImagesByVariant(primaryVariantId ?? 0, {
+    query: {
+      enabled: item.itemType === 'product' && typeof primaryVariantId === 'number',
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const imageUrl =
+    item.itemType === 'catalog'
+      ? resolveCatalogImageUrl(selectedCatalog?.image)
+      : resolveVariantImageUrl(variantImages);
+
+  return (
+    <div className="flex justify-center">
+      <ProductImageThumbnail
+        imageUrl={imageUrl}
+        productName={item.productName ?? item.sku ?? 'Product'}
+        size={34}
+        className="shrink-0 rounded-sm"
+      />
+    </div>
+  );
+}
+
 function SelectedVariantNameCard({ name }: { name: string }) {
   return (
     <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50/80 p-3">
@@ -1641,6 +1689,9 @@ export function OrderFormItems({
         <td className="border border-slate-300 px-1 py-1 text-center font-semibold">
           {rowIndex + 1}
         </td>
+        <td className="border border-slate-300 px-1 py-1">
+          <OrderItemImageCell item={item} selectedCatalog={selectedCatalog} />
+        </td>
         <td className="border border-slate-300 px-1 py-1 font-bold">
           {item.itemType === 'catalog' ? (
             <div className="space-y-1">
@@ -1849,6 +1900,7 @@ export function OrderFormItems({
             <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
               <colgroup>
                 <col className="w-[34px]" />
+                <col className="w-[52px]" />
                 <col />
                 <col className="w-[74px]" />
                 <col className="w-[82px]" />
@@ -1859,6 +1911,7 @@ export function OrderFormItems({
               <thead>
                 <tr className="bg-slate-200 text-slate-900">
                   <th className="border border-slate-400 px-1 py-1"></th>
+                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Image</th>
                   <th className="border border-slate-400 px-1 py-1 text-center font-bold">
                     Item Name
                   </th>
@@ -1882,6 +1935,7 @@ export function OrderFormItems({
                     </td>
                     <td className="border border-slate-300"></td>
                     <td className="border border-slate-300"></td>
+                    <td className="border border-slate-300"></td>
                     <td className="border border-slate-300 text-right text-blue-900">0</td>
                     <td className="border border-slate-300"></td>
                     <td className="border border-slate-300"></td>
@@ -1889,6 +1943,7 @@ export function OrderFormItems({
                   </tr>
                 ))}
                 <tr className="bg-white text-blue-900">
+                  <td className="border border-slate-300"></td>
                   <td className="border border-slate-300"></td>
                   <td className="border border-slate-300"></td>
                   <td className="border border-slate-300"></td>
