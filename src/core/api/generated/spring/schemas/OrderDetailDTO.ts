@@ -12,6 +12,7 @@ export interface OrderDetailDTO {
   productId?: number;
   variantId?: number;
   productCatalogId?: number;
+  warehouseId?: number;
   /**
    * @minLength 0
    * @maxLength 200

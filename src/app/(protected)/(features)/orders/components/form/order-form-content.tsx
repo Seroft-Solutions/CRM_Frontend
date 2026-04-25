@@ -315,6 +315,20 @@ function VariantWarehousePanel({
     selectedProductItems.some(
       ({ item }) => item.variantId === variant.id && item.warehouseId === stock.warehouse?.id
     );
+  const getReservedQuantityDelta = (
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number]
+  ) =>
+    selectedProductItems.reduce((total, { item }) => {
+      if (item.variantId !== variant.id || item.warehouseId !== stock.warehouse?.id) {
+        return total;
+      }
+
+      const currentQuantity = Number.parseInt(item.quantity, 10) || 0;
+      const existingQuantity = item.existingQuantity ?? 0;
+
+      return total + (currentQuantity - existingQuantity);
+    }, 0);
   const warehouses = variants.reduce<
     Map<
       string,
@@ -349,7 +363,9 @@ function VariantWarehousePanel({
         stock,
         color,
         size,
-        quantity: stock.salesStockQuantity ?? stock.stockQuantity ?? 0,
+        quantity:
+          (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) -
+          getReservedQuantityDelta(variant, stock),
       });
       accumulator.set(warehouseKey, warehouse);
     });
@@ -379,14 +395,14 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-blue-900 text-white"
-            columns={['Color', 'Size', 'Qty']}
+            columns={['Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
             rows={[]}
           />
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-teal-700 text-white"
-            columns={['Color', 'Size', 'Qty']}
+            columns={['Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
             rows={[]}
           />
@@ -434,7 +450,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-blue-900 text-white"
-            columns={['Color', 'Size', 'Qty']}
+            columns={['Color', 'Size', 'Sales Qty']}
             emptyMessage="No warehouse stock"
             rows={[]}
           />
@@ -446,7 +462,7 @@ function VariantWarehousePanel({
               titleClassName={
                 warehouseIndex % 2 === 0 ? 'bg-blue-900 text-white' : 'bg-teal-700 text-white'
               }
-              columns={['Color', 'Size', 'Qty']}
+              columns={['Color', 'Size', 'Sales Qty']}
               emptyMessage="No warehouse stock"
               rows={warehouse.rows.map((row) => [
                 row.color,
@@ -685,6 +701,7 @@ export function OrderFormContent({
       variantId: item.variantId || undefined,
       initialVariantId: item.variantId || undefined,
       productCatalogId: item.productCatalogId || undefined,
+      warehouseId: item.warehouseId || undefined,
       existingQuantity: Math.max(item.quantity || 0, 0),
       existingBackOrderQuantity: Math.max(item.backOrderQuantity || 0, 0),
       productName: item.productName || undefined,
@@ -1890,6 +1907,7 @@ export function OrderFormContent({
               productId: isCatalog ? undefined : item.productId || undefined,
               variantId: isCatalog ? undefined : item.variantId || undefined,
               productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
+              warehouseId: isCatalog ? undefined : item.warehouseId || undefined,
               productName: item.productName || undefined,
               sku: item.sku || undefined,
               variantAttributes: item.variantAttributes || undefined,
@@ -2156,6 +2174,7 @@ export function OrderFormContent({
             productId: isCatalog ? undefined : item.productId || undefined,
             variantId: isCatalog ? undefined : item.variantId || undefined,
             productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
+            warehouseId: isCatalog ? undefined : item.warehouseId || undefined,
             productName: item.productName || undefined,
             sku: item.sku || undefined,
             variantAttributes: item.variantAttributes || undefined,

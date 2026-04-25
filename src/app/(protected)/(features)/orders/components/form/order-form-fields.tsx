@@ -38,7 +38,7 @@ export function OrderFormFields({
   return (
     <div className="grid gap-x-3 gap-y-1 text-[11px] md:grid-cols-3">
       <div className="grid min-w-0 grid-cols-[86px_minmax(0,1fr)] items-center gap-1 md:col-span-1">
-        <Label className="text-[11px] font-semibold text-slate-700">Sale Type</Label>
+        <Label className="text-[11px] font-semibold text-slate-700">Sale Status</Label>
         <div className="min-w-0">
           <Select
             value={formState.orderStatus}
