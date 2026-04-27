@@ -72,6 +72,7 @@ import {
 import { useOrderRecord, useOrderTableData } from '../../hooks';
 
 const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
+const normalizeGroupName = (name?: string) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -205,6 +206,50 @@ export function OrderTable({
       sortDirection: 'asc',
     });
   const isMounted = useRef(false);
+  const currentOrganizationUser = useMemo(
+    () =>
+      (organizationMembers || []).find((user) => {
+        const accountId = accountData?.id != null ? String(accountData.id) : '';
+        const accountLogin = accountData?.login?.toLowerCase?.() || '';
+
+        return (
+          (accountId && user.id === accountId) ||
+          (accountLogin &&
+            (user.username?.toLowerCase?.() === accountLogin ||
+              user.email?.toLowerCase?.() === accountLogin))
+        );
+      }),
+    [accountData?.id, accountData?.login, organizationMembers]
+  );
+  const isPickerUser = useMemo(
+    () =>
+      (currentOrganizationUser?.assignedGroups || []).some((group) => {
+        const groupName = normalizeGroupName(group.name);
+
+        return groupName === 'picker' || groupName === 'pickers';
+      }),
+    [currentOrganizationUser]
+  );
+  const isPackerUser = useMemo(
+    () =>
+      (currentOrganizationUser?.assignedGroups || []).some((group) => {
+        const groupName = normalizeGroupName(group.name);
+
+        return groupName === 'packer' || groupName === 'packers';
+      }),
+    [currentOrganizationUser]
+  );
+  const restrictedStatusTabs = useMemo(
+    () =>
+      [isPickerUser ? 'Picked' : null, isPackerUser ? 'Packed' : null].filter(
+        (status): status is OrderStatus => Boolean(status)
+      ),
+    [isPackerUser, isPickerUser]
+  );
+  const isPickerPackerRestrictedView = entityStatus === 'ACTIVE' && restrictedStatusTabs.length > 0;
+  const visibleStatusTabs = isPickerPackerRestrictedView ? restrictedStatusTabs : orderStatusOptions;
+  const showAllStatusTab = !isPickerPackerRestrictedView;
+  const hideBusinessColumns = isPickerPackerRestrictedView;
 
   // Filter states
   const [filters, setFilters] = useState<{
@@ -236,6 +281,17 @@ export function OrderTable({
 
   const hasActiveFilters =
     Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
+
+  useEffect(() => {
+    if (!isPickerPackerRestrictedView) {
+      return;
+    }
+
+    if (statusFilter === 'All' || !restrictedStatusTabs.includes(statusFilter)) {
+      setStatusFilter(restrictedStatusTabs[0]);
+      setCurrentPage(1);
+    }
+  }, [isPickerPackerRestrictedView, restrictedStatusTabs, statusFilter]);
 
   const { orders, orderDtos, totalCount, isLoading, isError } = useOrderTableData({
     entityStatus,
@@ -735,13 +791,15 @@ export function OrderTable({
             className="w-full"
           >
             <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
-              <TabsTrigger
-                value="All"
-                className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
-              >
-                {allTabLabel}
-              </TabsTrigger>
-              {orderStatusOptions.map((status) => (
+              {showAllStatusTab ? (
+                <TabsTrigger
+                  value="All"
+                  className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
+                >
+                  {allTabLabel}
+                </TabsTrigger>
+              ) : null}
+              {visibleStatusTabs.map((status) => (
                 <TabsTrigger
                   key={status}
                   value={status}
@@ -845,16 +903,18 @@ export function OrderTable({
                   {getSortIcon('status')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('total')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Total</span>
-                  {getSortIcon('total')}
-                </Button>
-              </TableHead>
+              {!hideBusinessColumns ? (
+                <TableHead className="min-w-[120px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('total')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Total</span>
+                    {getSortIcon('total')}
+                  </Button>
+                </TableHead>
+              ) : null}
               <TableHead className="min-w-[140px] font-bold text-slate-700">
                 <Button
                   variant="ghost"
@@ -875,46 +935,54 @@ export function OrderTable({
                   {getSortIcon('customer')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('assignee')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Assignee</span>
-                  {getSortIcon('assignee')}
-                </Button>
-              </TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('payment')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Payment</span>
-                  {getSortIcon('payment')}
-                </Button>
-              </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('createdDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Created At</span>
-                  {getSortIcon('createdDate')}
-                </Button>
-              </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('updatedDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Updated At</span>
-                  {getSortIcon('updatedDate')}
-                </Button>
-              </TableHead>
+              {!hideBusinessColumns ? (
+                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('assignee')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Assignee</span>
+                    {getSortIcon('assignee')}
+                  </Button>
+                </TableHead>
+              ) : null}
+              {!hideBusinessColumns ? (
+                <TableHead className="min-w-[120px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('payment')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Payment</span>
+                    {getSortIcon('payment')}
+                  </Button>
+                </TableHead>
+              ) : null}
+              {!hideBusinessColumns ? (
+                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('createdDate')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Created At</span>
+                    {getSortIcon('createdDate')}
+                  </Button>
+                </TableHead>
+              ) : null}
+              {!hideBusinessColumns ? (
+                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('updatedDate')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Updated At</span>
+                    {getSortIcon('updatedDate')}
+                  </Button>
+                </TableHead>
+              ) : null}
               <TableHead className="w-[120px] text-right font-bold text-slate-700">
                 Actions
               </TableHead>
@@ -941,7 +1009,7 @@ export function OrderTable({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
-                    {orderStatusOptions.map((status) => (
+                    {visibleStatusTabs.map((status) => (
                       <SelectItem key={status} value={status}>
                         {status}
                       </SelectItem>
@@ -949,14 +1017,16 @@ export function OrderTable({
                   </SelectContent>
                 </Select>
               </TableHead>
-              <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300 w-full"
-                  value={filters.total || ''}
-                  onChange={(e) => handleFilterChange('total', e.target.value)}
-                />
-              </TableHead>
+              {!hideBusinessColumns ? (
+                <TableHead className="py-2">
+                  <Input
+                    placeholder="Filter..."
+                    className="h-8 text-xs border-slate-300 w-full"
+                    value={filters.total || ''}
+                    onChange={(e) => handleFilterChange('total', e.target.value)}
+                  />
+                </TableHead>
+              ) : null}
               <TableHead className="py-2">
                 <Select
                   value={filters.shipping || 'all'}
@@ -985,50 +1055,58 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('customer', e.target.value)}
                 />
               </TableHead>
-              <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300 w-full"
-                  value={filters.assignee || ''}
-                  onChange={(e) => handleFilterChange('assignee', e.target.value)}
-                />
-              </TableHead>
-              <TableHead className="py-2">
-                <Select
-                  value={filters.payment || 'all'}
-                  onValueChange={(value) =>
-                    handleFilterChange('payment', value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {paymentStatusOptions.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
-              <TableHead className="py-2">
-                <Input
-                  type="date"
-                  className="h-8 text-xs border-slate-300 w-full"
-                  value={filters.createdDateFrom || ''}
-                  onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
-                />
-              </TableHead>
-              <TableHead className="py-2">
-                <Input
-                  type="date"
-                  className="h-8 text-xs border-slate-300 w-full"
-                  value={filters.updatedDateFrom || ''}
-                  onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
-                />
-              </TableHead>
+              {!hideBusinessColumns ? (
+                <TableHead className="py-2">
+                  <Input
+                    placeholder="Filter..."
+                    className="h-8 text-xs border-slate-300 w-full"
+                    value={filters.assignee || ''}
+                    onChange={(e) => handleFilterChange('assignee', e.target.value)}
+                  />
+                </TableHead>
+              ) : null}
+              {!hideBusinessColumns ? (
+                <TableHead className="py-2">
+                  <Select
+                    value={filters.payment || 'all'}
+                    onValueChange={(value) =>
+                      handleFilterChange('payment', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {paymentStatusOptions.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
+              ) : null}
+              {!hideBusinessColumns ? (
+                <TableHead className="py-2">
+                  <Input
+                    type="date"
+                    className="h-8 text-xs border-slate-300 w-full"
+                    value={filters.createdDateFrom || ''}
+                    onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
+                  />
+                </TableHead>
+              ) : null}
+              {!hideBusinessColumns ? (
+                <TableHead className="py-2">
+                  <Input
+                    type="date"
+                    className="h-8 text-xs border-slate-300 w-full"
+                    value={filters.updatedDateFrom || ''}
+                    onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
+                  />
+                </TableHead>
+              ) : null}
               <TableHead className="py-2 text-right">
                 {hasActiveFilters && (
                   <Button
@@ -1120,21 +1198,23 @@ export function OrderTable({
                         </Select>
                       </InlinePermissionGuard>
                     </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-bold text-slate-900">
-                          {formatCurrency(order.orderTotalAmount)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Base {formatCurrency(order.orderBaseAmount)}
-                        </div>
-                        {resolveDiscountAmount(order) > 0 && (
-                          <div className="text-xs font-semibold text-red-600">
-                            -{formatCurrency(resolveDiscountAmount(order))}
+                    {!hideBusinessColumns ? (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-bold text-slate-900">
+                            {formatCurrency(order.orderTotalAmount)}
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
+                          <div className="text-xs text-muted-foreground">
+                            Base {formatCurrency(order.orderBaseAmount)}
+                          </div>
+                          {resolveDiscountAmount(order) > 0 && (
+                            <div className="text-xs font-semibold text-red-600">
+                              -{formatCurrency(resolveDiscountAmount(order))}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    ) : null}
                     <TableCell>
                       <div className="space-y-1">
                         <div className="font-semibold text-slate-700">
@@ -1161,39 +1241,47 @@ export function OrderTable({
                         <div className="text-xs text-muted-foreground">{customerContact}</div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="space-y-1 min-w-[170px]">
-                        <OrderAssigneeCell
-                          orderId={order.orderId}
-                          currentAssignee={displayedAssignee}
-                          options={assigneeOptions}
-                          isLoading={isOrganizationMembersLoading || isUpdatingAssignee}
-                          onUpdate={(nextAssignee) =>
-                            handleOrderAssigneeChange(order, nextAssignee)
-                          }
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
-                          {order.paymentStatus}
-                        </Badge>
-                        {order.discountCode ? (
-                          <div className="mt-1 text-xs font-semibold text-amber-700">
-                            {order.discountCode}
-                          </div>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-slate-700">
-                        {formatDate(order.lastModifiedDate)}
-                      </div>
-                    </TableCell>
+                    {!hideBusinessColumns ? (
+                      <TableCell>
+                        <div className="space-y-1 min-w-[170px]">
+                          <OrderAssigneeCell
+                            orderId={order.orderId}
+                            currentAssignee={displayedAssignee}
+                            options={assigneeOptions}
+                            isLoading={isOrganizationMembersLoading || isUpdatingAssignee}
+                            onUpdate={(nextAssignee) =>
+                              handleOrderAssigneeChange(order, nextAssignee)
+                            }
+                          />
+                        </div>
+                      </TableCell>
+                    ) : null}
+                    {!hideBusinessColumns ? (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
+                            {order.paymentStatus}
+                          </Badge>
+                          {order.discountCode ? (
+                            <div className="mt-1 text-xs font-semibold text-amber-700">
+                              {order.discountCode}
+                            </div>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    ) : null}
+                    {!hideBusinessColumns ? (
+                      <TableCell>
+                        <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
+                      </TableCell>
+                    ) : null}
+                    {!hideBusinessColumns ? (
+                      <TableCell>
+                        <div className="text-sm text-slate-700">
+                          {formatDate(order.lastModifiedDate)}
+                        </div>
+                      </TableCell>
+                    ) : null}
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -1237,7 +1325,7 @@ export function OrderTable({
 
             {paginatedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="py-16 text-center">
+                <TableCell colSpan={hideBusinessColumns ? 5 : 10} className="py-16 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                       <svg
