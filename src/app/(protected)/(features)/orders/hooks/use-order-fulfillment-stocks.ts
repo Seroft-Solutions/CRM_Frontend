@@ -19,6 +19,9 @@ type ProductVariantWithStocks = {
   stockQuantity?: number;
   variantStocks?: Array<{
     stockQuantity?: number;
+    warehouse?: {
+      id?: number;
+    };
   }>;
 };
 
@@ -80,13 +83,9 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
   });
 
   const stockByItemId = useMemo(() => {
-    const variantStockById = new Map<number, number>();
+    const variantById = new Map<number, ProductVariantWithStocks | undefined>();
     variantQueries.forEach((query, index) => {
-      const variant = query.data as ProductVariantWithStocks | undefined;
-      const variantStockQuantity = variant?.variantStocks?.length
-        ? variant.variantStocks.reduce((sum, stock) => sum + Math.max(0, stock.stockQuantity ?? 0), 0)
-        : Math.max(0, variant?.stockQuantity ?? 0);
-      variantStockById.set(variantIds[index], variantStockQuantity);
+      variantById.set(variantIds[index], query.data as ProductVariantWithStocks | undefined);
     });
 
     const productStockById = new Map<number, number>();
@@ -99,7 +98,24 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
       const totalPendingQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
       const availableQuantity =
         typeof item.variantId === 'number'
-          ? variantStockById.get(item.variantId) ?? 0
+          ? (() => {
+              const variant = variantById.get(item.variantId);
+
+              if (typeof item.warehouseId === 'number' && variant?.variantStocks?.length) {
+                const warehouseStock = variant.variantStocks.find(
+                  (stock) => stock.warehouse?.id === item.warehouseId
+                );
+
+                return Math.max(0, warehouseStock?.stockQuantity ?? 0);
+              }
+
+              return variant?.variantStocks?.length
+                ? variant.variantStocks.reduce(
+                    (sum, stock) => sum + Math.max(0, stock.stockQuantity ?? 0),
+                    0
+                  )
+                : Math.max(0, variant?.stockQuantity ?? 0);
+            })()
           : typeof item.productId === 'number'
             ? productStockById.get(item.productId) ?? 0
             : 0;

@@ -14,6 +14,13 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -32,7 +39,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Loader2 } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ChevronsUpDown,
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Package,
+  Pencil,
+} from 'lucide-react';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { type OrderDTO } from '@/core/api/generated/spring/schemas';
@@ -893,7 +911,7 @@ export function OrderTable({
                   {getSortIcon('updatedDate')}
                 </Button>
               </TableHead>
-              <TableHead className="w-[260px] text-right font-bold text-slate-700">
+              <TableHead className="w-[120px] text-right font-bold text-slate-700">
                 Actions
               </TableHead>
             </TableRow>
@@ -1173,19 +1191,38 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/orders/${order.orderId}`}>View</Link>
-                        </Button>
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
-                            Fulfillment
-                          </Link>
-                        </Button>
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/orders/${order.orderId}/edit`}>Edit</Link>
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Order ${order.orderId} actions`}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/orders/${order.orderId}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
+                              <Package className="h-4 w-4 mr-2" />
+                              Fulfillment
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/orders/${order.orderId}/edit`}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
 

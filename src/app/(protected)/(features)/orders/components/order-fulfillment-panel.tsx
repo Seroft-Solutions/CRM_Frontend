@@ -19,6 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
+import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import {
   useCreateOrderFulfillmentGeneration,
   useGetOrderFulfillmentGenerations,
@@ -64,7 +66,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const navigationSource = searchParams.get('from') === 'list' ? 'list' : 'order';
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(navigationSource === 'order');
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
@@ -91,8 +93,18 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ),
     [pendingItems]
   );
+  const warehouseQueryParams = useMemo(
+    () => ({
+      page: 0,
+      size: 1000,
+      sort: ['name,asc'],
+      'status.equals': 'ACTIVE' as const,
+    }),
+    []
+  );
 
   const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
+  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
   const { data: generations = [], isLoading: generationsLoading } =
     useGetOrderFulfillmentGenerations(order.orderId);
   const { mutateAsync: createGeneration, isPending: isGenerating } =
@@ -100,8 +112,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
-    setIsEditing(false);
-  }, [order.items]);
+    setIsEditing(navigationSource === 'order');
+  }, [navigationSource, order.items]);
 
   const deliveredQuantityByOrderDetailId = useMemo(() => {
     const deliveredMap = new Map<number, number>();
@@ -123,6 +135,17 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
     return deliveredMap;
   }, [generations]);
+  const warehouseNameById = useMemo(
+    () =>
+      new Map(
+        (warehouseRows as IWarehouse[])
+          .filter(
+            (warehouse): warehouse is IWarehouse & { id: number } => typeof warehouse.id === 'number'
+          )
+          .map((warehouse) => [warehouse.id, warehouse.name])
+      ),
+    [warehouseRows]
+  );
 
   const originalOrderQuantityByOrderDetailId = useMemo(() => {
     const originalQuantityMap = new Map<number, number>();
@@ -321,10 +344,13 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                   <TableRow className="bg-cyan-50/70">
                     {isEditing ? <TableHead className="w-14 text-center">Select</TableHead> : null}
                     <TableHead>Item</TableHead>
+                    <TableHead className="text-center">Warehouse</TableHead>
                     <TableHead className="text-center">Order Qty</TableHead>
                     <TableHead className="text-center">Delivered Qty</TableHead>
                     <TableHead className="text-center">Remaining Qty</TableHead>
                     <TableHead className="text-center">Available Stock</TableHead>
+                    <TableHead className="text-center">Picked</TableHead>
+                    <TableHead className="text-center">Packed</TableHead>
                     <TableHead className="min-w-[180px]">Fulfill Quantity</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -333,8 +359,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     const backlogResolved = row.isCompleted;
                     const availableStockLabel =
                       typeof row.item.variantId === 'number'
-                        ? 'Available variant main stock'
-                        : 'Available product main stock';
+                        ? 'Warehouse main stock'
+                        : 'Product main stock';
 
                     return (
                       <TableRow
@@ -385,25 +411,13 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             {row.item.variantAttributes ? (
                               <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
                             ) : null}
-                            <p className="text-xs text-slate-500">
-                              Ordered qty: {row.originalOrderQuantity}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              Delivered qty: {row.deliveredQuantity}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              Remaining qty: {row.remainingQuantity} • Can fulfill now:{' '}
-                              {row.deliverableQuantity} • Remaining after save:{' '}
-                              {isEditing && row.selected
-                                ? Math.max(row.remainingQuantity - row.enteredQuantity, 0)
-                                : row.remainingQuantity}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {typeof row.item.variantId === 'number'
-                                ? 'Variant main stock based item'
-                                : 'Product main stock based item'}
-                            </p>
                           </div>
+                        </TableCell>
+                        <TableCell className="text-center font-semibold text-slate-900">
+                          {typeof row.item.warehouseId === 'number'
+                            ? (warehouseNameById.get(row.item.warehouseId) ??
+                              `Warehouse ${row.item.warehouseId}`)
+                            : '—'}
                         </TableCell>
                         <TableCell className="text-center font-semibold text-slate-900">
                           {row.originalOrderQuantity}
@@ -417,6 +431,20 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         <TableCell className="text-center font-semibold text-slate-900">
                           <div>{stocksLoading ? '...' : row.availableQuantity}</div>
                           <div className="text-[11px] text-slate-500">{availableStockLabel}</div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={Boolean(order.picker)}
+                            disabled
+                            className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
+                          />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={Boolean(order.packer)}
+                            disabled
+                            className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
+                          />
                         </TableCell>
                         <TableCell className="align-top">
                           {isEditing ? (

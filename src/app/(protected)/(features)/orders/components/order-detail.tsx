@@ -1,22 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
-import type { OrderDTO } from '@/core/api/generated/spring/schemas';
 import {
   Table,
   TableBody,
@@ -26,10 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
-import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
-import type { OrganizationUser } from '@/features/user-management/types';
 import { OrderRecord, OrderStatus } from '../data/order-data';
-import { History, PackageCheck, UserRoundCog } from 'lucide-react';
+import { History, PackageCheck } from 'lucide-react';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -57,45 +43,11 @@ function normalizeHistoryStatus(status?: string) {
   return status.trim().toLowerCase() === 'pending' ? 'Created' : status;
 }
 
-const UNASSIGNED_VALUE = '__unassigned__';
-
-function normalizeAssignment(value?: string | null) {
-  const trimmed = value?.trim();
-
-  return trimmed ? trimmed : undefined;
-}
-
-function getOrganizationMemberDisplayName(profile: OrganizationUser) {
-  return (
-    normalizeAssignment([profile.firstName, profile.lastName].filter(Boolean).join(' ')) ||
-    profile.email ||
-    profile.username ||
-    profile.id ||
-    'Unnamed user'
-  );
-}
-
 interface OrderDetailProps {
   order: OrderRecord;
 }
 
 export function OrderDetail({ order }: OrderDetailProps) {
-  const queryClient = useQueryClient();
-  const { mutateAsync: partialUpdateOrder } = usePartialUpdateOrder();
-  const [assignmentDraft, setAssignmentDraft] = useState({
-    assignee: normalizeAssignment(order.assignee) ?? '',
-    picker: normalizeAssignment(order.picker) ?? '',
-    packer: normalizeAssignment(order.packer) ?? '',
-  });
-  const [staffSearch, setStaffSearch] = useState('');
-  const [isSavingAssignments, setIsSavingAssignments] = useState(false);
-  const { organizationId } = useOrganizationContext();
-  const { users: staffProfiles, isLoading: isStaffLoading } = useOrganizationUsers(organizationId, {
-    page: 1,
-    size: 1000,
-    sortBy: 'user',
-    sortDirection: 'asc',
-  });
   const { data: generations = [] } = useGetOrderFulfillmentGenerations(order.orderId, {
     query: {
       refetchOnWindowFocus: false,
@@ -168,66 +120,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
   const customerName = order.customer?.customerBusinessName || order.email || '—';
   const customerPhone = order.customer?.mobile || order.phone || '—';
   const customerEmail = order.customer?.email || order.email || '—';
-  const normalizedStaffSearch = staffSearch.trim().toLowerCase();
-
-  const staffOptions = useMemo(
-    () =>
-      staffProfiles
-        .map((profile) => ({
-          id: profile.id ?? getOrganizationMemberDisplayName(profile),
-          label: getOrganizationMemberDisplayName(profile),
-          email: profile.email,
-        }))
-        .filter((profile) => {
-          if (!normalizedStaffSearch) {
-            return true;
-          }
-
-          return `${profile.label} ${profile.email ?? ''}`
-            .toLowerCase()
-            .includes(normalizedStaffSearch);
-        }),
-    [normalizedStaffSearch, staffProfiles]
-  );
-  const hasAssignmentChanges =
-    assignmentDraft.assignee !== (normalizeAssignment(order.assignee) ?? '') ||
-    assignmentDraft.picker !== (normalizeAssignment(order.picker) ?? '') ||
-    assignmentDraft.packer !== (normalizeAssignment(order.packer) ?? '');
-
-  const handleAssignmentChange = (field: 'assignee' | 'picker' | 'packer', value: string) => {
-    setAssignmentDraft((current) => ({
-      ...current,
-      [field]: value === UNASSIGNED_VALUE ? '' : value,
-    }));
-  };
-
-  const handleSaveAssignments = async () => {
-    setIsSavingAssignments(true);
-
-    try {
-      await partialUpdateOrder({
-        id: order.orderId,
-        data: {
-          id: order.orderId,
-          assignee: assignmentDraft.assignee,
-          picker: assignmentDraft.picker,
-          packer: assignmentDraft.packer,
-        } satisfies OrderDTO,
-      });
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: [`/api/orders/${order.orderId}`] }),
-        queryClient.invalidateQueries({ queryKey: ['/api/orders'] }),
-      ]);
-
-      toast.success('Order assignments updated.');
-    } catch (error) {
-      console.error('Failed to update order assignments:', error);
-      toast.error('Unable to update order assignments.');
-    } finally {
-      setIsSavingAssignments(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -394,65 +286,6 @@ export function OrderDetail({ order }: OrderDetailProps) {
           </CardContent>
         </Card>
       </div>
-
-      <Card className="overflow-hidden border-2 border-violet-200 shadow-lg">
-        <CardHeader className="bg-gradient-to-br from-violet-50 to-fuchsia-50 pb-3">
-          <CardTitle className="flex flex-wrap items-center gap-2 text-base">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600">
-              <UserRoundCog className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-bold">Order Assignments</span>
-            <Badge variant="outline" className="ml-auto border-violet-300 bg-white text-violet-900">
-              Assignee {normalizeAssignment(order.assignee) || '—'}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-5">
-          <Input
-            value={staffSearch}
-            onChange={(event) => setStaffSearch(event.target.value)}
-            placeholder="Search staff..."
-            className="max-w-md border-slate-300"
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            <StaffAssignmentSelect
-              label="Assignee"
-              value={assignmentDraft.assignee}
-              options={staffOptions}
-              isLoading={isStaffLoading}
-              onChange={(value) => handleAssignmentChange('assignee', value)}
-            />
-            <StaffAssignmentSelect
-              label="Picker"
-              value={assignmentDraft.picker}
-              options={staffOptions}
-              isLoading={isStaffLoading}
-              onChange={(value) => handleAssignmentChange('picker', value)}
-            />
-            <StaffAssignmentSelect
-              label="Packer"
-              value={assignmentDraft.packer}
-              options={staffOptions}
-              isLoading={isStaffLoading}
-              onChange={(value) => handleAssignmentChange('packer', value)}
-            />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 p-3 text-sm">
-            <div className="text-slate-700">
-              <span className="font-semibold">Current:</span> Picker{' '}
-              {normalizeAssignment(order.picker) || '—'} · Packer{' '}
-              {normalizeAssignment(order.packer) || '—'}
-            </div>
-            <Button
-              onClick={handleSaveAssignments}
-              disabled={!hasAssignmentChanges || isSavingAssignments}
-              className="bg-violet-700 text-white hover:bg-violet-800"
-            >
-              {isSavingAssignments ? 'Saving...' : 'Save Assignments'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       <Card className="overflow-hidden border-2 border-cyan-200 shadow-lg">
         <CardHeader className="bg-gradient-to-br from-cyan-50 to-teal-50">
@@ -868,50 +701,6 @@ function AddressBlock(address: {
       <div>{displayValue(address.country)}</div>
       {address.phone ? <div className="text-muted-foreground">Phone: {address.phone}</div> : null}
       {address.email ? <div className="text-muted-foreground">Email: {address.email}</div> : null}
-    </div>
-  );
-}
-
-function StaffAssignmentSelect({
-  label,
-  value,
-  options,
-  isLoading,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: { id: string; label: string; email?: string }[];
-  isLoading: boolean;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="text-sm font-semibold text-slate-700">{label}</div>
-      <Select value={value || UNASSIGNED_VALUE} onValueChange={onChange}>
-        <SelectTrigger className="border-slate-300 bg-white">
-          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={UNASSIGNED_VALUE}>—</SelectItem>
-          {isLoading ? (
-            <SelectItem value={`${label}-loading`} disabled>
-              Loading staff...
-            </SelectItem>
-          ) : null}
-          {!isLoading && options.length === 0 ? (
-            <SelectItem value={`${label}-empty`} disabled>
-              No staff found
-            </SelectItem>
-          ) : null}
-          {options.map((option) => (
-            <SelectItem key={`${label}-${option.id}`} value={option.label}>
-              {option.label}
-              {option.email ? ` (${option.email})` : ''}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
     </div>
   );
 }
