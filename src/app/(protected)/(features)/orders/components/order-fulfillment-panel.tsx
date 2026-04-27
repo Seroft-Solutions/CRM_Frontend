@@ -29,7 +29,10 @@ import type { OrderDetailItem, OrderRecord } from '../data/order-data';
 import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
 import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillment-utils';
 
-type FulfillmentDraftState = Record<number, { selected: boolean; quantity: string }>;
+type FulfillmentDraftState = Record<
+  number,
+  { selected: boolean; quantity: string; picked: boolean; packed: boolean }
+>;
 
 const parsePositiveInteger = (value: string) => {
   const parsed = Number.parseInt(value, 10);
@@ -59,7 +62,10 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
   Object.fromEntries(
     items
       .filter((item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) > 0)
-      .map((item) => [item.orderDetailId, { selected: false, quantity: '' }])
+      .map((item) => [
+        item.orderDetailId,
+        { selected: false, quantity: '', picked: false, packed: false },
+      ])
   );
 
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
@@ -162,7 +168,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const rows = useMemo(() => {
     return allItems.map((item) => {
-      const draft = draftState[item.orderDetailId] ?? { selected: false, quantity: '' };
+      const draft = draftState[item.orderDetailId] ?? {
+        selected: false,
+        quantity: '',
+        picked: false,
+        packed: false,
+      };
       const stockSnapshot = stockByItemId.get(item.orderDetailId) ?? {
         availableQuantity: 0,
         deliverableQuantity: 0,
@@ -186,6 +197,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         isCompleted,
         selected: draft.selected,
         quantity: draft.quantity,
+        picked: draft.picked,
+        packed: draft.packed,
         enteredQuantity,
         originalOrderQuantity,
         remainingQuantity,
@@ -206,6 +219,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const selectedRows = rows.filter((row) => row.selected && row.enteredQuantity > 0);
   const selectedUnits = selectedRows.reduce((sum, row) => sum + row.enteredQuantity, 0);
   const hasValidationErrors = selectedRows.some((row) => row.validationMessage);
+  const hasSelectedRowsMissingPickPack = selectedRows.some((row) => !row.picked || !row.packed);
+  const canSaveFulfillment = selectedRows.length > 0 && !hasSelectedRowsMissingPickPack;
 
   const toggleEditMode = () => {
     if (isEditing) {
@@ -221,13 +236,15 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const updateDraftState = (
     orderDetailId: number,
-    nextValue: Partial<{ selected: boolean; quantity: string }>
+    nextValue: Partial<{ selected: boolean; quantity: string; picked: boolean; packed: boolean }>
   ) => {
     setDraftState((current) => ({
       ...current,
       [orderDetailId]: {
         selected: current[orderDetailId]?.selected ?? false,
         quantity: current[orderDetailId]?.quantity ?? '',
+        picked: current[orderDetailId]?.picked ?? false,
+        packed: current[orderDetailId]?.packed ?? false,
         ...nextValue,
       },
     }));
@@ -242,6 +259,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
     if (hasValidationErrors) {
       toast.error('Requested quantity exceeds the deliverable inventory for one or more items.');
+
+      return;
+    }
+
+    if (!canSaveFulfillment) {
+      toast.error('Mark the order as picked and packed before saving fulfillment.');
 
       return;
     }
@@ -379,6 +402,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 updateDraftState(row.item.orderDetailId, {
                                   selected: checked === true,
                                   quantity: checked === true ? row.quantity : '',
+                                  picked: checked === true ? row.picked : false,
+                                  packed: checked === true ? row.packed : false,
                                 })
                               }
                             />
@@ -434,15 +459,39 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         </TableCell>
                         <TableCell className="text-center">
                           <Checkbox
-                            checked={Boolean(order.picker)}
-                            disabled
+                            checked={row.picked}
+                            disabled={!isEditing || !row.selected}
+                            onCheckedChange={(checked) => {
+                              if (checked !== true) {
+                                updateDraftState(row.item.orderDetailId, {
+                                  picked: false,
+                                  packed: false,
+                                });
+
+                                return;
+                              }
+
+                              updateDraftState(row.item.orderDetailId, { picked: true });
+                            }}
                             className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                           />
                         </TableCell>
                         <TableCell className="text-center">
                           <Checkbox
-                            checked={Boolean(order.packer)}
-                            disabled
+                            checked={row.packed}
+                            disabled={!isEditing || !row.selected}
+                            onCheckedChange={(checked) => {
+                              if (checked === true) {
+                                updateDraftState(row.item.orderDetailId, {
+                                  packed: true,
+                                  picked: true,
+                                });
+
+                                return;
+                              }
+
+                              updateDraftState(row.item.orderDetailId, { packed: false });
+                            }}
                             className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                           />
                         </TableCell>
@@ -501,11 +550,21 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 Every fulfillment generation remains recorded in the backend with per-item
                 quantities.
               </p>
+              {selectedRows.length > 0 && !canSaveFulfillment ? (
+                <p className="text-xs font-medium text-amber-700">
+                  Each selected row must have both Picked and Packed checked before fulfillment can
+                  be saved.
+                </p>
+              ) : null}
             </div>
             <Button
               type="button"
               className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-              disabled={isGenerating || selectedRows.length === 0 || hasValidationErrors}
+              disabled={
+                isGenerating ||
+                hasValidationErrors ||
+                !canSaveFulfillment
+              }
               onClick={handleGenerate}
             >
               <Sparkles className="h-4 w-4" />
