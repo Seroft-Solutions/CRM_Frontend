@@ -73,6 +73,24 @@ const isSalesmanUser = (user: { assignedGroups?: Array<{ name?: string }> }) =>
     return normalizedGroupName === 'salesman' || normalizedGroupName === 'salesmen';
   });
 
+const getOrganizationMemberAssigneeValue = (user?: {
+  id?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+}) => {
+  if (!user) return '';
+
+  return (
+    user.email ||
+    [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+    user.username ||
+    user.id ||
+    ''
+  );
+};
+
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
 
@@ -266,9 +284,10 @@ interface DateRange {
 
 export function CustomerTable() {
   const queryClient = useQueryClient();
-  const { hasGroup } = useUserAuthorities();
+  const { hasAnyGroup, hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
+  const canViewAssignCustomerColumn = hasGroup('canAssignCustomer');
   const { organizationId } = useOrganizationContext();
   const { users: organizationMembers, isLoading: isOrganizationMembersLoading } =
     useOrganizationUsers(organizationId, {
@@ -371,6 +390,66 @@ export function CustomerTable() {
     [organizationMembers]
   );
 
+  const currentOrganizationUser = useMemo(
+    () =>
+      (organizationMembers || []).find((user) => {
+        const accountId = accountData?.id != null ? String(accountData.id) : '';
+        const accountLogin = accountData?.login?.toLowerCase?.() || '';
+        const accountEmail = accountData?.email?.toLowerCase?.() || '';
+
+        return (
+          (accountId && user.id === accountId) ||
+          (accountLogin &&
+            (user.username?.toLowerCase?.() === accountLogin ||
+              user.email?.toLowerCase?.() === accountLogin)) ||
+          (accountEmail && user.email?.toLowerCase?.() === accountEmail)
+        );
+      }),
+    [accountData?.email, accountData?.id, accountData?.login, organizationMembers]
+  );
+
+  const isSalesman = useMemo(
+    () =>
+      hasAnyGroup(['Salesman', 'Salesmen']) ||
+      Boolean(currentOrganizationUser && isSalesmanUser(currentOrganizationUser)),
+    [currentOrganizationUser, hasAnyGroup]
+  );
+
+  const visibleColumnsForRole = useMemo(() => {
+    if (!canViewAssignCustomerColumn) {
+      return visibleColumns.filter((col) => col.id !== 'assignee');
+    }
+
+    return visibleColumns;
+  }, [canViewAssignCustomerColumn, visibleColumns]);
+
+  const configurableColumns = useMemo(() => {
+    if (!canViewAssignCustomerColumn) {
+      return ALL_COLUMNS.filter((col) => col.id !== 'assignee');
+    }
+
+    return ALL_COLUMNS;
+  }, [canViewAssignCustomerColumn]);
+
+  const currentSalesmanAssignee = useMemo(() => {
+    const organizationUserAssignee = getOrganizationMemberAssigneeValue(currentOrganizationUser);
+
+    return (
+      organizationUserAssignee ||
+      accountData?.email ||
+      [accountData?.firstName, accountData?.lastName].filter(Boolean).join(' ') ||
+      accountData?.login ||
+      (accountData?.id != null ? String(accountData.id) : '')
+    );
+  }, [
+    accountData?.email,
+    accountData?.firstName,
+    accountData?.id,
+    accountData?.lastName,
+    accountData?.login,
+    currentOrganizationUser,
+  ]);
+
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
       ...prev,
@@ -409,11 +488,11 @@ export function CustomerTable() {
       return;
     }
 
-    const headers = visibleColumns.map((col) => col.label);
+    const headers = visibleColumnsForRole.map((col) => col.label);
     const csvContent = [
       headers.join(','),
       ...data.map((item) => {
-        return visibleColumns
+        return visibleColumnsForRole
           .map((col) => {
             let value = '';
             if (col.type === 'field') {
@@ -595,6 +674,10 @@ export function CustomerTable() {
 
     if (isBusinessPartner && accountData?.login) {
       params['createdBy.equals'] = accountData.login;
+    }
+
+    if (isSalesman && currentSalesmanAssignee) {
+      params['assignee.equals'] = currentSalesmanAssignee;
     }
 
     return params;
@@ -1443,7 +1526,7 @@ export function CustomerTable() {
               <DropdownMenuContent align="start" className="w-48">
                 <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {ALL_COLUMNS.map((column) => (
+                {configurableColumns.map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={columnVisibility[column.id] !== false}
@@ -1576,12 +1659,15 @@ export function CustomerTable() {
                 isAllSelected={isAllSelected || false}
                 isIndeterminate={isIndeterminate}
                 onSelectAll={handleSelectAll}
-                visibleColumns={visibleColumns}
+                visibleColumns={visibleColumnsForRole}
               />
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                    <TableCell
+                      colSpan={visibleColumnsForRole.length + 2}
+                      className="h-24 text-center"
+                    >
                       Loading...
                     </TableCell>
                   </TableRow>
@@ -1605,7 +1691,7 @@ export function CustomerTable() {
                       relationshipConfigs={relationshipConfigs as any}
                       onRelationshipUpdate={handleRelationshipUpdate}
                       updatingCells={updatingCells}
-                      visibleColumns={visibleColumns}
+                      visibleColumns={visibleColumnsForRole}
                       assigneeOptions={assigneeOptions}
                       isAssigneeLoading={
                         isOrganizationMembersLoading || updatingAssigneeCustomerId === customer.id
@@ -1617,7 +1703,10 @@ export function CustomerTable() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 2} className="h-24 text-center">
+                    <TableCell
+                      colSpan={visibleColumnsForRole.length + 2}
+                      className="h-24 text-center"
+                    >
                       No customers found
                       {hasActiveFilters && (
                         <div className="text-sm text-muted-foreground mt-1">
