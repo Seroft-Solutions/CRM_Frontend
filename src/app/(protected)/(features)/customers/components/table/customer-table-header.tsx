@@ -179,6 +179,17 @@ export function CustomerTableHeader({
                     );
                   }
 
+                  if (column.accessor === 'assignee') {
+                    return (
+                      <Input
+                        placeholder="Filter..."
+                        className="h-8 text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-400"
+                        value={(filters['assignee'] as string) || ''}
+                        onChange={(e) => onFilterChange('assignee', e.target.value || undefined)}
+                      />
+                    );
+                  }
+
                   if (column.accessor === 'createdBy') {
                     return (
                       <Input

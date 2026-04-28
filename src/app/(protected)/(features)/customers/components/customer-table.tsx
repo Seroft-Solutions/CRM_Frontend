@@ -49,17 +49,29 @@ import {
   useSearchCustomers,
   useUpdateCustomer,
 } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import type { CustomerDTO } from '@/core/api/generated/spring/schemas/CustomerDTO';
 
 import { CustomerTableHeader } from './table/customer-table-header';
 import { CustomerTableRow } from './table/customer-table-row';
 import { BulkRelationshipAssignment } from './table/bulk-relationship-assignment';
 import { AdvancedPagination, usePaginationState } from './table/advanced-pagination';
 import { useAccount, useUserAuthorities } from '@/core/auth';
+import { useOrganizationContext, useOrganizationUsers } from '@/features/user-management/hooks';
 
 const TABLE_CONFIG = {
   showDraftTab: false,
   centerAlignActions: true,
 };
+
+const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
+const normalizeGroupName = (name?: string) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const isSalesmanUser = (user: { assignedGroups?: Array<{ name?: string }> }) =>
+  (user.assignedGroups || []).some((group) => {
+    const normalizedGroupName = normalizeGroupName(group.name);
+
+    return normalizedGroupName === 'salesman' || normalizedGroupName === 'salesmen';
+  });
 
 function transformEnumValue(enumValue: string): string {
   if (!enumValue || typeof enumValue !== 'string') return enumValue;
@@ -178,6 +190,15 @@ const ALL_COLUMNS: ColumnConfig[] = [
   },
 
   {
+    id: 'assignee',
+    label: 'Assign To',
+    accessor: 'assignee',
+    type: 'field',
+    visible: true,
+    sortable: true,
+  },
+
+  {
     id: 'completeAddress',
     label: 'Address',
     accessor: 'completeAddress',
@@ -248,6 +269,14 @@ export function CustomerTable() {
   const { hasGroup } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
+  const { organizationId } = useOrganizationContext();
+  const { users: organizationMembers, isLoading: isOrganizationMembersLoading } =
+    useOrganizationUsers(organizationId, {
+      page: 1,
+      size: 1000,
+      sortBy: 'user',
+      sortDirection: 'asc',
+    });
 
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
@@ -268,6 +297,8 @@ export function CustomerTable() {
   const [showBulkStatusChangeDialog, setShowBulkStatusChangeDialog] = useState(false);
   const [bulkNewStatus, setBulkNewStatus] = useState<string | null>(null);
   const [showBulkRelationshipDialog, setShowBulkRelationshipDialog] = useState(false);
+  const [assigneeOverrides, setAssigneeOverrides] = useState<Record<number, string>>({});
+  const [updatingAssigneeCustomerId, setUpdatingAssigneeCustomerId] = useState<number | null>(null);
 
   const [updatingCells, setUpdatingCells] = useState<Set<string>>(new Set());
 
@@ -328,6 +359,17 @@ export function CustomerTable() {
   const visibleColumns = useMemo(() => {
     return ALL_COLUMNS.filter((col) => columnVisibility[col.id] !== false);
   }, [columnVisibility]);
+
+  const assigneeOptions = useMemo(
+    () =>
+      (organizationMembers || []).filter((user) => {
+        const isExcludedAdmin =
+          user?.email?.toLowerCase?.() === EXCLUDED_ASSIGNED_EMAIL.toLowerCase();
+
+        return !isExcludedAdmin && isSalesmanUser(user);
+      }),
+    [organizationMembers]
+  );
 
   const toggleColumnVisibility = (columnId: string) => {
     setColumnVisibility((prev) => ({
@@ -391,13 +433,19 @@ export function CustomerTable() {
                   if (city) parts.push(city);
                   if (state) parts.push(state);
                   const cityState = parts.join(', ');
-                  value = cityState ? `${cityState}${pincode ? ` (${pincode})` : ''}` : pincode || '';
+                  value = cityState
+                    ? `${cityState}${pincode ? ` (${pincode})` : ''}`
+                    : pincode || '';
                 }
               }
               if (col.id === 'completeAddress') {
                 const addresses = (item as any).addresses || [];
                 const defaultAddr = addresses.find((a: any) => a.isDefault) || addresses[0];
                 value = defaultAddr?.completeAddress ? String(defaultAddr.completeAddress) : '';
+              }
+
+              if (col.id === 'assignee') {
+                value = item.assignee ?? '';
               }
             }
 
@@ -511,6 +559,10 @@ export function CustomerTable() {
           if (typeof value === 'string' && value.trim() !== '') {
             params['status.contains'] = value;
           }
+        } else if (key === 'assignee') {
+          if (typeof value === 'string' && value.trim() !== '') {
+            params['assignee.contains'] = value;
+          }
         } else if (key === 'createdBy') {
           if (typeof value === 'string' && value.trim() !== '') {
             params['createdBy.contains'] = value;
@@ -552,36 +604,36 @@ export function CustomerTable() {
 
   const { data, isLoading, refetch } = searchTerm
     ? useSearchCustomers(
-      {
-        query: searchTerm,
-        page: apiPage,
-        size: pageSize,
-        sort: [`${sort},${order}`],
-        ...filterParams,
-      },
-      {
-        query: {
-          enabled: true,
-          staleTime: 0,
-          refetchOnWindowFocus: true,
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
         },
-      }
-    )
+        {
+          query: {
+            enabled: true,
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+          },
+        }
+      )
     : useGetAllCustomers(
-      {
-        page: apiPage,
-        size: pageSize,
-        sort: [`${sort},${order}`],
-        ...filterParams,
-      },
-      {
-        query: {
-          enabled: true,
-          staleTime: 0,
-          refetchOnWindowFocus: true,
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
         },
-      }
-    );
+        {
+          query: {
+            enabled: true,
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+          },
+        }
+      );
 
   const { data: countData } = useCountCustomers(filterParams, {
     query: {
@@ -882,6 +934,67 @@ export function CustomerTable() {
     setShowStatusChangeDialog(false);
     setStatusChangeId(null);
     setNewStatus(null);
+  };
+
+  const handleCustomerAssigneeChange = async (
+    customer: CustomerDTO,
+    nextAssignee: string | null
+  ) => {
+    if (!customer.id) {
+      return;
+    }
+
+    const normalizedAssignee = nextAssignee ?? '';
+    const currentAssignee = assigneeOverrides[customer.id] ?? customer.assignee ?? '';
+
+    if (currentAssignee === normalizedAssignee) {
+      return;
+    }
+
+    setAssigneeOverrides((prev) => ({
+      ...prev,
+      [customer.id as number]: normalizedAssignee,
+    }));
+    setUpdatingAssigneeCustomerId(customer.id);
+
+    return new Promise<void>((resolve, reject) => {
+      updateEntity(
+        {
+          id: customer.id as number,
+          data: {
+            ...customer,
+            assignee: normalizedAssignee,
+          },
+        },
+        {
+          onSuccess: async () => {
+            await queryClient.invalidateQueries({
+              queryKey: ['getAllCustomers'],
+              refetchType: 'active',
+            });
+            await queryClient.invalidateQueries({
+              queryKey: ['searchCustomers'],
+              refetchType: 'active',
+            });
+            resolve();
+          },
+          onError: (error) => {
+            console.error('Failed to update customer assignee:', error);
+            setAssigneeOverrides((prev) => ({
+              ...prev,
+              [customer.id as number]: currentAssignee,
+            }));
+            toast.error('Unable to update customer assignee.');
+            reject(error);
+          },
+          onSettled: () => {
+            setUpdatingAssigneeCustomerId((currentId) =>
+              currentId === customer.id ? null : currentId
+            );
+          },
+        }
+      );
+    });
   };
 
   const handleFilterChange = (column: string, value: any) => {
@@ -1476,7 +1589,13 @@ export function CustomerTable() {
                   data.map((customer) => (
                     <CustomerTableRow
                       key={customer.id}
-                      customer={customer}
+                      customer={{
+                        ...customer,
+                        assignee:
+                          customer.id && assigneeOverrides[customer.id] !== undefined
+                            ? assigneeOverrides[customer.id]
+                            : customer.assignee,
+                      }}
                       onArchive={handleArchive}
                       onStatusChange={handleStatusChange}
                       isUpdatingStatus={isUpdatingStatus}
@@ -1487,6 +1606,13 @@ export function CustomerTable() {
                       onRelationshipUpdate={handleRelationshipUpdate}
                       updatingCells={updatingCells}
                       visibleColumns={visibleColumns}
+                      assigneeOptions={assigneeOptions}
+                      isAssigneeLoading={
+                        isOrganizationMembersLoading || updatingAssigneeCustomerId === customer.id
+                      }
+                      onAssigneeUpdate={(nextAssignee) =>
+                        handleCustomerAssigneeChange(customer, nextAssignee)
+                      }
                     />
                   ))
                 ) : (

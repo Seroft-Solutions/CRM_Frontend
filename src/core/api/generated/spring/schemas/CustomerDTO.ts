@@ -34,6 +34,8 @@ export interface CustomerDTO {
   /** @maxLength 255 */
   completeAddress?: string;
   status: CustomerDTOStatus;
+  /** @maxLength 100 */
+  assignee?: string;
   /**
    * @minLength 0
    * @maxLength 50

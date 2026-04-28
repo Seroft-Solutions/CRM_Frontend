@@ -60,6 +60,13 @@ export type GetAllCustomersParams = {
 'status.specified'?: boolean;
 'status.in'?: GetAllCustomersStatusInItem[];
 'status.notIn'?: GetAllCustomersStatusNotInItem[];
+'assignee.contains'?: string;
+'assignee.doesNotContain'?: string;
+'assignee.equals'?: string;
+'assignee.notEquals'?: string;
+'assignee.specified'?: boolean;
+'assignee.in'?: string[];
+'assignee.notIn'?: string[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;

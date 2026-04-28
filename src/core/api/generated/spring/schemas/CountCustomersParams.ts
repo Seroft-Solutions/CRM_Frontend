@@ -60,6 +60,13 @@ export type CountCustomersParams = {
 'status.specified'?: boolean;
 'status.in'?: CountCustomersStatusInItem[];
 'status.notIn'?: CountCustomersStatusNotInItem[];
+'assignee.contains'?: string;
+'assignee.doesNotContain'?: string;
+'assignee.equals'?: string;
+'assignee.notEquals'?: string;
+'assignee.specified'?: boolean;
+'assignee.in'?: string[];
+'assignee.notIn'?: string[];
 'createdBy.contains'?: string;
 'createdBy.doesNotContain'?: string;
 'createdBy.equals'?: string;
