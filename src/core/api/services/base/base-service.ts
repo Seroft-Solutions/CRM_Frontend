@@ -125,7 +125,15 @@ export class BaseService {
           this.tokenCache.invalidate();
 
           if (typeof window !== 'undefined' && !error.config?._retry) {
-            // Don't try to refresh - just emit event and let SessionManager handle it
+            const token = await this.tokenCache.getToken(() => this.getAuthTokenFromSession());
+
+            if (token) {
+              error.config._retry = true;
+              error.config.headers = error.config.headers || {};
+              error.config.headers.Authorization = `Bearer ${token}`;
+              return this.instance.request(error.config);
+            }
+
             sessionEventEmitter.emit('session-expired', {
               message: 'Your session has expired',
               statusCode: 401,

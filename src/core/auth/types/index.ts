@@ -84,6 +84,8 @@ declare module 'next-auth' {
     };
     access_token?: string;
     refresh_token?: string;
+    error?: string;
+    shouldSignOut?: boolean;
   }
 
   interface JWT {

@@ -4,49 +4,8 @@ import {
   SPRING_SERVICE_LONG_RUNNING_CONFIG,
 } from '@/core/api/services/spring-service/config';
 import { getTenantHeader } from '@/core/api/services/shared/tenant-helper';
+import { TokenCache } from '@/core/auth/tokens/cache';
 import { sessionEventEmitter } from '@/core/auth/session/events';
-
-class SimpleTokenCache {
-  private token: string | null = null;
-  private expiry = 0;
-  private refreshPromise: Promise<string | null> | null = null;
-
-  async getToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
-    const now = Date.now();
-    if (this.token && now < this.expiry) {
-      return this.token;
-    }
-    if (this.refreshPromise) {
-      return this.refreshPromise;
-    }
-    this.refreshPromise = this.refreshToken(refreshFn);
-    const newToken = await this.refreshPromise;
-    this.refreshPromise = null;
-    return newToken;
-  }
-
-  invalidate() {
-    this.token = null;
-    this.expiry = 0;
-    this.refreshPromise = null;
-  }
-
-  private async refreshToken(refreshFn: () => Promise<string | null>): Promise<string | null> {
-    try {
-      const newToken = await refreshFn();
-      if (newToken) {
-        this.token = newToken;
-        this.expiry = Date.now() + 5 * 60 * 1000;
-      }
-      return newToken;
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      this.token = null;
-      this.expiry = 0;
-      return null;
-    }
-  }
-}
 
 async function fetchAccessTokenStandalone(): Promise<string | null> {
   try {
@@ -64,7 +23,7 @@ async function fetchAccessTokenStandalone(): Promise<string | null> {
   }
 }
 
-const tokenCache = new SimpleTokenCache();
+const tokenCache = new TokenCache();
 
 if (typeof window !== 'undefined') {
   window.addEventListener('token-refreshed', (() => {
@@ -129,7 +88,15 @@ export const springServiceMutator = async <T>(
         tokenCache.invalidate();
 
         if (typeof window !== 'undefined' && !error.config?._retry) {
-          // Don't try to refresh - just emit event and let SessionManager handle it
+          const token = await tokenCache.getToken(fetchAccessTokenStandalone);
+
+          if (token) {
+            error.config._retry = true;
+            error.config.headers = error.config.headers || {};
+            error.config.headers.Authorization = `Bearer ${token}`;
+            return instance.request(error.config);
+          }
+
           sessionEventEmitter.emit('session-expired', {
             message: 'Your session has expired',
             statusCode: 401,

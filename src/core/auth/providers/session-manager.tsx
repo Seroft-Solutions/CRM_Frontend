@@ -213,7 +213,7 @@ export function SessionManagerProvider({
   }, [lastActivity]);
 
   useEffect(() => {
-    if (session?.error === 'RefreshAccessTokenError') {
+    if (session?.error === 'RefreshAccessTokenError' && session?.shouldSignOut) {
       console.log('[SessionManager] Session refresh error detected from NextAuth');
 
       if (!modalState.isOpen) {
@@ -229,16 +229,26 @@ export function SessionManagerProvider({
         return () => clearTimeout(autoLogoutTimer);
       }
     }
-  }, [session?.error, showSessionExpiredModal, modalState.isOpen, handleManualLogout]);
+  }, [
+    session?.error,
+    session?.shouldSignOut,
+    showSessionExpiredModal,
+    modalState.isOpen,
+    handleManualLogout,
+  ]);
 
   useEffect(() => {
     const unsubscribe = onSessionExpired((event) => {
       console.log('Session expired from API call:', event.message);
-      showSessionExpiredModal();
+      refreshSession().then((isValid) => {
+        if (!isValid) {
+          showSessionExpiredModal();
+        }
+      });
     });
 
     return unsubscribe;
-  }, [onSessionExpired, showSessionExpiredModal]);
+  }, [onSessionExpired, refreshSession, showSessionExpiredModal]);
 
   useEffect(() => {
     resetIdleTimer();

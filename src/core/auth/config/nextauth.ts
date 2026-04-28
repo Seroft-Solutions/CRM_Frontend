@@ -12,6 +12,7 @@ declare module 'next-auth' {
     access_token?: string;
     refresh_token?: string;
     error?: string;
+    shouldSignOut?: boolean;
   }
 }
 
@@ -285,6 +286,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (token.error === 'RefreshAccessTokenError' && token.shouldSignOut) {
         session.error = 'RefreshAccessTokenError';
+        session.shouldSignOut = true;
         return session;
       }
 
@@ -298,10 +300,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (token.refresh_token && typeof token.refresh_token === 'string') {
         session.refresh_token = token.refresh_token;
-      }
-
-      if (token.error) {
-        session.error = token.error;
       }
 
       return session;
