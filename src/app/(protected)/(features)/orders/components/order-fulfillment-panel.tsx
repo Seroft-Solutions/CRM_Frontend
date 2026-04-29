@@ -115,6 +115,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     useGetOrderFulfillmentGenerations(order.orderId);
   const { mutateAsync: createGeneration, isPending: isGenerating } =
     useCreateOrderFulfillmentGeneration();
+  const canFulfillOrder = order.orderStatus === 'Approved';
 
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
@@ -146,7 +147,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       new Map(
         (warehouseRows as IWarehouse[])
           .filter(
-            (warehouse): warehouse is IWarehouse & { id: number } => typeof warehouse.id === 'number'
+            (warehouse): warehouse is IWarehouse & { id: number } =>
+              typeof warehouse.id === 'number'
           )
           .map((warehouse) => [warehouse.id, warehouse.name])
       ),
@@ -251,6 +253,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   };
 
   const handleGenerate = async () => {
+    if (!canFulfillOrder) {
+      toast.error('Only approved orders can be fulfilled.');
+
+      return;
+    }
+
     if (selectedRows.length === 0) {
       toast.error('Select at least one pending item and enter a quantity.');
 
@@ -315,6 +323,11 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   return (
     <div className="space-y-4 border-t border-cyan-100 bg-cyan-50/30 p-4">
+      {!canFulfillOrder ? (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          This order must be approved before Picker/Packer fulfillment can be saved.
+        </div>
+      ) : null}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
           <Badge className="bg-cyan-100 text-cyan-900">{allItems.length} total items</Badge>
@@ -330,10 +343,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           variant={isEditing ? 'outline' : 'default'}
           className={cn(
             'gap-2',
+            !canFulfillOrder ? 'cursor-not-allowed border-slate-200 text-slate-400' : undefined,
             isEditing
               ? 'border-cyan-300 text-cyan-800 hover:bg-cyan-50'
               : 'bg-cyan-700 text-white hover:bg-cyan-800'
           )}
+          disabled={!canFulfillOrder}
           onClick={toggleEditMode}
         >
           <Pencil className="h-4 w-4" />
@@ -561,9 +576,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
               type="button"
               className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
               disabled={
-                isGenerating ||
-                hasValidationErrors ||
-                !canSaveFulfillment
+                isGenerating || hasValidationErrors || !canFulfillOrder || !canSaveFulfillment
               }
               onClick={handleGenerate}
             >

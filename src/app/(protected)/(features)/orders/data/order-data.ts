@@ -34,10 +34,10 @@ const allowedOrderStatusTransitions: Record<
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>,
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]
 > = {
-  Created: ['Processing', 'Pending', 'Approved', 'Cancelled'],
+  Created: ['Approved', 'Cancelled'],
   Processing: ['Pending', 'Approved', 'Picked', 'Packed', 'Shipped', 'Cancelled'],
-  Pending: ['Approved', 'Picked', 'Packed', 'Shipped', 'Cancelled'],
-  Approved: ['Picked', 'Packed', 'Shipped', 'Cancelled'],
+  Pending: ['Approved', 'Cancelled'],
+  Approved: ['Pending', 'Shipped', 'Cancelled'],
   Picked: ['Packed', 'Shipped', 'Cancelled'],
   Packed: ['Shipped', 'Cancelled'],
   Shipped: ['Delivered', 'Cancelled'],
@@ -70,7 +70,7 @@ export function getSelectableOrderStatuses(
   options?: { isEditing?: boolean; includeUnknown?: boolean }
 ): OrderStatus[] {
   if (!options?.isEditing) {
-    return [options?.includeUnknown ? UNKNOWN_LABEL : 'Created', 'Pending'].filter(
+    return [options?.includeUnknown ? UNKNOWN_LABEL : 'Created'].filter(
       (status): status is OrderStatus => Boolean(status)
     );
   }
@@ -90,9 +90,7 @@ export function getOrderStatusTransitionError(
   options?: { isEditing?: boolean }
 ) {
   if (!options?.isEditing) {
-    return nextStatus === 'Created' || nextStatus === 'Pending'
-      ? undefined
-      : 'New orders must start with Created or Pending status.';
+    return nextStatus === 'Created' ? undefined : 'New orders must start with Created status.';
   }
 
   if (!currentStatus || currentStatus === UNKNOWN_LABEL || currentStatus === nextStatus) {

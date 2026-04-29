@@ -241,13 +241,15 @@ export function OrderTable({
   );
   const restrictedStatusTabs = useMemo(
     () =>
-      [isPickerUser ? 'Picked' : null, isPackerUser ? 'Packed' : null].filter(
-        (status): status is OrderStatus => Boolean(status)
+      [isPickerUser || isPackerUser ? 'Approved' : null].filter((status): status is OrderStatus =>
+        Boolean(status)
       ),
     [isPackerUser, isPickerUser]
   );
   const isPickerPackerRestrictedView = entityStatus === 'ACTIVE' && restrictedStatusTabs.length > 0;
-  const visibleStatusTabs = isPickerPackerRestrictedView ? restrictedStatusTabs : orderStatusOptions;
+  const visibleStatusTabs = isPickerPackerRestrictedView
+    ? restrictedStatusTabs
+    : orderStatusOptions;
   const showAllStatusTab = !isPickerPackerRestrictedView;
   const hideBusinessColumns = isPickerPackerRestrictedView;
 
@@ -1272,7 +1274,9 @@ export function OrderTable({
                     ) : null}
                     {!hideBusinessColumns ? (
                       <TableCell>
-                        <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
+                        <div className="text-sm text-slate-700">
+                          {formatDate(order.createdDate)}
+                        </div>
                       </TableCell>
                     ) : null}
                     {!hideBusinessColumns ? (

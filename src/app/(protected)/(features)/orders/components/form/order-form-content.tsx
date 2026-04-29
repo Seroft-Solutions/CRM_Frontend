@@ -2499,8 +2499,8 @@ export function OrderFormContent({
             />
 
             <div className="space-y-2 border border-border bg-card p-2 shadow-sm">
-              <div className="border-b border-border pb-1">
-                <h3 className="text-center text-xs font-bold text-foreground">
+              <div className="border-b border-border bg-sidebar px-3 py-1">
+                <h3 className="text-center text-xs font-bold text-sidebar-foreground">
                   Sale Order Details
                 </h3>
               </div>
