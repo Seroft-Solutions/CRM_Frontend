@@ -58,7 +58,7 @@ const inviteUserSchema = z.object({
 
 type InviteUserFormValues = z.input<typeof inviteUserSchema>;
 
-const ALLOWED_GROUP_NAMES = new Set(['user', 'users', 'salesman', 'salesmanager']);
+const ALLOWED_GROUP_NAMES = new Set(['user', 'users', 'salesman', 'salesmanager', 'picker', 'packer']);
 
 function normalizeGroupName(value?: string) {
   return (value || '').toLowerCase().replace(/[\s_-]+/g, '');
@@ -75,6 +75,12 @@ function getGroupDisplayLabel(value?: string) {
   }
   if (normalizedName === 'salesmanager') {
     return 'Sales Manager';
+  }
+  if (normalizedName === 'picker') {
+    return 'Picker';
+  }
+  if (normalizedName === 'packer') {
+    return 'Packer';
   }
 
   return value || '';
@@ -401,7 +407,7 @@ export function InviteUsers({ className }: InviteUsersProps) {
                           {selectableGroups.length === 0 && (
                             <p className="text-xs text-muted-foreground">
                               No eligible groups found. Please create one of: User, Salesman, Sales
-                              Manager.
+                              Manager, Picker, Packer.
                             </p>
                           )}
                           <FormMessage />
