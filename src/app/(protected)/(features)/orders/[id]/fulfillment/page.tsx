@@ -29,7 +29,7 @@ export default function OrderFulfillmentPage({ params, searchParams }: OrderFulf
 
   return (
     <PermissionGuard
-      requiredPermission="order:update"
+      requiredPermission="sale-order-fulfillment"
       unauthorizedTitle="Access Denied to Order Fulfillment"
       unauthorizedDescription="You don't have permission to manage order fulfillment for this sale order."
     >
