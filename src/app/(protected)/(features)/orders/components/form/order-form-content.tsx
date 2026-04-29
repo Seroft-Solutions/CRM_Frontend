@@ -418,20 +418,15 @@ function VariantWarehousePanel({
   }, new Map());
 
   const warehouseTables = Array.from(warehouses.values());
-  const stockGridClass =
-    warehouseTables.length <= 1
-      ? 'md:grid-cols-[1fr_1fr]'
-      : warehouseTables.length === 2
-        ? 'md:grid-cols-[1fr_1fr_1fr]'
-        : 'md:grid-cols-[0.9fr_repeat(3,minmax(0,1fr))]';
 
   if (!selectedProductId) {
     return (
-      <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
-        <div className="grid min-h-[520px] grid-cols-1 divide-y divide-slate-400 md:grid-cols-[1fr_1fr_1fr] md:divide-x md:divide-y-0">
+      <div className="overflow-x-auto border border-slate-400 bg-white shadow-sm">
+        <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-slate-400 md:w-max md:flex-row md:divide-x md:divide-y-0">
           <LegacyStockTable
             title="Item Params"
             titleClassName="bg-orange-500 text-white"
+            className="md:w-[390px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
             emptyMessage="Select a product row"
             rows={[]}
@@ -439,6 +434,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-blue-900 text-white"
+            className="md:w-[280px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
             rows={[]}
@@ -446,6 +442,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-teal-700 text-white"
+            className="md:w-[280px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
             rows={[]}
@@ -465,13 +462,12 @@ function VariantWarehousePanel({
   }
 
   return (
-    <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
-      <div
-        className={`grid min-h-[520px] grid-cols-1 divide-y divide-slate-400 ${stockGridClass} md:divide-x md:divide-y-0`}
-      >
+    <div className="overflow-x-auto border border-slate-400 bg-white shadow-sm">
+      <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-slate-400 md:w-max md:flex-row md:divide-x md:divide-y-0">
         <LegacyStockTable
           title="Item Params"
           titleClassName="bg-orange-500 text-white"
+          className="md:w-[390px] md:flex-none"
           columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
           emptyMessage="Select warehouse variants"
           rows={selectedProductItems.map(({ item, index }) => {
@@ -496,6 +492,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-blue-900 text-white"
+            className="md:w-[280px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No warehouse stock"
             rows={[]}
@@ -508,6 +505,7 @@ function VariantWarehousePanel({
               titleClassName={
                 warehouseIndex % 2 === 0 ? 'bg-blue-900 text-white' : 'bg-teal-700 text-white'
               }
+              className="md:w-[280px] md:flex-none"
               columns={['Image', 'Color', 'Size', 'Sales Qty']}
               emptyMessage="No warehouse stock"
               rows={warehouse.rows.map((row) => [
@@ -579,6 +577,7 @@ function QuantityStepper({
 function LegacyStockTable({
   title,
   titleClassName,
+  className,
   columns,
   rows,
   emptyMessage,
@@ -588,6 +587,7 @@ function LegacyStockTable({
 }: {
   title: string;
   titleClassName: string;
+  className?: string;
   columns: string[];
   rows: Array<Array<ReactNode>>;
   emptyMessage: string;
@@ -596,7 +596,7 @@ function LegacyStockTable({
   rowClassName?: (rowIndex: number) => string | undefined;
 }) {
   return (
-    <div className="min-w-0 bg-white">
+    <div className={cn('min-w-0 bg-white', className)}>
       <div className={`px-2 py-1 text-center text-xs font-bold ${titleClassName}`}>{title}</div>
       <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
         <thead>
@@ -1168,7 +1168,23 @@ export function OrderFormContent({
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => {
-    setItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item)));
+    setItems((prev) => {
+      const nextItems = prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item));
+      const isLastRow = index === prev.length - 1;
+      const nextRow = nextItems[index + 1];
+      const shouldAppendProductRow = key === 'productId' && typeof value === 'number';
+      const shouldAppendCatalogRow = key === 'productCatalogId' && typeof value === 'number';
+
+      if (
+        isLastRow &&
+        (shouldAppendProductRow || shouldAppendCatalogRow) &&
+        (!nextRow || hasItemData(nextRow))
+      ) {
+        nextItems.push(emptyOrderItem(shouldAppendCatalogRow ? 'catalog' : 'product'));
+      }
+
+      return nextItems;
+    });
     setErrors((prev) => {
       if (!prev.items?.[index]?.[key]) {
         return prev;
@@ -2427,6 +2443,22 @@ export function OrderFormContent({
         </div>
         <div className="grid gap-0 xl:grid-cols-[46%_54%]">
           <div className="space-y-1 border-slate-500 bg-[#efefef] p-1 xl:border-r">
+            <OrderFormItems
+              items={items}
+              itemErrors={errors.items}
+              onAddItem={addItem}
+              onAddCatalogItem={addCatalogItem}
+              onRemoveItem={removeItem}
+              onApplyVariantSelection={applyVariantSelection}
+              onItemChange={handleItemChange}
+              selectedItemIndex={selectedItemIndex}
+              onSelectItem={setSelectedItemIndex}
+              referrerForm="orders"
+              referrerSessionId={formSessionId}
+              referrerField="productId"
+              referrerCatalogField="productCatalogId"
+            />
+
             <div className="space-y-2 border border-slate-400 bg-[#f8f8d8] p-2 shadow-sm">
               <div className="border-b border-slate-300 pb-1">
                 <h3 className="text-center text-xs font-bold text-slate-800">Sale Order Details</h3>
@@ -2449,22 +2481,6 @@ export function OrderFormContent({
                 onToggleShippingEditable={setShippingEditable}
               />
             </div>
-
-            <OrderFormItems
-              items={items}
-              itemErrors={errors.items}
-              onAddItem={addItem}
-              onAddCatalogItem={addCatalogItem}
-              onRemoveItem={removeItem}
-              onApplyVariantSelection={applyVariantSelection}
-              onItemChange={handleItemChange}
-              selectedItemIndex={selectedItemIndex}
-              onSelectItem={setSelectedItemIndex}
-              referrerForm="orders"
-              referrerSessionId={formSessionId}
-              referrerField="productId"
-              referrerCatalogField="productCatalogId"
-            />
           </div>
 
           <div className="space-y-2 bg-white p-2">

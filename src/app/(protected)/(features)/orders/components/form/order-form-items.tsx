@@ -981,6 +981,7 @@ function ProductCatalogSelector({
   item,
   index,
   onItemChange,
+  tableRowMode = false,
 }: {
   item: OrderItemForm;
   index: number;
@@ -989,6 +990,7 @@ function ProductCatalogSelector({
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
+  tableRowMode?: boolean;
 }) {
   const [catalogOpen, setCatalogOpen] = useState(false);
 
@@ -1030,15 +1032,21 @@ function ProductCatalogSelector({
   };
 
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs font-semibold text-slate-600">Select Product Catalog</Label>
+    <div className={cn('space-y-1.5', tableRowMode && 'space-y-0')}>
+      {!tableRowMode ? (
+        <Label className="text-xs font-semibold text-slate-600">Select Product Catalog</Label>
+      ) : null}
       <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={catalogOpen}
-            className="w-full justify-between border-slate-300 hover:border-blue-400 h-9"
+            className={cn(
+              'w-full justify-between border-slate-300 hover:border-blue-400 h-9',
+              tableRowMode &&
+                'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-blue-900 shadow-none hover:bg-blue-50'
+            )}
           >
             {selectedCatalog ? (
               <span className="truncate text-sm">{selectedCatalog.productCatalogName}</span>
@@ -1653,7 +1661,8 @@ export function OrderFormItems({
       isProductVariantGroup,
     };
   });
-  const blankLegacyRows = Array.from({ length: Math.max(15 - legacyItemRows.length, 0) });
+  const blankLegacyRows = Array.from({ length: Math.max(20 - legacyItemRows.length, 0) });
+  const shouldScrollLegacyRows = legacyItemRows.length > 20;
   const legacyItemsTotal = items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
 
   const renderLegacyItemRow = (legacyRow: (typeof legacyItemRows)[number], rowIndex: number) => {
@@ -1695,15 +1704,12 @@ export function OrderFormItems({
         <td className="border border-slate-300 px-1 py-1 font-bold">
           {item.itemType === 'catalog' ? (
             <div className="space-y-1">
-              <ProductCatalogSelector item={item} index={index} onItemChange={onItemChange} />
-              {(item.productName || item.sku) && (
-                <SelectedOrderItemPreview
-                  item={item}
-                  selectedCatalog={selectedCatalog}
-                  onOpenCatalogInNewTab={handleOpenCatalogInNewTab}
-                  catalogDisplayLabel={getCatalogDisplayLabel(item)}
-                />
-              )}
+              <ProductCatalogSelector
+                item={item}
+                index={index}
+                onItemChange={onItemChange}
+                tableRowMode
+              />
             </div>
           ) : (
             <ProductVariantSelector
@@ -1896,7 +1902,12 @@ export function OrderFormItems({
         </div>
       ) : (
         <div className="overflow-hidden border-t border-slate-300 bg-white">
-          <div className="hidden lg:block">
+          <div
+            className={cn(
+              'hidden lg:block',
+              shouldScrollLegacyRows && 'max-h-[760px] overflow-y-auto'
+            )}
+          >
             <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
               <colgroup>
                 <col className="w-[34px]" />
