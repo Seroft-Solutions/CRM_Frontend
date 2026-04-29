@@ -436,11 +436,11 @@ function VariantWarehousePanel({
 
   if (!selectedProductId && !selectedCatalogId) {
     return (
-      <div className="overflow-x-auto border border-slate-400 bg-white shadow-sm">
-        <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-slate-400 md:w-max md:flex-row md:divide-x md:divide-y-0">
+      <div className="overflow-x-auto border border-border bg-card shadow-sm">
+        <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:w-max md:flex-row md:divide-x md:divide-y-0">
           <LegacyStockTable
             title="Item Params"
-            titleClassName="bg-orange-500 text-white"
+            titleClassName="bg-sidebar text-sidebar-foreground"
             className="md:w-[390px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
             emptyMessage="Select a product row"
@@ -448,7 +448,7 @@ function VariantWarehousePanel({
           />
           <LegacyStockTable
             title="Warehouse Stock"
-            titleClassName="bg-blue-900 text-white"
+            titleClassName="bg-sidebar text-sidebar-foreground"
             className="md:w-[280px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
@@ -456,7 +456,7 @@ function VariantWarehousePanel({
           />
           <LegacyStockTable
             title="Warehouse Stock"
-            titleClassName="bg-teal-700 text-white"
+            titleClassName="bg-sidebar text-sidebar-foreground"
             className="md:w-[280px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No selected product"
@@ -472,7 +472,7 @@ function VariantWarehousePanel({
     (selectedCatalogId && isCatalogFetching && catalogVariants.length === 0)
   ) {
     return (
-      <div className="border border-slate-400 bg-white p-4 text-xs text-slate-600">
+      <div className="border border-border bg-card p-4 text-xs text-muted-foreground">
         Loading variants for selected row {selectedItemIndex !== null ? selectedItemIndex + 1 : ''}
         ...
       </div>
@@ -511,11 +511,11 @@ function VariantWarehousePanel({
         });
 
   return (
-    <div className="overflow-x-auto border border-slate-400 bg-white shadow-sm">
-      <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-slate-400 md:w-max md:flex-row md:divide-x md:divide-y-0">
+    <div className="overflow-x-auto border border-border bg-card shadow-sm">
+      <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:w-max md:flex-row md:divide-x md:divide-y-0">
         <LegacyStockTable
           title="Item Params"
-          titleClassName="bg-orange-500 text-white"
+          titleClassName="bg-sidebar text-sidebar-foreground"
           className="md:w-[390px] md:flex-none"
           columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
@@ -524,7 +524,7 @@ function VariantWarehousePanel({
         {warehouseTables.length === 0 ? (
           <LegacyStockTable
             title="Warehouse Stock"
-            titleClassName="bg-blue-900 text-white"
+            titleClassName="bg-sidebar text-sidebar-foreground"
             className="md:w-[280px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Sales Qty']}
             emptyMessage="No warehouse stock"
@@ -536,7 +536,9 @@ function VariantWarehousePanel({
               key={warehouse.title}
               title={warehouse.title}
               titleClassName={
-                warehouseIndex % 2 === 0 ? 'bg-blue-900 text-white' : 'bg-teal-700 text-white'
+                warehouseIndex % 2 === 0
+                  ? 'bg-sidebar text-sidebar-foreground'
+                  : 'bg-sidebar text-sidebar-foreground'
               }
               className="md:w-[280px] md:flex-none"
               columns={['Image', 'Color', 'Size', 'Sales Qty']}
@@ -551,7 +553,7 @@ function VariantWarehousePanel({
                 const row = warehouse.rows[rowIndex];
 
                 return isWarehouseVariantSelected(row.variant, row.stock)
-                  ? 'bg-orange-100 text-blue-950'
+                  ? 'bg-sidebar-accent/10 text-sidebar-accent'
                   : undefined;
               }}
               onRowClick={
@@ -589,7 +591,7 @@ function QuantityStepper({
           event.stopPropagation();
           onDecrease();
         }}
-        className="inline-flex h-5 w-5 items-center justify-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+        className="inline-flex h-5 w-5 items-center justify-center border border-border bg-card text-foreground hover:bg-muted disabled:opacity-40"
         disabled={quantity <= 0}
         aria-label="Decrease quantity"
       >
@@ -602,7 +604,7 @@ function QuantityStepper({
           event.stopPropagation();
           onIncrease();
         }}
-        className="inline-flex h-5 w-5 items-center justify-center border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+        className="inline-flex h-5 w-5 items-center justify-center border border-border bg-card text-foreground hover:bg-muted"
         aria-label="Increase quantity"
       >
         <Plus className="h-3 w-3" />
@@ -633,13 +635,13 @@ function LegacyStockTable({
   rowClassName?: (rowIndex: number) => string | undefined;
 }) {
   return (
-    <div className={cn('min-w-0 bg-white', className)}>
+    <div className={cn('min-w-0 bg-card', className)}>
       <div className={`px-2 py-1 text-center text-xs font-bold ${titleClassName}`}>{title}</div>
       <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
         <thead>
-          <tr className="bg-slate-100">
+          <tr className="bg-muted">
             {columns.map((column) => (
-              <th key={column} className="border border-slate-300 px-1 py-0.5 text-left font-bold">
+              <th key={column} className="border border-border px-1 py-0.5 text-left font-bold">
                 {column}
               </th>
             ))}
@@ -648,7 +650,7 @@ function LegacyStockTable({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td className="px-2 py-3 text-slate-500" colSpan={columns.length}>
+              <td className="px-2 py-3 text-muted-foreground" colSpan={columns.length}>
                 {emptyMessage}
               </td>
             </tr>
@@ -664,15 +666,15 @@ function LegacyStockTable({
                   key={`${title}-${rowIndex}`}
                   onClick={() => onRowClick?.(rowIndex)}
                   className={cn(
-                    shouldHighlight ? 'bg-red-600 font-bold text-white' : 'text-blue-900',
+                    shouldHighlight ? 'bg-destructive font-bold text-white' : 'text-foreground',
                     rowClassName?.(rowIndex),
-                    onRowClick && 'cursor-pointer hover:bg-blue-50'
+                    onRowClick && 'cursor-pointer hover:bg-sidebar-accent/10'
                   )}
                 >
                   {row.map((cell, cellIndex) => (
                     <td
                       key={`${title}-${rowIndex}-${cellIndex}`}
-                      className="border border-slate-300 px-1 py-0.5"
+                      className="border border-border px-1 py-0.5"
                     >
                       {cell}
                     </td>
@@ -2472,14 +2474,14 @@ export function OrderFormContent({
   return (
     <>
       <form
-        className="overflow-hidden border border-slate-500 bg-[#e6e6e6] text-xs shadow-sm"
+        className="overflow-hidden border border-border bg-muted/30 text-xs shadow-sm"
         onSubmit={handleSubmit}
       >
-        <div className="border-b border-slate-500 bg-[#3f7770] px-3 py-1 text-center text-xs font-bold text-white">
+        <div className="border-b border-border bg-sidebar px-3 py-1 text-center text-xs font-bold text-sidebar-foreground">
           Sale Order
         </div>
         <div className="grid gap-0 xl:grid-cols-[46%_54%]">
-          <div className="space-y-1 border-slate-500 bg-[#efefef] p-1 xl:border-r">
+          <div className="space-y-1 border-border bg-muted/30 p-1 xl:border-r">
             <OrderFormItems
               items={items}
               itemErrors={errors.items}
@@ -2496,9 +2498,11 @@ export function OrderFormContent({
               referrerCatalogField="productCatalogId"
             />
 
-            <div className="space-y-2 border border-slate-400 bg-[#f8f8d8] p-2 shadow-sm">
-              <div className="border-b border-slate-300 pb-1">
-                <h3 className="text-center text-xs font-bold text-slate-800">Sale Order Details</h3>
+            <div className="space-y-2 border border-border bg-card p-2 shadow-sm">
+              <div className="border-b border-border pb-1">
+                <h3 className="text-center text-xs font-bold text-foreground">
+                  Sale Order Details
+                </h3>
               </div>
               <OrderFormFields
                 formState={formState}
@@ -2520,7 +2524,7 @@ export function OrderFormContent({
             </div>
           </div>
 
-          <div className="space-y-2 bg-white p-2">
+          <div className="space-y-2 bg-card p-2">
             <div className="space-y-2 xl:sticky xl:top-2">
               <VariantWarehousePanel
                 selectedItem={selectedItemIndex !== null ? items[selectedItemIndex] : undefined}
@@ -2530,11 +2534,11 @@ export function OrderFormContent({
                 onAdjustItemQuantity={handleAdjustItemQuantity}
               />
 
-              <div className="rounded-none border border-slate-400 bg-[#efefef] p-3 shadow-sm">
+              <div className="rounded-none border border-border bg-muted/30 p-3 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent">
                     <svg
-                      className="h-4 w-4 text-slate-900"
+                      className="h-4 w-4 text-sidebar-accent-foreground"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -2547,21 +2551,25 @@ export function OrderFormContent({
                       />
                     </svg>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800">Order Summary</h3>
+                  <h3 className="text-sm font-bold text-foreground">Order Summary</h3>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Items Subtotal
+                    </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">₹{itemsTotal.toFixed(2)}</span>
+                      <span className="font-semibold text-foreground">
+                        ₹{itemsTotal.toFixed(2)}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setShowItemsBreakdown((prev) => !prev)}
                         disabled={!hasItemSummaries}
                         aria-expanded={showItemsBreakdown}
                         aria-controls="order-items-breakdown"
-                        className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="rounded-sm p-1 text-muted-foreground transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <ChevronDown
                           className={`h-4 w-4 transition-transform ${
@@ -2572,15 +2580,15 @@ export function OrderFormContent({
                     </div>
                   </div>
                   {showItemsBreakdown && hasItemSummaries && (
-                    <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
+                    <div id="order-items-breakdown" className="border-b border-border pb-2">
                       <div className="space-y-1 text-xs">
                         {itemSummaries.map((item) => (
                           <div
                             key={item.key}
-                            className="flex items-center justify-between text-slate-700"
+                            className="flex items-center justify-between text-foreground"
                           >
                             <span className="truncate">{item.name}</span>
-                            <span className="font-semibold text-slate-800">
+                            <span className="font-semibold text-foreground">
                               Qty {item.quantity} • ₹{item.total.toFixed(2)}
                             </span>
                           </div>
@@ -2588,12 +2596,12 @@ export function OrderFormContent({
                       </div>
                     </div>
                   )}
-                  <div className="flex items-start justify-between gap-3 border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Tax</span>
+                  <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Tax</span>
                     <div className="flex flex-1 flex-col items-end gap-2">
                       <div className="flex items-center gap-2">
                         <Select value={taxRateSelectValue} onValueChange={handleTaxRateSelect}>
-                          <SelectTrigger className="h-8 w-[120px] border-yellow-500/30 bg-white text-xs">
+                          <SelectTrigger className="h-8 w-[120px] border-border bg-card text-xs">
                             <SelectValue placeholder="Select %" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2605,7 +2613,7 @@ export function OrderFormContent({
                             <SelectItem value="custom">Custom</SelectItem>
                           </SelectContent>
                         </Select>
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-semibold text-foreground">
                           ₹{taxAmount.toFixed(2)}
                         </span>
                       </div>
@@ -2622,49 +2630,49 @@ export function OrderFormContent({
                               setUseCustomTaxRate(true);
                               handleChange('orderTaxRate', event.target.value);
                             }}
-                            className="h-8 border-yellow-500/30 bg-white text-xs"
+                            className="h-8 border-border bg-card text-xs"
                           />
                           <FieldError message={errors.orderTaxRate} />
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Shipping</span>
-                    <span className="font-semibold text-slate-800">
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Shipping</span>
+                    <span className="font-semibold text-foreground">
                       ₹{shippingAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">{discountLabel}</span>
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {discountLabel}
+                    </span>
                     <span className="font-semibold text-red-600">
                       -₹{discountAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
-                    <span className="font-bold text-slate-900">Order Total</span>
-                    <span className="text-lg font-bold text-slate-900">
-                      ₹{orderTotal.toFixed(2)}
-                    </span>
+                  <div className="mt-4 flex justify-between rounded-lg bg-sidebar-accent p-3 text-sidebar-accent-foreground">
+                    <span className="font-bold">Order Total</span>
+                    <span className="text-lg font-bold">₹{orderTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-md bg-white/60 p-3">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <div className="mt-4 rounded-md border border-border bg-card p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Quick Stats
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <div className="text-muted-foreground">Status</div>
-                      <div className="font-semibold text-slate-800">{formState.orderStatus}</div>
+                      <div className="font-semibold text-foreground">{formState.orderStatus}</div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Payment</div>
-                      <div className="font-semibold text-slate-800">{formState.paymentStatus}</div>
+                      <div className="font-semibold text-foreground">{formState.paymentStatus}</div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Items</div>
-                      <div className="font-semibold text-slate-800">{items.length}</div>
+                      <div className="font-semibold text-foreground">{items.length}</div>
                     </div>
                   </div>
                 </div>

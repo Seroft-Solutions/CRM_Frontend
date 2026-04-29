@@ -240,7 +240,7 @@ function SelectedProductPreview({
         className="shrink-0 rounded-md"
       />
       <div className="min-w-0 space-y-1">
-        <div className="truncate text-sm font-medium text-slate-900">{product.name}</div>
+        <div className="truncate text-sm font-medium text-foreground">{product.name}</div>
         <div className="text-xs text-muted-foreground">SKU: {productSku}</div>
       </div>
     </div>
@@ -265,7 +265,7 @@ function SelectedVariantPreview({ variant }: { variant: ProductVariantWithWareho
         className="shrink-0 rounded-md"
       />
       <div className="min-w-0 space-y-1">
-        <div className="truncate text-sm font-medium text-slate-900">{variant.sku}</div>
+        <div className="truncate text-sm font-medium text-foreground">{variant.sku}</div>
         {variant.linkId ? (
           <div className="text-xs text-slate-500">Link ID: {variant.linkId}</div>
         ) : null}
@@ -346,7 +346,7 @@ function OrderItemImageCell({
 function SelectedVariantNameCard({ name }: { name: string }) {
   return (
     <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50/80 p-3">
-      <div className="text-sm font-medium text-slate-900">{name}</div>
+      <div className="text-sm font-medium text-foreground">{name}</div>
     </div>
   );
 }
@@ -372,19 +372,19 @@ function SelectedOrderItemPreview({
       />
       <div className="min-w-0 space-y-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge className="bg-indigo-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-indigo-700">
+          <Badge className="bg-sidebar-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sidebar-accent-foreground hover:bg-sidebar-accent/90">
             Catalog
           </Badge>
           {item.productName && item.productCatalogId ? (
             <button
               type="button"
               onClick={(event) => onOpenCatalogInNewTab(event, item.productCatalogId!)}
-              className="truncate text-left text-sm font-bold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline"
+              className="truncate text-left text-sm font-bold text-sidebar-accent transition-colors hover:text-sidebar-accent hover:underline"
             >
               {catalogDisplayLabel}
             </button>
           ) : (
-            <div className="truncate text-sm font-medium text-slate-900">{item.productName}</div>
+            <div className="truncate text-sm font-medium text-foreground">{item.productName}</div>
           )}
         </div>
         {item.variantAttributes ? (
@@ -762,9 +762,9 @@ function ProductVariantSelector({
                   role="combobox"
                   aria-expanded={productOpen}
                   className={cn(
-                    'w-full justify-between border-slate-300 hover:border-blue-400 h-9',
+                    'w-full justify-between border-border hover:border-sidebar-accent h-9',
                     tableRowMode &&
-                      'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-blue-900 shadow-none hover:bg-blue-50'
+                      'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-foreground shadow-none hover:bg-sidebar-accent/10'
                   )}
                 >
                   {selectedProduct ? (
@@ -846,9 +846,9 @@ function ProductVariantSelector({
                     role="combobox"
                     aria-expanded={variantOpen}
                     className={cn(
-                      'w-full justify-between border-slate-300 hover:border-blue-400 h-9',
+                      'w-full justify-between border-border hover:border-sidebar-accent h-9',
                       tableRowMode &&
-                        'mt-1 h-7 rounded-none border-slate-300 bg-white px-1 text-left text-xs text-blue-900 shadow-none'
+                        'mt-1 h-7 rounded-none border-border bg-card px-1 text-left text-xs text-foreground shadow-none'
                     )}
                   >
                     {selectedVariantLabel ? (
@@ -950,7 +950,7 @@ function ProductVariantSelector({
             {selectedProduct ? (
               <SelectedProductPreview product={selectedProduct} fallbackSku={item.sku} />
             ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/80 p-3 text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-border bg-slate-50/80 p-3 text-sm text-slate-500">
                 No product selected
               </div>
             )}
@@ -1043,9 +1043,9 @@ function ProductCatalogSelector({
             role="combobox"
             aria-expanded={catalogOpen}
             className={cn(
-              'w-full justify-between border-slate-300 hover:border-blue-400 h-9',
+              'w-full justify-between border-border hover:border-sidebar-accent h-9',
               tableRowMode &&
-                'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-blue-900 shadow-none hover:bg-blue-50'
+                'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-foreground shadow-none hover:bg-sidebar-accent/10'
             )}
           >
             {selectedCatalog ? (
@@ -1288,7 +1288,7 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-9 border-slate-300"
+                className="h-9 border-border"
               />
               {availableQuantity !== undefined && (
                 <p className="mt-1 text-[11px] text-slate-500">
@@ -1328,7 +1328,7 @@ export function OrderFormItems({
                 placeholder="0.00"
                 value={item.itemPrice}
                 readOnly
-                className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+                className="h-9 border-border bg-muted text-muted-foreground"
               />
               <FieldError message={itemErrors?.[index]?.itemPrice} />
             </div>
@@ -1336,7 +1336,7 @@ export function OrderFormItems({
             <div className="flex flex-col gap-2 lg:col-start-5 lg:min-w-[88px]">
               <div className="text-right">
                 <div className="text-xs text-muted-foreground mb-1">Total</div>
-                <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                <div className="text-lg font-bold text-foreground">₹{itemTotal.toFixed(2)}</div>
               </div>
               <div className="flex gap-1 justify-end">
                 <Button
@@ -1379,7 +1379,7 @@ export function OrderFormItems({
                   placeholder="0"
                   value={item.quantity}
                   onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                  className="h-9 border-slate-300"
+                  className="h-9 border-border"
                 />
                 {availableQuantity !== undefined && (
                   <p className="mt-1 text-[11px] text-slate-500">
@@ -1421,7 +1421,7 @@ export function OrderFormItems({
                   placeholder="0.00"
                   value={item.itemPrice}
                   readOnly
-                  className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+                  className="h-9 border-border bg-muted text-muted-foreground"
                 />
                 <FieldError message={itemErrors?.[index]?.itemPrice} />
               </div>
@@ -1431,7 +1431,7 @@ export function OrderFormItems({
               {showLineItemFields ? (
                 <div className="text-right">
                   <div className="text-xs text-muted-foreground mb-1">Total</div>
-                  <div className="text-lg font-bold text-slate-900">₹{itemTotal.toFixed(2)}</div>
+                  <div className="text-lg font-bold text-foreground">₹{itemTotal.toFixed(2)}</div>
                 </div>
               ) : null}
               <div className="flex gap-1 justify-end">
@@ -1505,15 +1505,15 @@ export function OrderFormItems({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-600 to-teal-600 text-sm font-bold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent text-sm font-bold text-sidebar-accent-foreground">
               {index + 1}
             </div>
             <div>
-              <div className="text-sm font-bold text-slate-900">
+              <div className="text-sm font-bold text-foreground">
                 {groupSize > 1 ? `Variant #${entryIndex + 1}` : `Item #${index + 1}`}
               </div>
               {showLineItemFields && itemTotal > 0 && (
-                <div className="text-lg font-bold text-cyan-600">₹{itemTotal.toFixed(2)}</div>
+                <div className="text-lg font-bold text-sidebar-accent">₹{itemTotal.toFixed(2)}</div>
               )}
             </div>
           </div>
@@ -1569,7 +1569,7 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-9 border-slate-300"
+                className="h-9 border-border"
               />
               {availableQuantity !== undefined && (
                 <p className="text-[11px] text-slate-500">
@@ -1609,7 +1609,7 @@ export function OrderFormItems({
                 placeholder="0.00"
                 value={item.itemPrice}
                 readOnly
-                className="h-9 border-slate-300 bg-slate-100 text-slate-700"
+                className="h-9 border-border bg-muted text-muted-foreground"
               />
               <FieldError message={itemErrors?.[index]?.itemPrice} />
             </div>
@@ -1691,17 +1691,16 @@ export function OrderFormItems({
         key={`legacy-item-${index}-${entries.length}`}
         onClick={() => onSelectItem?.(index)}
         className={cn(
-          'h-[34px] cursor-pointer align-top text-blue-900',
-          isSelected && 'outline outline-2 -outline-offset-2 outline-blue-700 bg-blue-50'
+          'h-[34px] cursor-pointer align-top text-foreground',
+          isSelected &&
+            'outline outline-2 -outline-offset-2 outline-sidebar-accent bg-sidebar-accent/10'
         )}
       >
-        <td className="border border-slate-300 px-1 py-1 text-center font-semibold">
-          {rowIndex + 1}
-        </td>
-        <td className="border border-slate-300 px-1 py-1">
+        <td className="border border-border px-1 py-1 text-center font-semibold">{rowIndex + 1}</td>
+        <td className="border border-border px-1 py-1">
           <OrderItemImageCell item={item} selectedCatalog={selectedCatalog} />
         </td>
-        <td className="border border-slate-300 px-1 py-1 font-bold">
+        <td className="border border-border px-1 py-1 font-bold">
           {item.itemType === 'catalog' ? (
             <div className="space-y-1">
               <ProductCatalogSelector
@@ -1729,8 +1728,8 @@ export function OrderFormItems({
             />
           )}
         </td>
-        <td className="border border-slate-300 px-1 py-1 text-center font-semibold">Pcs.</td>
-        <td className="border border-slate-300 px-1 py-1">
+        <td className="border border-border px-1 py-1 text-center font-semibold">Pcs.</td>
+        <td className="border border-border px-1 py-1">
           <Input
             type="number"
             min={0}
@@ -1742,11 +1741,11 @@ export function OrderFormItems({
               }
             }}
             readOnly={isProductVariantGroup}
-            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-blue-900 shadow-none focus-visible:ring-1"
+            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-foreground shadow-none focus-visible:ring-1"
           />
           <FieldError message={itemErrors?.[index]?.quantity} />
         </td>
-        <td className="border border-slate-300 px-1 py-1">
+        <td className="border border-border px-1 py-1">
           <Input
             type="number"
             min={0}
@@ -1754,14 +1753,14 @@ export function OrderFormItems({
             placeholder="0.00"
             value={item.itemPrice}
             readOnly
-            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-blue-900 shadow-none"
+            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-foreground shadow-none"
           />
           <FieldError message={itemErrors?.[index]?.itemPrice} />
         </td>
-        <td className="border border-slate-300 px-2 py-2 text-right font-bold">
+        <td className="border border-border px-2 py-2 text-right font-bold">
           {itemTotal > 0 ? itemTotal.toFixed(2) : '0'}
         </td>
-        <td className="border border-slate-300 px-1 py-1 text-center">
+        <td className="border border-border px-1 py-1 text-center">
           <Button
             type="button"
             variant="ghost"
@@ -1790,15 +1789,15 @@ export function OrderFormItems({
   };
 
   return (
-    <div className="overflow-hidden border border-slate-400 bg-white shadow-sm">
-      <div className="bg-slate-500 px-3 py-1 text-center text-xs font-bold text-white">
+    <div className="overflow-hidden border border-border bg-card shadow-sm">
+      <div className="bg-sidebar px-3 py-1 text-center text-xs font-bold text-sidebar-foreground">
         Items Order Details
       </div>
-      <div className="flex flex-col gap-2 bg-[#efefef] p-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 bg-muted/30 p-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-cyan-100">
+          <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-sidebar-accent/10">
             <svg
-              className="h-4 w-4 text-cyan-700"
+              className="h-4 w-4 text-sidebar-accent"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -1812,7 +1811,7 @@ export function OrderFormItems({
             </svg>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800">Product Selection</h3>
+            <h3 className="text-sm font-bold text-foreground">Product Selection</h3>
             <p className="text-[11px] text-muted-foreground">
               {items.length === 0
                 ? 'No items added'
@@ -1825,7 +1824,7 @@ export function OrderFormItems({
             <Button
               type="button"
               onClick={onAddItem}
-              className="h-8 w-full rounded-none bg-blue-700 px-3 text-xs text-white shadow-sm hover:bg-blue-800 sm:w-auto"
+              className="h-8 w-full rounded-none bg-sidebar-accent px-3 text-xs text-sidebar-accent-foreground shadow-sm hover:bg-sidebar-accent/90 sm:w-auto"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -1841,7 +1840,7 @@ export function OrderFormItems({
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 gap-1.5 rounded-none border-dashed border-cyan-300 text-xs text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800"
+              className="h-8 gap-1.5 rounded-none border-dashed border-sidebar-accent/30 text-xs text-sidebar-accent hover:bg-sidebar-accent/10 hover:text-sidebar-accent"
               onClick={handleCreateProduct}
             >
               <Plus className="h-4 w-4" />
@@ -1852,7 +1851,7 @@ export function OrderFormItems({
             <Button
               type="button"
               onClick={onAddCatalogItem}
-              className="h-8 w-full rounded-none bg-blue-700 px-3 text-xs text-white shadow-sm hover:bg-blue-800 sm:w-auto"
+              className="h-8 w-full rounded-none bg-sidebar-accent px-3 text-xs text-sidebar-accent-foreground shadow-sm hover:bg-sidebar-accent/90 sm:w-auto"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -1868,7 +1867,7 @@ export function OrderFormItems({
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 gap-1.5 rounded-none border-dashed border-indigo-300 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800"
+              className="h-8 gap-1.5 rounded-none border-dashed border-sidebar-accent/30 text-xs text-sidebar-accent hover:bg-sidebar-accent/10 hover:text-sidebar-accent"
               onClick={handleCreateCatalog}
             >
               <Plus className="h-4 w-4" />
@@ -1879,10 +1878,10 @@ export function OrderFormItems({
       </div>
 
       {items.length === 0 ? (
-        <div className="m-2 flex flex-col items-center justify-center border border-dashed border-cyan-300 bg-cyan-50/50 p-8 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100">
+        <div className="m-2 flex flex-col items-center justify-center border border-dashed border-sidebar-accent/30 bg-sidebar-accent/10 p-8 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-sidebar-accent/10">
             <svg
-              className="h-8 w-8 text-cyan-600"
+              className="h-8 w-8 text-sidebar-accent"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -1895,13 +1894,13 @@ export function OrderFormItems({
               />
             </svg>
           </div>
-          <p className="mb-2 text-base font-semibold text-slate-700">Your cart is empty</p>
+          <p className="mb-2 text-base font-semibold text-foreground">Your cart is empty</p>
           <p className="mb-4 text-sm text-muted-foreground">
             Click "Add Item" above to start adding products to this order
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden border-t border-slate-300 bg-white">
+        <div className="overflow-hidden border-t border-border bg-card">
           <div
             className={cn(
               'hidden lg:block',
@@ -1920,19 +1919,17 @@ export function OrderFormItems({
                 <col className="w-[42px]" />
               </colgroup>
               <thead>
-                <tr className="bg-slate-200 text-slate-900">
-                  <th className="border border-slate-400 px-1 py-1"></th>
-                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Image</th>
-                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">
+                <tr className="bg-muted text-foreground">
+                  <th className="border border-border px-1 py-1"></th>
+                  <th className="border border-border px-1 py-1 text-center font-bold">Image</th>
+                  <th className="border border-border px-1 py-1 text-center font-bold">
                     Item Name
                   </th>
-                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Unit</th>
-                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Qty</th>
-                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">Rate</th>
-                  <th className="border border-slate-400 px-1 py-1 text-center font-bold">
-                    Amount
-                  </th>
-                  <th className="border border-slate-400 px-1 py-1"></th>
+                  <th className="border border-border px-1 py-1 text-center font-bold">Unit</th>
+                  <th className="border border-border px-1 py-1 text-center font-bold">Qty</th>
+                  <th className="border border-border px-1 py-1 text-center font-bold">Rate</th>
+                  <th className="border border-border px-1 py-1 text-center font-bold">Amount</th>
+                  <th className="border border-border px-1 py-1"></th>
                 </tr>
               </thead>
               <tbody>
@@ -1941,31 +1938,31 @@ export function OrderFormItems({
                 )}
                 {blankLegacyRows.map((_, rowIndex) => (
                   <tr key={`legacy-blank-${rowIndex}`} className="h-[28px]">
-                    <td className="border border-slate-300 px-1 text-center text-slate-700">
+                    <td className="border border-border px-1 text-center text-foreground">
                       {legacyItemRows.length + rowIndex + 1}
                     </td>
-                    <td className="border border-slate-300"></td>
-                    <td className="border border-slate-300"></td>
-                    <td className="border border-slate-300"></td>
-                    <td className="border border-slate-300 text-right text-blue-900">0</td>
-                    <td className="border border-slate-300"></td>
-                    <td className="border border-slate-300"></td>
-                    <td className="border border-slate-300"></td>
+                    <td className="border border-border"></td>
+                    <td className="border border-border"></td>
+                    <td className="border border-border"></td>
+                    <td className="border border-border text-right text-foreground">0</td>
+                    <td className="border border-border"></td>
+                    <td className="border border-border"></td>
+                    <td className="border border-border"></td>
                   </tr>
                 ))}
-                <tr className="bg-white text-blue-900">
-                  <td className="border border-slate-300"></td>
-                  <td className="border border-slate-300"></td>
-                  <td className="border border-slate-300"></td>
-                  <td className="border border-slate-300"></td>
-                  <td className="border border-slate-300 px-2 py-1 text-right font-bold">
+                <tr className="bg-card text-foreground">
+                  <td className="border border-border"></td>
+                  <td className="border border-border"></td>
+                  <td className="border border-border"></td>
+                  <td className="border border-border"></td>
+                  <td className="border border-border px-2 py-1 text-right font-bold">
                     {items.reduce((sum, item) => sum + (Number.parseFloat(item.quantity) || 0), 0)}
                   </td>
-                  <td className="border border-slate-300"></td>
-                  <td className="border border-slate-300 px-2 py-1 text-right font-bold">
+                  <td className="border border-border"></td>
+                  <td className="border border-border px-2 py-1 text-right font-bold">
                     {legacyItemsTotal.toFixed(2)}
                   </td>
-                  <td className="border border-slate-300"></td>
+                  <td className="border border-border"></td>
                 </tr>
               </tbody>
             </table>
