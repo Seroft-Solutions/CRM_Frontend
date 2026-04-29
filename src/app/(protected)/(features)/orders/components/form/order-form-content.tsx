@@ -47,6 +47,7 @@ import {
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
 import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
+import { useGetProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import {
   useCreateOrderAddressDetail,
   useUpdateOrderAddressDetail,
@@ -274,6 +275,8 @@ function VariantWarehousePanel({
 }) {
   const selectedProductId =
     selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
+  const selectedCatalogId =
+    selectedItem?.itemType === 'catalog' ? selectedItem.productCatalogId : undefined;
   const { data: variantsData = [], isFetching } = useGetAllProductVariants(
     {
       'productId.equals': selectedProductId,
@@ -287,11 +290,22 @@ function VariantWarehousePanel({
     }
   );
   const variants = variantsData as ProductVariantDTO[];
+  const { data: selectedCatalog, isFetching: isCatalogFetching } = useGetProductCatalog(
+    selectedCatalogId ?? 0,
+    {
+      query: {
+        enabled: Boolean(selectedCatalogId),
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
+  const catalogVariants = (selectedCatalog?.variants ?? []) as ProductVariantDTO[];
+  const visibleVariants = selectedCatalogId ? catalogVariants : variants;
   const optionIdsMissingLabels = useMemo(
     () =>
       Array.from(
         new Set(
-          variants
+          visibleVariants
             .flatMap((variant) => variant.selections ?? [])
             .map((selection) => {
               const optionId = selection.option?.id;
@@ -305,7 +319,7 @@ function VariantWarehousePanel({
             .filter((optionId): optionId is number => typeof optionId === 'number')
         )
       ),
-    [variants]
+    [visibleVariants]
   );
   const { data: optionLabelOptions = [] } = useGetAllSystemConfigAttributeOptions(
     optionIdsMissingLabels.length > 0
@@ -334,6 +348,7 @@ function VariantWarehousePanel({
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.itemType === 'product' && item.productId === selectedProductId)
     .filter(({ item }) => typeof item.variantId === 'number');
+  const selectedCatalogItem = selectedCatalogId ? selectedItem : undefined;
   const getItemParamParts = (item: OrderItemForm) => {
     const variantIndex = variants.findIndex((variant) => variant.id === item.variantId);
     const variant = variantIndex >= 0 ? variants[variantIndex] : undefined;
@@ -373,7 +388,7 @@ function VariantWarehousePanel({
 
       return total + (currentQuantity - existingQuantity);
     }, 0);
-  const warehouses = variants.reduce<
+  const warehouses = visibleVariants.reduce<
     Map<
       string,
       {
@@ -419,7 +434,7 @@ function VariantWarehousePanel({
 
   const warehouseTables = Array.from(warehouses.values());
 
-  if (!selectedProductId) {
+  if (!selectedProductId && !selectedCatalogId) {
     return (
       <div className="overflow-x-auto border border-slate-400 bg-white shadow-sm">
         <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-slate-400 md:w-max md:flex-row md:divide-x md:divide-y-0">
@@ -452,7 +467,10 @@ function VariantWarehousePanel({
     );
   }
 
-  if (isFetching && variants.length === 0) {
+  if (
+    (selectedProductId && isFetching && variants.length === 0) ||
+    (selectedCatalogId && isCatalogFetching && catalogVariants.length === 0)
+  ) {
     return (
       <div className="border border-slate-400 bg-white p-4 text-xs text-slate-600">
         Loading variants for selected row {selectedItemIndex !== null ? selectedItemIndex + 1 : ''}
@@ -460,6 +478,37 @@ function VariantWarehousePanel({
       </div>
     );
   }
+
+  const itemParamRows =
+    selectedCatalogId && selectedCatalogItem
+      ? catalogVariants.map((variant, index) => {
+          const { color, size } = getVariantDisplayParts(variant, index, optionLabelsById);
+
+          return [
+            <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
+            color,
+            size,
+            '1',
+            selectedCatalog?.productCatalogName || selectedCatalogItem.productName || '-',
+          ];
+        })
+      : selectedProductItems.map(({ item, index }) => {
+          const { color, size } = getItemParamParts(item);
+          const variant = variants.find((entry) => entry.id === item.variantId);
+
+          return [
+            <VariantImageCell key={`image-${index}`} variant={variant} />,
+            color,
+            size,
+            <QuantityStepper
+              key={`qty-${index}`}
+              quantity={Number.parseInt(item.quantity, 10) || 0}
+              onDecrease={() => onAdjustItemQuantity(index, -1)}
+              onIncrease={() => onAdjustItemQuantity(index, 1)}
+            />,
+            item.warehouseName || item.warehouseCode || '-',
+          ];
+        });
 
   return (
     <div className="overflow-x-auto border border-slate-400 bg-white shadow-sm">
@@ -469,24 +518,8 @@ function VariantWarehousePanel({
           titleClassName="bg-orange-500 text-white"
           className="md:w-[390px] md:flex-none"
           columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
-          emptyMessage="Select warehouse variants"
-          rows={selectedProductItems.map(({ item, index }) => {
-            const { color, size } = getItemParamParts(item);
-            const variant = variants.find((entry) => entry.id === item.variantId);
-
-            return [
-              <VariantImageCell key={`image-${index}`} variant={variant} />,
-              color,
-              size,
-              <QuantityStepper
-                key={`qty-${index}`}
-                quantity={Number.parseInt(item.quantity, 10) || 0}
-                onDecrease={() => onAdjustItemQuantity(index, -1)}
-                onIncrease={() => onAdjustItemQuantity(index, 1)}
-              />,
-              item.warehouseName || item.warehouseCode || '-',
-            ];
-          })}
+          emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
+          rows={itemParamRows}
         />
         {warehouseTables.length === 0 ? (
           <LegacyStockTable
@@ -521,12 +554,16 @@ function VariantWarehousePanel({
                   ? 'bg-orange-100 text-blue-950'
                   : undefined;
               }}
-              onRowClick={(rowIndex) => {
-                const row = warehouse.rows[rowIndex];
-                const selected = isWarehouseVariantSelected(row.variant, row.stock);
+              onRowClick={
+                selectedCatalogId
+                  ? undefined
+                  : (rowIndex) => {
+                      const row = warehouse.rows[rowIndex];
+                      const selected = isWarehouseVariantSelected(row.variant, row.stock);
 
-                onToggleWarehouseVariant(row.variant, row.stock, !selected);
-              }}
+                      onToggleWarehouseVariant(row.variant, row.stock, !selected);
+                    }
+              }
             />
           ))
         )}
