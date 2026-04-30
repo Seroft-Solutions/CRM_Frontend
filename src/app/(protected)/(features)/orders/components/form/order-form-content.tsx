@@ -515,7 +515,11 @@ function VariantWarehousePanel({
       <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:w-max md:flex-row md:divide-x md:divide-y-0">
         <LegacyStockTable
           title="Item Params"
-          titleClassName="bg-sidebar text-sidebar-foreground"
+          titleClassName={
+            selectedCatalogId
+              ? 'bg-sidebar text-sidebar-foreground'
+              : 'bg-sidebar-accent text-sidebar-accent-foreground'
+          }
           className="md:w-[390px] md:flex-none"
           columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
