@@ -26,7 +26,7 @@ const isSalesManagerUser = (user: { assignedGroups?: Array<{ name?: string }> })
   });
 
 export default function DashboardPage() {
-  const { hasGroup } = useUserAuthorities();
+  const { hasGroup, hasRole } = useUserAuthorities();
   const { data: session } = useSession();
   const { organizationId } = useOrganizationContext();
   const {
@@ -78,8 +78,21 @@ export default function DashboardPage() {
     return <BusinessPartnerDashboard />;
   }
 
-  if (isSalesman && !isSalesManager) {
+  const hasSalesmanDashboardAccess = hasRole('salesman-dashboard');
+
+  if (isSalesman && !isSalesManager && hasSalesmanDashboardAccess) {
     return <SalesmanDashboard />;
+  }
+
+  if (isSalesman && !isSalesManager && !hasSalesmanDashboardAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <h2 className="text-2xl font-bold text-muted-foreground">Access Denied</h2>
+        <p className="text-sm text-muted-foreground">
+          You do not have permission to access the salesman dashboard.
+        </p>
+      </div>
+    );
   }
 
   return <DashboardOverview />;
