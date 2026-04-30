@@ -553,7 +553,7 @@ function VariantWarehousePanel({
                 const row = warehouse.rows[rowIndex];
 
                 return isWarehouseVariantSelected(row.variant, row.stock)
-                  ? 'bg-sidebar-accent/10 text-sidebar-accent'
+                  ? 'bg-sidebar-accent/10 text-black'
                   : undefined;
               }}
               onRowClick={
