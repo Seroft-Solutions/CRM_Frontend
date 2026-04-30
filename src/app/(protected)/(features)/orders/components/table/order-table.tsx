@@ -251,7 +251,9 @@ export function OrderTable({
     ? restrictedStatusTabs
     : orderStatusOptions;
   const showAllStatusTab = !isPickerPackerRestrictedView;
+  const isPickerPackerUser = isPickerPackerRestrictedView;
   const hideBusinessColumns = isPickerPackerRestrictedView;
+  const showPickerPackerColumns = isPickerPackerUser;
 
   // Filter states
   const [filters, setFilters] = useState<{
@@ -917,26 +919,30 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              <TableHead className="min-w-[140px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('shipping')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Shipping</span>
-                  {getSortIcon('shipping')}
-                </Button>
-              </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('customer')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                >
-                  <span>Customer</span>
-                  {getSortIcon('customer')}
-                </Button>
-              </TableHead>
+              {!showPickerPackerColumns ? (
+                <TableHead className="min-w-[140px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('shipping')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Shipping</span>
+                    {getSortIcon('shipping')}
+                  </Button>
+                </TableHead>
+              ) : null}
+              {!showPickerPackerColumns ? (
+                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('customer')}
+                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  >
+                    <span>Customer</span>
+                    {getSortIcon('customer')}
+                  </Button>
+                </TableHead>
+              ) : null}
               {!hideBusinessColumns ? (
                 <TableHead className="min-w-[150px] font-bold text-slate-700">
                   <Button
@@ -961,19 +967,17 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              {!hideBusinessColumns ? (
-                <TableHead className="min-w-[150px] font-bold text-slate-700">
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleSort('createdDate')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
-                  >
-                    <span>Created At</span>
-                    {getSortIcon('createdDate')}
-                  </Button>
-                </TableHead>
-              ) : null}
-              {!hideBusinessColumns ? (
+              <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort('createdDate')}
+                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                >
+                  <span>Created At</span>
+                  {getSortIcon('createdDate')}
+                </Button>
+              </TableHead>
+              {!showPickerPackerColumns ? (
                 <TableHead className="min-w-[150px] font-bold text-slate-700">
                   <Button
                     variant="ghost"
@@ -1029,34 +1033,38 @@ export function OrderTable({
                   />
                 </TableHead>
               ) : null}
-              <TableHead className="py-2">
-                <Select
-                  value={filters.shipping || 'all'}
-                  onValueChange={(value) =>
-                    handleFilterChange('shipping', value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {shippingMethodOptions.map((method) => (
-                      <SelectItem key={method} value={method}>
-                        {method}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
-              <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300 w-full"
-                  value={filters.customer || ''}
-                  onChange={(e) => handleFilterChange('customer', e.target.value)}
-                />
-              </TableHead>
+              {!showPickerPackerColumns ? (
+                <TableHead className="py-2">
+                  <Select
+                    value={filters.shipping || 'all'}
+                    onValueChange={(value) =>
+                      handleFilterChange('shipping', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {shippingMethodOptions.map((method) => (
+                        <SelectItem key={method} value={method}>
+                          {method}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
+              ) : null}
+              {!showPickerPackerColumns ? (
+                <TableHead className="py-2">
+                  <Input
+                    placeholder="Filter..."
+                    className="h-8 text-xs border-slate-300 w-full"
+                    value={filters.customer || ''}
+                    onChange={(e) => handleFilterChange('customer', e.target.value)}
+                  />
+                </TableHead>
+              ) : null}
               {!hideBusinessColumns ? (
                 <TableHead className="py-2">
                   <Input
@@ -1089,17 +1097,15 @@ export function OrderTable({
                   </Select>
                 </TableHead>
               ) : null}
-              {!hideBusinessColumns ? (
-                <TableHead className="py-2">
-                  <Input
-                    type="date"
-                    className="h-8 text-xs border-slate-300 w-full"
-                    value={filters.createdDateFrom || ''}
-                    onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
-                  />
-                </TableHead>
-              ) : null}
-              {!hideBusinessColumns ? (
+              <TableHead className="py-2">
+                <Input
+                  type="date"
+                  className="h-8 text-xs border-slate-300 w-full"
+                  value={filters.createdDateFrom || ''}
+                  onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
+                />
+              </TableHead>
+              {!showPickerPackerColumns ? (
                 <TableHead className="py-2">
                   <Input
                     type="date"
@@ -1217,32 +1223,36 @@ export function OrderTable({
                         </div>
                       </TableCell>
                     ) : null}
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-semibold text-slate-700">
-                          {order.shipping.shippingMethod || 'Not set'}
+                    {!showPickerPackerColumns ? (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-semibold text-slate-700">
+                            {order.shipping.shippingMethod || 'Not set'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {order.shipping.shippingAmount
+                              ? formatCurrency(order.shipping.shippingAmount)
+                              : 'Included'}
+                          </div>
+                          {order.shipping.shippingId ? (
+                            <Badge
+                              variant="outline"
+                              className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
+                            >
+                              #{order.shipping.shippingId}
+                            </Badge>
+                          ) : null}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {order.shipping.shippingAmount
-                            ? formatCurrency(order.shipping.shippingAmount)
-                            : 'Included'}
+                      </TableCell>
+                    ) : null}
+                    {!showPickerPackerColumns ? (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-semibold text-slate-800">{customerName}</div>
+                          <div className="text-xs text-muted-foreground">{customerContact}</div>
                         </div>
-                        {order.shipping.shippingId ? (
-                          <Badge
-                            variant="outline"
-                            className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
-                          >
-                            #{order.shipping.shippingId}
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-semibold text-slate-800">{customerName}</div>
-                        <div className="text-xs text-muted-foreground">{customerContact}</div>
-                      </div>
-                    </TableCell>
+                      </TableCell>
+                    ) : null}
                     {!hideBusinessColumns ? (
                       <TableCell>
                         <div className="space-y-1 min-w-[170px]">
@@ -1272,14 +1282,10 @@ export function OrderTable({
                         </div>
                       </TableCell>
                     ) : null}
-                    {!hideBusinessColumns ? (
-                      <TableCell>
-                        <div className="text-sm text-slate-700">
-                          {formatDate(order.createdDate)}
-                        </div>
-                      </TableCell>
-                    ) : null}
-                    {!hideBusinessColumns ? (
+                    <TableCell>
+                      <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
+                    </TableCell>
+                    {!showPickerPackerColumns ? (
                       <TableCell>
                         <div className="text-sm text-slate-700">
                           {formatDate(order.lastModifiedDate)}
@@ -1329,7 +1335,10 @@ export function OrderTable({
 
             {paginatedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={hideBusinessColumns ? 5 : 10} className="py-16 text-center">
+                <TableCell
+                  colSpan={showPickerPackerColumns ? 4 : hideBusinessColumns ? 5 : 10}
+                  className="py-16 text-center"
+                >
                   <div className="flex flex-col items-center justify-center">
                     <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                       <svg
