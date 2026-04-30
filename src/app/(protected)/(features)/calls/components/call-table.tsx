@@ -373,6 +373,9 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
   const isBusinessPartner = hasGroup('Business Partners');
   const isUserGroup =
     hasGroup('Users') && !isBusinessPartner && !hasGroup('Admins') && !hasGroup('Super Admins');
+  const isSalesManager = hasGroup('salesmanager') || hasGroup('salesmanagers');
+  const isAdmin = hasGroup('Admins') || hasGroup('Super Admins');
+  const isRestrictedUser = !isAdmin && !isSalesManager && !isBusinessPartner;
 
   const { page, pageSize, handlePageChange, handlePageSizeChange, resetPagination } =
     usePaginationState(1, 10);
@@ -1042,15 +1045,15 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
       filtered = filtered.filter((call) => !!call.externalId);
     }
 
-    // Apply user-specific filtering for Users group members
-    if (isUserGroup && accountData?.login) {
+    // Apply user-specific filtering for restricted users (non-admin, non-sales-manager, non-business-partner)
+    if (isRestrictedUser && accountData?.login) {
       filtered = filtered.filter(
         (call) => call.createdBy === accountData.login || call.assignedTo?.id === accountData.id
       );
     }
 
     return filtered;
-  }, [data, activeStatusTab, isUserGroup, accountData?.login, accountData?.id]);
+  }, [data, activeStatusTab, isRestrictedUser, accountData?.login, accountData?.id]);
 
   const filteredCount = useMemo(() => {
     if (!countData) return 0;
@@ -1137,11 +1140,7 @@ export function CallTable({ initialStatusTab, initialCallTypeFilter }: CallTable
     const allowedCallIds = new Set(callIdsForRemarks);
     remarkBatchData.forEach((remark) => {
       const callId = remark.call?.id;
-      if (
-        typeof callId === 'number' &&
-        allowedCallIds.has(callId) &&
-        !map[callId]
-      ) {
+      if (typeof callId === 'number' && allowedCallIds.has(callId) && !map[callId]) {
         map[callId] = {
           id: remark.id,
           remark: remark.remark,
