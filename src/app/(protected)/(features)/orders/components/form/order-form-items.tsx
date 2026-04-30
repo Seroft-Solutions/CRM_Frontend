@@ -1693,6 +1693,10 @@ export function OrderFormItems({
         className={cn(
           'h-[34px] cursor-pointer align-top text-foreground',
           isSelected &&
+            item.itemType === 'catalog' &&
+            'outline outline-2 -outline-offset-2 outline-sidebar bg-sidebar/10',
+          isSelected &&
+            item.itemType !== 'catalog' &&
             'outline outline-2 -outline-offset-2 outline-sidebar-accent bg-sidebar-accent/10'
         )}
       >
