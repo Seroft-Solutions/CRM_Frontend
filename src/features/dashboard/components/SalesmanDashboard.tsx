@@ -29,8 +29,27 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, Calendar, Phone, Search, TrendingUp, Users } from 'lucide-react';
+import {
+  Activity,
+  Calendar,
+  ClipboardPlus,
+  FilePlus2,
+  HandCoins,
+  MapPin,
+  PackagePlus,
+  Phone,
+  PhoneCall,
+  Search,
+  ShoppingBag,
+  ShoppingCart,
+  TrendingUp,
+  UserCircle,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 import { QuickActionTiles } from './QuickActionTiles';
 import { QuickLinks } from './QuickLinks';
 import { useGetStaffLeadSummary, StaffLeadSummaryPeriod } from '@/core/api/call-analytics';
@@ -40,6 +59,21 @@ type CallInsightsPeriod = 'ALL' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
 
 const ACTIVE_LEADS_PAGE_SIZE = 1000;
 const MAX_ACTIVE_LEADS_PAGES = 200;
+
+const dashboardCreateActions: Array<{ href: string; label: string; icon: LucideIcon }> = [
+  { href: '/calls/new', label: 'Add Lead', icon: PhoneCall },
+  { href: '/customers/new', label: 'Add Customer', icon: Users },
+  { href: '/products/new', label: 'Add Product', icon: PackagePlus },
+  { href: '/orders/new', label: 'Add Sales Order', icon: ClipboardPlus },
+  { href: '/purchase-orders/new', label: 'Add Purchase Order', icon: FilePlus2 },
+];
+const dashboardManageActions: Array<{ href: string; label: string; icon: LucideIcon }> = [
+  { href: '/calls', label: 'Manage Leads', icon: Users },
+  { href: '/customers', label: 'Manage Customers', icon: UserCircle },
+  { href: '/products', label: 'Manage Products', icon: ShoppingCart },
+  { href: '/orders', label: 'Manage Sales', icon: HandCoins },
+  { href: '/purchase-orders', label: 'Manage Purchases', icon: ShoppingBag },
+];
 
 export function SalesmanDashboard() {
   const { data: session } = useSession();
@@ -487,18 +521,9 @@ export function SalesmanDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="overflow-x-auto">
-        <div className="flex min-w-max items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Salesman Dashboard</h1>
-            <p className="text-muted-foreground">Your leads, customers, and performance overview</p>
-          </div>
-        </div>
-      </div>
-
       <div className="rounded-xl border bg-card p-4 shadow-sm">
         <div className="overflow-x-auto">
-          <div className="flex min-w-max items-center gap-3">
+          <div className="flex min-w-max items-center justify-between gap-3">
             <div className="relative w-[320px] shrink-0">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -506,7 +531,7 @@ export function SalesmanDashboard() {
                 name="lead-search"
                 value={activeLeadSearchTerm}
                 onChange={(event) => setActiveLeadSearchTerm(event.target.value)}
-                placeholder="Search my active leads by customer, email, or phone"
+                placeholder="Search active leads by customer, email, or phone"
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="none"
@@ -522,7 +547,7 @@ export function SalesmanDashboard() {
                       {dropdownActiveLeads.map((lead) => {
                         if (lead.callId) {
                           return (
-                            <a
+                            <Link
                               key={`${lead.id}-${lead.leadNo}`}
                               href={`/calls/${lead.callId}`}
                               className="block border-b p-3 last:border-b-0 hover:bg-slate-50/80"
@@ -537,7 +562,7 @@ export function SalesmanDashboard() {
                               <p className="text-xs text-muted-foreground">
                                 Created: {lead.leadCreatedDate}
                               </p>
-                            </a>
+                            </Link>
                           );
                         }
 
@@ -564,12 +589,63 @@ export function SalesmanDashboard() {
                 </div>
               )}
             </div>
+
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {dashboardCreateActions.map((action) => {
+                const Icon = action.icon;
+
+                return (
+                  <Button
+                    key={action.href}
+                    asChild
+                    size="sm"
+                    className="h-10 w-[150px] shrink-0 justify-center rounded-md border border-black/10 px-3 text-xs text-slate-900 shadow-none transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: 'var(--feature-header-accent)' }}
+                  >
+                    <Link href={action.href}>
+                      <Icon className="h-4 w-4" />
+                      {action.label}
+                    </Link>
+                  </Button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
 
+      <div className="overflow-x-auto">
+        <div className="flex min-w-max items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Salesman Dashboard</h1>
+            <p className="text-muted-foreground">Your leads, customers, and performance overview</p>
+          </div>
+
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {dashboardManageActions.map((action) => {
+              const Icon = action.icon;
+
+              return (
+                <Button
+                  key={action.href}
+                  asChild
+                  size="sm"
+                  className="h-10 w-[150px] shrink-0 justify-center rounded-md border border-white/30 px-3 text-xs text-white shadow-none transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: 'var(--sidebar)' }}
+                >
+                  <Link href={action.href}>
+                    <Icon className="h-4 w-4" />
+                    {action.label}
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Action Tiles */}
       <div className="mb-6">
-        <QuickActionTiles />
         <QuickLinks />
       </div>
 
@@ -584,7 +660,7 @@ export function SalesmanDashboard() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-blue-50/30 border-blue-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">My Leads</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Calls</CardTitle>
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Phone className="h-4 w-4 text-blue-600" />
                 </div>
@@ -599,14 +675,14 @@ export function SalesmanDashboard() {
 
             <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-emerald-50/30 border-emerald-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">My Customers</CardTitle>
+                <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
                 <div className="p-2 bg-emerald-100 rounded-lg">
                   <Users className="h-4 w-4 text-emerald-600" />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-900">{myCustomers.length}</div>
-                <p className="text-xs text-muted-foreground">Customers you added</p>
+                <p className="text-xs text-muted-foreground">Customer database size</p>
               </CardContent>
             </Card>
 
@@ -619,29 +695,22 @@ export function SalesmanDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-900">{myConversionRate}%</div>
-                <p className="text-xs text-muted-foreground">Your success rate</p>
+                <p className="text-xs text-muted-foreground">Call success rate</p>
               </CardContent>
             </Card>
 
             <Card className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-gradient-to-br from-white to-orange-50/30 border-orange-100">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Active Leads</CardTitle>
+                <CardTitle className="text-sm font-medium">Products</CardTitle>
                 <div className="p-2 bg-orange-100 rounded-lg">
-                  <Activity className="h-4 w-4 text-orange-600" />
+                  <ShoppingCart className="h-4 w-4 text-orange-600" />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-900">
-                  {
-                    myCalls.filter(
-                      (call) =>
-                        call.callStatus?.name?.toLowerCase().includes('active') ||
-                        call.callStatus?.name?.toLowerCase().includes('progress') ||
-                        call.callStatus?.name?.toLowerCase().includes('pending')
-                    ).length
-                  }
+                  {new Set(myCalls.map((call) => call.product?.id).filter(Boolean)).size}
                 </div>
-                <p className="text-xs text-muted-foreground">Leads in progress</p>
+                <p className="text-xs text-muted-foreground">Available products</p>
               </CardContent>
             </Card>
           </div>
