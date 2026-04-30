@@ -284,10 +284,10 @@ interface DateRange {
 
 export function CustomerTable() {
   const queryClient = useQueryClient();
-  const { hasAnyGroup, hasGroup } = useUserAuthorities();
+  const { hasAnyGroup, hasGroup, hasRole } = useUserAuthorities();
   const { data: accountData } = useAccount();
   const isBusinessPartner = hasGroup('Business Partners');
-  const canViewAssignCustomerColumn = hasGroup('canAssignCustomer');
+  const canViewAssignCustomerColumn = hasRole('canAssignCustomer');
   const { organizationId } = useOrganizationContext();
   const { users: organizationMembers, isLoading: isOrganizationMembersLoading } =
     useOrganizationUsers(organizationId, {
