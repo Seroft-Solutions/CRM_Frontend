@@ -1212,9 +1212,6 @@ export function OrderTable({
                           <div className="font-bold text-slate-900">
                             {formatCurrency(order.orderTotalAmount)}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            Base {formatCurrency(order.orderBaseAmount)}
-                          </div>
                           {resolveDiscountAmount(order) > 0 && (
                             <div className="text-xs font-semibold text-red-600">
                               -{formatCurrency(resolveDiscountAmount(order))}
@@ -1225,32 +1222,14 @@ export function OrderTable({
                     ) : null}
                     {!showPickerPackerColumns ? (
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-semibold text-slate-700">
-                            {order.shipping.shippingMethod || 'Not set'}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {order.shipping.shippingAmount
-                              ? formatCurrency(order.shipping.shippingAmount)
-                              : 'Included'}
-                          </div>
-                          {order.shipping.shippingId ? (
-                            <Badge
-                              variant="outline"
-                              className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
-                            >
-                              #{order.shipping.shippingId}
-                            </Badge>
-                          ) : null}
+                        <div className="font-semibold text-slate-700">
+                          {order.shipping.shippingMethod || 'Not set'}
                         </div>
                       </TableCell>
                     ) : null}
                     {!showPickerPackerColumns ? (
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-semibold text-slate-800">{customerName}</div>
-                          <div className="text-xs text-muted-foreground">{customerContact}</div>
-                        </div>
+                        <div className="font-semibold text-slate-800">{customerName}</div>
                       </TableCell>
                     ) : null}
                     {!hideBusinessColumns ? (
