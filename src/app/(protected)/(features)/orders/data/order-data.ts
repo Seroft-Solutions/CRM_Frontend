@@ -6,6 +6,15 @@ import type {
 } from '@/core/api/generated/spring/schemas';
 import type { OrderShippingDetailDTO } from '@/core/api/order-shipping-detail';
 
+export type OrderApproveItemDTO = {
+  orderDetailId: number;
+  approvedQuantity: number;
+};
+
+export type OrderApproveDTO = {
+  items: OrderApproveItemDTO[];
+};
+
 const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [

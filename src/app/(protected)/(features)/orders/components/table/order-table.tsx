@@ -41,6 +41,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Check,
+  CheckCircle,
   ChevronDown,
   ChevronRight,
   ChevronUp,
@@ -1287,7 +1288,7 @@ export function OrderTable({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem asChild>
                             <Link href={`/orders/${order.orderId}`}>
@@ -1295,6 +1296,14 @@ export function OrderTable({
                               View
                             </Link>
                           </DropdownMenuItem>
+                          {['Created', 'Pending'].includes(order.orderStatus) ? (
+                            <DropdownMenuItem asChild>
+                              <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Edit & Approve
+                              </Link>
+                            </DropdownMenuItem>
+                          ) : null}
                           <DropdownMenuItem asChild>
                             <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
                               <Package className="h-4 w-4 mr-2" />
