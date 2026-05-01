@@ -1296,13 +1296,35 @@ export function OrderTable({
                               View
                             </Link>
                           </DropdownMenuItem>
-                          {['Created', 'Pending'].includes(order.orderStatus) ? (
-                            <DropdownMenuItem asChild>
-                              <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
+                           {['Created', 'Pending'].includes(order.orderStatus) ? (
+                            <>
+                              <DropdownMenuItem
+                                disabled={updatingOrderId === order.orderId}
+                                onClick={async () => {
+                                  try {
+                                    setUpdatingOrderId(order.orderId);
+                                    await partialUpdateOrder({
+                                      id: order.orderId,
+                                      orderDTO: { id: order.orderId, orderStatus: 6 },
+                                    });
+                                    toast.success(`Order #${order.orderId} approved successfully.`);
+                                  } catch (error) {
+                                    toast.error(error instanceof Error ? error.message : 'Failed to approve order');
+                                  } finally {
+                                    setUpdatingOrderId(null);
+                                  }
+                                }}
+                              >
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Edit & Approve
-                              </Link>
-                            </DropdownMenuItem>
+                                {updatingOrderId === order.orderId ? 'Approving...' : 'Approve'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Edit & Approve
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
                           ) : null}
                           <DropdownMenuItem asChild>
                             <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
