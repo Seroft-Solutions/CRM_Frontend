@@ -10,14 +10,14 @@ const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [
   'Created',
-  'Processing',
-  'Shipped',
-  'Delivered',
-  'Cancelled',
-  'Pending',
   'Approved',
+  'Processing',
   'Picked',
   'Packed',
+  'Shipped',
+  'Delivered',
+  'Pending',
+  'Cancelled',
 ] as const;
 
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;

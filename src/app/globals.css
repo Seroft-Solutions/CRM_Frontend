@@ -502,4 +502,28 @@
     .page-header-actions {
         @apply flex items-center gap-2 shrink-0;
     }
+
+    /* Arrow-shaped tabs */
+    .arrow-tabs {
+        @apply flex gap-0;
+    }
+
+    .arrow-tab {
+        @apply relative px-6 py-2 bg-white border-2 border-slate-300 text-slate-600 font-medium text-sm whitespace-nowrap cursor-pointer transition-all duration-200;
+        clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%);
+        margin-left: -8px;
+    }
+
+    .arrow-tab:first-child {
+        @apply ml-0;
+        clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+    }
+
+    .arrow-tab[data-state="active"] {
+        @apply bg-blue-500 border-blue-500 text-white z-10;
+    }
+
+    .arrow-tab:hover:not([data-state="active"]) {
+        @apply bg-slate-100;
+    }
 }

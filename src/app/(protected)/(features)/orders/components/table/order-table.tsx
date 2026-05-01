@@ -788,17 +788,17 @@ export function OrderTable({
   return (
     <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
       {showStatusTabs ? (
-        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3">
+        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3 overflow-x-auto">
           <Tabs
             value={statusFilter}
             onValueChange={(value) => handleStatusFilterChange(value as OrderStatus | 'All')}
             className="w-full"
           >
-            <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0">
+            <TabsList className="arrow-tabs h-auto w-full justify-start bg-transparent p-0">
               {showAllStatusTab ? (
                 <TabsTrigger
                   value="All"
-                  className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-slate-600 data-[state=active]:bg-slate-600 data-[state=active]:text-white data-[state=active]:shadow-md"
+                  className="arrow-tab"
                 >
                   {allTabLabel}
                 </TabsTrigger>
@@ -807,7 +807,7 @@ export function OrderTable({
                 <TabsTrigger
                   key={status}
                   value={status}
-                  className="whitespace-nowrap rounded-lg border-2 border-transparent bg-white data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md"
+                  className="arrow-tab"
                 >
                   {status}
                 </TabsTrigger>
