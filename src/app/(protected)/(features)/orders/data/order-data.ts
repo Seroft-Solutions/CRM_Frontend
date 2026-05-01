@@ -18,15 +18,15 @@ export type OrderApproveDTO = {
 const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [
-  'Created',
-  'Approved',
-  'Processing',
-  'Picked',
-  'Packed',
-  'Shipped',
-  'Delivered',
-  'Pending',
-  'Cancelled',
+  'Created',     // 0
+  'Processing',  // 1
+  'Shipped',     // 2
+  'Delivered',   // 3
+  'Cancelled',   // 4
+  'Pending',     // 5
+  'Approved',    // 6
+  'Picked',      // 7
+  'Packed',      // 8
 ] as const;
 
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;

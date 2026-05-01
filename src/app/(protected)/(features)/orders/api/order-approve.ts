@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { springServiceMutator } from '@/core/api/services/spring-service/service-mutator';
 import type { ErrorType } from '@/core/api/services/spring-service/service-mutator';
 import type { OrderApproveDTO } from '../data/order-data';
+import type { OrderDTO } from '@/core/api/generated/spring/schemas';
 
 type ApproveOrderVariables = {
   orderId: number;
