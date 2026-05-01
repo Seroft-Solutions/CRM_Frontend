@@ -1229,7 +1229,12 @@ export function OrderTable({
                     ) : null}
                     {!showPickerPackerColumns ? (
                       <TableCell>
-                        <div className="font-semibold text-slate-800">{customerName}</div>
+                        <Link
+                          href={`/customers/${order.customer?.id || ''}`}
+                          className="font-semibold text-slate-800 hover:text-blue-600 hover:underline"
+                        >
+                          {customerName}
+                        </Link>
                       </TableCell>
                     ) : null}
                     {!hideBusinessColumns ? (
