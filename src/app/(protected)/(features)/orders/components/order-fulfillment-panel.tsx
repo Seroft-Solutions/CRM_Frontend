@@ -511,17 +511,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                   {row.item.sku}
                                 </Badge>
                               ) : null}
-                              <Badge
-                                className={cn(
-                                  row.item.itemStatusCode === 'COMPLETED'
-                                    ? 'bg-emerald-100 text-emerald-900'
-                                    : row.item.itemStatusCode === 'CANCELLED'
-                                      ? 'bg-rose-100 text-rose-900'
-                                      : 'bg-amber-100 text-amber-900'
-                                )}
-                              >
-                                {row.item.itemStatus}
-                              </Badge>
                             </div>
                             {row.item.variantAttributes ? (
                               <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
