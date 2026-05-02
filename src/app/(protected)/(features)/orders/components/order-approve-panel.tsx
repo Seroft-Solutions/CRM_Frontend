@@ -63,29 +63,31 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   );
 
   const rows = useMemo(() => {
-    return order.items.map((item) => {
-      const draft = draftState[item.orderDetailId] ?? { approvedQuantity: '0' };
-      const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
-      const approvedQty = parsePositiveInteger(draft.approvedQuantity);
-      const difference = originalQty - approvedQty;
+    return order.items
+      .filter((item) => !item.itemStatusCode || item.itemStatusCode === 'CREATED')
+      .map((item) => {
+        const draft = draftState[item.orderDetailId] ?? { approvedQuantity: '0' };
+        const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
+        const approvedQty = parsePositiveInteger(draft.approvedQuantity);
+        const difference = originalQty - approvedQty;
 
-      let validationMessage: string | undefined;
+        let validationMessage: string | undefined;
 
-      if (approvedQty > originalQty) {
-        validationMessage = `Cannot exceed original quantity (${originalQty})`;
-      }
+        if (approvedQty > originalQty) {
+          validationMessage = `Cannot exceed original quantity (${originalQty})`;
+        }
 
-      return {
-        item,
-        originalQty,
-        approvedQty,
-        difference,
-        validationMessage,
-        warehouseName: item.warehouseId
-          ? (warehouseNameById.get(item.warehouseId) ?? 'Unknown')
-          : 'Not set',
-      };
-    });
+        return {
+          item,
+          originalQty,
+          approvedQty,
+          difference,
+          validationMessage,
+          warehouseName: item.warehouseId
+            ? (warehouseNameById.get(item.warehouseId) ?? 'Unknown')
+            : 'Not set',
+        };
+      });
   }, [order.items, draftState, warehouseNameById]);
 
   const totalOriginal = rows.reduce((sum, row) => sum + row.originalQty, 0);
@@ -96,9 +98,9 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
     rows.length > 0 && rows.every((row) => selectedItemIds.has(row.item.orderDetailId));
   const selectedRows = rows.filter((row) => selectedItemIds.has(row.item.orderDetailId));
   const allItemsWillBeApprovedBySelected =
-    rows.length > 0 &&
-    rows.every(
-      (row) => row.item.itemStatusCode === 'APPROVED' || selectedItemIds.has(row.item.orderDetailId)
+    selectedRows.length > 0 &&
+    order.items.every(
+      (item) => item.itemStatusCode === 'APPROVED' || selectedItemIds.has(item.orderDetailId)
     );
   const selectedResultingStatus = allItemsWillBeApprovedBySelected
     ? 'Approved'
@@ -256,6 +258,13 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="py-8 text-center text-sm text-slate-500">
+                  No created items are available for approval.
+                </TableCell>
+              </TableRow>
+            ) : null}
             {rows.map((row) => {
               const isSelected = selectedItemIds.has(row.item.orderDetailId);
 
