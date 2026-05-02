@@ -29,6 +29,18 @@ export const orderStatusOptions = [
   'Packed',      // 8
 ] as const;
 
+export const orderStatusTabOrder = [
+  'Created',
+  'Approved',
+  'Processing',
+  'Picked',
+  'Packed',
+  'Shipped',
+  'Delivered',
+  'Pending',
+  'Cancelled',
+] as const;
+
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;

@@ -66,7 +66,7 @@ import {
   getOrderStatusTransitionError,
   getSelectableOrderStatuses,
   OrderStatus,
-  orderStatusOptions,
+  orderStatusTabOrder,
   paymentStatusOptions,
   shippingMethodOptions,
 } from '../../data/order-data';
@@ -250,7 +250,7 @@ export function OrderTable({
   const isPickerPackerRestrictedView = entityStatus === 'ACTIVE' && restrictedStatusTabs.length > 0;
   const visibleStatusTabs = isPickerPackerRestrictedView
     ? restrictedStatusTabs
-    : orderStatusOptions;
+    : orderStatusTabOrder;
   const showAllStatusTab = !isPickerPackerRestrictedView;
   const isPickerPackerUser = isPickerPackerRestrictedView;
   const hideBusinessColumns = isPickerPackerRestrictedView;
