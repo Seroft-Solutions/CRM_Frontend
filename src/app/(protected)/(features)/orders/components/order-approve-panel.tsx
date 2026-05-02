@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -94,6 +95,14 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   const allRowsSelected =
     rows.length > 0 && rows.every((row) => selectedItemIds.has(row.item.orderDetailId));
   const selectedRows = rows.filter((row) => selectedItemIds.has(row.item.orderDetailId));
+  const allItemsWillBeApprovedBySelected =
+    rows.length > 0 &&
+    rows.every(
+      (row) => row.item.itemStatusCode === 'APPROVED' || selectedItemIds.has(row.item.orderDetailId)
+    );
+  const selectedResultingStatus = allItemsWillBeApprovedBySelected
+    ? 'Approved'
+    : 'Partially Approved';
 
   const updateDraftState = (orderDetailId: number, approvedQuantity: string) => {
     setDraftState((current) => ({
@@ -103,35 +112,6 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   };
 
   const handleApprove = async () => {
-    if (hasValidationErrors) {
-      toast.error('Please fix validation errors before approving');
-
-      return;
-    }
-
-    const items = rows.map((row) => ({
-      orderDetailId: row.item.orderDetailId,
-      approvedQuantity: row.approvedQty,
-    }));
-
-    if (items.length === 0) {
-      toast.error('No items to approve');
-
-      return;
-    }
-
-    try {
-      await approveOrder({
-        orderId: order.orderId,
-        approveDTO: { items },
-      });
-      toast.success('Order approved successfully. Excess quantities added back to stock.');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to approve order');
-    }
-  };
-
-  const handleBulkApproveSelected = async () => {
     if (hasValidationErrors) {
       toast.error('Please fix validation errors before approving');
 
@@ -157,6 +137,35 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
       toast.success('Selected items approved successfully.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to approve selected items');
+    }
+  };
+
+  const handleBulkApproveAll = async () => {
+    if (hasValidationErrors) {
+      toast.error('Please fix validation errors before approving');
+
+      return;
+    }
+
+    const items = rows.map((row) => ({
+      orderDetailId: row.item.orderDetailId,
+      approvedQuantity: row.approvedQty,
+    }));
+
+    if (items.length === 0) {
+      toast.error('No items to approve');
+
+      return;
+    }
+
+    try {
+      await approveOrder({
+        orderId: order.orderId,
+        approveDTO: { items },
+      });
+      toast.success('All items approved successfully.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to approve all items');
     }
   };
 
@@ -201,6 +210,28 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
           </div>
           <div className="text-xs text-muted-foreground">Returning to Stock</div>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-semibold">Resulting Status:</span>
+          <Badge
+            className={cn(
+              selectedResultingStatus === 'Approved'
+                ? 'bg-lime-100 text-lime-900'
+                : 'bg-orange-100 text-orange-900'
+            )}
+          >
+            Approve Selected: {selectedRows.length > 0 ? selectedResultingStatus : 'Select items'}
+          </Badge>
+          <Badge className="bg-lime-100 text-lime-900">Bulk Approve All: Approved</Badge>
+        </div>
+        {selectedRows.length > 0 && selectedResultingStatus === 'Partially Approved' ? (
+          <p className="mt-2 text-xs">
+            Approving only selected items will set the order status to Partially Approved. You can
+            approve remaining items later.
+          </p>
+        ) : null}
       </div>
 
       {/* Items Table */}
@@ -303,22 +334,22 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
 
         <div className="flex items-center gap-2">
           <Button
-            onClick={handleBulkApproveSelected}
-            disabled={isPending || hasValidationErrors || selectedRows.length === 0}
+            onClick={handleBulkApproveAll}
+            disabled={isPending || hasValidationErrors || rows.length === 0}
             variant="outline"
             className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
           >
             <CheckCircle className="h-4 w-4" />
-            {isPending ? 'Approving...' : 'Bulk Approve Selected'}
+            {isPending ? 'Approving...' : 'Bulk Approve All'}
           </Button>
 
           <Button
             onClick={handleApprove}
-            disabled={isPending || hasValidationErrors}
+            disabled={isPending || hasValidationErrors || selectedRows.length === 0}
             className="gap-2 bg-emerald-600 hover:bg-emerald-700"
           >
             <CheckCircle className="h-4 w-4" />
-            {isPending ? 'Approving...' : 'Approve Order'}
+            {isPending ? 'Approving...' : 'Approve Selected'}
           </Button>
         </div>
       </div>

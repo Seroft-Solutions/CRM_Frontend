@@ -88,7 +88,15 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
-  const allItems = useMemo(() => order.items, [order.items]);
+  const allItems = useMemo(() => {
+    if (order.orderStatus !== 'Partially Approved') {
+      return order.items;
+    }
+
+    return order.items.filter((item) =>
+      ['APPROVED', 'PICKED', 'PACKED'].includes(item.itemStatusCode ?? '')
+    );
+  }, [order.items, order.orderStatus]);
   const pendingItems = useMemo(
     () =>
       order.items.filter(
@@ -129,7 +137,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     useCreateOrderFulfillmentGeneration();
   const { mutateAsync: updateOrderDetailStatus, isPending: isUpdatingStatus } =
     useUpdateOrderDetailStatus();
-  const canFulfillOrder = order.orderStatus === 'Approved' || order.orderStatus === 'Pending';
+  const canFulfillOrder =
+    order.orderStatus === 'Approved' ||
+    order.orderStatus === 'Partially Approved' ||
+    order.orderStatus === 'Pending';
 
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
@@ -397,7 +408,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     <div className="space-y-4 border-t border-cyan-100 bg-cyan-50/30 p-4">
       {!canFulfillOrder ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          This order must be approved or pending before Picker/Packer fulfillment can be saved.
+          This order must be approved, partially approved or pending before Picker/Packer
+          fulfillment can be saved.
         </div>
       ) : null}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

@@ -45,6 +45,7 @@ export const orderFormConfig: FormConfig = {
         { value: 'Processing', label: 'Processing' },
         { value: 'Pending', label: 'Pending' },
         { value: 'Approved', label: 'Approved' },
+        { value: 'Partially Approved', label: 'Partially Approved' },
         { value: 'Picked', label: 'Picked' },
         { value: 'Packed', label: 'Packed' },
         { value: 'Shipped', label: 'Shipped' },

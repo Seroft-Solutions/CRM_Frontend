@@ -27,11 +27,13 @@ export const orderStatusOptions = [
   'Approved', // 6
   'Picked', // 7
   'Packed', // 8
+  'Partially Approved', // 9
 ] as const;
 
 export const orderStatusTabOrder = [
   'Created',
   'Approved',
+  'Partially Approved',
   'Processing',
   'Picked',
   'Packed',
@@ -79,10 +81,11 @@ const allowedOrderStatusTransitions: Record<
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>,
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]
 > = {
-  Created: ['Approved', 'Cancelled'],
+  Created: ['Approved', 'Partially Approved', 'Cancelled'],
   Processing: ['Pending', 'Approved', 'Picked', 'Packed', 'Shipped', 'Cancelled'],
   Pending: ['Approved', 'Cancelled'],
   Approved: ['Pending', 'Shipped', 'Cancelled'],
+  'Partially Approved': ['Approved', 'Cancelled'],
   Picked: ['Packed', 'Shipped', 'Cancelled'],
   Packed: ['Shipped', 'Cancelled'],
   Shipped: ['Delivered', 'Cancelled'],

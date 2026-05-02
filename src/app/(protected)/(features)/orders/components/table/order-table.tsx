@@ -80,6 +80,7 @@ const statusColors: Record<OrderStatus, string> = {
   Processing: 'bg-blue-100 text-blue-800 border-blue-300',
   Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   Approved: 'bg-lime-100 text-lime-800 border-lime-300',
+  'Partially Approved': 'bg-orange-100 text-orange-800 border-orange-300',
   Picked: 'bg-indigo-100 text-indigo-800 border-indigo-300',
   Packed: 'bg-violet-100 text-violet-800 border-violet-300',
   Shipped: 'bg-cyan-100 text-cyan-800 border-cyan-300',
@@ -209,7 +210,7 @@ export function OrderTable({
   const isMounted = useRef(false);
   const currentOrganizationUser = useMemo(
     () =>
-      (organizationMembers || []).find((user) => {
+      (organizationMembers || []).find((user: OrganizationUser) => {
         const accountId = accountData?.id != null ? String(accountData.id) : '';
         const accountLogin = accountData?.login?.toLowerCase?.() || '';
 
@@ -224,7 +225,7 @@ export function OrderTable({
   );
   const isPickerUser = useMemo(
     () =>
-      (currentOrganizationUser?.assignedGroups || []).some((group) => {
+      (currentOrganizationUser?.assignedGroups || []).some((group: { name?: string }) => {
         const groupName = normalizeGroupName(group.name);
 
         return groupName === 'picker' || groupName === 'pickers';
@@ -233,7 +234,7 @@ export function OrderTable({
   );
   const isPackerUser = useMemo(
     () =>
-      (currentOrganizationUser?.assignedGroups || []).some((group) => {
+      (currentOrganizationUser?.assignedGroups || []).some((group: { name?: string }) => {
         const groupName = normalizeGroupName(group.name);
 
         return groupName === 'packer' || groupName === 'packers';
@@ -313,7 +314,8 @@ export function OrderTable({
   const assigneeOptions = useMemo(
     () =>
       (organizationMembers || []).filter(
-        (user) => user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
+        (user: OrganizationUser) =>
+          user?.email?.toLowerCase?.() !== EXCLUDED_ASSIGNED_EMAIL.toLowerCase()
       ),
     [organizationMembers]
   );
@@ -797,19 +799,12 @@ export function OrderTable({
           >
             <TabsList className="arrow-tabs h-auto w-full justify-start bg-transparent p-0">
               {showAllStatusTab ? (
-                <TabsTrigger
-                  value="All"
-                  className="arrow-tab"
-                >
+                <TabsTrigger value="All" className="arrow-tab">
                   {allTabLabel}
                 </TabsTrigger>
               ) : null}
               {visibleStatusTabs.map((status) => (
-                <TabsTrigger
-                  key={status}
-                  value={status}
-                  className="arrow-tab"
-                >
+                <TabsTrigger key={status} value={status} className="arrow-tab">
                   {status}
                 </TabsTrigger>
               ))}
@@ -1133,7 +1128,6 @@ export function OrderTable({
           <TableBody>
             {paginatedOrders.map((order, index) => {
               const customerName = order.customer?.customerBusinessName || order.email || '—';
-              const customerContact = order.customer?.mobile || order.phone || '—';
               const displayedStatus = statusOverrides[order.orderId] ?? order.orderStatus;
               const displayedAssignee = assigneeOverrides[order.orderId] ?? order.assignee ?? '';
               const isUpdatingThisRow = updatingOrderId === order.orderId;
@@ -1288,7 +1282,7 @@ export function OrderTable({
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem asChild>
                             <Link href={`/orders/${order.orderId}`}>
@@ -1296,7 +1290,9 @@ export function OrderTable({
                               View
                             </Link>
                           </DropdownMenuItem>
-                           {['Created', 'Pending'].includes(order.orderStatus) ? (
+                          {['Created', 'Pending', 'Partially Approved'].includes(
+                            order.orderStatus
+                          ) ? (
                             <>
                               <DropdownMenuItem
                                 disabled={updatingOrderId === order.orderId}
@@ -1305,11 +1301,15 @@ export function OrderTable({
                                     setUpdatingOrderId(order.orderId);
                                     await partialUpdateOrder({
                                       id: order.orderId,
-                                      orderDTO: { id: order.orderId, orderStatus: 6 },
+                                      data: { id: order.orderId, orderStatus: 6 },
                                     });
                                     toast.success(`Order #${order.orderId} approved successfully.`);
                                   } catch (error) {
-                                    toast.error(error instanceof Error ? error.message : 'Failed to approve order');
+                                    toast.error(
+                                      error instanceof Error
+                                        ? error.message
+                                        : 'Failed to approve order'
+                                    );
                                   } finally {
                                     setUpdatingOrderId(null);
                                   }

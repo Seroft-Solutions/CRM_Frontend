@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, Package } from 'lucide-react';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { PermissionGuard } from '@/core/auth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,9 +41,12 @@ export default function OrderEditApprovePage({ params, searchParams }: OrderEdit
                 <CheckCircle className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Edit & Approve Order</h1>
+                <h1 className="text-xl font-semibold text-sidebar-foreground">
+                  Edit & Approve Order
+                </h1>
                 <p className="text-sm text-sidebar-foreground/80">
-                  Review and adjust quantities before approving. Excess quantities will be returned to stock.
+                  Review and adjust quantities before approving. Excess quantities will be returned
+                  to stock.
                 </p>
               </div>
             </div>
@@ -69,6 +72,7 @@ export default function OrderEditApprovePage({ params, searchParams }: OrderEdit
                   onClick={() => {
                     if (window.history.length > 1) {
                       router.back();
+
                       return;
                     }
                     router.push('/orders');
@@ -98,9 +102,11 @@ export default function OrderEditApprovePage({ params, searchParams }: OrderEdit
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
             Unable to load this sale order for approval.
           </div>
-        ) : orderRecord.orderStatus !== 'Created' ? (
+        ) : orderRecord.orderStatus !== 'Created' &&
+          orderRecord.orderStatus !== 'Partially Approved' ? (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-700 shadow-sm">
-            Only orders with "Created" status can be edited and approved. Current status: {orderRecord.orderStatus}
+            Only orders with "Created" or "Partially Approved" status can be edited and approved.
+            Current status: {orderRecord.orderStatus}
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
