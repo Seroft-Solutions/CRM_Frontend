@@ -18,15 +18,15 @@ export type OrderApproveDTO = {
 const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [
-  'Created',     // 0
-  'Processing',  // 1
-  'Shipped',     // 2
-  'Delivered',   // 3
-  'Cancelled',   // 4
-  'Pending',     // 5
-  'Approved',    // 6
-  'Picked',      // 7
-  'Packed',      // 8
+  'Created', // 0
+  'Processing', // 1
+  'Shipped', // 2
+  'Delivered', // 3
+  'Cancelled', // 4
+  'Pending', // 5
+  'Approved', // 6
+  'Picked', // 7
+  'Packed', // 8
 ] as const;
 
 export const orderStatusTabOrder = [
@@ -45,11 +45,35 @@ export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
+export const itemStatusOptions = [
+  'Created',
+  'Approved',
+  'Picked',
+  'Packed',
+  'Pending',
+  'Completed',
+  'Cancelled',
+] as const;
+
+export const itemStatusCodeOptions = [
+  'CREATED',
+  'APPROVED',
+  'PICKED',
+  'PACKED',
+  'PENDING',
+  'COMPLETED',
+  'CANCELLED',
+] as const;
+
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
 
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
 
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
+
+export type ItemStatusLabel = (typeof itemStatusOptions)[number] | typeof UNKNOWN_LABEL;
+
+export type ItemStatusCode = (typeof itemStatusCodeOptions)[number];
 
 const allowedOrderStatusTransitions: Record<
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>,
@@ -120,7 +144,7 @@ export function getOrderStatusTransitionError(
 
   const allowedStatuses = getNextAllowedOrderStatuses(currentStatus);
 
-  if (allowedStatuses.includes(nextStatus)) {
+  if (nextStatus !== UNKNOWN_LABEL && allowedStatuses.includes(nextStatus)) {
     return undefined;
   }
 
@@ -145,8 +169,8 @@ export interface OrderDetailItem {
   productName?: string;
   sku?: string;
   variantAttributes?: string;
-  itemStatus: string;
-  itemStatusCode?: number;
+  itemStatus: ItemStatusLabel;
+  itemStatusCode?: ItemStatusCode;
   itemTotalAmount: number;
   quantity: number;
   backOrderQuantity: number;
@@ -267,6 +291,20 @@ export const getShippingMethodLabel = (code?: number): ShippingMethod =>
 export const getShippingMethodCode = (status?: ShippingMethod) =>
   getCodeFromLabel(shippingMethodOptions, status);
 
+export const getItemStatusLabel = (code?: string | null): ItemStatusLabel => {
+  if (!code) return UNKNOWN_LABEL;
+  const index = itemStatusCodeOptions.indexOf(code as ItemStatusCode);
+
+  return index === -1 ? UNKNOWN_LABEL : itemStatusOptions[index];
+};
+
+export const getItemStatusCode = (label?: string | null): ItemStatusCode | undefined => {
+  if (!label || label === UNKNOWN_LABEL) return undefined;
+  const index = itemStatusOptions.indexOf(label as (typeof itemStatusOptions)[number]);
+
+  return index === -1 ? undefined : itemStatusCodeOptions[index];
+};
+
 const resolveOrderTotal = (order: OrderDTO) => {
   if (typeof order.orderTotalAmount === 'number') {
     return order.orderTotalAmount;
@@ -331,11 +369,18 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
   };
 };
 
+type OrderDetailDtoWithItemStatus = OrderDetailDTO & {
+  itemStatus?: ItemStatusCode | string | null;
+};
+
 export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
-  // const itemStatusCode = typeof detail.itemStatus === 'number' ? detail.itemStatus : undefined;
-  // const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
-  const itemStatus = UNKNOWN_LABEL;
-  const itemStatusCode = undefined;
+  const detailWithStatus = detail as OrderDetailDtoWithItemStatus;
+  const itemStatusCode = itemStatusCodeOptions.includes(
+    detailWithStatus.itemStatus as ItemStatusCode
+  )
+    ? (detailWithStatus.itemStatus as ItemStatusCode)
+    : undefined;
+  const itemStatus = getItemStatusLabel(itemStatusCode);
   const quantity = (detail.quantity ?? 0) + (detail.backOrderQuantity ?? 0);
 
   return {

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -15,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import type { OrderDetailItem, OrderRecord } from '../data/order-data';
+import type { OrderRecord } from '../data/order-data';
 import { useApproveOrder } from '../api/order-approve';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
@@ -24,18 +25,23 @@ type ApprovalDraftState = Record<number, { approvedQuantity: string }>;
 
 const parsePositiveInteger = (value: string) => {
   const parsed = Number.parseInt(value, 10);
+
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 };
 
 export function OrderApprovePanel({ order }: { order: OrderRecord }) {
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
   const [draftState, setDraftState] = useState<ApprovalDraftState>(() => {
     const initialState: ApprovalDraftState = {};
+
     order.items.forEach((item) => {
       const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
+
       initialState[item.orderDetailId] = {
         approvedQuantity: String(originalQty),
       };
     });
+
     return initialState;
   });
 
@@ -63,6 +69,7 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
       const difference = originalQty - approvedQty;
 
       let validationMessage: string | undefined;
+
       if (approvedQty > originalQty) {
         validationMessage = `Cannot exceed original quantity (${originalQty})`;
       }
@@ -73,7 +80,9 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
         approvedQty,
         difference,
         validationMessage,
-        warehouseName: item.warehouseId ? warehouseNameById.get(item.warehouseId) ?? 'Unknown' : 'Not set',
+        warehouseName: item.warehouseId
+          ? (warehouseNameById.get(item.warehouseId) ?? 'Unknown')
+          : 'Not set',
       };
     });
   }, [order.items, draftState, warehouseNameById]);
@@ -81,8 +90,10 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   const totalOriginal = rows.reduce((sum, row) => sum + row.originalQty, 0);
   const totalApproved = rows.reduce((sum, row) => sum + row.approvedQty, 0);
   const totalDifference = totalOriginal - totalApproved;
-  const hasChanges = rows.some((row) => row.difference !== 0);
   const hasValidationErrors = rows.some((row) => row.validationMessage);
+  const allRowsSelected =
+    rows.length > 0 && rows.every((row) => selectedItemIds.has(row.item.orderDetailId));
+  const selectedRows = rows.filter((row) => selectedItemIds.has(row.item.orderDetailId));
 
   const updateDraftState = (orderDetailId: number, approvedQuantity: string) => {
     setDraftState((current) => ({
@@ -94,18 +105,18 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   const handleApprove = async () => {
     if (hasValidationErrors) {
       toast.error('Please fix validation errors before approving');
+
       return;
     }
 
-    const items = rows
-      .filter((row) => row.approvedQty > 0)
-      .map((row) => ({
-        orderDetailId: row.item.orderDetailId,
-        approvedQuantity: row.approvedQty,
-      }));
+    const items = rows.map((row) => ({
+      orderDetailId: row.item.orderDetailId,
+      approvedQuantity: row.approvedQty,
+    }));
 
     if (items.length === 0) {
       toast.error('No items to approve');
+
       return;
     }
 
@@ -118,6 +129,53 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to approve order');
     }
+  };
+
+  const handleBulkApproveSelected = async () => {
+    if (hasValidationErrors) {
+      toast.error('Please fix validation errors before approving');
+
+      return;
+    }
+
+    const items = selectedRows.map((row) => ({
+      orderDetailId: row.item.orderDetailId,
+      approvedQuantity: row.approvedQty,
+    }));
+
+    if (items.length === 0) {
+      toast.error('Select at least one item to approve');
+
+      return;
+    }
+
+    try {
+      await approveOrder({
+        orderId: order.orderId,
+        approveDTO: { items },
+      });
+      toast.success('Selected items approved successfully.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to approve selected items');
+    }
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedItemIds(checked ? new Set(rows.map((row) => row.item.orderDetailId)) : new Set());
+  };
+
+  const toggleSelectedItem = (orderDetailId: number, checked: boolean) => {
+    setSelectedItemIds((current) => {
+      const next = new Set(current);
+
+      if (checked) {
+        next.add(orderDetailId);
+      } else {
+        next.delete(orderDetailId);
+      }
+
+      return next;
+    });
   };
 
   return (
@@ -133,7 +191,12 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
           <div className="text-xs text-muted-foreground">Approved Total</div>
         </div>
         <div className="text-center">
-          <div className={cn('text-2xl font-bold', totalDifference > 0 ? 'text-emerald-600' : 'text-slate-700')}>
+          <div
+            className={cn(
+              'text-2xl font-bold',
+              totalDifference > 0 ? 'text-emerald-600' : 'text-slate-700'
+            )}
+          >
             {totalDifference}
           </div>
           <div className="text-xs text-muted-foreground">Returning to Stock</div>
@@ -145,6 +208,13 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50">
+              <TableHead className="w-12 text-center">
+                <Checkbox
+                  checked={allRowsSelected}
+                  onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                  aria-label="Select all order items"
+                />
+              </TableHead>
               <TableHead className="font-semibold">Product</TableHead>
               <TableHead className="font-semibold text-center">SKU</TableHead>
               <TableHead className="font-semibold text-center">Variant</TableHead>
@@ -155,65 +225,102 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.item.orderDetailId} className="hover:bg-slate-50/70">
-                <TableCell>
-                  <div className="font-medium text-slate-900">{row.item.productName || 'Unknown'}</div>
-                </TableCell>
-                <TableCell className="text-center text-sm text-slate-600">{row.item.sku || '—'}</TableCell>
-                <TableCell className="text-center text-sm text-slate-600">
-                  {row.item.variantAttributes || '—'}
-                </TableCell>
-                <TableCell className="text-center text-sm text-slate-600">{row.warehouseName}</TableCell>
-                <TableCell className="text-center font-semibold text-slate-700">{row.originalQty}</TableCell>
-                <TableCell className="text-center">
-                  <Input
-                    type="number"
-                    min="0"
-                    max={row.originalQty}
-                    value={draftState[row.item.orderDetailId]?.approvedQuantity ?? '0'}
-                    onChange={(e) => updateDraftState(row.item.orderDetailId, e.target.value)}
-                    className={cn(
-                      'w-20 text-center',
-                      row.validationMessage ? 'border-red-500 focus-visible:ring-red-500' : ''
-                    )}
-                  />
-                  {row.validationMessage ? (
-                    <div className="mt-1 text-xs text-red-600">{row.validationMessage}</div>
-                  ) : null}
-                </TableCell>
-                <TableCell className="text-center">
-                  <span className={cn('font-semibold', row.difference > 0 ? 'text-emerald-600' : 'text-slate-500')}>
-                    {row.difference > 0 ? `+${row.difference}` : row.difference}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
+            {rows.map((row) => {
+              const isSelected = selectedItemIds.has(row.item.orderDetailId);
+
+              return (
+                <TableRow
+                  key={row.item.orderDetailId}
+                  className={cn('hover:bg-slate-50/70', isSelected && 'bg-emerald-50/60')}
+                >
+                  <TableCell className="text-center">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={(checked) =>
+                        toggleSelectedItem(row.item.orderDetailId, checked === true)
+                      }
+                      aria-label={`Select ${row.item.productName || row.item.sku || 'order item'}`}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium text-slate-900">
+                      {row.item.productName || 'Unknown'}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-slate-600">
+                    {row.item.sku || '—'}
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-slate-600">
+                    {row.item.variantAttributes || '—'}
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-slate-600">
+                    {row.warehouseName}
+                  </TableCell>
+                  <TableCell className="text-center font-semibold text-slate-700">
+                    {row.originalQty}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Input
+                      type="number"
+                      min="0"
+                      max={row.originalQty}
+                      value={draftState[row.item.orderDetailId]?.approvedQuantity ?? '0'}
+                      onChange={(e) => updateDraftState(row.item.orderDetailId, e.target.value)}
+                      className={cn(
+                        'w-20 text-center',
+                        row.validationMessage ? 'border-red-500 focus-visible:ring-red-500' : ''
+                      )}
+                    />
+                    {row.validationMessage ? (
+                      <div className="mt-1 text-xs text-red-600">{row.validationMessage}</div>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span
+                      className={cn(
+                        'font-semibold',
+                        row.difference > 0 ? 'text-emerald-600' : 'text-slate-500'
+                      )}
+                    >
+                      {row.difference > 0 ? `+${row.difference}` : row.difference}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          asChild
-          className="gap-2"
-        >
+        <Button variant="outline" asChild className="gap-2">
           <Link href={`/orders/${order.orderId}`}>
             <ArrowLeft className="h-4 w-4" />
             Back to Order
           </Link>
         </Button>
 
-        <Button
-          onClick={handleApprove}
-          disabled={isPending || hasValidationErrors || !hasChanges}
-          className="gap-2 bg-emerald-600 hover:bg-emerald-700"
-        >
-          <CheckCircle className="h-4 w-4" />
-          {isPending ? 'Approving...' : 'Approve Order'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleBulkApproveSelected}
+            disabled={isPending || hasValidationErrors || selectedRows.length === 0}
+            variant="outline"
+            className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+          >
+            <CheckCircle className="h-4 w-4" />
+            {isPending ? 'Approving...' : 'Bulk Approve Selected'}
+          </Button>
+
+          <Button
+            onClick={handleApprove}
+            disabled={isPending || hasValidationErrors}
+            className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+          >
+            <CheckCircle className="h-4 w-4" />
+            {isPending ? 'Approving...' : 'Approve Order'}
+          </Button>
+        </div>
       </div>
     </div>
   );

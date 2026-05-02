@@ -26,6 +26,7 @@ import {
   useGetOrderFulfillmentGenerations,
 } from '@/core/api/order-fulfillment-generations';
 import type { OrderDetailItem, OrderRecord } from '../data/order-data';
+import { useUpdateOrderDetailStatus } from '../api/order-detail-status';
 import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
 import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillment-utils';
 
@@ -64,9 +65,20 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
       .filter((item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) > 0)
       .map((item) => [
         item.orderDetailId,
-        { selected: false, quantity: '', picked: false, packed: false },
+        {
+          selected: false,
+          quantity: '',
+          picked: item.itemStatusCode === 'PICKED' || item.itemStatusCode === 'PACKED',
+          packed: item.itemStatusCode === 'PACKED',
+        },
       ])
   );
+
+const canTransitionToPickPack = (item: OrderDetailItem) =>
+  item.itemStatusCode === 'APPROVED' || item.itemStatusCode === 'PENDING';
+
+const isTerminalItem = (item: OrderDetailItem) =>
+  item.itemStatusCode === 'COMPLETED' || item.itemStatusCode === 'CANCELLED';
 
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const searchParams = useSearchParams();
@@ -115,7 +127,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     useGetOrderFulfillmentGenerations(order.orderId);
   const { mutateAsync: createGeneration, isPending: isGenerating } =
     useCreateOrderFulfillmentGeneration();
-  const canFulfillOrder = order.orderStatus === 'Approved';
+  const { mutateAsync: updateOrderDetailStatus, isPending: isUpdatingStatus } =
+    useUpdateOrderDetailStatus();
+  const canFulfillOrder = order.orderStatus === 'Approved' || order.orderStatus === 'Pending';
 
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
@@ -186,6 +200,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       const originalOrderQuantity =
         originalOrderQuantityByOrderDetailId.get(item.orderDetailId) ?? remainingQuantity;
       const isCompleted = remainingQuantity === 0;
+      const statusPicked = item.itemStatusCode === 'PICKED' || item.itemStatusCode === 'PACKED';
+      const statusPacked = item.itemStatusCode === 'PACKED';
       let validationMessage: string | undefined;
 
       if (draft.selected && enteredQuantity > stockSnapshot.availableQuantity) {
@@ -199,8 +215,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         isCompleted,
         selected: draft.selected,
         quantity: draft.quantity,
-        picked: draft.picked,
-        packed: draft.packed,
+        picked: statusPicked || draft.picked,
+        packed: statusPacked || draft.packed,
+        canChangePickPack: canTransitionToPickPack(item),
+        isTerminalStatus: isTerminalItem(item),
         enteredQuantity,
         originalOrderQuantity,
         remainingQuantity,
@@ -254,7 +272,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const handleGenerate = async () => {
     if (!canFulfillOrder) {
-      toast.error('Only approved orders can be fulfilled.');
+      toast.error('Only approved or pending orders can be fulfilled.');
 
       return;
     }
@@ -321,11 +339,65 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     }
   };
 
+  const handlePickedChange = async (row: (typeof rows)[number], checked: boolean) => {
+    if (!checked) {
+      toast.error('Picked status cannot be reverted from this screen.');
+
+      return;
+    }
+
+    if (!row.canChangePickPack) {
+      toast.error('Only approved or pending items can be marked picked.');
+
+      return;
+    }
+
+    try {
+      updateDraftState(row.item.orderDetailId, { picked: true });
+      await updateOrderDetailStatus({
+        orderDetailId: row.item.orderDetailId,
+        newStatus: 'PICKED',
+        orderId: order.orderId,
+      });
+      toast.success('Item marked picked.');
+    } catch (error) {
+      updateDraftState(row.item.orderDetailId, { picked: false });
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const handlePackedChange = async (row: (typeof rows)[number], checked: boolean) => {
+    if (!checked) {
+      toast.error('Packed status cannot be reverted from this screen.');
+
+      return;
+    }
+
+    if (!row.canChangePickPack && row.item.itemStatusCode !== 'PICKED') {
+      toast.error('Only approved, pending or picked items can be marked packed.');
+
+      return;
+    }
+
+    try {
+      updateDraftState(row.item.orderDetailId, { picked: true, packed: true });
+      await updateOrderDetailStatus({
+        orderDetailId: row.item.orderDetailId,
+        newStatus: 'PACKED',
+        orderId: order.orderId,
+      });
+      toast.success('Item marked packed.');
+    } catch (error) {
+      updateDraftState(row.item.orderDetailId, { packed: false });
+      toast.error(getErrorMessage(error));
+    }
+  };
+
   return (
     <div className="space-y-4 border-t border-cyan-100 bg-cyan-50/30 p-4">
       {!canFulfillOrder ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          This order must be approved before Picker/Packer fulfillment can be saved.
+          This order must be approved or pending before Picker/Packer fulfillment can be saved.
         </div>
       ) : null}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -387,6 +459,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableHead className="text-center">Delivered Qty</TableHead>
                     <TableHead className="text-center">Remaining Qty</TableHead>
                     <TableHead className="text-center">Available Stock</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
                     <TableHead className="text-center">Picked</TableHead>
                     <TableHead className="text-center">Packed</TableHead>
                     <TableHead className="min-w-[180px]">Fulfill Quantity</TableHead>
@@ -440,12 +513,14 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               ) : null}
                               <Badge
                                 className={cn(
-                                  row.isCompleted
+                                  row.item.itemStatusCode === 'COMPLETED'
                                     ? 'bg-emerald-100 text-emerald-900'
-                                    : 'bg-amber-100 text-amber-900'
+                                    : row.item.itemStatusCode === 'CANCELLED'
+                                      ? 'bg-rose-100 text-rose-900'
+                                      : 'bg-amber-100 text-amber-900'
                                 )}
                               >
-                                {row.isCompleted ? 'Completed' : 'Pending'}
+                                {row.item.itemStatus}
                               </Badge>
                             </div>
                             {row.item.variantAttributes ? (
@@ -473,40 +548,35 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           <div className="text-[11px] text-slate-500">{availableStockLabel}</div>
                         </TableCell>
                         <TableCell className="text-center">
+                          <Badge variant="secondary" className="bg-slate-100 text-slate-800">
+                            {row.item.itemStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
                           <Checkbox
                             checked={row.picked}
-                            disabled={!isEditing || !row.selected}
-                            onCheckedChange={(checked) => {
-                              if (checked !== true) {
-                                updateDraftState(row.item.orderDetailId, {
-                                  picked: false,
-                                  packed: false,
-                                });
-
-                                return;
-                              }
-
-                              updateDraftState(row.item.orderDetailId, { picked: true });
-                            }}
+                            disabled={
+                              !isEditing ||
+                              !row.selected ||
+                              row.isTerminalStatus ||
+                              !row.canChangePickPack ||
+                              isUpdatingStatus
+                            }
+                            onCheckedChange={(checked) => handlePickedChange(row, checked === true)}
                             className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                           />
                         </TableCell>
                         <TableCell className="text-center">
                           <Checkbox
                             checked={row.packed}
-                            disabled={!isEditing || !row.selected}
-                            onCheckedChange={(checked) => {
-                              if (checked === true) {
-                                updateDraftState(row.item.orderDetailId, {
-                                  packed: true,
-                                  picked: true,
-                                });
-
-                                return;
-                              }
-
-                              updateDraftState(row.item.orderDetailId, { packed: false });
-                            }}
+                            disabled={
+                              !isEditing ||
+                              !row.selected ||
+                              row.isTerminalStatus ||
+                              (!row.canChangePickPack && row.item.itemStatusCode !== 'PICKED') ||
+                              isUpdatingStatus
+                            }
+                            onCheckedChange={(checked) => handlePackedChange(row, checked === true)}
                             className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                           />
                         </TableCell>

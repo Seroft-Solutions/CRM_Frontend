@@ -15,9 +15,13 @@ import {
 } from '@/components/ui/select';
 import {
   OrderRecord,
+  OrderStatus,
+  PaymentStatus,
+  ShippingMethod,
   getOrderStatusTransitionError,
   getOrderStatusCode,
   getPaymentStatusCode,
+  getItemStatusCode,
   getSelectableOrderStatuses,
   getShippingMethodCode,
   paymentStatusOptions,
@@ -38,7 +42,12 @@ import {
   useUpdateOrder,
 } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import { useGetCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
-import type { CustomerDTO, OrderDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import type {
+  CustomerDTO,
+  OrderDTO,
+  OrderDetailDTO,
+  ProductVariantDTO,
+} from '@/core/api/generated/spring/schemas';
 import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
 import {
   useCreateOrderDetail,
@@ -162,10 +171,7 @@ const hasItemData = (item: OrderItemForm) => {
 };
 
 const parseItemStatusValue = (value?: string) => {
-  if (!value) return '';
-  const match = value.match(/\d+/);
-
-  return match ? match[0] : '';
+  return value || '';
 };
 
 const formatStockQuantity = (value?: number) => {
@@ -797,7 +803,7 @@ export function OrderFormContent({
       productName: item.productName || undefined,
       sku: item.sku || undefined,
       variantAttributes: item.variantAttributes || undefined,
-      itemStatus: item.itemStatusCode?.toString() || parseItemStatusValue(item.itemStatus),
+      itemStatus: item.itemStatus || item.itemStatusCode || parseItemStatusValue(item.itemStatus),
       quantity: Math.max((item.quantity || 0) + (item.backOrderQuantity || 0), 0).toString(),
       itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
       itemTaxAmount: item.itemTaxAmount ? item.itemTaxAmount.toString() : '',
@@ -1690,8 +1696,9 @@ export function OrderFormContent({
     if (evaluateDiscountAvailability(discount) !== 'valid') {
       return 0;
     }
-    const discountType = (discount.discountType || '').toUpperCase();
-    const rawValue = Number(discount.discountValue ?? discount.discountAmount ?? 0);
+    const activeDiscount = discount as IDiscount;
+    const discountType = (activeDiscount.discountType || '').toUpperCase();
+    const rawValue = Number(activeDiscount.discountValue ?? activeDiscount.discountAmount ?? 0);
 
     if (!Number.isFinite(rawValue) || rawValue <= 0) {
       return 0;
@@ -1706,7 +1713,7 @@ export function OrderFormContent({
       amount = Math.max(rawValue, 0);
     }
     if (discountType === 'PERCENTAGE') {
-      const maxDiscountValue = Number(discount.maxDiscountValue);
+      const maxDiscountValue = Number(activeDiscount.maxDiscountValue);
 
       if (Number.isFinite(maxDiscountValue) && maxDiscountValue > 0 && amount > maxDiscountValue) {
         amount = maxDiscountValue;
@@ -1849,10 +1856,6 @@ export function OrderFormContent({
 
       if (!hasData) return;
 
-      if (item.itemStatus.trim() && !/^\d+$/.test(item.itemStatus.trim())) {
-        nextItemErrors[index].itemStatus = 'Use a numeric status code.';
-      }
-
       if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
         nextItemErrors[index].quantity = 'Use a whole number.';
       }
@@ -1893,11 +1896,11 @@ export function OrderFormContent({
   const paymentStatusSelectOptions: PaymentStatus[] =
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
-      : paymentStatusOptions;
+      : [...paymentStatusOptions];
   const shippingMethodSelectOptions: ShippingMethod[] =
     formState.shippingMethod === 'Unknown'
       ? [...shippingMethodOptions, 'Unknown']
-      : shippingMethodOptions;
+      : [...shippingMethodOptions];
 
   const saveDraft = async (): Promise<boolean> => {
     if (isEditing) return false;
@@ -1918,12 +1921,6 @@ export function OrderFormContent({
 
     const parseAmount = (value: string) => {
       const parsed = Number.parseFloat(value);
-
-      return Number.isFinite(parsed) ? parsed : 0;
-    };
-
-    const parseInteger = (value: string) => {
-      const parsed = Number.parseInt(value, 10);
 
       return Number.isFinite(parsed) ? parsed : 0;
     };
@@ -2005,26 +2002,32 @@ export function OrderFormContent({
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
-          const itemStatus = parseInteger(item.itemStatus || '0');
+          const itemStatus = getItemStatusCode(item.itemStatus) || 'CREATED';
+
+          const detailPayload = {
+            orderId,
+            productId: isCatalog ? undefined : item.productId || undefined,
+            variantId: isCatalog ? undefined : item.variantId || undefined,
+            productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
+            warehouseId: isCatalog ? undefined : item.warehouseId || undefined,
+            productName: item.productName || undefined,
+            sku: item.sku || undefined,
+            variantAttributes: item.variantAttributes || undefined,
+            itemStatus,
+            quantity,
+            backOrderQuantity,
+            itemPrice,
+            itemTaxAmount,
+            itemTotalAmount,
+            itemComment: item.itemComment || undefined,
+          } as OrderDetailDTO & {
+            itemStatus: string;
+            itemTaxAmount?: number;
+            itemComment?: string;
+          };
 
           return createOrderDetail({
-            data: {
-              orderId,
-              productId: isCatalog ? undefined : item.productId || undefined,
-              variantId: isCatalog ? undefined : item.variantId || undefined,
-              productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
-              warehouseId: isCatalog ? undefined : item.warehouseId || undefined,
-              productName: item.productName || undefined,
-              sku: item.sku || undefined,
-              variantAttributes: item.variantAttributes || undefined,
-              itemStatus,
-              quantity,
-              backOrderQuantity,
-              itemPrice,
-              itemTaxAmount,
-              itemTotalAmount,
-              itemComment: item.itemComment || undefined,
-            },
+            data: detailPayload,
           });
         });
       const totalBackOrderUnits = items
@@ -2154,12 +2157,6 @@ export function OrderFormContent({
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
-    const parseInteger = (value: string) => {
-      const parsed = Number.parseInt(value, 10);
-
-      return Number.isFinite(parsed) ? parsed : 0;
-    };
-
     const buildAddressPayload = (orderId: number) => {
       const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
 
@@ -2272,7 +2269,7 @@ export function OrderFormContent({
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
-          const itemStatus = parseInteger(item.itemStatus || '0');
+          const itemStatus = getItemStatusCode(item.itemStatus) || 'CREATED';
 
           const detailPayload = {
             id: item.id,
