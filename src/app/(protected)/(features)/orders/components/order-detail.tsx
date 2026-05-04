@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { OrderRecord, OrderStatus } from '../data/order-data';
-import { History, PackageCheck } from 'lucide-react';
+import { History, PackageCheck, Undo2 } from 'lucide-react';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -312,6 +312,17 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </div>
             <span className="font-bold">Order Items</span>
             <div className="ml-auto flex items-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="gap-2 border-amber-300 bg-white text-amber-800 hover:bg-amber-50"
+              >
+                <Link href="/orders/back-to-manager">
+                  <Undo2 className="h-4 w-4" />
+                  Back to Manager
+                </Link>
+              </Button>
               <Button
                 asChild
                 size="sm"

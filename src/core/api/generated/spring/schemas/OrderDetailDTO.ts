@@ -32,6 +32,7 @@ export interface OrderDetailDTO {
   itemTotalAmount?: number;
   quantity?: number;
   backOrderQuantity?: number;
+  itemStatus?: 'CREATED' | 'APPROVED' | 'PICKED' | 'PACKED' | 'PENDING' | 'COMPLETED' | 'ISSUE' | 'CANCELLED';
   /** @minimum 0 */
   itemPrice?: number;
   /**
@@ -40,6 +41,11 @@ export interface OrderDetailDTO {
    */
   updatedBy?: string;
   lastUpdated?: string;
+  /**
+   * @minLength 0
+   * @maxLength 500
+   */
+  comment?: string;
   /**
    * @minLength 0
    * @maxLength 50

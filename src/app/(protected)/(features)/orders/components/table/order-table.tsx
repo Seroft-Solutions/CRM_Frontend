@@ -51,6 +51,7 @@ import {
   MoreHorizontal,
   Package,
   Pencil,
+  Undo2,
 } from 'lucide-react';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
@@ -1330,6 +1331,12 @@ export function OrderTable({
                             <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
                               <Package className="h-4 w-4 mr-2" />
                               Fulfillment
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/orders/back-to-manager">
+                              <Undo2 className="h-4 w-4 mr-2" />
+                              Back to Manager
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>

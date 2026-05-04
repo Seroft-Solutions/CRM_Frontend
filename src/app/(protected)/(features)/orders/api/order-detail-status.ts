@@ -8,6 +8,7 @@ import type { ItemStatusCode } from '../data/order-data';
 export type OrderDetailStatusUpdate = {
   orderDetailId: number;
   newStatus: ItemStatusCode;
+  comment?: string;
   orderId?: number;
 };
 
@@ -15,13 +16,13 @@ export function useUpdateOrderDetailStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderDetailId, newStatus }: OrderDetailStatusUpdate) =>
+    mutationFn: async ({ orderDetailId, newStatus, comment }: OrderDetailStatusUpdate) =>
       springServiceMutator<OrderDetailDTO>(
         {
           url: `/api/order-details/${orderDetailId}/update-status`,
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          data: { orderDetailId, newStatus },
+          data: { orderDetailId, newStatus, comment },
         },
         undefined
       ),

@@ -54,6 +54,7 @@ export const itemStatusOptions = [
   'Packed',
   'Pending',
   'Completed',
+  'Issue',
   'Cancelled',
 ] as const;
 
@@ -64,6 +65,7 @@ export const itemStatusCodeOptions = [
   'PACKED',
   'PENDING',
   'COMPLETED',
+  'ISSUE',
   'CANCELLED',
 ] as const;
 
@@ -374,6 +376,8 @@ export const mapOrderDtoToRecord = (order: OrderDTO): OrderRecord => {
 
 type OrderDetailDtoWithItemStatus = OrderDetailDTO & {
   itemStatus?: ItemStatusCode | string | null;
+  comment?: string | null;
+  itemComment?: string | null;
 };
 
 export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
@@ -403,7 +407,7 @@ export const mapOrderDetailDto = (detail: OrderDetailDTO): OrderDetailItem => {
     backOrderQuantity: 0,
     itemPrice: detail.itemPrice ?? 0,
     itemTaxAmount: 0,
-    itemComment: undefined,
+    itemComment: detailWithStatus.comment ?? detailWithStatus.itemComment ?? undefined,
     createdBy: detail.createdBy ?? 'System',
     createdDate: detail.createdDate ?? '',
     updatedBy: detail.updatedBy ?? undefined,

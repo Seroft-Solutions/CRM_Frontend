@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { TableRowActions } from '@/entity-library/components/tables/TableRowActions';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import {
@@ -28,6 +29,7 @@ import {
 import type { OrderDetailItem, OrderRecord } from '../data/order-data';
 import { useUpdateOrderDetailStatus } from '../api/order-detail-status';
 import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
+import { BackToManagerDialog } from './back-to-manager-dialog';
 import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillment-utils';
 
 type FulfillmentDraftState = Record<
@@ -86,6 +88,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const queryClient = useQueryClient();
   const navigationSource = searchParams.get('from') === 'list' ? 'list' : 'order';
   const [isEditing, setIsEditing] = useState(navigationSource === 'order');
+  const [backToManagerItem, setBackToManagerItem] = useState<{
+    orderItemId: number;
+    orderId: number;
+  } | null>(null);
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
@@ -431,6 +437,16 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   return (
     <div className="space-y-4 border-t border-cyan-100 bg-cyan-50/30 p-4">
+      <BackToManagerDialog
+        open={backToManagerItem !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBackToManagerItem(null);
+          }
+        }}
+        orderItemId={backToManagerItem?.orderItemId ?? null}
+        orderId={backToManagerItem?.orderId}
+      />
       {!canFulfillOrder ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           This order must be approved, partially approved or pending before Picker/Packer
@@ -497,10 +513,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableHead className="text-center">Remaining Qty</TableHead>
                     <TableHead className="text-center">Available Stock</TableHead>
                     <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="min-w-[180px]">Comment</TableHead>
                     <TableHead className="text-center">Picked</TableHead>
                     <TableHead className="text-center">Packed</TableHead>
                     <TableHead className="min-w-[180px]">Fulfill Quantity</TableHead>
                     <TableHead className="min-w-[160px]">Damage Qty</TableHead>
+                    <TableHead className="w-16 text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -579,6 +597,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           <Badge variant="secondary" className="bg-slate-100 text-slate-800">
                             {row.item.itemStatus}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="align-top text-sm text-slate-700">
+                          {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
                         </TableCell>
                         <TableCell className="text-center">
                           <Checkbox
@@ -664,6 +685,37 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           ) : (
                             <span className="font-semibold text-slate-500">—</span>
                           )}
+                        </TableCell>
+                        <TableCell className="text-center align-top">
+                          <TableRowActions
+                            row={row}
+                            actions={[
+                              {
+                                id: 'mark-picked',
+                                label: 'Mark picked',
+                                onClick: async (selectedRow) => {
+                                  await handlePickedChange(selectedRow, true);
+                                },
+                              },
+                              {
+                                id: 'mark-packed',
+                                label: 'Mark packed',
+                                onClick: async (selectedRow) => {
+                                  await handlePackedChange(selectedRow, true);
+                                },
+                              },
+                              {
+                                id: 'back-to-manager',
+                                label: 'Back to Manager',
+                                onClick: (selectedRow) => {
+                                  setBackToManagerItem({
+                                    orderItemId: selectedRow.item.orderDetailId,
+                                    orderId: selectedRow.item.orderId,
+                                  });
+                                },
+                              },
+                            ]}
+                          />
                         </TableCell>
                       </TableRow>
                     );
