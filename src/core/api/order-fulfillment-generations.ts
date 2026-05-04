@@ -13,6 +13,8 @@ import { springServiceMutator } from '@/core/api/services/spring-service/service
 export interface OrderFulfillmentGenerationItemRequest {
   orderDetailId: number;
   quantity: number;
+  damageQuantity?: number;
+  damageRemarks?: string;
 }
 
 export interface OrderFulfillmentGenerationRequest {
@@ -61,12 +63,13 @@ export const useGetOrderFulfillmentGenerations = (
   const queryFn: QueryFunction<OrderFulfillmentGenerationResponse[]> = ({ signal }) =>
     getOrderFulfillmentGenerations(orderId, signal);
 
-  const query = useQuery({ queryKey, queryFn, enabled: orderId > 0, ...queryOptions }, queryClient) as UseQueryResult<
-    OrderFulfillmentGenerationResponse[],
-    Error
-  > & { queryKey: QueryKey };
+  const query = useQuery(
+    { queryKey, queryFn, enabled: orderId > 0, ...queryOptions },
+    queryClient
+  ) as UseQueryResult<OrderFulfillmentGenerationResponse[], Error> & { queryKey: QueryKey };
 
   query.queryKey = queryKey;
+
   return query;
 };
 

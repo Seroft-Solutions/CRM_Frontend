@@ -32,7 +32,7 @@ import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillm
 
 type FulfillmentDraftState = Record<
   number,
-  { selected: boolean; quantity: string; picked: boolean; packed: boolean }
+  { selected: boolean; quantity: string; damageQuantity: string; picked: boolean; packed: boolean }
 >;
 
 const parsePositiveInteger = (value: string) => {
@@ -68,6 +68,7 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
         {
           selected: false,
           quantity: '',
+          damageQuantity: '',
           picked: item.itemStatusCode === 'PICKED' || item.itemStatusCode === 'PACKED',
           packed: item.itemStatusCode === 'PACKED',
         },
@@ -198,6 +199,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       const draft = draftState[item.orderDetailId] ?? {
         selected: false,
         quantity: '',
+        damageQuantity: '',
         picked: false,
         packed: false,
       };
@@ -206,6 +208,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         deliverableQuantity: 0,
       };
       const enteredQuantity = parsePositiveInteger(draft.quantity);
+      const damageQuantity = parsePositiveInteger(draft.damageQuantity);
       const remainingQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
       const deliveredQuantity = deliveredQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
       const originalOrderQuantity =
@@ -219,6 +222,15 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         validationMessage = 'Stock not available';
       } else if (draft.selected && enteredQuantity > remainingQuantity) {
         validationMessage = `Fulfillment quantity cannot exceed remaining quantity (${remainingQuantity}).`;
+      } else if (draft.selected && damageQuantity > stockSnapshot.availableQuantity) {
+        validationMessage = 'Damage quantity exceeds available stock.';
+      } else if (draft.selected && damageQuantity > remainingQuantity) {
+        validationMessage = `Damage quantity cannot exceed remaining quantity (${remainingQuantity}).`;
+      } else if (
+        draft.selected &&
+        enteredQuantity + damageQuantity > stockSnapshot.availableQuantity
+      ) {
+        validationMessage = 'Fulfillment and damage quantities exceed available stock.';
       }
 
       return {
@@ -226,11 +238,13 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         isCompleted,
         selected: draft.selected,
         quantity: draft.quantity,
+        damageQuantity: draft.damageQuantity,
         picked: statusPicked || draft.picked,
         packed: statusPacked || draft.packed,
         canChangePickPack: canTransitionToPickPack(item),
         isTerminalStatus: isTerminalItem(item),
         enteredQuantity,
+        enteredDamageQuantity: damageQuantity,
         originalOrderQuantity,
         remainingQuantity,
         deliveredQuantity,
@@ -267,13 +281,20 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const updateDraftState = (
     orderDetailId: number,
-    nextValue: Partial<{ selected: boolean; quantity: string; picked: boolean; packed: boolean }>
+    nextValue: Partial<{
+      selected: boolean;
+      quantity: string;
+      damageQuantity: string;
+      picked: boolean;
+      packed: boolean;
+    }>
   ) => {
     setDraftState((current) => ({
       ...current,
       [orderDetailId]: {
         selected: current[orderDetailId]?.selected ?? false,
         quantity: current[orderDetailId]?.quantity ?? '',
+        damageQuantity: current[orderDetailId]?.damageQuantity ?? '',
         picked: current[orderDetailId]?.picked ?? false,
         packed: current[orderDetailId]?.packed ?? false,
         ...nextValue,
@@ -313,6 +334,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           items: selectedRows.map((row) => ({
             orderDetailId: row.item.orderDetailId,
             quantity: row.enteredQuantity,
+            damageQuantity: row.enteredDamageQuantity || undefined,
+            damageRemarks:
+              row.enteredDamageQuantity > 0 ? 'Recorded during fulfillment' : undefined,
           })),
         },
       });
@@ -325,6 +349,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         queryClient.invalidateQueries({
           queryKey: [`/api/orders/${order.orderId}/fulfillment-generations`],
         }),
+        queryClient.invalidateQueries({ queryKey: ['/api/product-damages'] }),
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey[0];
@@ -475,6 +500,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableHead className="text-center">Picked</TableHead>
                     <TableHead className="text-center">Packed</TableHead>
                     <TableHead className="min-w-[180px]">Fulfill Quantity</TableHead>
+                    <TableHead className="min-w-[160px]">Damage Qty</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -502,6 +528,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 updateDraftState(row.item.orderDetailId, {
                                   selected: checked === true,
                                   quantity: checked === true ? row.quantity : '',
+                                  damageQuantity: checked === true ? row.damageQuantity : '',
                                   picked: checked === true ? row.picked : false,
                                   packed: checked === true ? row.packed : false,
                                 })
@@ -613,6 +640,27 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 </p>
                               ) : null}
                             </div>
+                          ) : (
+                            <span className="font-semibold text-slate-500">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top">
+                          {isEditing ? (
+                            <Input
+                              type="number"
+                              min={0}
+                              placeholder="0"
+                              value={row.damageQuantity}
+                              disabled={
+                                !row.selected || row.isCompleted || row.deliverableQuantity === 0
+                              }
+                              onChange={(event) =>
+                                updateDraftState(row.item.orderDetailId, {
+                                  damageQuantity: event.target.value,
+                                })
+                              }
+                              className="border-slate-300"
+                            />
                           ) : (
                             <span className="font-semibold text-slate-500">—</span>
                           )}

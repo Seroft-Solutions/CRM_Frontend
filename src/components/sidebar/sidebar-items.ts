@@ -386,6 +386,12 @@ export const sidebarItems: SidebarItem[] = [
         path: '/products/import/results',
         requiredPermission: 'product:create',
       },
+      {
+        key: 'damages',
+        label: 'Damages',
+        path: '/damages',
+        //requiredPermission: 'damage:sidebar',
+      },
     ],
   },
   {
