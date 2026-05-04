@@ -32,6 +32,8 @@ export interface ProductDamageParams {
   sort?: string[];
   productId?: number;
   warehouseId?: number;
+  productName?: string;
+  warehouseName?: string;
   dateFrom?: string;
   dateTo?: string;
 }
@@ -50,7 +52,12 @@ const buildSearchParams = (params?: ProductDamageParams) => {
       return;
     }
 
-    searchParams.set(key, String(value));
+    // Use .contains for string searches (productName, warehouseName)
+    if (key === 'productName' || key === 'warehouseName') {
+      searchParams.set(`${key}.contains`, String(value));
+    } else {
+      searchParams.set(key, String(value));
+    }
   });
 
   return searchParams.toString();

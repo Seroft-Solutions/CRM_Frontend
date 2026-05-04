@@ -30,20 +30,20 @@ const toDateTimeParam = (value: string, endOfDay = false) => {
 export function DamageTable() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [productId, setProductId] = useState('');
-  const [warehouseId, setWarehouseId] = useState('');
+  const [productName, setProductName] = useState('');
+  const [warehouseName, setWarehouseName] = useState('');
 
   const params = useMemo(
     () => ({
       page: 0,
       size: 100,
       sort: ['createdDate,desc'],
-      productId: productId ? Number(productId) : undefined,
-      warehouseId: warehouseId ? Number(warehouseId) : undefined,
+      productName: productName || undefined,
+      warehouseName: warehouseName || undefined,
       dateFrom: toDateTimeParam(dateFrom),
       dateTo: toDateTimeParam(dateTo, true),
     }),
-    [dateFrom, dateTo, productId, warehouseId]
+    [dateFrom, dateTo, productName, warehouseName]
   );
 
   const { data: damages = [], isLoading } = useGetProductDamages(params);
@@ -94,18 +94,16 @@ export function DamageTable() {
         <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
         <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         <Input
-          type="number"
-          min={1}
-          placeholder="Product ID"
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
+          type="text"
+          placeholder="Search Product Name"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
         />
         <Input
-          type="number"
-          min={1}
-          placeholder="Warehouse ID"
-          value={warehouseId}
-          onChange={(e) => setWarehouseId(e.target.value)}
+          type="text"
+          placeholder="Search Warehouse Name"
+          value={warehouseName}
+          onChange={(e) => setWarehouseName(e.target.value)}
         />
       </div>
 
