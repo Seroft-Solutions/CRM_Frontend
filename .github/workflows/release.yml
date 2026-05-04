@@ -26,7 +26,7 @@ concurrency:
 jobs:
   validate_version:
     name: 🏷️ Validate Version
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       version: ${{ steps.validate.outputs.version }}
       tag_name: ${{ steps.validate.outputs.tag_name }}
@@ -60,7 +60,7 @@ jobs:
 
   create_tag:
     name: 🏷️ Create Tag
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [validate_version]
     steps:
       - name: Checkout code
@@ -83,7 +83,7 @@ jobs:
 
   build_docker:
     name: 🐳 Build Docker Image
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [validate_version, create_tag]
     env:
       NODE_VERSION: "20"
@@ -152,7 +152,7 @@ jobs:
 
   deploy:
     name: 🚀 Deploy to Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [validate_version, create_tag, build_docker]
     if: inputs.deploy_to != 'skip'
     environment: ${{ inputs.deploy_to == 'prod' && 'production' || 'development' }}
