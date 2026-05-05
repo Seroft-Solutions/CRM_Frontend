@@ -427,6 +427,7 @@ function ProductVariantSelector({
   index,
   onApplyVariantSelection,
   onItemChange,
+  itemError,
   showProductSelector = true,
   selectedVariantIdsOverride,
   existingVariantItems,
@@ -447,6 +448,7 @@ function ProductVariantSelector({
     key: keyof OrderItemForm,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
+  itemError?: ItemErrors;
   showProductSelector?: boolean;
   selectedVariantIdsOverride?: number[];
   existingVariantItems?: OrderItemForm[];
@@ -746,9 +748,20 @@ function ProductVariantSelector({
       ? 'grid-cols-1'
       : 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(240px,1.1fr)]'
     : 'grid-cols-1 sm:grid-cols-2';
+  const hasVariantError = Boolean(itemError?.variantId);
 
   return (
-    <div className={cn('grid gap-3', tableRowMode && 'gap-1', selectorLayoutClass)}>
+    <div
+      className={cn(
+        'grid gap-3',
+        tableRowMode && 'gap-1',
+        hasVariantError && !tableRowMode && 'rounded-md border border-rose-300 bg-rose-50/60 p-2',
+        hasVariantError &&
+          tableRowMode &&
+          'rounded-sm bg-rose-100/80 ring-2 ring-inset ring-rose-500',
+        selectorLayoutClass
+      )}
+    >
       {showProductSelector ? (
         <div className={cn('space-y-1.5', tableRowMode && 'space-y-0')}>
           <div className={cn('space-y-1.5', tableRowMode && 'space-y-0')}>
@@ -764,7 +777,8 @@ function ProductVariantSelector({
                   className={cn(
                     'w-full justify-between border-border hover:border-sidebar-accent h-9',
                     tableRowMode &&
-                      'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-foreground shadow-none hover:bg-sidebar-accent/10'
+                      'h-7 rounded-none border-0 bg-transparent px-1 text-left text-xs font-bold text-foreground shadow-none hover:bg-sidebar-accent/10',
+                    hasVariantError && 'border-rose-500 bg-rose-100 text-rose-950 hover:bg-rose-100'
                   )}
                 >
                   {selectedProduct ? (
@@ -835,9 +849,7 @@ function ProductVariantSelector({
           {showProductSelector ? (
             <>
               {!tableRowMode ? (
-                <Label className="text-xs font-semibold text-slate-600">
-                  Select Variant(s) (Optional)
-                </Label>
+                <Label className="text-xs font-semibold text-slate-600">Select Variant(s)</Label>
               ) : null}
               <Popover open={variantOpen} onOpenChange={setVariantOpen}>
                 <PopoverTrigger asChild>
@@ -848,7 +860,9 @@ function ProductVariantSelector({
                     className={cn(
                       'w-full justify-between border-border hover:border-sidebar-accent h-9',
                       tableRowMode &&
-                        'mt-1 h-7 rounded-none border-border bg-card px-1 text-left text-xs text-foreground shadow-none'
+                        'mt-1 h-7 rounded-none border-border bg-card px-1 text-left text-xs text-foreground shadow-none',
+                      hasVariantError &&
+                        'border-rose-500 bg-rose-100 text-rose-950 hover:bg-rose-100'
                     )}
                   >
                     {selectedVariantLabel ? (
@@ -926,11 +940,13 @@ function ProductVariantSelector({
               {selectedVariant && !showSecondaryVariantPreview && !hideSelectedVariantPreview ? (
                 <SelectedVariantPreview variant={selectedVariant} />
               ) : null}
+              <FieldError message={itemError?.variantId} />
             </>
           ) : (
             <>
               <Label className="text-xs font-semibold text-slate-600">Selected Variant</Label>
               <SelectedVariantNameCard name={secondaryVariantName} />
+              <FieldError message={itemError?.variantId} />
             </>
           )}
         </div>
@@ -954,6 +970,7 @@ function ProductVariantSelector({
                 No product selected
               </div>
             )}
+            <FieldError message={itemError?.variantId} />
           </div>
         ) : null
       ) : null}
@@ -1366,6 +1383,7 @@ export function OrderFormItems({
                 index={index}
                 onApplyVariantSelection={onApplyVariantSelection}
                 onItemChange={onItemChange}
+                itemError={itemErrors?.[index]}
                 showProductSelector={showProductSelector}
               />
             </div>
@@ -1554,6 +1572,7 @@ export function OrderFormItems({
               index={index}
               onApplyVariantSelection={onApplyVariantSelection}
               onItemChange={onItemChange}
+              itemError={itemErrors?.[index]}
               showProductSelector={showProductSelector}
             />
           )}
@@ -1637,6 +1656,7 @@ export function OrderFormItems({
           index={firstEntry.index}
           onApplyVariantSelection={onApplyVariantSelection}
           onItemChange={onItemChange}
+          itemError={itemErrors?.[firstEntry.index]}
           showProductSelector
           selectedVariantIdsOverride={selectedVariantIds}
           existingVariantItems={entries.map(({ item }) => item)}
@@ -1697,14 +1717,33 @@ export function OrderFormItems({
             'outline outline-2 -outline-offset-2 outline-sidebar bg-sidebar/10',
           isSelected &&
             item.itemType !== 'catalog' &&
-            'outline outline-2 -outline-offset-2 outline-sidebar-accent bg-sidebar-accent/10'
+            'outline outline-2 -outline-offset-2 outline-sidebar-accent bg-sidebar-accent/10',
+          itemErrors?.[index]?.variantId &&
+            'bg-rose-100 outline outline-2 -outline-offset-2 outline-rose-500'
         )}
       >
-        <td className="border border-border px-1 py-1 text-center font-semibold">{rowIndex + 1}</td>
-        <td className="border border-border px-1 py-1">
+        <td
+          className={cn(
+            'border border-border px-1 py-1 text-center font-semibold',
+            itemErrors?.[index]?.variantId && 'bg-rose-100'
+          )}
+        >
+          {rowIndex + 1}
+        </td>
+        <td
+          className={cn(
+            'border border-border px-1 py-1',
+            itemErrors?.[index]?.variantId && 'bg-rose-100'
+          )}
+        >
           <OrderItemImageCell item={item} selectedCatalog={selectedCatalog} />
         </td>
-        <td className="border border-border px-1 py-1 font-bold">
+        <td
+          className={cn(
+            'border border-border px-1 py-1 font-bold',
+            itemErrors?.[index]?.variantId && 'bg-rose-100'
+          )}
+        >
           {item.itemType === 'catalog' ? (
             <div className="space-y-1">
               <ProductCatalogSelector
@@ -1720,6 +1759,7 @@ export function OrderFormItems({
               index={index}
               onApplyVariantSelection={onApplyVariantSelection}
               onItemChange={onItemChange}
+              itemError={itemErrors?.[index]}
               showProductSelector
               selectedVariantIdsOverride={isProductVariantGroup ? selectedVariantIds : undefined}
               existingVariantItems={

@@ -54,7 +54,10 @@ import {
   useDeleteOrderDetail,
   useUpdateOrderDetail,
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
-import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import {
+  getAllProductVariants,
+  useGetAllProductVariants,
+} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 import { useGetProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import {
@@ -1235,13 +1238,16 @@ export function OrderFormContent({
       return nextItems;
     });
     setErrors((prev) => {
-      if (!prev.items?.[index]?.[key]) {
+      if (!prev.items?.[index]?.[key] && !(key === 'productId' && prev.items?.[index]?.variantId)) {
         return prev;
       }
       const nextItems = prev.items ? [...prev.items] : [];
       const nextItem = { ...nextItems[index] };
 
       delete nextItem[key];
+      if (key === 'productId') {
+        delete nextItem.variantId;
+      }
       nextItems[index] = nextItem;
 
       return { ...prev, items: nextItems };
@@ -1886,6 +1892,47 @@ export function OrderFormContent({
     return nextErrors;
   };
 
+  const validateRequiredProductVariants = async (): Promise<ItemErrors[] | undefined> => {
+    const rowsMissingVariant = items
+      .map((item, index) => ({ item, index }))
+      .filter(
+        ({ item }) =>
+          item.itemType === 'product' &&
+          typeof item.productId === 'number' &&
+          typeof item.variantId !== 'number'
+      );
+
+    if (rowsMissingVariant.length === 0) {
+      return undefined;
+    }
+
+    const productIds = Array.from(new Set(rowsMissingVariant.map(({ item }) => item.productId!)));
+    const variantChecks = await Promise.all(
+      productIds.map(async (productId) => ({
+        productId,
+        variants: await getAllProductVariants({
+          'productId.equals': productId,
+          'status.equals': 'ACTIVE',
+          size: 1,
+        }),
+      }))
+    );
+    const productIdsWithVariants = new Set(
+      variantChecks.filter(({ variants }) => variants.length > 0).map(({ productId }) => productId)
+    );
+    const nextItemErrors: ItemErrors[] = items.map(() => ({}));
+
+    rowsMissingVariant.forEach(({ item, index }) => {
+      if (productIdsWithVariants.has(item.productId!)) {
+        nextItemErrors[index].variantId = 'Select a variant for this product.';
+      }
+    });
+
+    return nextItemErrors.some((entry) => Object.keys(entry).length > 0)
+      ? nextItemErrors
+      : undefined;
+  };
+
   const orderStatusSelectOptions: OrderStatus[] = getSelectableOrderStatuses(
     initialOrder?.orderStatus ?? formState.orderStatus,
     {
@@ -2119,6 +2166,27 @@ export function OrderFormContent({
       return;
     }
     const validationErrors = validateForm();
+    let requiredVariantErrors: ItemErrors[] | undefined;
+
+    try {
+      requiredVariantErrors = await validateRequiredProductVariants();
+    } catch (error) {
+      toast.error('Unable to validate product variants.', {
+        description: getOrderStatusErrorDescription(error, 'Please try saving again.'),
+      });
+
+      return;
+    }
+
+    if (requiredVariantErrors) {
+      validationErrors.items = validationErrors.items
+        ? validationErrors.items.map((entry, index) => ({
+            ...entry,
+            ...requiredVariantErrors?.[index],
+          }))
+        : requiredVariantErrors;
+    }
+
     const hasErrors = Object.values(validationErrors).some((value) => {
       if (Array.isArray(value)) {
         return value.some((entry) => Object.keys(entry).length > 0);
