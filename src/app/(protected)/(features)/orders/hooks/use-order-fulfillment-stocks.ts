@@ -2,12 +2,8 @@
 
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import {
-  getGetProductQueryOptions,
-} from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
-import {
-  getGetProductVariantQueryOptions,
-} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { getGetProductQueryOptions } from '@/core/api/generated/spring/endpoints/product-resource/product-resource.gen';
+import { getGetProductVariantQueryOptions } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import type { OrderDetailItem } from '../data/order-data';
 
 type ItemStockSnapshot = {
@@ -17,8 +13,10 @@ type ItemStockSnapshot = {
 
 type ProductVariantWithStocks = {
   stockQuantity?: number;
+  salesStockQuantity?: number;
   variantStocks?: Array<{
     stockQuantity?: number;
+    salesStockQuantity?: number;
     warehouse?: {
       id?: number;
     };
@@ -29,8 +27,7 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
   const trackedItems = useMemo(
     () =>
       items.filter(
-        (item) =>
-          typeof item.variantId === 'number' || typeof item.productId === 'number'
+        (item) => typeof item.variantId === 'number' || typeof item.productId === 'number'
       ),
     [items]
   );
@@ -38,7 +35,7 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
   const variantIds = useMemo(
     () =>
       Array.from(
-          new Set(
+        new Set(
           trackedItems
             .map((item) => item.variantId)
             .filter((id): id is number => typeof id === 'number')
@@ -50,7 +47,7 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
   const productIds = useMemo(
     () =>
       Array.from(
-          new Set(
+        new Set(
           trackedItems
             .filter((item) => typeof item.variantId !== 'number')
             .map((item) => item.productId)
@@ -84,16 +81,22 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
 
   const stockByItemId = useMemo(() => {
     const variantById = new Map<number, ProductVariantWithStocks | undefined>();
+
     variantQueries.forEach((query, index) => {
       variantById.set(variantIds[index], query.data as ProductVariantWithStocks | undefined);
     });
 
     const productStockById = new Map<number, number>();
+
     productQueries.forEach((query, index) => {
-      productStockById.set(productIds[index], Math.max(0, query.data?.stockQuantity ?? 0));
+      productStockById.set(
+        productIds[index],
+        Math.max(0, query.data?.salesStockQuantity ?? query.data?.stockQuantity ?? 0)
+      );
     });
 
     const nextMap = new Map<number, ItemStockSnapshot>();
+
     trackedItems.forEach((item) => {
       const totalPendingQuantity = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
       const availableQuantity =
@@ -106,18 +109,22 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
                   (stock) => stock.warehouse?.id === item.warehouseId
                 );
 
-                return Math.max(0, warehouseStock?.stockQuantity ?? 0);
+                return Math.max(
+                  0,
+                  warehouseStock?.salesStockQuantity ?? warehouseStock?.stockQuantity ?? 0
+                );
               }
 
               return variant?.variantStocks?.length
                 ? variant.variantStocks.reduce(
-                    (sum, stock) => sum + Math.max(0, stock.stockQuantity ?? 0),
+                    (sum, stock) =>
+                      sum + Math.max(0, stock.salesStockQuantity ?? stock.stockQuantity ?? 0),
                     0
                   )
-                : Math.max(0, variant?.stockQuantity ?? 0);
+                : Math.max(0, variant?.salesStockQuantity ?? variant?.stockQuantity ?? 0);
             })()
           : typeof item.productId === 'number'
-            ? productStockById.get(item.productId) ?? 0
+            ? (productStockById.get(item.productId) ?? 0)
             : 0;
 
       nextMap.set(item.orderDetailId, {

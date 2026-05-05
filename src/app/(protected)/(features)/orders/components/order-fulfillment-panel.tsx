@@ -87,7 +87,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const navigationSource = searchParams.get('from') === 'list' ? 'list' : 'order';
-  const [isEditing, setIsEditing] = useState(navigationSource === 'order');
+  const [isEditing, setIsEditing] = useState(true);
   const [backToManagerItem, setBackToManagerItem] = useState<{
     orderItemId: number;
     orderId: number;
@@ -151,8 +151,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
-    setIsEditing(navigationSource === 'order');
-  }, [navigationSource, order.items]);
+    setIsEditing(true);
+  }, [order.items]);
 
   const deliveredQuantityByOrderDetailId = useMemo(() => {
     const deliveredMap = new Map<number, number>();
@@ -267,7 +267,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     stockByItemId,
   ]);
 
-  const selectedRows = rows.filter((row) => row.selected && row.enteredQuantity > 0);
+  const selectedRows = rows.filter(
+    (row) => row.selected && (row.enteredQuantity > 0 || row.enteredDamageQuantity > 0)
+  );
   const selectedUnits = selectedRows.reduce((sum, row) => sum + row.enteredQuantity, 0);
   const hasValidationErrors = selectedRows.some((row) => row.validationMessage);
   const hasSelectedRowsMissingPickPack = selectedRows.some((row) => !row.picked || !row.packed);
@@ -316,7 +318,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     }
 
     if (selectedRows.length === 0) {
-      toast.error('Select at least one pending item and enter a quantity.');
+      toast.error('Select at least one pending item and enter a fulfillment or damage quantity.');
 
       return;
     }
@@ -375,7 +377,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         })}.`
       );
       setDraftState(createInitialDraftState(order.items));
-      setIsEditing(false);
+      setIsEditing(true);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
