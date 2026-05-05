@@ -77,6 +77,31 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
       ])
   );
 
+const mergeDraftStateWithItems = (
+  items: OrderDetailItem[],
+  current: FulfillmentDraftState
+): FulfillmentDraftState => {
+  const nextDraft = createInitialDraftState(items);
+
+  return Object.fromEntries(
+    Object.entries(nextDraft).map(([orderDetailId, draft]) => {
+      const currentDraft = current[Number(orderDetailId)];
+
+      return [
+        orderDetailId,
+        {
+          ...draft,
+          selected: currentDraft?.selected ?? draft.selected,
+          quantity: currentDraft?.quantity ?? draft.quantity,
+          damageQuantity: currentDraft?.damageQuantity ?? draft.damageQuantity,
+          picked: draft.picked || (currentDraft?.picked ?? false),
+          packed: draft.packed || (currentDraft?.packed ?? false),
+        },
+      ];
+    })
+  );
+};
+
 const canTransitionToPickPack = (item: OrderDetailItem) =>
   item.itemStatusCode === 'APPROVED' || item.itemStatusCode === 'PENDING';
 
@@ -150,7 +175,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     order.orderStatus === 'Pending';
 
   useEffect(() => {
-    setDraftState(createInitialDraftState(order.items));
+    setDraftState((current) => mergeDraftStateWithItems(order.items, current));
     setIsEditing(true);
   }, [order.items]);
 
@@ -403,6 +428,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         newStatus: 'PICKED',
         orderId: order.orderId,
       });
+      setIsEditing(true);
       toast.success('Item marked picked.');
     } catch (error) {
       updateDraftState(row.item.orderDetailId, { picked: false });
@@ -430,6 +456,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         newStatus: 'PACKED',
         orderId: order.orderId,
       });
+      setIsEditing(true);
       toast.success('Item marked packed.');
     } catch (error) {
       updateDraftState(row.item.orderDetailId, { packed: false });
