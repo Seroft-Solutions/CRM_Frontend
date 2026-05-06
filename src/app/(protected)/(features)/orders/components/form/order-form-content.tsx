@@ -285,6 +285,7 @@ function VariantWarehousePanel({
     selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
   const selectedCatalogId =
     selectedItem?.itemType === 'catalog' ? selectedItem.productCatalogId : undefined;
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('all');
   const { data: variantsData = [], isFetching } = useGetAllProductVariants(
     {
       'productId.equals': selectedProductId,
@@ -396,51 +397,71 @@ function VariantWarehousePanel({
 
       return total + (currentQuantity - existingQuantity);
     }, 0);
-  const warehouses = visibleVariants.reduce<
-    Map<
+
+  const warehouseList = useMemo(() => {
+    const warehouseMap = new Map<
       string,
-      {
-        title: string;
-        rows: Array<{
-          key: string;
-          variant: ProductVariantDTO;
-          stock: NonNullable<ProductVariantDTO['variantStocks']>[number];
-          color: string;
-          size: string;
-          quantity: number;
-        }>;
-      }
-    >
-  >((accumulator, variant, variantIndex) => {
-    const { color, size } = getVariantDisplayParts(variant, variantIndex, optionLabelsById);
-    const stocks = variant.variantStocks ?? [];
+      { id?: number; name: string; code?: string }
+    >();
 
-    stocks.forEach((stock, stockIndex) => {
-      const warehouseName =
-        stock.warehouse?.name || `Warehouse ${stock.warehouse?.id ?? stockIndex + 1}`;
-      const warehouseKey = `${stock.warehouse?.id ?? warehouseName}`;
-      const warehouse = accumulator.get(warehouseKey) ?? {
-        title: warehouseName,
-        rows: [],
-      };
-
-      warehouse.rows.push({
-        key: `${variant.id ?? variantIndex}-${warehouseKey}-${stockIndex}`,
-        variant,
-        stock,
-        color,
-        size,
-        quantity:
-          (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) -
-          getReservedQuantityDelta(variant, stock),
+    visibleVariants.forEach((variant) => {
+      const stocks = variant.variantStocks ?? [];
+      stocks.forEach((stock) => {
+        const warehouseId = stock.warehouse?.id;
+        const key = String(warehouseId ?? stock.warehouse?.name ?? '');
+        if (!warehouseMap.has(key)) {
+          warehouseMap.set(key, {
+            id: warehouseId,
+            name: stock.warehouse?.name || `Warehouse ${warehouseId ?? 'Unknown'}`,
+            code: stock.warehouse?.code,
+          });
+        }
       });
-      accumulator.set(warehouseKey, warehouse);
     });
 
-    return accumulator;
-  }, new Map());
+    return Array.from(warehouseMap.values());
+  }, [visibleVariants]);
 
-  const warehouseTables = Array.from(warehouses.values());
+  useEffect(() => {
+    setSelectedWarehouseId('all');
+  }, [selectedProductId, selectedCatalogId]);
+
+  const allWarehouseRows = useMemo(() => {
+    return visibleVariants.flatMap((variant, variantIndex) => {
+      const { color, size } = getVariantDisplayParts(variant, variantIndex, optionLabelsById);
+      const stocks = variant.variantStocks ?? [];
+
+      return stocks.map((stock, stockIndex) => {
+        const warehouseName =
+          stock.warehouse?.name || `Warehouse ${stock.warehouse?.id ?? stockIndex + 1}`;
+        const warehouseKey = String(stock.warehouse?.id ?? warehouseName);
+
+        return {
+          key: `${variant.id ?? variantIndex}-${warehouseKey}-${stockIndex}`,
+          variant,
+          stock,
+          color,
+          size,
+          warehouseId: stock.warehouse?.id,
+          warehouseName,
+          warehouseCode: stock.warehouse?.code,
+          quantity:
+            (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) -
+            getReservedQuantityDelta(variant, stock),
+        };
+      });
+    });
+  }, [visibleVariants, optionLabelsById, getReservedQuantityDelta]);
+
+  const filteredRows = useMemo(() => {
+    if (selectedWarehouseId === 'all') {
+      return allWarehouseRows;
+    }
+
+    return allWarehouseRows.filter(
+      (row) => String(row.warehouseId) === selectedWarehouseId
+    );
+  }, [allWarehouseRows, selectedWarehouseId]);
 
   if (!selectedProductId && !selectedCatalogId) {
     return (
@@ -452,14 +473,6 @@ function VariantWarehousePanel({
             className="md:w-[390px] md:flex-none"
             columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
             emptyMessage="Select a product row"
-            rows={[]}
-          />
-          <LegacyStockTable
-            title="Warehouse Stock"
-            titleClassName="bg-sidebar text-sidebar-foreground"
-            className="md:w-[280px] md:flex-none"
-            columns={['Image', 'Color', 'Size', 'Sales Qty']}
-            emptyMessage="No selected product"
             rows={[]}
           />
           <LegacyStockTable
@@ -533,54 +546,72 @@ function VariantWarehousePanel({
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
         />
-        {warehouseTables.length === 0 ? (
-          <LegacyStockTable
-            title="Warehouse Stock"
-            titleClassName="bg-sidebar text-sidebar-foreground"
-            className="md:w-[280px] md:flex-none"
-            columns={['Image', 'Color', 'Size', 'Sales Qty']}
-            emptyMessage="No warehouse stock"
-            rows={[]}
-          />
-        ) : (
-          warehouseTables.map((warehouse, warehouseIndex) => (
-            <LegacyStockTable
-              key={warehouse.title}
-              title={warehouse.title}
-              titleClassName={
-                warehouseIndex % 2 === 0
-                  ? 'bg-sidebar text-sidebar-foreground'
-                  : 'bg-sidebar text-sidebar-foreground'
-              }
-              className="md:w-[280px] md:flex-none"
-              columns={['Image', 'Color', 'Size', 'Sales Qty']}
-              emptyMessage="No warehouse stock"
-              rows={warehouse.rows.map((row) => [
-                <VariantImageCell key={`warehouse-image-${row.key}`} variant={row.variant} />,
-                row.color,
-                row.size,
-                formatStockQuantity(row.quantity),
-              ])}
-              rowClassName={(rowIndex) => {
-                const row = warehouse.rows[rowIndex];
-
-                return isWarehouseVariantSelected(row.variant, row.stock)
-                  ? 'bg-sidebar-accent/10 text-black'
-                  : undefined;
-              }}
-              onRowClick={
-                selectedCatalogId
-                  ? undefined
-                  : (rowIndex) => {
-                      const row = warehouse.rows[rowIndex];
-                      const selected = isWarehouseVariantSelected(row.variant, row.stock);
-
-                      onToggleWarehouseVariant(row.variant, row.stock, !selected);
-                    }
-              }
-            />
-          ))
-        )}
+        <div className="min-w-0 bg-card md:w-[280px] md:flex-none">
+          {warehouseList.length > 0 && !selectedCatalogId ? (
+            <select
+              value={selectedWarehouseId}
+              onChange={(e) => setSelectedWarehouseId(e.target.value)}
+              className="w-full px-2 py-1 text-center text-xs font-bold bg-sidebar text-sidebar-foreground focus:outline-none cursor-pointer [&>option]:text-white"
+            >
+              <option value="all">Warehouse Stock</option>
+              {warehouseList.map((wh) => (
+                <option key={String(wh.id ?? wh.name)} value={String(wh.id ?? wh.name)}>
+                  {wh.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="px-2 py-1 text-center text-xs font-bold bg-sidebar text-sidebar-foreground">
+              Warehouse Stock
+            </div>
+          )}
+          <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
+            <thead>
+              <tr className="bg-muted">
+                <th className="border border-border px-1 py-0.5 text-left font-bold">Image</th>
+                <th className="border border-border px-1 py-0.5 text-left font-bold">Color</th>
+                <th className="border border-border px-1 py-0.5 text-left font-bold">Size</th>
+                <th className="border border-border px-1 py-0.5 text-left font-bold">Sales Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRows.length === 0 ? (
+                <tr>
+                  <td className="px-2 py-3 text-muted-foreground" colSpan={4}>
+                    No warehouse stock
+                  </td>
+                </tr>
+              ) : (
+                filteredRows.map((row, rowIndex) => (
+                  <tr
+                    key={`warehouse-${row.key}-${rowIndex}`}
+                    onClick={() => {
+                      if (!selectedCatalogId) {
+                        const selected = isWarehouseVariantSelected(row.variant, row.stock);
+                        onToggleWarehouseVariant(row.variant, row.stock, !selected);
+                      }
+                    }}
+                    className={cn(
+                      isWarehouseVariantSelected(row.variant, row.stock)
+                        ? 'bg-sidebar-accent/10 text-black'
+                        : 'text-foreground',
+                      !selectedCatalogId && 'cursor-pointer hover:bg-sidebar-accent/10'
+                    )}
+                  >
+                    <td className="border border-border px-1 py-0.5">
+                      <VariantImageCell key={`warehouse-image-${row.key}`} variant={row.variant} />
+                    </td>
+                    <td className="border border-border px-1 py-0.5">{row.color}</td>
+                    <td className="border border-border px-1 py-0.5">{row.size}</td>
+                    <td className="border border-border px-1 py-0.5">
+                      {formatStockQuantity(row.quantity)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
