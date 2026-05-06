@@ -1,8 +1,4 @@
-import type {
-  OrderStatus,
-  PaymentStatus,
-  ShippingMethod,
-} from '../../data/purchase-order-data';
+import type { OrderStatus, PaymentStatus, ShippingMethod } from '../../data/purchase-order-data';
 
 type OptionalSelectValue<T extends string> = T | '';
 
@@ -22,8 +18,17 @@ export type OrderItemForm = {
   id?: number;
   itemType: 'product' | 'catalog';
   productId?: number;
+  initialProductId?: number;
   variantId?: number;
+  initialVariantId?: number;
   productCatalogId?: number;
+  warehouseId?: number;
+  warehouseName?: string;
+  warehouseCode?: string;
+  availableQuantity?: number;
+  warehouseStocks?: WarehouseStockEntry[];
+  existingQuantity?: number;
+  existingBackOrderQuantity?: number;
   productName?: string;
   sku?: string;
   variantAttributes?: string;
@@ -32,6 +37,15 @@ export type OrderItemForm = {
   itemPrice: string;
   itemTaxAmount: string;
   itemComment?: string;
+};
+
+export type WarehouseStockEntry = {
+  warehouseId?: number;
+  warehouseName?: string;
+  warehouseCode?: string;
+  variantLabel?: string;
+  stockQuantity: number;
+  salesStockQuantity?: number;
 };
 
 export type AddressFieldsForm = {

@@ -12,17 +12,57 @@ export const orderStatusOptions = [
   'Shipped',
   'Delivered',
   'Cancelled',
+  'Pending',
+  'Approved',
+  'Picked',
+  'Packed',
+  'Partially Approved',
+] as const;
+
+export const orderStatusTabOrder = [
+  'Created',
+  'Approved',
+  'Partially Approved',
+  'Processing',
+  'Picked',
+  'Packed',
+  'Shipped',
+  'Delivered',
+  'Pending',
+  'Cancelled',
 ] as const;
 
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;
 
-
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
+export const itemStatusOptions = [
+  'Created',
+  'Approved',
+  'Picked',
+  'Packed',
+  'Pending',
+  'Completed',
+  'Issue',
+  'Cancelled',
+] as const;
+
+export const itemStatusCodeOptions = [
+  'CREATED',
+  'APPROVED',
+  'PICKED',
+  'PACKED',
+  'PENDING',
+  'COMPLETED',
+  'ISSUE',
+  'CANCELLED',
+] as const;
 
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
+export type ItemStatusLabel = (typeof itemStatusOptions)[number] | typeof UNKNOWN_LABEL;
+export type ItemStatusCode = (typeof itemStatusCodeOptions)[number];
 
 export interface OrderDetailItem {
   orderDetailId: number;
@@ -34,9 +74,10 @@ export interface OrderDetailItem {
   sku?: string;
   variantAttributes?: string;
   itemStatus: string;
-  itemStatusCode?: number;
+  itemStatusCode?: ItemStatusCode;
   itemTotalAmount: number;
   quantity: number;
+  backOrderQuantity: number;
   itemPrice: number;
   itemTaxAmount: number;
   itemComment?: string;
@@ -149,6 +190,20 @@ export const getShippingMethodLabel = (code?: number): ShippingMethod =>
 export const getShippingMethodCode = (status?: ShippingMethod) =>
   getCodeFromLabel(shippingMethodOptions, status);
 
+export const getItemStatusLabel = (code?: string | null): ItemStatusLabel => {
+  if (!code) return UNKNOWN_LABEL;
+  const index = itemStatusCodeOptions.indexOf(code as ItemStatusCode);
+
+  return index === -1 ? UNKNOWN_LABEL : itemStatusOptions[index];
+};
+
+export const getItemStatusCode = (label?: string | null): ItemStatusCode | undefined => {
+  if (!label || label === UNKNOWN_LABEL) return undefined;
+  const index = itemStatusOptions.indexOf(label as (typeof itemStatusOptions)[number]);
+
+  return index === -1 ? undefined : itemStatusCodeOptions[index];
+};
+
 
 const resolveOrderTotal = (order: PurchaseOrderDTO) => {
   if (typeof order.orderTotalAmount === 'number') {
@@ -207,11 +262,21 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
   };
 };
 
+type PurchaseOrderDetailDtoWithItemStatus = PurchaseOrderDetailDTO & {
+  itemStatus?: ItemStatusCode | string | null;
+  comment?: string | null;
+  itemComment?: string | null;
+};
+
 export const mapOrderDetailDto = (detail: PurchaseOrderDetailDTO): OrderDetailItem => {
-  // const itemStatusCode = typeof detail.itemStatus === 'number' ? detail.itemStatus : undefined;
-  // const itemStatus = itemStatusCode !== undefined ? `Status ${itemStatusCode}` : UNKNOWN_LABEL;
-  const itemStatus = UNKNOWN_LABEL;
-  const itemStatusCode = undefined;
+  const detailWithStatus = detail as PurchaseOrderDetailDtoWithItemStatus;
+  const itemStatusCode = itemStatusCodeOptions.includes(
+    detailWithStatus.itemStatus as ItemStatusCode
+  )
+    ? (detailWithStatus.itemStatus as ItemStatusCode)
+    : undefined;
+  const itemStatus = getItemStatusLabel(itemStatusCode);
+  const quantity = (detail.quantity ?? 0) + (detail.backOrderQuantity ?? 0);
 
   return {
     orderDetailId: detail.id ?? 0,
@@ -225,10 +290,11 @@ export const mapOrderDetailDto = (detail: PurchaseOrderDetailDTO): OrderDetailIt
     itemStatus,
     itemStatusCode,
     itemTotalAmount: detail.itemTotalAmount ?? 0,
-    quantity: detail.quantity ?? 0,
+    quantity,
+    backOrderQuantity: detail.backOrderQuantity ?? 0,
     itemPrice: detail.itemPrice ?? 0,
     itemTaxAmount: 0,
-    itemComment: undefined,
+    itemComment: detailWithStatus.comment ?? detailWithStatus.itemComment ?? undefined,
     createdBy: detail.createdBy ?? 'System',
     createdDate: detail.createdDate ?? '',
     updatedBy: detail.updatedBy ?? undefined,

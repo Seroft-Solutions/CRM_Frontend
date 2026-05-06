@@ -22,6 +22,10 @@ interface OrderFulfillmentHistoryDetailProps {
   generations: PurchaseOrderFulfillmentGenerationResponse[];
 }
 
+type SundryCreditorWithAddress = NonNullable<OrderRecord['sundryCreditor']> & {
+  completeAddress?: string | null;
+};
+
 const compactJoin = (parts: Array<string | undefined>, separator = ', ') =>
   parts
     .map((part) => (part ?? '').trim())
@@ -242,7 +246,7 @@ export function OrderFulfillmentHistoryDetail({
     `,
   });
 
-  const creditor = order.sundryCreditor;
+  const creditor = order.sundryCreditor as SundryCreditorWithAddress | undefined;
   const creditorName = getSundryCreditorDisplayName(order);
   const creditorPhone = creditor?.mobile || order.phone || '—';
   const creditorEmail = creditor?.email || order.email || '—';

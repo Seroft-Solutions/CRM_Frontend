@@ -2,7 +2,15 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, ChevronUp, ChevronsUpDown, Eye, Package, Pencil } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ChevronsUpDown,
+  Eye,
+  Package,
+  Pencil,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +35,7 @@ import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-o
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
   OrderStatus,
+  orderStatusTabOrder,
   orderStatusOptions,
   paymentStatusOptions,
   shippingMethodOptions,
@@ -39,6 +48,11 @@ const statusColors: Record<OrderStatus, string> = {
   Shipped: 'bg-cyan-100 text-cyan-800 border-cyan-300',
   Delivered: 'bg-emerald-100 text-emerald-800 border-emerald-300',
   Cancelled: 'bg-rose-100 text-rose-800 border-rose-300',
+  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  Approved: 'bg-green-100 text-green-800 border-green-300',
+  Picked: 'bg-indigo-100 text-indigo-800 border-indigo-300',
+  Packed: 'bg-purple-100 text-purple-800 border-purple-300',
+  'Partially Approved': 'bg-orange-100 text-orange-800 border-orange-300',
   Unknown: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 
@@ -57,11 +71,13 @@ function formatDate(value?: string) {
   if (!value) return '—';
   const parsed = new Date(value);
 
-  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
+  return Number.isNaN(parsed.getTime())
+    ? '—'
+    : parsed.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
 }
 
 type EntityStatus = 'ACTIVE' | 'DRAFT';
@@ -76,11 +92,7 @@ type SortColumn =
   | 'createdDate'
   | 'updatedDate';
 
-function compareSortValues(
-  a: string | number,
-  b: string | number,
-  direction: SortDirection
-) {
+function compareSortValues(a: string | number, b: string | number, direction: SortDirection) {
   const multiplier = direction === 'asc' ? 1 : -1;
 
   if (typeof a === 'number' && typeof b === 'number') {
@@ -124,6 +136,7 @@ export function OrderTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const isMounted = useRef(false);
+  const statusTabOptions = entityStatus === 'DRAFT' ? orderStatusOptions : orderStatusTabOrder;
 
   // Filter states
   const [filters, setFilters] = useState<{
@@ -152,9 +165,10 @@ export function OrderTable({
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
+  const hasActiveFilters =
+    Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
 
-  const { orders, totalCount, totalPages, isLoading, isError } = usePurchaseOrderTableData({
+  const { orders, totalCount, isLoading, isError } = usePurchaseOrderTableData({
     entityStatus,
     statusFilter,
     searchTerm,
@@ -203,6 +217,7 @@ export function OrderTable({
       // Status filter
       if (filters.status) {
         const orderStatusStr = order.orderStatus || '';
+
         if (orderStatusStr.trim().toLowerCase() !== filters.status.trim().toLowerCase()) {
           return false;
         }
@@ -212,6 +227,7 @@ export function OrderTable({
       if (filters.total) {
         const totalAmount = order.orderTotalAmount || 0;
         const filterValue = parseFloat(filters.total);
+
         if (!isNaN(filterValue) && totalAmount !== filterValue) {
           return false;
         }
@@ -220,6 +236,7 @@ export function OrderTable({
       // Payment filter
       if (filters.payment) {
         const paymentStatusStr = order.paymentStatus || '';
+
         if (paymentStatusStr.trim().toLowerCase() !== filters.payment.trim().toLowerCase()) {
           return false;
         }
@@ -228,6 +245,7 @@ export function OrderTable({
       // Shipping filter
       if (filters.shipping) {
         const shippingMethod = order.shipping?.shippingMethod || '';
+
         if (shippingMethod.trim().toLowerCase() !== filters.shipping.trim().toLowerCase()) {
           return false;
         }
@@ -236,6 +254,7 @@ export function OrderTable({
       // Sundry Creditor filter
       if (filters.sundryCreditor) {
         const creditorName = order.sundryCreditor?.creditorName || order.email || '';
+
         if (!creditorName.toLowerCase().includes(filters.sundryCreditor.toLowerCase())) {
           return false;
         }
@@ -252,6 +271,7 @@ export function OrderTable({
       if (filters.createdDateFrom && order.createdDate) {
         const orderDate = new Date(order.createdDate);
         const orderDateStr = orderDate.toISOString().split('T')[0];
+
         if (orderDateStr !== filters.createdDateFrom) {
           return false;
         }
@@ -261,6 +281,7 @@ export function OrderTable({
       if (filters.updatedDateFrom && order.lastModifiedDate) {
         const orderDate = new Date(order.lastModifiedDate);
         const orderDateStr = orderDate.toISOString().split('T')[0];
+
         if (orderDateStr !== filters.updatedDateFrom) {
           return false;
         }
@@ -271,14 +292,14 @@ export function OrderTable({
         const orderDate = new Date(order.createdDate);
         const fromDate = dateFrom ? new Date(dateFrom) : null;
         const toDate = dateTo ? new Date(dateTo) : null;
-        
+
         if (fromDate) {
           fromDate.setHours(0, 0, 0, 0);
           if (orderDate < fromDate) {
             return false;
           }
         }
-        
+
         if (toDate) {
           toDate.setHours(23, 59, 59, 999);
           if (orderDate > toDate) {
@@ -344,6 +365,7 @@ export function OrderTable({
   const paginatedOrders = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
+
     return sortedOrders.slice(start, end);
   }, [sortedOrders, currentPage, pageSize]);
 
@@ -362,6 +384,7 @@ export function OrderTable({
     setCurrentPage(1);
     if (sortColumn === column) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+
       return;
     }
 
@@ -392,6 +415,7 @@ export function OrderTable({
 
   useEffect(() => {
     isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -443,7 +467,7 @@ export function OrderTable({
               >
                 {allTabLabel}
               </TabsTrigger>
-              {orderStatusOptions.map((status) => (
+              {statusTabOptions.map((status) => (
                 <TabsTrigger
                   key={status}
                   value={status}
@@ -607,7 +631,9 @@ export function OrderTable({
                   {getSortIcon('updatedDate')}
                 </Button>
               </TableHead>
-              <TableHead className="w-[150px] text-right font-bold text-slate-700">Actions</TableHead>
+              <TableHead className="w-[150px] text-right font-bold text-slate-700">
+                Actions
+              </TableHead>
             </TableRow>
             {/* Filter Row */}
             <TableRow className="border-b border-slate-200 bg-white">
@@ -620,9 +646,11 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Select 
-                  value={filters.status || 'all'} 
-                  onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
+                <Select
+                  value={filters.status || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('status', value === 'all' ? '' : value)
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
@@ -646,9 +674,11 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Select 
-                  value={filters.shipping || 'all'} 
-                  onValueChange={(value) => handleFilterChange('shipping', value === 'all' ? '' : value)}
+                <Select
+                  value={filters.shipping || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('shipping', value === 'all' ? '' : value)
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
@@ -672,9 +702,11 @@ export function OrderTable({
                 />
               </TableHead>
               <TableHead className="py-2">
-                <Select 
-                  value={filters.payment || 'all'} 
-                  onValueChange={(value) => handleFilterChange('payment', value === 'all' ? '' : value)}
+                <Select
+                  value={filters.payment || 'all'}
+                  onValueChange={(value) =>
+                    handleFilterChange('payment', value === 'all' ? '' : value)
+                  }
                 >
                   <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
                     <SelectValue placeholder="All" />
@@ -808,9 +840,7 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-slate-700">
-                        {formatDate(order.createdDate)}
-                      </div>
+                      <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm text-slate-700">

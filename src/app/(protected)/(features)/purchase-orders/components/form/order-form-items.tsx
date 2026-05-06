@@ -3,6 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -34,6 +41,7 @@ import { useCrossFormNavigation } from '@/context/cross-form-navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
+import { itemStatusOptions } from '../../data/purchase-order-data';
 
 type OrderFormItemsProps = {
   items: OrderItemForm[];
@@ -386,7 +394,7 @@ function ProductVariantSelector({
     product.basePrice ?? product.salePrice ?? product.discountedPrice;
   const emptyVariantItem = (): OrderItemForm => ({
     itemType: 'product',
-    itemStatus: '',
+    itemStatus: 'Created',
     quantity: '',
     itemPrice: '',
     itemTaxAmount: '',
@@ -752,7 +760,6 @@ function ProductCatalogSelector({
     {
       query: {
         staleTime: 5 * 60 * 1000,
-        keepPreviousData: true,
       },
     }
   );
@@ -855,7 +862,6 @@ export function OrderFormItems({
     {
       query: {
         staleTime: 5 * 60 * 1000,
-        keepPreviousData: true,
       },
     }
   );
@@ -954,7 +960,7 @@ export function OrderFormItems({
     const showLineItemFields =
       item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
     const desktopGridClass = showLineItemFields
-      ? 'lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(120px,0.75fr)_auto]'
+      ? 'lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(140px,0.85fr)_minmax(120px,0.75fr)_auto]'
       : 'lg:grid-cols-[minmax(0,2.6fr)_auto]';
 
     return (
@@ -996,6 +1002,28 @@ export function OrderFormItems({
                 className="h-9 border-slate-300"
               />
               <FieldError message={itemErrors?.[index]?.quantity} />
+            </div>
+          ) : null}
+
+          {showLineItemFields ? (
+            <div>
+              <Label className="text-xs font-semibold text-slate-600 mb-1.5">Status</Label>
+              <Select
+                value={item.itemStatus || 'Created'}
+                onValueChange={(value) => onItemChange(index, 'itemStatus', value)}
+              >
+                <SelectTrigger className="h-9 border-slate-300">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {itemStatusOptions.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={itemErrors?.[index]?.itemStatus} />
             </div>
           ) : null}
 
@@ -1137,6 +1165,25 @@ export function OrderFormItems({
                 className="h-9 border-slate-300"
               />
               <FieldError message={itemErrors?.[index]?.quantity} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-600">Status</Label>
+              <Select
+                value={item.itemStatus || 'Created'}
+                onValueChange={(value) => onItemChange(index, 'itemStatus', value)}
+              >
+                <SelectTrigger className="h-9 border-slate-300">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {itemStatusOptions.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={itemErrors?.[index]?.itemStatus} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-600">Price</Label>

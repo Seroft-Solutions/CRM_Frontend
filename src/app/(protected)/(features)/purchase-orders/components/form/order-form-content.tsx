@@ -14,10 +14,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  OrderStatus,
-  PaymentStatus,
+  type OrderStatus,
+  type PaymentStatus,
+  type ShippingMethod,
   OrderRecord,
   getOrderStatusCode,
+  getItemStatusCode,
   getPaymentStatusCode,
   getShippingMethodCode,
   orderStatusOptions,
@@ -39,6 +41,7 @@ import {
 } from '@/core/api/purchase-order';
 import { useGetSundryCreditor as useGetCustomer } from '@/core/api/generated/spring/endpoints/sundry-creditor-resource/sundry-creditor-resource.gen';
 import type { SundryCreditorDTO as CustomerDTO } from '@/core/api/generated/spring/schemas/SundryCreditorDTO';
+import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas';
 import type { PurchaseOrderDTO as OrderDTO } from '@/core/api/purchase-order';
 import {
   useCreatePurchaseOrderDetail as useCreateOrderDetail,
@@ -56,7 +59,6 @@ import {
 } from '@/core/api/purchase-order-shipping-detail';
 import { SaveDraftDialog } from '@/components/form-drafts';
 import { useCrossFormNavigation } from '@/context/cross-form-navigation';
-import type { IDiscount } from '../../../discounts/types/discount';
 import type {
   AddressFieldsForm,
   ItemErrors,
@@ -64,12 +66,14 @@ import type {
   OrderFormErrors,
   OrderFormState,
   OrderItemForm,
+  WarehouseStockEntry,
 } from './order-form-types';
 import { OrderFormAddress } from './order-form-address';
 import { OrderFormFooter } from './order-form-footer';
 import { OrderFormFields } from './order-form-fields';
-import { OrderFormItems } from './order-form-items';
 import { FieldError } from './order-form-field-error';
+import { OrderFormItems as SalesOrderFormItems } from '../../../orders/components/form/order-form-items';
+import { VariantWarehousePanel } from '../../../orders/components/form/order-form-content';
 
 export interface OrderFormProps {
   initialOrder?: OrderRecord;
@@ -82,7 +86,7 @@ const taxRateOptions = ['6', '12', '18'] as const;
 
 const emptyOrderItem = (itemType: OrderItemForm['itemType'] = 'product'): OrderItemForm => ({
   itemType,
-  itemStatus: '',
+  itemStatus: 'Created',
   quantity: '',
   itemPrice: '',
   itemTaxAmount: '',
@@ -94,6 +98,7 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     const qty = Number.parseInt(item.quantity, 10) || 0;
     const price = Number.parseFloat(item.itemPrice) || 0;
     const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+
     return sum + Math.max(qty * price + tax, 0);
   }, 0);
 
@@ -101,11 +106,13 @@ const calculateItemTotal = (item: OrderItemForm) => {
   const qty = Number.parseInt(item.quantity, 10) || 0;
   const price = Number.parseFloat(item.itemPrice) || 0;
   const tax = Number.parseFloat(item.itemTaxAmount) || 0;
+
   return Math.max(qty * price + tax, 0);
 };
 
 const hasItemData = (item: OrderItemForm) => {
   const hasText = (value?: string) => Boolean(value && value.trim() !== '');
+
   return Boolean(
     item.productId ||
       item.variantId ||
@@ -118,9 +125,7 @@ const hasItemData = (item: OrderItemForm) => {
 };
 
 const parseItemStatusValue = (value?: string) => {
-  if (!value) return '';
-  const match = value.match(/\d+/);
-  return match ? match[0] : '';
+  return value || 'Created';
 };
 
 export function OrderFormContent({
@@ -154,6 +159,7 @@ export function OrderFormContent({
     }
 
     sessionStorage.setItem(sessionKey, fallbackId);
+
     return fallbackId;
   });
   const formStateStorageKey = `purchaseOrderFormState:${formSessionId}`;
@@ -186,11 +192,13 @@ export function OrderFormContent({
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
   const [useCustomTaxRate, setUseCustomTaxRate] = useState(() => {
     const rate = defaultState.orderTaxRate.trim();
+
     return rate !== '' && !taxRateOptions.includes(rate as (typeof taxRateOptions)[number]);
   });
   const [shippingEditable, setShippingEditable] = useState(false);
   const [items, setItems] = useState<OrderItemForm[]>(() => {
     if (!initialOrder?.items?.length) return [];
+
     return initialOrder.items.map((item) => ({
       id: item.orderDetailId || undefined,
       itemType: item.productCatalogId ? 'catalog' : 'product',
@@ -200,16 +208,20 @@ export function OrderFormContent({
       productName: item.productName || undefined,
       sku: item.sku || undefined,
       variantAttributes: item.variantAttributes || undefined,
-      itemStatus: item.itemStatusCode?.toString() || parseItemStatusValue(item.itemStatus),
+      itemStatus: item.itemStatus || parseItemStatusValue(item.itemStatusCode),
       quantity: item.quantity ? item.quantity.toString() : '',
       itemPrice: item.itemPrice ? item.itemPrice.toString() : '',
       itemTaxAmount: item.itemTaxAmount ? item.itemTaxAmount.toString() : '',
       itemComment: item.itemComment || '',
     }));
   });
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(() =>
+    initialOrder?.items?.length ? 0 : null
+  );
   const [removedItemIds, setRemovedItemIds] = useState<number[]>([]);
   const [address, setAddress] = useState<OrderAddressForm>(() => {
     const initial = initialOrder?.address;
+
     return {
       shipTo: {
         firstName: initial?.shipTo?.firstName || '',
@@ -335,6 +347,7 @@ export function OrderFormContent({
       }
       if (saved.data?.formState?.customerId) {
         const restoredCustomerId = Number.parseInt(saved.data.formState.customerId, 10);
+
         if (!Number.isNaN(restoredCustomerId)) {
           lastCustomerIdRef.current = restoredCustomerId;
         }
@@ -363,6 +376,7 @@ export function OrderFormContent({
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey[0];
+
             return typeof key === 'string' && key.startsWith('/api/products');
           },
           refetchType: 'active',
@@ -370,6 +384,7 @@ export function OrderFormContent({
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey[0];
+
             return typeof key === 'string' && key.startsWith('/api/product-catalogs');
           },
           refetchType: 'active',
@@ -394,6 +409,7 @@ export function OrderFormContent({
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -415,6 +431,7 @@ export function OrderFormContent({
       }
 
       const href = link.getAttribute('href');
+
       if (
         !href ||
         href.startsWith('http') ||
@@ -432,6 +449,7 @@ export function OrderFormContent({
     };
 
     document.addEventListener('click', handleNavigationClick, true);
+
     return () => {
       document.removeEventListener('click', handleNavigationClick, true);
     };
@@ -446,6 +464,7 @@ export function OrderFormContent({
         if (hasUnsavedChanges) {
           setPendingNavigation(() => onProceed);
           setShowDraftDialog(true);
+
           return;
         }
         onProceed();
@@ -453,6 +472,7 @@ export function OrderFormContent({
     };
 
     registerDraftCheck(draftCheckHandler);
+
     return () => {
       unregisterDraftCheck('purchase-orders');
     };
@@ -477,12 +497,14 @@ export function OrderFormContent({
       return { firstName: '', middleName: '', lastName: '' };
     }
     const parts = contactPerson.trim().split(/\s+/);
+
     if (parts.length === 1) {
       return { firstName: parts[0], middleName: '', lastName: '' };
     }
     if (parts.length === 2) {
       return { firstName: parts[0], middleName: '', lastName: parts[1] };
     }
+
     return {
       firstName: parts[0],
       middleName: parts.slice(1, -1).join(' '),
@@ -494,6 +516,7 @@ export function OrderFormContent({
     const { firstName, middleName, lastName } = splitContactPerson(customer.contactPerson);
 
     const defaultAddr = customer.defaultAddress ?? customer.addresses?.[0];
+
     if (defaultAddr) {
       return {
         firstName,
@@ -534,6 +557,7 @@ export function OrderFormContent({
 
     if (!shouldAutoFill) {
       lastCustomerIdRef.current = currentId;
+
       return;
     }
 
@@ -564,6 +588,7 @@ export function OrderFormContent({
       if (taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])) {
         handleChange('orderTaxRate', '');
       }
+
       return;
     }
     setUseCustomTaxRate(false);
@@ -573,7 +598,7 @@ export function OrderFormContent({
   const handleItemChange = (
     index: number,
     key: keyof OrderItemForm,
-    value: string | number | undefined
+    value: string | number | WarehouseStockEntry[] | undefined
   ) => {
     setItems((prev) => prev.map((item, idx) => (idx === index ? { ...item, [key]: value } : item)));
     setErrors((prev) => {
@@ -582,18 +607,28 @@ export function OrderFormContent({
       }
       const nextItems = prev.items ? [...prev.items] : [];
       const nextItem = { ...nextItems[index] };
+
       delete nextItem[key];
       nextItems[index] = nextItem;
+
       return { ...prev, items: nextItems };
     });
   };
 
   const addItem = () => {
-    setItems((prev) => [...prev, emptyOrderItem()]);
+    setItems((prev) => {
+      setSelectedItemIndex(prev.length);
+
+      return [...prev, emptyOrderItem()];
+    });
   };
 
   const addCatalogItem = () => {
-    setItems((prev) => [...prev, emptyOrderItem('catalog')]);
+    setItems((prev) => {
+      setSelectedItemIndex(prev.length);
+
+      return [...prev, emptyOrderItem('catalog')];
+    });
   };
 
   const applyVariantSelection = (index: number, nextItems: OrderItemForm[], replaceCount = 1) => {
@@ -615,11 +650,170 @@ export function OrderFormContent({
     setItems((prev) => {
       const next = [...prev];
       const [removed] = next.splice(index, 1);
+
       if (removed?.id) {
         setRemovedItemIds((current) => [...current, removed.id!]);
       }
+
       return next;
     });
+    setSelectedItemIndex((current) => {
+      if (current === null) {
+        return null;
+      }
+      if (current === index) {
+        return Math.max(index - 1, 0);
+      }
+      if (current > index) {
+        return current - 1;
+      }
+
+      return current;
+    });
+  };
+
+  useEffect(() => {
+    setSelectedItemIndex((current) => {
+      if (items.length === 0) {
+        return null;
+      }
+      if (current === null) {
+        return 0;
+      }
+
+      return Math.min(current, items.length - 1);
+    });
+  }, [items.length]);
+
+  const buildWarehouseVariantItem = (
+    baseItem: OrderItemForm,
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number]
+  ): OrderItemForm => {
+    const warehouseCode = (stock.warehouse as { code?: string } | undefined)?.code;
+    const warehouseStock: WarehouseStockEntry = {
+      warehouseId: stock.warehouse?.id,
+      warehouseName: stock.warehouse?.name,
+      warehouseCode,
+      variantLabel: variant.sku,
+      stockQuantity: Math.max(0, stock.stockQuantity ?? 0),
+      salesStockQuantity: stock.salesStockQuantity ?? stock.stockQuantity ?? 0,
+    };
+
+    return {
+      ...emptyOrderItem('product'),
+      productId: baseItem.productId,
+      productName: baseItem.productName,
+      variantId: variant.id,
+      sku: variant.sku,
+      warehouseId: stock.warehouse?.id,
+      warehouseName: stock.warehouse?.name,
+      warehouseCode,
+      availableQuantity: warehouseStock.salesStockQuantity ?? warehouseStock.stockQuantity,
+      warehouseStocks: [warehouseStock],
+      variantAttributes: `Variant: ${variant.sku}`,
+      quantity: '1',
+      itemPrice:
+        variant.price !== undefined && variant.price !== null
+          ? String(variant.price)
+          : baseItem.itemPrice,
+    };
+  };
+
+  const handleToggleWarehouseVariant = (
+    variant: ProductVariantDTO,
+    stock: NonNullable<ProductVariantDTO['variantStocks']>[number],
+    checked: boolean
+  ) => {
+    if (selectedItemIndex === null) {
+      return;
+    }
+
+    const selectedItem = items[selectedItemIndex];
+
+    if (!selectedItem?.productId) {
+      return;
+    }
+
+    const warehouseId = stock.warehouse?.id;
+
+    setItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) =>
+          item.itemType === 'product' &&
+          item.productId === selectedItem.productId &&
+          item.variantId === variant.id &&
+          item.warehouseId === warehouseId
+      );
+
+      if (!checked) {
+        if (existingIndex === -1) {
+          return prev;
+        }
+
+        const next = [...prev];
+        const [removed] = next.splice(existingIndex, 1);
+
+        if (removed?.id) {
+          setRemovedItemIds((current) => [...current, removed.id!]);
+        }
+
+        return next.length > 0 ? next : [emptyOrderItem()];
+      }
+
+      if (existingIndex !== -1) {
+        return prev;
+      }
+
+      const nextItem = buildWarehouseVariantItem(selectedItem, variant, stock);
+      const canReplaceSelected =
+        selectedItem.itemType === 'product' &&
+        selectedItem.productId === nextItem.productId &&
+        selectedItem.variantId === undefined &&
+        !selectedItem.id;
+
+      if (canReplaceSelected) {
+        const next = [...prev];
+
+        next[selectedItemIndex] = nextItem;
+
+        return next;
+      }
+
+      const insertAfterIndex = Math.max(
+        ...prev
+          .map((item, index) =>
+            item.itemType === 'product' && item.productId === selectedItem.productId ? index : -1
+          )
+          .filter((entryIndex) => entryIndex >= 0),
+        selectedItemIndex
+      );
+      const next = [
+        ...prev.slice(0, insertAfterIndex + 1),
+        nextItem,
+        ...prev.slice(insertAfterIndex + 1),
+      ];
+
+      setSelectedItemIndex(insertAfterIndex + 1);
+
+      return next;
+    });
+    setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
+  };
+
+  const handleAdjustItemQuantity = (itemIndex: number, delta: number) => {
+    setItems((prev) =>
+      prev.map((item, index) => {
+        if (index !== itemIndex) {
+          return item;
+        }
+
+        const currentQuantity = Number.parseInt(item.quantity, 10) || 0;
+        const nextQuantity = Math.max(0, currentQuantity + delta);
+
+        return { ...item, quantity: String(nextQuantity) };
+      })
+    );
   };
 
   const handleAddressChange = (
@@ -628,6 +822,7 @@ export function OrderFormContent({
     value: string
   ) => {
     const nextValue = key === 'zipcode' ? value.slice(0, 10) : value;
+
     setAddress((prev) => ({
       ...prev,
       [section]: {
@@ -644,6 +839,7 @@ export function OrderFormContent({
           : key === 'zipcode'
             ? 'billToZipcode'
             : 'billToContact';
+
       setErrors((prev) => (prev[errorKey] ? { ...prev, [errorKey]: undefined } : prev));
     }
   };
@@ -666,6 +862,7 @@ export function OrderFormContent({
   const shouldSaveAddress = (value: OrderAddressForm) => {
     const hasShipTo = Object.values(value.shipTo).some((field) => field.trim() !== '');
     const hasBillTo = Object.values(value.billTo).some((field) => field.trim() !== '');
+
     return hasShipTo || hasBillTo || value.billToSameFlag;
   };
 
@@ -688,9 +885,11 @@ export function OrderFormContent({
       }
       if (!numberPattern.test(value.trim())) {
         nextErrors[key] = 'Enter a valid number.';
+
         return;
       }
       const parsed = Number.parseFloat(value);
+
       if (!Number.isFinite(parsed) || parsed < 0) {
         nextErrors[key] = 'Amount cannot be negative.';
       }
@@ -702,9 +901,11 @@ export function OrderFormContent({
       }
       if (!numberPattern.test(value.trim())) {
         nextErrors[key] = 'Enter a valid percentage.';
+
         return;
       }
       const parsed = Number.parseFloat(value);
+
       if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
         nextErrors[key] = 'Percentage must be between 0 and 100.';
       }
@@ -744,16 +945,13 @@ export function OrderFormContent({
 
       if (!hasData) return;
 
-      if (item.itemStatus.trim() && !/^\d+$/.test(item.itemStatus.trim())) {
-        nextItemErrors[index].itemStatus = 'Use a numeric status code.';
-      }
-
       if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
         nextItemErrors[index].quantity = 'Use a whole number.';
       }
 
       if (item.itemPrice.trim()) {
         const value = Number.parseFloat(item.itemPrice);
+
         if (!Number.isFinite(value) || value < 0) {
           nextItemErrors[index].itemPrice = 'Enter a valid amount.';
         }
@@ -761,6 +959,7 @@ export function OrderFormContent({
 
       if (item.itemTaxAmount.trim()) {
         const value = Number.parseFloat(item.itemTaxAmount);
+
         if (!Number.isFinite(value) || value < 0) {
           nextItemErrors[index].itemTaxAmount = 'Enter a valid amount.';
         }
@@ -768,6 +967,7 @@ export function OrderFormContent({
     });
 
     const hasItemErrors = nextItemErrors.some((entry) => Object.keys(entry).length > 0);
+
     if (hasItemErrors) {
       nextErrors.items = nextItemErrors;
     }
@@ -775,16 +975,18 @@ export function OrderFormContent({
     return nextErrors;
   };
 
-  const orderStatusSelectOptions =
-    formState.orderStatus === 'Unknown' ? [...orderStatusOptions, 'Unknown'] : orderStatusOptions;
-  const paymentStatusSelectOptions =
+  const orderStatusSelectOptions: OrderStatus[] =
+    formState.orderStatus === 'Unknown'
+      ? [...orderStatusOptions, 'Unknown']
+      : [...orderStatusOptions];
+  const paymentStatusSelectOptions: PaymentStatus[] =
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']
-      : paymentStatusOptions;
-  const shippingMethodSelectOptions =
+      : [...paymentStatusOptions];
+  const shippingMethodSelectOptions: (ShippingMethod | 'Unknown')[] =
     formState.shippingMethod === 'Unknown'
       ? [...shippingMethodOptions, 'Unknown']
-      : shippingMethodOptions;
+      : [...shippingMethodOptions];
 
   const saveDraft = async (): Promise<boolean> => {
     if (isEditing) return false;
@@ -793,16 +995,19 @@ export function OrderFormContent({
 
     const parseAmount = (value: string) => {
       const parsed = Number.parseFloat(value);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const parseInteger = (value: string) => {
       const parsed = Number.parseInt(value, 10);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const buildAddressPayload = (orderId: number) => {
       const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
+
       return {
         purchaseOrderId: orderId,
         shipToFirstName: address.shipTo.firstName || undefined,
@@ -873,7 +1078,7 @@ export function OrderFormContent({
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
-          const itemStatus = parseInteger(item.itemStatus || '0');
+          const itemStatus = getItemStatusCode(item.itemStatus || 'Created') ?? 'CREATED';
 
           return createOrderDetail({
             data: {
@@ -895,6 +1100,7 @@ export function OrderFormContent({
         });
 
       const addressTasks: Promise<unknown>[] = [];
+
       if (shouldSaveAddress(address)) {
         addressTasks.push(createOrderAddressDetail({ data: buildAddressPayload(orderId) }));
       }
@@ -936,10 +1142,12 @@ export function OrderFormContent({
 
       setRemovedItemIds([]);
       toast.success('Purchase order draft saved successfully.');
+
       return true;
     } catch (error) {
       console.error('Failed to save purchase order draft:', error);
       toast.error('Unable to save purchase order draft.');
+
       return false;
     } finally {
       setSubmitting(false);
@@ -950,6 +1158,7 @@ export function OrderFormContent({
     event.preventDefault();
     if (!items.some(hasItemData)) {
       setShowEmptyCartDialog(true);
+
       return;
     }
     const validationErrors = validateForm();
@@ -957,11 +1166,14 @@ export function OrderFormContent({
       if (Array.isArray(value)) {
         return value.some((entry) => Object.keys(entry).length > 0);
       }
+
       return Boolean(value);
     });
+
     if (hasErrors) {
       setErrors(validationErrors);
       toast.error('Please fix the highlighted fields.');
+
       return;
     }
 
@@ -970,19 +1182,22 @@ export function OrderFormContent({
 
     const parseAmount = (value: string) => {
       const parsed = Number.parseFloat(value);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const parseInteger = (value: string) => {
       const parsed = Number.parseInt(value, 10);
+
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
     const buildAddressPayload = (orderId: number) => {
       const billTo = address.billToSameFlag ? address.shipTo : address.billTo;
+
       return {
         id: addressExists ? orderId : undefined,
-        orderId,
+        purchaseOrderId: orderId,
         shipToFirstName: address.shipTo.firstName || undefined,
         shipToMiddleName: address.shipTo.middleName || undefined,
         shipToLastName: address.shipTo.lastName || undefined,
@@ -1047,6 +1262,7 @@ export function OrderFormContent({
         : await createOrder({ data: payload });
 
       const orderId = result?.id ?? initialOrder?.orderId;
+
       if (!orderId) {
         throw new Error('Order ID missing after save.');
       }
@@ -1061,6 +1277,7 @@ export function OrderFormContent({
             item.itemPrice?.trim() ||
             item.itemTaxAmount?.trim() ||
             item.itemComment?.trim();
+
           return hasData;
         })
         .map((item) => {
@@ -1069,7 +1286,7 @@ export function OrderFormContent({
           const itemPrice = parseAmount(item.itemPrice || '0');
           const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
           const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
-          const itemStatus = parseInteger(item.itemStatus || '0');
+          const itemStatus = getItemStatusCode(item.itemStatus || 'Created') ?? 'CREATED';
 
           const detailPayload = {
             id: item.id,
@@ -1096,13 +1313,9 @@ export function OrderFormContent({
       const deleteTasks = removedItemIds.map((id) => deleteOrderDetail({ id }));
 
       const addressTasks: Promise<unknown>[] = [];
+
       if (shouldSaveAddress(address)) {
-        const addressPayload = {
-          ...buildAddressPayload(orderId),
-          purchaseOrderId: orderId,
-        };
-        // Remove the orderId field as it's not used in purchase order address
-        delete (addressPayload as any).orderId;
+        const addressPayload = buildAddressPayload(orderId);
 
         if (addressExists) {
           addressTasks.push(updateOrderAddressDetail({ id: orderId, data: addressPayload }));
@@ -1158,6 +1371,7 @@ export function OrderFormContent({
       ]);
 
       const failed = results.filter((entry) => entry.status === 'rejected');
+
       if (failed.length > 0) {
         toast.error('Order saved, but some related records failed.', {
           description: 'Please review items, address, or history.',
@@ -1193,7 +1407,7 @@ export function OrderFormContent({
       } else {
         router.push('/purchase-orders');
       }
-    } catch (_error) {
+    } catch {
       toast.error('Unable to save order', {
         description: 'Please check the details and try again.',
       });
@@ -1233,10 +1447,16 @@ export function OrderFormContent({
 
   return (
     <>
-      <form className="space-y-6" onSubmit={handleSubmit}>
-        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <div className="space-y-6">
-            <OrderFormItems
+      <form
+        className="overflow-hidden border border-border bg-muted/30 text-xs shadow-sm"
+        onSubmit={handleSubmit}
+      >
+        <div className="border-b border-border bg-sidebar px-3 py-1 text-center text-xs font-bold text-sidebar-foreground">
+          Purchase Order
+        </div>
+        <div className="grid gap-0 xl:grid-cols-[46%_54%]">
+          <div className="space-y-1 border-border bg-muted/30 p-1 xl:border-r">
+            <SalesOrderFormItems
               items={items}
               itemErrors={errors.items}
               onAddItem={addItem}
@@ -1244,63 +1464,54 @@ export function OrderFormContent({
               onRemoveItem={removeItem}
               onApplyVariantSelection={applyVariantSelection}
               onItemChange={handleItemChange}
+              selectedItemIndex={selectedItemIndex}
+              onSelectItem={setSelectedItemIndex}
               referrerForm="purchase-orders"
               referrerSessionId={formSessionId}
               referrerField="productId"
               referrerCatalogField="productCatalogId"
             />
 
-            <div className="space-y-4 rounded-lg border-2 border-slate-300 bg-gradient-to-br from-white to-slate-50 p-6 shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                  <svg
-                    className="h-5 w-5 text-blue-700"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">Order Details</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Set status, pricing, and customer information
-                  </p>
-                </div>
+            <div className="space-y-2 border border-border bg-card p-2 shadow-sm">
+              <div className="border-b border-border bg-sidebar px-3 py-1">
+                <h3 className="text-center text-xs font-bold text-sidebar-foreground">
+                  Purchase Order Details
+                </h3>
               </div>
               <OrderFormFields
                 formState={formState}
                 errors={errors}
-                orderStatusOptions={orderStatusSelectOptions as any}
-                paymentStatusOptions={paymentStatusSelectOptions as any}
-                shippingMethodOptions={shippingMethodSelectOptions as any}
+                orderStatusOptions={orderStatusSelectOptions}
+                paymentStatusOptions={paymentStatusSelectOptions}
+                shippingMethodOptions={shippingMethodSelectOptions}
                 onChange={handleChange}
               />
+              <OrderFormAddress
+                address={address}
+                errors={errors}
+                onAddressChange={handleAddressChange}
+                onToggleBillToSame={toggleBillToSame}
+                shippingEditable={shippingEditable}
+                onToggleShippingEditable={setShippingEditable}
+              />
             </div>
-
-            <OrderFormAddress
-              address={address}
-              errors={errors}
-              onAddressChange={handleAddressChange}
-              onToggleBillToSame={toggleBillToSame}
-              shippingEditable={shippingEditable}
-              onToggleShippingEditable={setShippingEditable}
-            />
           </div>
 
-          <div className="space-y-6">
-            <div className="sticky top-6 space-y-6">
-              <div className="rounded-lg border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-50 to-amber-50 p-6 shadow-xl">
+          <div className="space-y-2 bg-card p-2">
+            <div className="space-y-2 xl:sticky xl:top-2">
+              <VariantWarehousePanel
+                selectedItem={selectedItemIndex !== null ? items[selectedItemIndex] : undefined}
+                selectedItemIndex={selectedItemIndex}
+                items={items}
+                onToggleWarehouseVariant={handleToggleWarehouseVariant}
+                onAdjustItemQuantity={handleAdjustItemQuantity}
+              />
+
+              <div className="rounded-none border border-border bg-muted/30 p-3 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent">
                     <svg
-                      className="h-4 w-4 text-slate-900"
+                      className="h-4 w-4 text-sidebar-accent-foreground"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -1313,21 +1524,25 @@ export function OrderFormContent({
                       />
                     </svg>
                   </div>
-                  <h3 className="text-base font-bold text-slate-800">Order Summary</h3>
+                  <h3 className="text-sm font-bold text-foreground">Order Summary</h3>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Items Subtotal</span>
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Items Subtotal
+                    </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-800">₹{itemsTotal.toFixed(2)}</span>
+                      <span className="font-semibold text-foreground">
+                        ₹{itemsTotal.toFixed(2)}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setShowItemsBreakdown((prev) => !prev)}
                         disabled={!hasItemSummaries}
                         aria-expanded={showItemsBreakdown}
                         aria-controls="order-items-breakdown"
-                        className="rounded-sm p-1 text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="rounded-sm p-1 text-muted-foreground transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <ChevronDown
                           className={`h-4 w-4 transition-transform ${
@@ -1338,15 +1553,15 @@ export function OrderFormContent({
                     </div>
                   </div>
                   {showItemsBreakdown && hasItemSummaries && (
-                    <div id="order-items-breakdown" className="border-b border-yellow-500/20 pb-2">
+                    <div id="order-items-breakdown" className="border-b border-border pb-2">
                       <div className="space-y-1 text-xs">
                         {itemSummaries.map((item) => (
                           <div
                             key={item.key}
-                            className="flex items-center justify-between text-slate-700"
+                            className="flex items-center justify-between text-foreground"
                           >
                             <span className="truncate">{item.name}</span>
-                            <span className="font-semibold text-slate-800">
+                            <span className="font-semibold text-foreground">
                               Qty {item.quantity} • ₹{item.total.toFixed(2)}
                             </span>
                           </div>
@@ -1354,12 +1569,12 @@ export function OrderFormContent({
                       </div>
                     </div>
                   )}
-                  <div className="flex items-start justify-between gap-3 border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Tax</span>
+                  <div className="flex items-start justify-between gap-3 border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Tax</span>
                     <div className="flex flex-1 flex-col items-end gap-2">
                       <div className="flex items-center gap-2">
                         <Select value={taxRateSelectValue} onValueChange={handleTaxRateSelect}>
-                          <SelectTrigger className="h-8 w-[120px] border-yellow-500/30 bg-white text-xs">
+                          <SelectTrigger className="h-8 w-[120px] border-border bg-card text-xs">
                             <SelectValue placeholder="Select %" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1371,7 +1586,7 @@ export function OrderFormContent({
                             <SelectItem value="custom">Custom</SelectItem>
                           </SelectContent>
                         </Select>
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-semibold text-foreground">
                           ₹{taxAmount.toFixed(2)}
                         </span>
                       </div>
@@ -1388,43 +1603,41 @@ export function OrderFormContent({
                               setUseCustomTaxRate(true);
                               handleChange('orderTaxRate', event.target.value);
                             }}
-                            className="h-8 border-yellow-500/30 bg-white text-xs"
+                            className="h-8 border-border bg-card text-xs"
                           />
                           <FieldError message={errors.orderTaxRate} />
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-between border-b border-yellow-500/20 pb-2">
-                    <span className="text-sm font-medium text-slate-600">Shipping</span>
-                    <span className="font-semibold text-slate-800">
+                  <div className="flex justify-between border-b border-border pb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Shipping</span>
+                    <span className="font-semibold text-foreground">
                       ₹{shippingAmount.toFixed(2)}
                     </span>
                   </div>
-                  <div className="mt-4 flex justify-between rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 p-3">
-                    <span className="font-bold text-slate-900">Order Total</span>
-                    <span className="text-lg font-bold text-slate-900">
-                      ₹{orderTotal.toFixed(2)}
-                    </span>
+                  <div className="mt-4 flex justify-between rounded-lg bg-sidebar-accent p-3 text-sidebar-accent-foreground">
+                    <span className="font-bold">Order Total</span>
+                    <span className="text-lg font-bold">₹{orderTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-md bg-white/60 p-3">
-                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                <div className="mt-4 rounded-md border border-border bg-card p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     Quick Stats
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <div className="text-muted-foreground">Status</div>
-                      <div className="font-semibold text-slate-800">{formState.orderStatus}</div>
+                      <div className="font-semibold text-foreground">{formState.orderStatus}</div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Payment</div>
-                      <div className="font-semibold text-slate-800">{formState.paymentStatus}</div>
+                      <div className="font-semibold text-foreground">{formState.paymentStatus}</div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Items</div>
-                      <div className="font-semibold text-slate-800">{items.length}</div>
+                      <div className="font-semibold text-foreground">{items.length}</div>
                     </div>
                   </div>
                 </div>
@@ -1441,10 +1654,12 @@ export function OrderFormContent({
         entityType="Purchase Order"
         onSaveDraft={async () => {
           const success = await saveDraft();
+
           if (success && pendingNavigation) {
             pendingNavigation();
             setPendingNavigation(null);
           }
+
           return success;
         }}
         onDiscardChanges={() => {
@@ -1457,7 +1672,7 @@ export function OrderFormContent({
           setPendingNavigation(null);
         }}
         isDirty={hasUnsavedChanges}
-        formData={formState as Record<string, any>}
+        formData={formState as Record<string, unknown>}
       />
       <AlertDialog open={showEmptyCartDialog} onOpenChange={setShowEmptyCartDialog}>
         <AlertDialogContent>

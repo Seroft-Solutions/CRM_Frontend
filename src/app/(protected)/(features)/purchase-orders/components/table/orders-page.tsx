@@ -17,8 +17,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
   const [appliedDateFrom, setAppliedDateFrom] = useState('');
   const [appliedDateTo, setAppliedDateTo] = useState('');
 
-  const hasPendingDateChanges =
-    draftDateFrom !== appliedDateFrom || draftDateTo !== appliedDateTo;
+  const hasPendingDateChanges = draftDateFrom !== appliedDateFrom || draftDateTo !== appliedDateTo;
   const hasAppliedDateFilter = Boolean(appliedDateFrom) || Boolean(appliedDateTo);
 
   const handleApplyDateFilter = () => {
@@ -118,9 +117,11 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         entityStatus={draftOnly ? 'DRAFT' : 'ACTIVE'}
         title={draftOnly ? 'Draft Purchase Orders' : 'All Purchase Orders'}
         subtitle="purchase order"
-        searchPlaceholder={draftOnly ? 'Search draft purchase orders...' : 'Search purchase orders...'}
+        searchPlaceholder={
+          draftOnly ? 'Search draft purchase orders...' : 'Search purchase orders...'
+        }
         allTabLabel={draftOnly ? 'All Draft Purchase Orders' : 'All Purchase Orders'}
-        showStatusTabs={false}
+        showStatusTabs={true}
         dateFrom={appliedDateFrom}
         dateTo={appliedDateTo}
       />

@@ -23,6 +23,11 @@ const statusColors: Record<OrderStatus, string> = {
   Shipped: 'bg-cyan-100 text-cyan-800 border-cyan-300',
   Delivered: 'bg-emerald-100 text-emerald-800 border-emerald-300',
   Cancelled: 'bg-rose-100 text-rose-800 border-rose-300',
+  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  Approved: 'bg-green-100 text-green-800 border-green-300',
+  Picked: 'bg-indigo-100 text-indigo-800 border-indigo-300',
+  Packed: 'bg-purple-100 text-purple-800 border-purple-300',
+  'Partially Approved': 'bg-orange-100 text-orange-800 border-orange-300',
   Unknown: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 
@@ -134,9 +139,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
           <CardContent className="space-y-2.5 pt-4 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Base</span>
-              <span className="font-semibold text-slate-800">
-                {formatCurrency(taxableAmount)}
-              </span>
+              <span className="font-semibold text-slate-800">{formatCurrency(taxableAmount)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Shipping</span>

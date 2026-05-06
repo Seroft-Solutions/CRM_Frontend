@@ -255,7 +255,7 @@ function getVariantDisplayParts(
   return { color, size, label: variantLabel };
 }
 
-function VariantWarehousePanel({
+export function VariantWarehousePanel({
   selectedItem,
   selectedItemIndex,
   items,
@@ -397,13 +397,14 @@ function VariantWarehousePanel({
 
       stocks.forEach((stock) => {
         const warehouseId = stock.warehouse?.id;
+        const warehouseCode = (stock.warehouse as { code?: string } | undefined)?.code;
         const key = String(warehouseId ?? stock.warehouse?.name ?? '');
 
         if (!warehouseMap.has(key)) {
           warehouseMap.set(key, {
             id: warehouseId,
             name: stock.warehouse?.name || `Warehouse ${warehouseId ?? 'Unknown'}`,
-            code: stock.warehouse?.code,
+            code: warehouseCode,
           });
         }
       });
@@ -424,6 +425,7 @@ function VariantWarehousePanel({
       return stocks.map((stock, stockIndex) => {
         const warehouseName =
           stock.warehouse?.name || `Warehouse ${stock.warehouse?.id ?? stockIndex + 1}`;
+        const warehouseCode = (stock.warehouse as { code?: string } | undefined)?.code;
         const warehouseKey = String(stock.warehouse?.id ?? warehouseName);
 
         return {
@@ -434,7 +436,7 @@ function VariantWarehousePanel({
           size,
           warehouseId: stock.warehouse?.id,
           warehouseName,
-          warehouseCode: stock.warehouse?.code,
+          warehouseCode,
           quantity:
             (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) -
             getReservedQuantityDelta(variant, stock),

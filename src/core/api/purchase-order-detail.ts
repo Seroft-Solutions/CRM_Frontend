@@ -21,10 +21,12 @@ export interface PurchaseOrderDetailDTO {
     variantAttributes?: string;
     itemTotalAmount?: number;
     quantity?: number;
+    backOrderQuantity?: number;
     itemPrice?: number;
     itemTaxAmount?: number;
-    itemStatus?: number;
+    itemStatus?: string;
     itemComment?: string;
+    comment?: string;
     updatedBy?: string;
     lastUpdated?: string;
     createdBy?: string;
