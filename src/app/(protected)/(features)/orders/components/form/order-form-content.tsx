@@ -55,7 +55,6 @@ import {
   useUpdateOrderDetail,
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
 import {
-  getAllProductVariants,
   useGetAllProductVariants,
 } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
@@ -1893,44 +1892,7 @@ export function OrderFormContent({
   };
 
   const validateRequiredProductVariants = async (): Promise<ItemErrors[] | undefined> => {
-    const rowsMissingVariant = items
-      .map((item, index) => ({ item, index }))
-      .filter(
-        ({ item }) =>
-          item.itemType === 'product' &&
-          typeof item.productId === 'number' &&
-          typeof item.variantId !== 'number'
-      );
-
-    if (rowsMissingVariant.length === 0) {
-      return undefined;
-    }
-
-    const productIds = Array.from(new Set(rowsMissingVariant.map(({ item }) => item.productId!)));
-    const variantChecks = await Promise.all(
-      productIds.map(async (productId) => ({
-        productId,
-        variants: await getAllProductVariants({
-          'productId.equals': productId,
-          'status.equals': 'ACTIVE',
-          size: 1,
-        }),
-      }))
-    );
-    const productIdsWithVariants = new Set(
-      variantChecks.filter(({ variants }) => variants.length > 0).map(({ productId }) => productId)
-    );
-    const nextItemErrors: ItemErrors[] = items.map(() => ({}));
-
-    rowsMissingVariant.forEach(({ item, index }) => {
-      if (productIdsWithVariants.has(item.productId!)) {
-        nextItemErrors[index].variantId = 'Select a variant for this product.';
-      }
-    });
-
-    return nextItemErrors.some((entry) => Object.keys(entry).length > 0)
-      ? nextItemErrors
-      : undefined;
+    return undefined;
   };
 
   const orderStatusSelectOptions: OrderStatus[] = getSelectableOrderStatuses(
