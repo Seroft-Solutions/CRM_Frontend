@@ -54,9 +54,7 @@ import {
   useDeleteOrderDetail,
   useUpdateOrderDetail,
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
-import {
-  useGetAllProductVariants,
-} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
 import { useGetProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import {
@@ -139,16 +137,6 @@ const emptyOrderItem = (itemType: OrderItemForm['itemType'] = 'product'): OrderI
   itemComment: '',
 });
 
-const calculateItemsTotal = (items: OrderItemForm[]) =>
-  items.reduce((sum, item) => {
-    const breakdown = getOrderItemBillingBreakdown(item);
-    const qty = breakdown.billableQuantity;
-    const price = Number.parseFloat(item.itemPrice) || 0;
-    const tax = Number.parseFloat(item.itemTaxAmount) || 0;
-
-    return sum + Math.max(qty * price + tax, 0);
-  }, 0);
-
 const calculateItemTotal = (item: OrderItemForm) => {
   const breakdown = getOrderItemBillingBreakdown(item);
   const qty = breakdown.billableQuantity;
@@ -157,6 +145,9 @@ const calculateItemTotal = (item: OrderItemForm) => {
 
   return Math.max(qty * price + tax, 0);
 };
+
+const calculateItemsTotal = (items: OrderItemForm[]) =>
+  items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
 
 const hasItemData = (item: OrderItemForm) => {
   const hasText = (value?: string) => Boolean(value && value.trim() !== '');
@@ -399,16 +390,15 @@ function VariantWarehousePanel({
     }, 0);
 
   const warehouseList = useMemo(() => {
-    const warehouseMap = new Map<
-      string,
-      { id?: number; name: string; code?: string }
-    >();
+    const warehouseMap = new Map<string, { id?: number; name: string; code?: string }>();
 
     visibleVariants.forEach((variant) => {
       const stocks = variant.variantStocks ?? [];
+
       stocks.forEach((stock) => {
         const warehouseId = stock.warehouse?.id;
         const key = String(warehouseId ?? stock.warehouse?.name ?? '');
+
         if (!warehouseMap.has(key)) {
           warehouseMap.set(key, {
             id: warehouseId,
@@ -458,19 +448,17 @@ function VariantWarehousePanel({
       return allWarehouseRows;
     }
 
-    return allWarehouseRows.filter(
-      (row) => String(row.warehouseId) === selectedWarehouseId
-    );
+    return allWarehouseRows.filter((row) => String(row.warehouseId) === selectedWarehouseId);
   }, [allWarehouseRows, selectedWarehouseId]);
 
   if (!selectedProductId && !selectedCatalogId) {
     return (
       <div className="overflow-x-auto border border-border bg-card shadow-sm">
-        <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:w-max md:flex-row md:divide-x md:divide-y-0">
+        <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
           <LegacyStockTable
             title="Item Params"
             titleClassName="bg-sidebar text-sidebar-foreground"
-            className="md:w-[390px] md:flex-none"
+            className="md:basis-2/3 md:flex-[2]"
             columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
             emptyMessage="Select a product row"
             rows={[]}
@@ -478,7 +466,7 @@ function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-sidebar text-sidebar-foreground"
-            className="md:w-[280px] md:flex-none"
+            className="md:basis-1/3 md:flex-1"
             columns={['Image', 'Color', 'Size', 'Sales Qty', 'Price']}
             emptyMessage="No selected product"
             rows={[]}
@@ -504,7 +492,8 @@ function VariantWarehousePanel({
     selectedCatalogId && selectedCatalogItem
       ? catalogVariants.map((variant, index) => {
           const { color, size } = getVariantDisplayParts(variant, index, optionLabelsById);
-          const price = variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
+          const price =
+            variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
 
           return [
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
@@ -518,7 +507,11 @@ function VariantWarehousePanel({
       : selectedProductItems.map(({ item, index }) => {
           const { color, size } = getItemParamParts(item);
           const variant = variants.find((entry) => entry.id === item.variantId);
-          const price = item.itemPrice ? `₹${item.itemPrice}` : (variant?.price !== undefined && variant?.price !== null ? `₹${variant.price}` : '-');
+          const price = item.itemPrice
+            ? `₹${item.itemPrice}`
+            : variant?.price !== undefined && variant?.price !== null
+              ? `₹${variant.price}`
+              : '-';
 
           return [
             <VariantImageCell key={`image-${index}`} variant={variant} />,
@@ -537,7 +530,7 @@ function VariantWarehousePanel({
 
   return (
     <div className="overflow-x-auto border border-border bg-card shadow-sm">
-      <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:w-max md:flex-row md:divide-x md:divide-y-0">
+      <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
         <LegacyStockTable
           title="Item Params"
           titleClassName={
@@ -545,12 +538,12 @@ function VariantWarehousePanel({
               ? 'bg-sidebar text-sidebar-foreground'
               : 'bg-sidebar-accent text-sidebar-accent-foreground'
           }
-          className="md:w-[390px] md:flex-none"
+          className="md:basis-2/3 md:flex-[2]"
           columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
         />
-        <div className="min-w-0 bg-card md:w-[280px] md:flex-none">
+        <div className="min-w-0 bg-card md:basis-1/3 md:flex-1">
           {warehouseList.length > 0 && !selectedCatalogId ? (
             <select
               value={selectedWarehouseId}
@@ -593,6 +586,7 @@ function VariantWarehousePanel({
                     onClick={() => {
                       if (!selectedCatalogId) {
                         const selected = isWarehouseVariantSelected(row.variant, row.stock);
+
                         onToggleWarehouseVariant(row.variant, row.stock, !selected);
                       }
                     }}
@@ -612,7 +606,9 @@ function VariantWarehousePanel({
                       {formatStockQuantity(row.quantity)}
                     </td>
                     <td className="border border-border px-1 py-0.5">
-                      {row.variant.price !== undefined && row.variant.price !== null ? `₹${row.variant.price}` : '-'}
+                      {row.variant.price !== undefined && row.variant.price !== null
+                        ? `₹${row.variant.price}`
+                        : '-'}
                     </td>
                   </tr>
                 ))
