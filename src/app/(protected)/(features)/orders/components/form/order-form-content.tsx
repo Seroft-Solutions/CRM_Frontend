@@ -471,7 +471,7 @@ function VariantWarehousePanel({
             title="Item Params"
             titleClassName="bg-sidebar text-sidebar-foreground"
             className="md:w-[390px] md:flex-none"
-            columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
+            columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
             emptyMessage="Select a product row"
             rows={[]}
           />
@@ -479,7 +479,7 @@ function VariantWarehousePanel({
             title="Warehouse Stock"
             titleClassName="bg-sidebar text-sidebar-foreground"
             className="md:w-[280px] md:flex-none"
-            columns={['Image', 'Color', 'Size', 'Sales Qty']}
+            columns={['Image', 'Color', 'Size', 'Sales Qty', 'Price']}
             emptyMessage="No selected product"
             rows={[]}
           />
@@ -504,18 +504,21 @@ function VariantWarehousePanel({
     selectedCatalogId && selectedCatalogItem
       ? catalogVariants.map((variant, index) => {
           const { color, size } = getVariantDisplayParts(variant, index, optionLabelsById);
+          const price = variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
 
           return [
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
             color,
             size,
             '1',
+            price,
             selectedCatalog?.productCatalogName || selectedCatalogItem.productName || '-',
           ];
         })
       : selectedProductItems.map(({ item, index }) => {
           const { color, size } = getItemParamParts(item);
           const variant = variants.find((entry) => entry.id === item.variantId);
+          const price = item.itemPrice ? `₹${item.itemPrice}` : (variant?.price !== undefined && variant?.price !== null ? `₹${variant.price}` : '-');
 
           return [
             <VariantImageCell key={`image-${index}`} variant={variant} />,
@@ -527,6 +530,7 @@ function VariantWarehousePanel({
               onDecrease={() => onAdjustItemQuantity(index, -1)}
               onIncrease={() => onAdjustItemQuantity(index, 1)}
             />,
+            price,
             item.warehouseName || item.warehouseCode || '-',
           ];
         });
@@ -542,7 +546,7 @@ function VariantWarehousePanel({
               : 'bg-sidebar-accent text-sidebar-accent-foreground'
           }
           className="md:w-[390px] md:flex-none"
-          columns={['Image', 'Color', 'Size', 'Qty', 'Warehouse']}
+          columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
         />
@@ -572,12 +576,13 @@ function VariantWarehousePanel({
                 <th className="border border-border px-1 py-0.5 text-left font-bold">Color</th>
                 <th className="border border-border px-1 py-0.5 text-left font-bold">Size</th>
                 <th className="border border-border px-1 py-0.5 text-left font-bold">Sales Qty</th>
+                <th className="border border-border px-1 py-0.5 text-left font-bold">Price</th>
               </tr>
             </thead>
             <tbody>
               {filteredRows.length === 0 ? (
                 <tr>
-                  <td className="px-2 py-3 text-muted-foreground" colSpan={4}>
+                  <td className="px-2 py-3 text-muted-foreground" colSpan={5}>
                     No warehouse stock
                   </td>
                 </tr>
@@ -605,6 +610,9 @@ function VariantWarehousePanel({
                     <td className="border border-border px-1 py-0.5">{row.size}</td>
                     <td className="border border-border px-1 py-0.5">
                       {formatStockQuantity(row.quantity)}
+                    </td>
+                    <td className="border border-border px-1 py-0.5">
+                      {row.variant.price !== undefined && row.variant.price !== null ? `₹${row.variant.price}` : '-'}
                     </td>
                   </tr>
                 ))
