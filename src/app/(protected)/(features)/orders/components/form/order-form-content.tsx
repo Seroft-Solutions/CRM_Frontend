@@ -277,6 +277,9 @@ export function VariantWarehousePanel({
   const selectedCatalogId =
     selectedItem?.itemType === 'catalog' ? selectedItem.productCatalogId : undefined;
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('all');
+  const [selectedCatalogWarehouseByVariant, setSelectedCatalogWarehouseByVariant] = useState<
+    Record<string, string>
+  >({});
   const { data: variantsData = [], isFetching } = useGetAllProductVariants(
     {
       'productId.equals': selectedProductId,
@@ -300,7 +303,42 @@ export function VariantWarehousePanel({
     }
   );
   const catalogVariants = (selectedCatalog?.variants ?? []) as ProductVariantDTO[];
-  const visibleVariants = selectedCatalogId ? catalogVariants : variants;
+  const selectedCatalogProductId = selectedCatalog?.product?.id;
+  const { data: hydratedCatalogVariantsData = [], isFetching: isCatalogVariantsFetching } =
+    useGetAllProductVariants(
+      {
+        'productId.equals': selectedCatalogProductId,
+        'status.equals': 'ACTIVE',
+        size: 1000,
+      },
+      {
+        query: {
+          enabled: Boolean(selectedCatalogId) && typeof selectedCatalogProductId === 'number',
+          staleTime: 5 * 60 * 1000,
+        },
+      }
+    );
+  const hydratedCatalogVariants = useMemo(() => {
+    const hydratedById = new Map(
+      (hydratedCatalogVariantsData as ProductVariantDTO[])
+        .filter((variant) => typeof variant.id === 'number')
+        .map((variant) => [variant.id!, variant])
+    );
+
+    return catalogVariants.map((variant) => {
+      const hydratedVariant = typeof variant.id === 'number' ? hydratedById.get(variant.id) : null;
+
+      return hydratedVariant
+        ? {
+            ...variant,
+            ...hydratedVariant,
+            selections: hydratedVariant.selections ?? variant.selections,
+            variantStocks: hydratedVariant.variantStocks ?? variant.variantStocks,
+          }
+        : variant;
+    });
+  }, [catalogVariants, hydratedCatalogVariantsData]);
+  const visibleVariants = selectedCatalogId ? hydratedCatalogVariants : variants;
   const optionIdsMissingLabels = useMemo(
     () =>
       Array.from(
@@ -415,6 +453,7 @@ export function VariantWarehousePanel({
 
   useEffect(() => {
     setSelectedWarehouseId('all');
+    setSelectedCatalogWarehouseByVariant({});
   }, [selectedProductId, selectedCatalogId]);
 
   const allWarehouseRows = useMemo(() => {
@@ -480,7 +519,9 @@ export function VariantWarehousePanel({
 
   if (
     (selectedProductId && isFetching && variants.length === 0) ||
-    (selectedCatalogId && isCatalogFetching && catalogVariants.length === 0)
+    (selectedCatalogId &&
+      (isCatalogFetching || isCatalogVariantsFetching) &&
+      hydratedCatalogVariants.length === 0)
   ) {
     return (
       <div className="border border-border bg-card p-4 text-xs text-muted-foreground">
@@ -492,10 +533,11 @@ export function VariantWarehousePanel({
 
   const itemParamRows =
     selectedCatalogId && selectedCatalogItem
-      ? catalogVariants.map((variant, index) => {
+      ? hydratedCatalogVariants.map((variant, index) => {
           const { color, size } = getVariantDisplayParts(variant, index, optionLabelsById);
           const price =
             variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
+          const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
 
           return [
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
@@ -503,7 +545,17 @@ export function VariantWarehousePanel({
             size,
             '1',
             price,
-            selectedCatalog?.productCatalogName || selectedCatalogItem.productName || '-',
+            <CatalogVariantWarehouseSelect
+              key={`catalog-warehouse-${variantKey}`}
+              variant={variant}
+              value={selectedCatalogWarehouseByVariant[variantKey]}
+              onChange={(value) =>
+                setSelectedCatalogWarehouseByVariant((current) => ({
+                  ...current,
+                  [variantKey]: value,
+                }))
+              }
+            />,
           ];
         })
       : selectedProductItems.map(({ item, index }) => {
@@ -659,6 +711,50 @@ function QuantityStepper({
         <Plus className="h-3 w-3" />
       </button>
     </div>
+  );
+}
+
+function CatalogVariantWarehouseSelect({
+  variant,
+  value,
+  onChange,
+}: {
+  variant: ProductVariantDTO;
+  value?: string;
+  onChange: (value: string) => void;
+}) {
+  const warehouseOptions = (variant.variantStocks ?? [])
+    .map((stock, stockIndex) => {
+      const quantity = stock.salesStockQuantity ?? stock.stockQuantity ?? 0;
+      const warehouseId = stock.warehouse?.id;
+      const warehouseCode = (stock.warehouse as { code?: string } | undefined)?.code;
+      const warehouseName = stock.warehouse?.name || `Warehouse ${warehouseId ?? stockIndex + 1}`;
+
+      return {
+        value: String(warehouseId ?? warehouseName),
+        label: warehouseCode ? `${warehouseName} (${warehouseCode})` : warehouseName,
+        quantity,
+      };
+    })
+    .filter((option) => option.quantity > 0);
+
+  if (warehouseOptions.length === 0) {
+    return <span className="text-muted-foreground">No warehouse</span>;
+  }
+
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-7 w-full min-w-[120px] rounded-none border-border bg-card px-1 text-[11px]">
+        <SelectValue placeholder="Select warehouse" />
+      </SelectTrigger>
+      <SelectContent>
+        {warehouseOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
