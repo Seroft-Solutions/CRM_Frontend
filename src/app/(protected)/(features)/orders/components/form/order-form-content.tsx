@@ -456,11 +456,11 @@ export function VariantWarehousePanel({
   if (!selectedProductId && !selectedCatalogId) {
     return (
       <div className="overflow-x-auto border border-border bg-card shadow-sm">
-        <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
+        <div className="grid min-h-[520px] min-w-full grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
           <LegacyStockTable
             title="Item Params"
             titleClassName="bg-sidebar text-sidebar-foreground"
-            className="md:basis-2/3 md:flex-[2]"
+            className="w-full"
             columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
             emptyMessage="Select a product row"
             rows={[]}
@@ -468,7 +468,7 @@ export function VariantWarehousePanel({
           <LegacyStockTable
             title="Warehouse Stock"
             titleClassName="bg-sidebar text-sidebar-foreground"
-            className="md:basis-1/3 md:flex-1"
+            className="w-full"
             columns={['Image', 'Color', 'Size', 'Sales Qty', 'Price']}
             emptyMessage="No selected product"
             rows={[]}
@@ -532,7 +532,7 @@ export function VariantWarehousePanel({
 
   return (
     <div className="overflow-x-auto border border-border bg-card shadow-sm">
-      <div className="flex min-h-[520px] min-w-full flex-col divide-y divide-border md:flex-row md:divide-x md:divide-y-0">
+      <div className="grid min-h-[520px] min-w-full grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
         <LegacyStockTable
           title="Item Params"
           titleClassName={
@@ -540,12 +540,12 @@ export function VariantWarehousePanel({
               ? 'bg-sidebar text-sidebar-foreground'
               : 'bg-sidebar-accent text-sidebar-accent-foreground'
           }
-          className="md:basis-2/3 md:flex-[2]"
+          className="w-full"
           columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
         />
-        <div className="min-w-0 bg-card md:basis-1/3 md:flex-1">
+        <div className="min-w-0 bg-card">
           {warehouseList.length > 0 && !selectedCatalogId ? (
             <select
               value={selectedWarehouseId}
