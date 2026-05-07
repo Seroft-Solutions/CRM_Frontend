@@ -538,12 +538,22 @@ export function VariantWarehousePanel({
           const price =
             variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
           const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
+          const catalogQuantity = Number.parseInt(selectedCatalogItem.quantity, 10) || 0;
 
           return [
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
             color,
             size,
-            '1',
+            <QuantityStepper
+              key={`catalog-qty-${variantKey}`}
+              quantity={catalogQuantity}
+              onDecrease={() =>
+                selectedItemIndex !== null && onAdjustItemQuantity(selectedItemIndex, -1)
+              }
+              onIncrease={() =>
+                selectedItemIndex !== null && onAdjustItemQuantity(selectedItemIndex, 1)
+              }
+            />,
             price,
             <CatalogVariantWarehouseSelect
               key={`catalog-warehouse-${variantKey}`}
