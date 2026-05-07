@@ -58,6 +58,15 @@ export const itemStatusCodeOptions = [
   'CANCELLED',
 ] as const;
 
+export type PurchaseOrderApproveItemDTO = {
+  orderDetailId: number;
+  approvedQuantity: number;
+};
+
+export type PurchaseOrderApproveDTO = {
+  items: PurchaseOrderApproveItemDTO[];
+};
+
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
@@ -183,7 +192,6 @@ export const getPaymentStatusLabel = (code?: number): PaymentStatus =>
 export const getPaymentStatusCode = (status?: PaymentStatus) =>
   getCodeFromLabel(paymentStatusOptions, status);
 
-
 export const getShippingMethodLabel = (code?: number): ShippingMethod =>
   getLabelFromCode(shippingMethodOptions, code) as ShippingMethod;
 
@@ -203,7 +211,6 @@ export const getItemStatusCode = (label?: string | null): ItemStatusCode | undef
 
   return index === -1 ? undefined : itemStatusCodeOptions[index];
 };
-
 
 const resolveOrderTotal = (order: PurchaseOrderDTO) => {
   if (typeof order.orderTotalAmount === 'number') {

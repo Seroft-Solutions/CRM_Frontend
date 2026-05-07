@@ -1,8 +1,11 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import {
+  CheckCircle,
   ChevronDown,
   ChevronRight,
   ChevronUp,
@@ -39,6 +42,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
+import { useUpdatePurchaseOrder, type PurchaseOrderDTO } from '@/core/api/purchase-order';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
   OrderStatus,
@@ -142,7 +146,10 @@ export function OrderTable({
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
   const isMounted = useRef(false);
+  const { mutateAsync: updatePurchaseOrder } = useUpdatePurchaseOrder();
   const statusTabOptions = entityStatus === 'DRAFT' ? orderStatusOptions : orderStatusTabOrder;
 
   // Filter states
@@ -380,6 +387,25 @@ export function OrderTable({
   const handleStatusFilterChange = (newFilter: OrderStatus | 'All') => {
     setStatusFilter(newFilter);
     setCurrentPage(1);
+  };
+
+  const handleApprove = async (orderId: number) => {
+    if (orderId <= 0) return;
+
+    setUpdatingOrderId(orderId);
+    try {
+      await updatePurchaseOrder({
+        id: orderId,
+        data: { id: orderId, orderStatus: 6 },
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] });
+      toast.success(`Purchase order #${orderId} approved successfully.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to approve purchase order');
+    } finally {
+      setUpdatingOrderId((currentId) => (currentId === orderId ? null : currentId));
+    }
   };
 
   const handleSearchChange = (value: string) => {
@@ -866,6 +892,27 @@ export function OrderTable({
                               View
                             </Link>
                           </DropdownMenuItem>
+                          {['Created', 'Pending', 'Partially Approved'].includes(
+                            order.orderStatus
+                          ) ? (
+                            <>
+                              <DropdownMenuItem
+                                disabled={updatingOrderId === order.orderId}
+                                onClick={() => handleApprove(order.orderId)}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                {updatingOrderId === order.orderId ? 'Approving...' : 'Approve'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`/purchase-orders/${order.orderId}/edit-approve?from=list`}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Edit & Approve
+                                </Link>
+                              </DropdownMenuItem>
+                            </>
+                          ) : null}
                           <DropdownMenuItem asChild>
                             <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
                               <Package className="h-4 w-4 mr-2" />

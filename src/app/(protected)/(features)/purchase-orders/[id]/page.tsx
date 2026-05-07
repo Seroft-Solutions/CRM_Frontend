@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PermissionGuard } from '@/core/auth';
 import { OrderDetailContainer } from '../components/order-detail-container';
-import { Eye, ArrowLeft, Edit } from 'lucide-react';
+import { CheckCircle, Eye, ArrowLeft, Edit } from 'lucide-react';
 import { useState, use } from 'react';
 import { OrderRecord } from '../data/purchase-order-data';
 import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
@@ -36,28 +36,51 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
               <Eye className="w-4 h-4 text-sidebar-accent-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-sidebar-foreground">Purchase Order #{idParam}</h1>
-              <p className="text-sm text-sidebar-foreground/80">View purchase order details and history</p>
+              <h1 className="text-xl font-semibold text-sidebar-foreground">
+                Purchase Order #{idParam}
+              </h1>
+              <p className="text-sm text-sidebar-foreground/80">
+                View purchase order details and history
+              </p>
             </div>
           </div>
 
           {/* Center Section: Action Buttons */}
           <div className="flex-1 flex justify-center gap-2">
-            <Button asChild size="sm" variant="outline" className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
+            >
               <Link href="/purchase-orders">
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Link>
             </Button>
-            <Button asChild size="sm" className="gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90">
+            {orderData && orderData.orderStatus === 'Created' ? (
+              <Button
+                asChild
+                size="sm"
+                className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Link href={`/purchase-orders/${id}/edit-approve?from=order`}>
+                  <CheckCircle className="h-4 w-4" />
+                  Edit & Approve
+                </Link>
+              </Button>
+            ) : null}
+            <Button
+              asChild
+              size="sm"
+              className="gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90"
+            >
               <Link href={`/purchase-orders/${id}/edit`}>
                 <Edit className="h-4 w-4" />
                 Edit
               </Link>
             </Button>
-            {orderData && (
-              <InvoicePrintButton order={orderData} orderType="purchase" />
-            )}
+            {orderData && <InvoicePrintButton order={orderData} orderType="purchase" />}
           </div>
 
           {/* Right Section: Spacer for balance */}

@@ -1,24 +1,34 @@
+'use client';
+
 import Link from 'next/link';
+import { use } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { PermissionGuard } from '@/core/auth';
 import { Button } from '@/components/ui/button';
-import { OrderEditForm } from '../../components/form/order-edit-form';
+import { Badge } from '@/components/ui/badge';
+import { usePurchaseOrderRecord } from '../../hooks';
+import { PurchaseOrderApprovePanel } from '../../components/purchase-order-approve-panel';
 
 interface PurchaseOrderEditApprovePageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    from?: string;
+  }>;
 }
 
-export const metadata = {
-  title: 'Edit & Approve Purchase Order',
-};
-
-export default async function PurchaseOrderEditApprovePage({
+export default function PurchaseOrderEditApprovePage({
   params,
+  searchParams,
 }: PurchaseOrderEditApprovePageProps) {
-  const { id: idParam } = await params;
+  const { id: idParam } = use(params);
+  const { from } = use(searchParams);
   const id = Number.parseInt(idParam, 10);
+  const router = useRouter();
+  const navigationSource = from === 'list' ? 'list' : 'order';
+  const { orderRecord, isLoading, isError } = usePurchaseOrderRecord(id, { includeHistory: false });
 
   return (
     <PermissionGuard
@@ -38,32 +48,74 @@ export default async function PurchaseOrderEditApprovePage({
                   Edit & Approve Purchase Order
                 </h1>
                 <p className="text-sm text-sidebar-foreground/80">
-                  Review purchase items, update status, and save approval changes.
+                  Review and adjust quantities before approving. Excess quantities will be returned
+                  to stock.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-1 justify-center">
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:border-amber-600 hover:from-yellow-600 hover:to-amber-600"
-              >
-                <Link href={`/purchase-orders/${id}`}>
+            <div className="flex flex-1 justify-center gap-2">
+              {navigationSource === 'order' ? (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
+                >
+                  <Link href={`/purchase-orders/${id}`}>
+                    <ArrowLeft className="h-4 w-4" />
+                    Back To Purchase Order
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
+                  onClick={() => {
+                    if (window.history.length > 1) {
+                      router.back();
+
+                      return;
+                    }
+                    router.push('/purchase-orders');
+                  }}
+                >
                   <ArrowLeft className="h-4 w-4" />
-                  Back To Purchase Order
-                </Link>
-              </Button>
+                  Back
+                </Button>
+              )}
             </div>
 
-            <div className="flex-1" />
+            <div className="flex flex-1 justify-end">
+              {orderRecord ? (
+                <Badge className="bg-sidebar-accent text-sidebar-accent-foreground">
+                  Purchase Order #{orderRecord.orderId}
+                </Badge>
+              ) : null}
+            </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <OrderEditForm orderId={id} />
-        </div>
+        {isLoading ? (
+          <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-muted-foreground shadow-sm">
+            Loading purchase order details...
+          </div>
+        ) : isError || !orderRecord ? (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700 shadow-sm">
+            Unable to load this purchase order for approval.
+          </div>
+        ) : orderRecord.orderStatus !== 'Created' &&
+          orderRecord.orderStatus !== 'Partially Approved' ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-700 shadow-sm">
+            Only orders with "Created" or "Partially Approved" status can be edited and approved.
+            Current status: {orderRecord.orderStatus}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <PurchaseOrderApprovePanel order={orderRecord} />
+          </div>
+        )}
       </div>
     </PermissionGuard>
   );
