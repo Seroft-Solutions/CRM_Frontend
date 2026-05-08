@@ -1895,7 +1895,7 @@ export function OrderFormItems({
             <Button
               type="button"
               onClick={onAddCatalogItem}
-              className="h-8 w-full rounded-none bg-sidebar-accent px-3 text-xs text-sidebar-accent-foreground shadow-sm hover:bg-sidebar-accent/90 sm:w-auto"
+              className="h-8 w-full rounded-none bg-sidebar px-3 text-xs text-sidebar-foreground shadow-sm hover:bg-sidebar/90 sm:w-auto"
             >
               <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -1911,7 +1911,7 @@ export function OrderFormItems({
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 gap-1.5 rounded-none border-dashed border-sidebar-accent/30 text-xs text-sidebar-accent hover:bg-sidebar-accent/10 hover:text-sidebar-accent"
+              className="h-8 gap-1.5 rounded-none border-dashed border-sidebar/30 text-xs text-sidebar hover:bg-sidebar/10 hover:text-sidebar"
               onClick={handleCreateCatalog}
             >
               <Plus className="h-4 w-4" />
