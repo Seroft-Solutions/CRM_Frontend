@@ -188,7 +188,7 @@ export function VariantsTable({
                 disabled={!bulkPrice || Number(bulkPrice) <= 0}
               >
                 <Plus className="h-3 w-3 mr-1" />
-                Add to all
+                Copy to all
               </Button>
             </div>
             <div className="flex items-center gap-2 border-l pl-4">

@@ -1420,18 +1420,16 @@ export function ProductVariantManager({
       const next: Record<string, DraftVariantRow> = {};
 
       Object.entries(prev).forEach(([key, row]) => {
-        const existingPrice = row.price || 0;
-
         next[key] = {
           ...row,
-          price: existingPrice + price,
+          price,
         };
       });
 
       return next;
     });
 
-    toast.success(`Added ${price} to price for all variants`);
+    toast.success(`Price (${price}) copied to all variants`);
   };
 
   const handleBulkStockUpdate = (warehouseId: number, stockToAdd: number) => {
