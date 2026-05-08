@@ -276,7 +276,7 @@ export function VariantWarehousePanel({
     selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
   const selectedCatalogId =
     selectedItem?.itemType === 'catalog' ? selectedItem.productCatalogId : undefined;
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('all');
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
   const [selectedCatalogWarehouseByVariant, setSelectedCatalogWarehouseByVariant] = useState<
     Record<string, string>
   >({});
@@ -452,7 +452,7 @@ export function VariantWarehousePanel({
   }, [visibleVariants]);
 
   useEffect(() => {
-    setSelectedWarehouseId('all');
+    setSelectedWarehouseId('');
     setSelectedCatalogWarehouseByVariant({});
   }, [selectedProductId, selectedCatalogId]);
 
@@ -474,6 +474,7 @@ export function VariantWarehousePanel({
           color,
           size,
           warehouseId: stock.warehouse?.id,
+          warehouseKey,
           warehouseName,
           warehouseCode,
           quantity:
@@ -485,11 +486,11 @@ export function VariantWarehousePanel({
   }, [visibleVariants, optionLabelsById, getReservedQuantityDelta]);
 
   const filteredRows = useMemo(() => {
-    if (selectedWarehouseId === 'all') {
-      return allWarehouseRows;
+    if (!selectedWarehouseId) {
+      return [];
     }
 
-    return allWarehouseRows.filter((row) => String(row.warehouseId) === selectedWarehouseId);
+    return allWarehouseRows.filter((row) => row.warehouseKey === selectedWarehouseId);
   }, [allWarehouseRows, selectedWarehouseId]);
 
   if (!selectedProductId && !selectedCatalogId) {
@@ -505,11 +506,11 @@ export function VariantWarehousePanel({
             rows={[]}
           />
           <LegacyStockTable
-            title="Warehouse Stock"
+            title="Select warehouse"
             titleClassName="bg-sidebar text-sidebar-foreground"
             className="w-full"
             columns={['Image', 'Color', 'Size', 'Sales Qty', 'Price']}
-            emptyMessage="No selected product"
+            emptyMessage="Select warehouse"
             rows={[]}
           />
         </div>
@@ -608,13 +609,13 @@ export function VariantWarehousePanel({
           rows={itemParamRows}
         />
         <div className="min-w-0 bg-card">
-          {warehouseList.length > 0 && !selectedCatalogId ? (
+          {warehouseList.length > 0 ? (
             <select
               value={selectedWarehouseId}
               onChange={(e) => setSelectedWarehouseId(e.target.value)}
               className="w-full px-2 py-1 text-center text-xs font-bold bg-sidebar text-sidebar-foreground focus:outline-none cursor-pointer [&>option]:text-white"
             >
-              <option value="all">Warehouse Stock</option>
+              <option value="">Select warehouse</option>
               {warehouseList.map((wh) => (
                 <option key={String(wh.id ?? wh.name)} value={String(wh.id ?? wh.name)}>
                   {wh.name}
@@ -623,7 +624,7 @@ export function VariantWarehousePanel({
             </select>
           ) : (
             <div className="px-2 py-1 text-center text-xs font-bold bg-sidebar text-sidebar-foreground">
-              Warehouse Stock
+              Select warehouse
             </div>
           )}
           <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
@@ -640,7 +641,7 @@ export function VariantWarehousePanel({
               {filteredRows.length === 0 ? (
                 <tr>
                   <td className="px-2 py-3 text-muted-foreground" colSpan={5}>
-                    No warehouse stock
+                    {selectedWarehouseId ? 'No warehouse stock' : 'Select warehouse'}
                   </td>
                 </tr>
               ) : (
