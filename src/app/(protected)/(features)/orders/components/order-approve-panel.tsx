@@ -64,7 +64,12 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
 
   const rows = useMemo(() => {
     return order.items
-      .filter((item) => !item.itemStatusCode || item.itemStatusCode === 'CREATED')
+      .filter(
+        (item) =>
+          !item.itemStatusCode ||
+          item.itemStatusCode === 'CREATED' ||
+          item.itemStatusCode === 'ISSUE'
+      )
       .map((item) => {
         const draft = draftState[item.orderDetailId] ?? { approvedQuantity: '0' };
         const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
