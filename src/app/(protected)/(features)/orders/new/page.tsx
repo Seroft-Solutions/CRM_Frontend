@@ -21,7 +21,7 @@ export default async function CreateOrderPage({ searchParams }: CreateOrderPageP
       unauthorizedTitle="Access Denied to Create Order"
       unauthorizedDescription="You don't have permission to create new orders."
     >
-      <div className="relative left-1/2 w-[calc(100vw-var(--sidebar-width,16rem)-2rem)] max-w-none -translate-x-1/2">
+      <div className="relative left-1/2 w-[calc(100vw-var(--sidebar-width,16rem)-0.5rem)] max-w-none -translate-x-1/2 group-has-data-[collapsible=icon]/sidebar-wrapper:w-[calc(100vw-var(--sidebar-width-icon,3rem)-0.5rem)]">
         <Suspense fallback={<div>Loading...</div>}>
           <OrderForm callId={callId} customerId={customerId} />
         </Suspense>
