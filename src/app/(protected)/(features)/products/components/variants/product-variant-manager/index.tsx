@@ -127,6 +127,9 @@ export function ProductVariantManager({
     Record<number, Set<number>>
   >({});
   const [draftVariantsByKey, setDraftVariantsByKey] = useState<Record<string, DraftVariantRow>>({});
+  const [existingVariantOverridesById, setExistingVariantOverridesById] = useState<
+    Record<number, ExistingVariantRow>
+  >({});
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
   const validationErrorsRef = useRef<Record<string, string[]>>({});
 
@@ -579,12 +582,15 @@ export function ProductVariantManager({
   }, [productId, existingVariantRows, selectedOptionIdsByAttributeId, optionById, attributeById]);
 
   const displayExistingVariantRows = useMemo(() => {
-    if (upgradeCandidate) {
-      return [upgradeCandidate];
-    }
+    const rows = upgradeCandidate ? [upgradeCandidate] : existingVariantRows;
 
-    return existingVariantRows;
-  }, [existingVariantRows, upgradeCandidate]);
+    return rows.map((row) => existingVariantOverridesById[row.id] ?? row);
+  }, [existingVariantRows, upgradeCandidate, existingVariantOverridesById]);
+
+  useEffect(() => {
+    setExistingVariantOverridesById({});
+    setEditingRowData(null);
+  }, [productId]);
 
   const existingCombinationKeys = useMemo(() => {
     const set = new Set<string>();
@@ -1180,6 +1186,26 @@ export function ProductVariantManager({
     });
   };
 
+  const buildExistingVariantPayload = (
+    variant: ExistingVariantRow
+  ): ProductVariantDTO & { variantStocks?: Array<Record<string, unknown>> } => ({
+    id: variant.id,
+    sku: normalizeSku(variant.sku, 'PROD'),
+    price: variant.price,
+    stockQuantity: variant.stockQuantity,
+    variantStocks: (variant.variantStocks ?? []).map((variantStock) => ({
+      id: variantStock.id,
+      stockQuantity: Number(variantStock.stockQuantity) || 0,
+      warehouse:
+        typeof variantStock.warehouseId === 'number'
+          ? ({ id: variantStock.warehouseId } as Record<string, unknown>)
+          : undefined,
+    })),
+    status: variant.status,
+    isPrimary: variant.isPrimary ?? false,
+    product: productId ? { id: productId } : undefined,
+  });
+
   const handleUpdateEditingRow = (updatedValues: Partial<ExistingVariantRow>) => {
     if (!editingRowData) return;
     if (updatedValues.isPrimary) {
@@ -1216,23 +1242,7 @@ export function ProductVariantManager({
       }
     }
 
-    const payload: ProductVariantDTO & { variantStocks?: Array<Record<string, unknown>> } = {
-      id: editingRowData.id,
-      sku: normalizeSku(editingRowData.sku, 'PROD'),
-      price: editingRowData.price,
-      stockQuantity: editingRowData.stockQuantity,
-      variantStocks: (editingRowData.variantStocks ?? []).map((variantStock) => ({
-        id: variantStock.id,
-        stockQuantity: Number(variantStock.stockQuantity) || 0,
-        warehouse:
-          typeof variantStock.warehouseId === 'number'
-            ? ({ id: variantStock.warehouseId } as Record<string, unknown>)
-            : undefined,
-      })),
-      status: editingRowData.status,
-      isPrimary: editingRowData.isPrimary ?? false,
-      product: productId ? { id: productId } : undefined,
-    };
+    const payload = buildExistingVariantPayload(editingRowData);
 
     toast.promise(
       partialUpdateVariantMutation.mutateAsync({
@@ -1429,60 +1439,137 @@ export function ProductVariantManager({
       return next;
     });
 
+    const updatedExistingRows = displayExistingVariantRows.map((row) => ({
+      ...(editingRowData?.id === row.id ? editingRowData : row),
+      price,
+    }));
+
+    if (updatedExistingRows.length > 0) {
+      setExistingVariantOverridesById((prev) => {
+        const next = { ...prev };
+
+        updatedExistingRows.forEach((row) => {
+          next[row.id] = row;
+        });
+
+        return next;
+      });
+
+      setEditingRowData((prev) => (prev ? { ...prev, price } : null));
+
+      toast.promise(
+        Promise.all(
+          updatedExistingRows.map((row) =>
+            partialUpdateVariantMutation.mutateAsync({
+              id: row.id,
+              data: buildExistingVariantPayload(row),
+            })
+          )
+        ),
+        {
+          loading: 'Copying price to saved variants...',
+          success: async () => {
+            await invalidateVariantQueries();
+
+            return `Price (${price}) copied to all variants`;
+          },
+          error: (err) => `Failed to copy price: ${err.message}`,
+        }
+      );
+
+      return;
+    }
+
     toast.success(`Price (${price}) copied to all variants`);
   };
 
   const handleBulkStockUpdate = (warehouseId: number, stockToAdd: number) => {
     const selectedWarehouse = warehouses.find((warehouse) => warehouse.id === warehouseId);
+    const applyStockToVariant = <T extends DraftVariantRow | ExistingVariantRow>(row: T): T => {
+      const existingVariantStocks = row.variantStocks || [];
+      const hasSelectedWarehouse = existingVariantStocks.some(
+        (variantStock) => variantStock.warehouseId === warehouseId
+      );
+      const updatedVariantStocks = hasSelectedWarehouse
+        ? existingVariantStocks.map((variantStock) => {
+            if (variantStock.warehouseId === warehouseId) {
+              return {
+                ...variantStock,
+                stockQuantity: (variantStock.stockQuantity || 0) + stockToAdd,
+              };
+            }
+
+            return variantStock;
+          })
+        : [
+            ...existingVariantStocks,
+            {
+              warehouseId,
+              warehouseName: selectedWarehouse?.name,
+              stockQuantity: stockToAdd,
+            },
+          ];
+      const stockQuantity = updatedVariantStocks.reduce(
+        (sum, variantStock) => sum + (variantStock.stockQuantity || 0),
+        0
+      );
+
+      return {
+        ...row,
+        variantStocks: updatedVariantStocks,
+        stockQuantity,
+      };
+    };
 
     setDraftVariantsByKey((prev) => {
       const next: Record<string, DraftVariantRow> = {};
-      const warehouseAlreadyUsed = Object.values(prev).some((row) =>
-        (row.variantStocks || []).some((variantStock) => variantStock.warehouseId === warehouseId)
-      );
 
       Object.entries(prev).forEach(([key, row]) => {
-        const existingVariantStocks = row.variantStocks || [];
-        const hasSelectedWarehouse = existingVariantStocks.some(
-          (variantStock) => variantStock.warehouseId === warehouseId
-        );
-
-        const updatedVariantStocks = hasSelectedWarehouse
-          ? existingVariantStocks.map((variantStock) => {
-              if (variantStock.warehouseId === warehouseId) {
-                return {
-                  ...variantStock,
-                  stockQuantity: (variantStock.stockQuantity || 0) + stockToAdd,
-                };
-              }
-
-              return variantStock;
-            })
-          : warehouseAlreadyUsed
-            ? existingVariantStocks
-            : [
-                ...existingVariantStocks,
-                {
-                  warehouseId,
-                  warehouseName: selectedWarehouse?.name,
-                  stockQuantity: stockToAdd,
-                },
-              ];
-
-        const stockQuantity = updatedVariantStocks.reduce(
-          (sum, vs) => sum + (vs.stockQuantity || 0),
-          0
-        );
-
-        next[key] = {
-          ...row,
-          variantStocks: updatedVariantStocks,
-          stockQuantity,
-        };
+        next[key] = applyStockToVariant(row);
       });
 
       return next;
     });
+
+    const updatedExistingRows = displayExistingVariantRows.map((row) =>
+      applyStockToVariant(editingRowData?.id === row.id ? editingRowData : row)
+    );
+
+    if (updatedExistingRows.length > 0) {
+      setExistingVariantOverridesById((prev) => {
+        const next = { ...prev };
+
+        updatedExistingRows.forEach((row) => {
+          next[row.id] = row;
+        });
+
+        return next;
+      });
+
+      setEditingRowData((prev) => (prev ? applyStockToVariant(prev) : null));
+
+      toast.promise(
+        Promise.all(
+          updatedExistingRows.map((row) =>
+            partialUpdateVariantMutation.mutateAsync({
+              id: row.id,
+              data: buildExistingVariantPayload(row),
+            })
+          )
+        ),
+        {
+          loading: 'Adding stock to saved variants...',
+          success: async () => {
+            await invalidateVariantQueries();
+
+            return `Added ${stockToAdd} stock to all variants`;
+          },
+          error: (err) => `Failed to add stock: ${err.message}`,
+        }
+      );
+
+      return;
+    }
 
     const warehouseName = selectedWarehouse?.name || 'Unknown';
 
@@ -1517,7 +1604,7 @@ export function ProductVariantManager({
       {/* Show variants table in all modes, but make it read-only in view mode */}
       <VariantsTable
         rows={combinedRows}
-        existingVariantRows={existingVariantRows}
+        existingVariantRows={displayExistingVariantRows}
         draftVariants={draftVariants}
         visibleEnumAttributes={visibleEnumAttributes}
         productName={productName}
