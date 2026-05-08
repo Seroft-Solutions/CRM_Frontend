@@ -1,4 +1,3 @@
-import { PermissionGuard } from '@/core/auth';
 import { OrderForm } from '../components/form/order-form';
 import { Plus } from 'lucide-react';
 
@@ -13,7 +12,7 @@ export default function CreateOrderPage() {
     //   unauthorizedTitle="Access Denied to Create Purchase Order"
     //   unauthorizedDescription="You don't have permission to create new purchase orders."
     // >
-    <div className="space-y-6">
+    <div className="relative left-1/2 w-[calc(100vw-var(--sidebar-width,16rem)-0.5rem)] max-w-none -translate-x-1/2 space-y-6 group-has-data-[collapsible=icon]/sidebar-wrapper:w-[calc(100vw-var(--sidebar-width-icon,3rem)-0.5rem)]">
       {/* Modern Centered Header for Create Page */}
       <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
         <div className="flex items-center justify-center">
@@ -23,8 +22,12 @@ export default function CreateOrderPage() {
               <Plus className="w-4 h-4 text-sidebar-accent-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-sidebar-foreground">Create Purchase Order</h1>
-              <p className="text-sm text-sidebar-foreground/80">Add a new purchase order to the system</p>
+              <h1 className="text-xl font-semibold text-sidebar-foreground">
+                Create Purchase Order
+              </h1>
+              <p className="text-sm text-sidebar-foreground/80">
+                Add a new purchase order to the system
+              </p>
             </div>
           </div>
 
