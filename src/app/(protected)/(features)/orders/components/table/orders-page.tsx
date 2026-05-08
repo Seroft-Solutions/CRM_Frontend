@@ -17,8 +17,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
   const [appliedDateFrom, setAppliedDateFrom] = useState('');
   const [appliedDateTo, setAppliedDateTo] = useState('');
 
-  const hasPendingDateChanges =
-    draftDateFrom !== appliedDateFrom || draftDateTo !== appliedDateTo;
+  const hasPendingDateChanges = draftDateFrom !== appliedDateFrom || draftDateTo !== appliedDateTo;
   const hasAppliedDateFilter = Boolean(appliedDateFrom) || Boolean(appliedDateTo);
 
   const handleApplyDateFilter = () => {
@@ -45,7 +44,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-sidebar-foreground">
-                {draftOnly ? 'Sale Order Drafts' : 'Orders'}
+                {draftOnly ? 'Sale Order Drafts' : 'Sale Order'}
               </h1>
               <p className="text-sm text-sidebar-foreground/80">
                 {draftOnly
