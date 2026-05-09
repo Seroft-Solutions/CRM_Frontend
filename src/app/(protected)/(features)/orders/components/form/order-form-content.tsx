@@ -1009,6 +1009,7 @@ export function OrderFormContent({
   const hasInitialShipToRef = useRef(hasAddressValues(address.shipTo));
   const lastCustomerIdRef = useRef<number | null>(null);
   const discountCodeRef = useRef<string>('');
+  const pendingErrorScrollRef = useRef(false);
   const hasUnsavedChanges =
     !isEditing &&
     (JSON.stringify(formState) !== JSON.stringify(defaultState) ||
@@ -1171,6 +1172,25 @@ export function OrderFormContent({
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [hasUnsavedChanges, isEditing]);
+
+  useEffect(() => {
+    if (!pendingErrorScrollRef.current) return;
+    pendingErrorScrollRef.current = false;
+
+    const timer = setTimeout(() => {
+      const firstErrorEl = document.querySelector('.text-rose-600');
+      if (firstErrorEl instanceof HTMLElement) {
+        const container = firstErrorEl.parentElement;
+        const focusableEl = container?.querySelector<HTMLElement>(
+          'input, select, textarea, [role="combobox"], [tabindex]:not([tabindex="-1"])'
+        );
+        focusableEl?.focus({ preventScroll: true });
+        firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [errors]);
 
   useEffect(() => {
     if (isEditing) return;
@@ -2312,6 +2332,7 @@ export function OrderFormContent({
     });
 
     if (hasErrors) {
+      pendingErrorScrollRef.current = true;
       setErrors(validationErrors);
       toast.error('Please fix the highlighted fields.');
 
