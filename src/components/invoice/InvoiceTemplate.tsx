@@ -14,170 +14,181 @@ const formatCurrency = (amount: number) => {
   });
 };
 
-export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateProps>(({ order, orderType }, ref) => {
-  return (
-    <div ref={ref} className="p-6 text-black bg-white min-h-[29.7cm]">
-      <style type="text/css" media="print">
-        {`
+export const InvoiceTemplate = React.forwardRef<HTMLDivElement, InvoiceTemplateProps>(
+  ({ order, orderType }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className="box-border min-h-[297mm] bg-white p-[7mm] text-[10px] leading-tight text-slate-900"
+      >
+        <style type="text/css" media="print">
+          {`
           @page {
             size: A4;
             margin: 0;
           }
           body {
-            margin: 1.6cm;
+            margin: 0;
             -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .invoice-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 100%;
+          }
+          .invoice-table th,
+          .invoice-table td {
+            border: 1px solid #334155;
+          }
+          .invoice-avoid-break {
+            break-inside: avoid;
+            page-break-inside: avoid;
           }
         `}
-      </style>
-      <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-slate-100">
-        <div>
-          <h1 className="text-4xl font-black uppercase tracking-tight text-slate-900 mb-1">
+        </style>
+
+        <div className="mb-2 flex items-start justify-between border-b-2 border-slate-900 pb-1">
+          <h1 className="text-xl font-black uppercase text-slate-950">
             {orderType === 'purchase' ? 'Purchase Order' : 'Order Invoice'}
           </h1>
+          <div className="text-right text-[9px] font-semibold uppercase text-slate-700">
+            <div>Order ID: {order.id}</div>
+            <div>Date: {order.orderDate || '-'}</div>
+          </div>
         </div>
-      </div>
 
-      <div className="mb-8 p-4 bg-slate-50 rounded-lg border border-slate-100">
-        <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">Order Information</h2>
-        <div className="flex flex-wrap gap-x-12 gap-y-4 text-sm text-slate-600">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Order ID</span>
-            <span className="font-semibold text-slate-900 break-all">{order.id}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Date</span>
-            <span className="font-semibold text-slate-900">{order.orderDate}</span>
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Status</span>
-            <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-200 text-slate-800">
-              {order.orderStatus}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-              Payment Status
-            </span>
-            <span className="font-semibold text-slate-900">{order.paymentStatus || '—'}</span>
-          </div>
-          {order.shippingTrackingId && (
-            <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <table className="invoice-table mb-2">
+          <tbody>
+            <tr>
+              <th className="w-[13%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                Status
+              </th>
+              <td className="w-[20%] px-1 py-1 font-semibold uppercase">
+                {order.orderStatus || '-'}
+              </td>
+              <th className="w-[14%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                Payment
+              </th>
+              <td className="w-[18%] px-1 py-1 font-semibold">{order.paymentStatus || '-'}</td>
+              <th className="w-[14%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
                 Tracking ID
-              </span>
-              <span className="font-semibold text-slate-900 break-all">{order.shippingTrackingId}</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-12 mb-8">
-        <div className="space-y-2 min-w-0">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Billing From</h2>
-          <div className="space-y-2 text-sm text-slate-600">
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-slate-900 whitespace-nowrap">Name:</span>
-              <span className="text-slate-700 break-words">{order.organizationName || 'Organization'}</span>
-            </div>
-            {order.organizationEmail && (
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-slate-900 whitespace-nowrap">Email:</span>
-                <span className="text-slate-700 break-all">{order.organizationEmail}</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="space-y-2 min-w-0">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Billing To</h2>
-          <div className="space-y-2 text-sm text-slate-600">
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-slate-900 whitespace-nowrap">Name:</span>
-              <span className="text-slate-700 break-words">{order.customer.name}</span>
-            </div>
-            {order.customer.phone && (
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-slate-900 whitespace-nowrap">Phone:</span>
-                <span className="text-slate-700">{order.customer.phone}</span>
-              </div>
-            )}
-            {order.customer.email && (
-              <div className="flex items-baseline gap-2">
-                <span className="font-bold text-slate-900 whitespace-nowrap">Email:</span>
-                <span className="text-slate-700 break-all">{order.customer.email}</span>
-              </div>
-            )}
-            {order.customer.billingAddress && (
-              <div className="flex items-start gap-2">
-                <span className="font-bold text-slate-900 whitespace-nowrap">Address:</span>
-                <span className="text-slate-700 leading-relaxed break-words">{order.customer.billingAddress}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b-2 border-slate-900">
-              <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900">Item Details</th>
-              <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-center">Qty</th>
-              <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-right">Unit Price</th>
-              <th className="py-3 font-bold uppercase tracking-wider text-xs text-slate-900 text-right">Total</th>
+              </th>
+              <td className="w-[21%] break-all px-1 py-1 font-semibold">
+                {order.shippingTrackingId || '-'}
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {order.items.map((item, index) => (
-              <tr key={index}>
-                <td className="py-3">
-                  <div className="font-bold text-slate-900">{item.productName}</div>
-                  <div className="text-xs text-slate-500 mt-1">SKU: {item.sku}</div>
-                  {item.variantAttributes && (
-                    <div className="text-xs text-slate-400 mt-0.5">{item.variantAttributes}</div>
-                  )}
-                </td>
-                <td className="py-3 text-center font-medium text-slate-700">{item.quantity}</td>
-                <td className="py-3 text-right font-medium text-slate-700">{formatCurrency(item.unitPrice)}</td>
-                <td className="py-3 text-right font-bold text-slate-900">{formatCurrency(item.total)}</td>
-              </tr>
-            ))}
           </tbody>
         </table>
-      </div>
 
-      <div className="flex justify-end pt-6 border-t-2 border-slate-900">
-        <div className="w-80 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Subtotal:</span>
-            <span className="font-semibold text-slate-900">{formatCurrency(order.subtotal)}</span>
-          </div>
-          {order.discount > 0 && (
-            <div className="flex justify-between text-sm text-rose-600 font-medium">
-              <span>Discount:</span>
-              <span>- {formatCurrency(order.discount)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Shipping:</span>
-            <span className="font-semibold text-slate-900">{formatCurrency(order.shipping)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-500">Tax Total:</span>
-            <span className="font-semibold text-slate-900">{formatCurrency(order.tax)}</span>
-          </div>
-          <div className="flex justify-between pt-2 border-t border-slate-200">
-            <span className="text-lg font-black uppercase text-slate-900">Grand Total:</span>
-            <span className="text-2xl font-black text-slate-900">{formatCurrency(order.grandTotal)}</span>
-          </div>
+        <table className="invoice-table mb-2">
+          <thead>
+            <tr>
+              <th className="w-1/2 bg-slate-100 px-1 py-1 text-left text-[10px] font-bold uppercase">
+                Billing From
+              </th>
+              <th className="w-1/2 bg-slate-100 px-1 py-1 text-left text-[10px] font-bold uppercase">
+                Billing To
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="align-top">
+              <td className="px-1.5 py-1">
+                <div className="break-words font-bold">
+                  {order.organizationName || 'Organization'}
+                </div>
+                <div className="break-all">{order.organizationEmail || '-'}</div>
+              </td>
+              <td className="px-1.5 py-1">
+                <div className="break-words font-bold">{order.customer.name}</div>
+                <div className="grid grid-cols-[42px_1fr] gap-x-1">
+                  <span className="font-semibold">Phone:</span>
+                  <span className="break-all">{order.customer.phone || '-'}</span>
+                  <span className="font-semibold">Email:</span>
+                  <span className="break-all">{order.customer.email || '-'}</span>
+                  <span className="font-semibold">Address:</span>
+                  <span className="break-words">{order.customer.billingAddress || '-'}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="mb-2">
+          <table className="invoice-table text-left text-[9px]">
+            <thead>
+              <tr className="bg-slate-100">
+                <th className="w-[4%] px-1 py-1 text-center font-bold uppercase">#</th>
+                <th className="w-[28%] px-1 py-1 font-bold uppercase">Product</th>
+                <th className="w-[13%] px-1 py-1 font-bold uppercase">SKU</th>
+                <th className="w-[19%] px-1 py-1 font-bold uppercase">Variant</th>
+                <th className="w-[6%] px-1 py-1 text-center font-bold uppercase">Qty</th>
+                <th className="w-[10%] px-1 py-1 text-right font-bold uppercase">Unit</th>
+                <th className="w-[9%] px-1 py-1 text-right font-bold uppercase">Tax</th>
+                <th className="w-[11%] px-1 py-1 text-right font-bold uppercase">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {order.items.map((item, index) => (
+                <tr key={index} className="invoice-avoid-break align-top">
+                  <td className="px-1 py-0.5 text-center font-semibold">{index + 1}</td>
+                  <td className="break-words px-1 py-0.5 font-semibold">{item.productName}</td>
+                  <td className="break-all px-1 py-0.5">{item.sku || '-'}</td>
+                  <td className="break-words px-1 py-0.5">{item.variantAttributes || '-'}</td>
+                  <td className="px-1 py-0.5 text-center font-semibold">{item.quantity}</td>
+                  <td className="px-1 py-0.5 text-right">{formatCurrency(item.unitPrice)}</td>
+                  <td className="px-1 py-0.5 text-right">{formatCurrency(item.tax)}</td>
+                  <td className="px-1 py-0.5 text-right font-bold">{formatCurrency(item.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="invoice-avoid-break flex justify-end">
+          <table className="invoice-table w-[45%] text-[10px]">
+            <tbody>
+              <tr>
+                <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Subtotal</th>
+                <td className="px-1 py-1 text-right font-semibold">
+                  {formatCurrency(order.subtotal)}
+                </td>
+              </tr>
+              {order.discount > 0 && (
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase text-rose-700">
+                    Discount
+                  </th>
+                  <td className="px-1 py-1 text-right font-semibold text-rose-700">
+                    - {formatCurrency(order.discount)}
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Shipping</th>
+                <td className="px-1 py-1 text-right font-semibold">
+                  {formatCurrency(order.shipping)}
+                </td>
+              </tr>
+              <tr>
+                <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Tax Total</th>
+                <td className="px-1 py-1 text-right font-semibold">{formatCurrency(order.tax)}</td>
+              </tr>
+              <tr>
+                <th className="bg-slate-200 px-1 py-1 text-left text-xs font-black uppercase">
+                  Grand Total
+                </th>
+                <td className="bg-slate-200 px-1 py-1 text-right text-xs font-black">
+                  {formatCurrency(order.grandTotal)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <div className="mt-10 pt-6 border-t border-slate-100 text-center">
-        <p className="text-sm font-bold text-slate-900 mb-1">Thank you for your business!</p>
-        <p className="text-xs text-slate-400">Should you have any questions, please contact support.</p>
-      </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 InvoiceTemplate.displayName = 'InvoiceTemplate';
