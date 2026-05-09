@@ -227,7 +227,7 @@ export function OrderFulfillmentHistoryDetail({
     contentRef: printContainerRef,
     documentTitle: invoiceLabel.replace(/\s+/g, '-'),
     pageStyle: `
-      @page { size: A4 portrait; margin: 6mm; }
+      @page { size: A4 portrait; margin: 0; }
       html, body { margin: 0 !important; padding: 0 !important; }
       body {
         background: #ffffff !important;
@@ -438,214 +438,212 @@ export function OrderFulfillmentHistoryDetail({
       <div
         ref={printContainerRef}
         id="order-fulfillment-print-card"
-        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+        className="overflow-hidden border border-slate-300 bg-white"
       >
-        <div ref={invoiceRef} id="order-fulfillment-invoice" className="p-8">
-          <div className="border-b-2 border-slate-200 pb-6">
-            <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-                Purchase Order Fulfillment Invoice
-              </div>
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <h1 className="text-3xl font-black tracking-tight text-slate-950">
-                  {invoiceLabel}
-                </h1>
-                <div className="text-sm text-slate-700">
-                  <div>
-                    <span className="font-semibold text-slate-950">Date:</span>{' '}
-                    {formatInvoiceDate(generation.createdDate)}
-                  </div>
-                </div>
-              </div>
+        <div
+          ref={invoiceRef}
+          id="order-fulfillment-invoice"
+          className="box-border min-h-[297mm] bg-white p-[7mm] text-[10px] leading-tight text-slate-900"
+        >
+          <style>
+            {`
+              #order-fulfillment-invoice .invoice-table {
+                border-collapse: collapse;
+                table-layout: fixed;
+                width: 100%;
+              }
+              #order-fulfillment-invoice .invoice-table th,
+              #order-fulfillment-invoice .invoice-table td {
+                border: 1px solid #334155;
+              }
+              #order-fulfillment-invoice .invoice-avoid-break {
+                break-inside: avoid;
+                page-break-inside: avoid;
+              }
+            `}
+          </style>
+
+          <div className="mb-2 flex items-start justify-between border-b-2 border-slate-900 pb-1">
+            <h1 className="text-xl font-black uppercase text-slate-950">
+              Purchase Fulfillment Invoice
+            </h1>
+            <div className="text-right text-[9px] font-semibold uppercase text-slate-700">
+              <div>{invoiceLabel}</div>
+              <div>Date: {formatInvoiceDate(generation.createdDate) || '-'}</div>
             </div>
           </div>
 
-          <div className="grid gap-6 border-b border-slate-200 py-6 lg:grid-cols-4">
-            <div className="space-y-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Billing From
-              </div>
-              <div className="space-y-1 text-sm text-slate-700">
-                <div className="font-semibold text-slate-950">
-                  {organizationName || 'Organization'}
-                </div>
-                <div>{organizationEmail || '—'}</div>
-                <div>Created By: {generation.createdBy || 'System'}</div>
-              </div>
-            </div>
+          <table className="invoice-table mb-2">
+            <tbody>
+              <tr>
+                <th className="w-[14%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                  Purchase Order
+                </th>
+                <td className="w-[18%] px-1 py-1 font-semibold">#{order.orderId}</td>
+                <th className="w-[12%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                  Created By
+                </th>
+                <td className="w-[20%] px-1 py-1 font-semibold">
+                  {generation.createdBy || 'System'}
+                </td>
+                <th className="w-[12%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                  Status
+                </th>
+                <td className="w-[24%] px-1 py-1 font-semibold uppercase">
+                  {order.orderStatus || '-'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-            <div className="space-y-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Sundry Creditor
-              </div>
-              <div className="space-y-1 text-sm text-slate-700">
-                <div className="font-semibold text-slate-950">{creditorName}</div>
-                <div>{creditorPhone}</div>
-                <div>{creditorEmail}</div>
-                <div className="leading-6">{creditorAddress}</div>
-              </div>
-            </div>
+          <table className="invoice-table mb-2">
+            <thead>
+              <tr className="bg-slate-100">
+                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Billing From</th>
+                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Sundry Creditor</th>
+                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Ship To</th>
+                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Bill To</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="align-top">
+                <td className="px-1.5 py-1">
+                  <div className="break-words font-bold">{organizationName || 'Organization'}</div>
+                  <div className="break-all">{organizationEmail || '-'}</div>
+                </td>
+                <td className="px-1.5 py-1">
+                  <div className="break-words font-bold">{creditorName}</div>
+                  <div className="break-all">{creditorPhone}</div>
+                  <div className="break-all">{creditorEmail}</div>
+                  <div className="break-words">{creditorAddress}</div>
+                </td>
+                <td className="px-1.5 py-1">
+                  <div className="break-words font-bold">{creditorName}</div>
+                  <div className="break-all">{shipToPhone}</div>
+                  <div className="break-all">{shipToEmail}</div>
+                  <div className="break-words">{shipToAddress}</div>
+                </td>
+                <td className="px-1.5 py-1">
+                  <div className="break-words font-bold">{creditorName}</div>
+                  <div className="break-all">{billToPhone}</div>
+                  <div className="break-all">{billToEmail}</div>
+                  <div className="break-words">{billToAddress}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-            <div className="space-y-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Ship To
-              </div>
-              <div className="space-y-1 text-sm text-slate-700">
-                <div className="font-semibold text-slate-950">{creditorName}</div>
-                <div>{shipToPhone}</div>
-                <div>{shipToEmail}</div>
-                <div className="leading-6">{shipToAddress}</div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                Bill To
-              </div>
-              <div className="space-y-1 text-sm text-slate-700">
-                <div className="font-semibold text-slate-950">{creditorName}</div>
-                <div>{billToPhone}</div>
-                <div>{billToEmail}</div>
-                <div className="leading-6">{billToAddress}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="py-6">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Item Details
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Ordered
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Received
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Remaining
-                    </th>
-                    <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Unit Price
-                    </th>
-                    <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {invoiceItems.length > 0 ? (
-                    invoiceItems.map((item) => (
-                      <tr key={item.id}>
-                        <td className="px-4 py-4">
-                          <div className="font-semibold text-slate-950">{item.productName}</div>
-                          <div className="mt-1 text-xs text-slate-500">SKU: {item.sku}</div>
-                          {item.variantAttributes ? (
-                            <div className="mt-1 text-xs text-slate-400">
-                              {item.variantAttributes}
-                            </div>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm font-medium text-slate-700">
-                          {item.orderedQuantity}
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm font-medium text-emerald-700">
-                          {item.receivedQuantity}
-                        </td>
-                        <td className="px-4 py-4 text-center text-sm text-amber-700">
-                          {item.backlogLeft}
-                        </td>
-                        <td className="px-4 py-4 text-right text-sm font-medium text-slate-700">
-                          {formatOrderCurrency(item.unitPrice)}
-                        </td>
-                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-950">
-                          {formatOrderCurrency(item.lineTotal)}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
-                        No fulfillment line items were returned for this invoice.
+          <div className="mb-2">
+            <table className="invoice-table text-left text-[9px]">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="w-[4%] px-1 py-1 text-center font-bold uppercase">#</th>
+                  <th className="w-[24%] px-1 py-1 font-bold uppercase">Product</th>
+                  <th className="w-[11%] px-1 py-1 font-bold uppercase">SKU</th>
+                  <th className="w-[17%] px-1 py-1 font-bold uppercase">Variant</th>
+                  <th className="w-[8%] px-1 py-1 text-center font-bold uppercase">Ordered</th>
+                  <th className="w-[8%] px-1 py-1 text-center font-bold uppercase">Received</th>
+                  <th className="w-[8%] px-1 py-1 text-center font-bold uppercase">Remain</th>
+                  <th className="w-[10%] px-1 py-1 text-right font-bold uppercase">Unit</th>
+                  <th className="w-[10%] px-1 py-1 text-right font-bold uppercase">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoiceItems.length > 0 ? (
+                  invoiceItems.map((item, index) => (
+                    <tr key={item.id} className="invoice-avoid-break align-top">
+                      <td className="px-1 py-0.5 text-center font-semibold">{index + 1}</td>
+                      <td className="break-words px-1 py-0.5 font-semibold">{item.productName}</td>
+                      <td className="break-all px-1 py-0.5">{item.sku || '-'}</td>
+                      <td className="break-words px-1 py-0.5">{item.variantAttributes || '-'}</td>
+                      <td className="px-1 py-0.5 text-center font-semibold">
+                        {item.orderedQuantity}
+                      </td>
+                      <td className="px-1 py-0.5 text-center font-semibold">
+                        {item.receivedQuantity}
+                      </td>
+                      <td className="px-1 py-0.5 text-center font-semibold">{item.backlogLeft}</td>
+                      <td className="px-1 py-0.5 text-right">
+                        {formatOrderCurrency(item.unitPrice)}
+                      </td>
+                      <td className="px-1 py-0.5 text-right font-bold">
+                        {formatOrderCurrency(item.lineTotal)}
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={9} className="px-1 py-4 text-center text-slate-500">
+                      No fulfillment line items were returned for this invoice.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
-          <div className="grid gap-6 border-t border-slate-200 pt-6 lg:grid-cols-[1.3fr_0.7fr]">
-            <div className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                    Sundry Creditor Data
-                  </div>
-                  <div className="mt-3 space-y-1 text-sm text-slate-700">
-                    <div>Business: {creditorName}</div>
-                    {creditorContactPerson ? <div>Contact: {creditorContactPerson}</div> : null}
-                    {creditorWhatsApp ? <div>WhatsApp: {creditorWhatsApp}</div> : null}
-                    <div>Address: {creditorAddress}</div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-[1fr_45%] gap-2">
+            <table className="invoice-table text-[10px]">
+              <tbody>
+                <tr>
+                  <th className="w-[28%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                    Business
+                  </th>
+                  <td className="px-1 py-1">{creditorName}</td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Contact</th>
+                  <td className="px-1 py-1">{creditorContactPerson || '-'}</td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">WhatsApp</th>
+                  <td className="px-1 py-1">{creditorWhatsApp || '-'}</td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Payment</th>
+                  <td className="px-1 py-1">{order.paymentStatus || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
 
-                <div className="rounded-2xl border border-slate-200 p-4">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                    Order Data
-                  </div>
-                  <div className="mt-3 space-y-1 text-sm text-slate-700">
-                    <div>Base Amount: {formatOrderCurrency(order.orderBaseAmount)}</div>
-                    <div>Tax Rate: {order.orderTaxRate.toFixed(2)}%</div>
-                    <div>Shipping Amount: {formatOrderCurrency(order.shipping.shippingAmount)}</div>
-                    <div>Payment Status: {order.paymentStatus}</div>
-                    <div>Order Status: {order.orderStatus}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-slate-950">
+            <table className="invoice-table text-[10px]">
+              <tbody>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Subtotal</th>
+                  <td className="px-1 py-1 text-right font-semibold">
                     {formatOrderCurrency(invoiceSubtotal)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Taxable Amount</span>
-                  <span className="font-semibold text-slate-950">
+                  </td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">
+                    Taxable Amount
+                  </th>
+                  <td className="px-1 py-1 text-right font-semibold">
                     {formatOrderCurrency(taxableAmount)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Tax</span>
-                  <span className="font-semibold text-slate-950">
+                  </td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Tax</th>
+                  <td className="px-1 py-1 text-right font-semibold">
                     {formatOrderCurrency(taxAmount)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-slate-600">
-                  <span>Shipping</span>
-                  <span className="font-semibold text-slate-950">
+                  </td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Shipping</th>
+                  <td className="px-1 py-1 text-right font-semibold">
                     {formatOrderCurrency(allocatedShippingAmount)}
-                  </span>
-                </div>
-                <div className="border-t border-slate-200 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-black uppercase tracking-tight text-slate-950">
-                      Grand Total
-                    </span>
-                    <span className="text-2xl font-black text-slate-950">
-                      {formatOrderCurrency(invoiceGrandTotal)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th className="bg-slate-200 px-1 py-1 text-left text-xs font-black uppercase">
+                    Grand Total
+                  </th>
+                  <td className="bg-slate-200 px-1 py-1 text-right text-xs font-black">
+                    {formatOrderCurrency(invoiceGrandTotal)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
