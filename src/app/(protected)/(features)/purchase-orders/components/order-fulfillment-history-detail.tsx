@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Download, Loader2, Printer } from 'lucide-react';
@@ -8,9 +9,9 @@ import { useReactToPrint } from 'react-to-print';
 import { Button } from '@/components/ui/button';
 import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
 import type { PurchaseOrderFulfillmentGenerationResponse } from '@/core/api/purchase-order-fulfillment-generations';
+import { getOrganizationSettings } from '@/features/user-profile-management/services/organization-settings.service';
 import type { OrderRecord } from '../data/purchase-order-data';
 import {
-  formatOrderCurrency,
   getAddressLines,
   getFulfillmentRecordLabel,
   getSundryCreditorDisplayName,
@@ -90,6 +91,145 @@ const formatInvoiceDate = (value?: string) => {
   }
 
   return trimmed;
+};
+
+const formatInvoiceDisplayDate = (value?: string) => {
+  if (!value) return '';
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return formatInvoiceDate(value);
+  }
+
+  const day = String(parsed.getDate()).padStart(2, '0');
+  const month = parsed.toLocaleString('en-US', { month: 'short' });
+  const year = parsed.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+const formatInvoiceNumberValue = (value?: number) => {
+  const numericValue = value ?? 0;
+
+  return Number.isInteger(numericValue)
+    ? numericValue.toLocaleString('en-IN')
+    : numericValue.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+};
+
+const normalizeAttributeKey = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+const parseVariantAttributeEntries = (value?: string) => {
+  if (!value) {
+    return [];
+  }
+
+  const normalizedValue = value.replace(/\s+/g, ' ').trim();
+
+  if (!normalizedValue) {
+    return [];
+  }
+
+  const matches = Array.from(
+    normalizedValue.matchAll(
+      /([A-Za-z][A-Za-z\s/-]*)\s*:\s*([^,]+(?:,(?!\s*[A-Za-z][A-Za-z\s/-]*\s*:)[^,]+)*)/g
+    )
+  );
+
+  if (matches.length > 0) {
+    return matches.map((match) => ({
+      key: match[1].trim(),
+      value: match[2].trim(),
+    }));
+  }
+
+  return normalizedValue
+    .split(',')
+    .map((segment) => {
+      const [key, ...rest] = segment.split(':');
+
+      if (!rest.length) {
+        return null;
+      }
+
+      return {
+        key: key.trim(),
+        value: rest.join(':').trim(),
+      };
+    })
+    .filter((entry): entry is { key: string; value: string } => Boolean(entry?.key && entry.value));
+};
+
+const findVariantAttributeValue = (value: string | undefined, aliases: string[]) => {
+  const entries = parseVariantAttributeEntries(value);
+  const normalizedAliases = aliases.map(normalizeAttributeKey);
+
+  return (
+    entries.find((entry) => {
+      const normalizedKey = normalizeAttributeKey(entry.key);
+
+      return normalizedAliases.some(
+        (alias) =>
+          normalizedKey === alias ||
+          normalizedKey.endsWith(alias) ||
+          normalizedKey.includes(alias) ||
+          normalizedKey === `${alias}label` ||
+          normalizedKey === `${alias}name` ||
+          normalizedKey.endsWith(`${alias}label`) ||
+          normalizedKey.endsWith(`${alias}name`)
+      );
+    })?.value ?? ''
+  );
+};
+
+const resolveVariantColor = (value?: string) =>
+  findVariantAttributeValue(value, ['color', 'colour', 'shade']);
+
+const resolveVariantSizeQty = (value?: string) =>
+  findVariantAttributeValue(value, ['size', 'sizes', 'sizelabel', 'sizename']);
+
+const resolveInvoiceItemName = (productName: string, sku?: string) => {
+  const trimmedName = productName.trim();
+  const trimmedSku = sku?.trim();
+
+  if (!trimmedSku || trimmedSku === '—') {
+    return trimmedName;
+  }
+
+  if (trimmedName.toLowerCase().includes(trimmedSku.toLowerCase())) {
+    return trimmedName;
+  }
+
+  return `${trimmedName}_${trimmedSku}`;
+};
+
+const normalizeSummaryLabel = (productName: string) => {
+  const cleanedName = productName.replace(/\s+/g, ' ').trim();
+  const prefixCandidate = cleanedName.split('-')[0]?.trim().replace(/,+$/, '') || cleanedName;
+  const normalizedPrefix =
+    prefixCandidate
+      .replace(/[^A-Za-z\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim() || cleanedName;
+
+  return normalizedPrefix.toUpperCase();
+};
+
+const compactTextValue = (value?: string | null, fallback = '') => {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue && normalizedValue !== '—' ? normalizedValue : fallback;
+};
+
+const normalizeWhatsAppNumber = (value?: string | null) => value?.replace(/\D/g, '') ?? '';
+
+const getWhatsAppHref = (value?: string | null) => {
+  const normalizedNumber = normalizeWhatsAppNumber(value);
+
+  return normalizedNumber ? `https://wa.me/${normalizedNumber}` : '';
 };
 
 const COLOR_PROPERTIES = [
@@ -213,10 +353,25 @@ export function OrderFulfillmentHistoryDetail({
   const organizationName = useMemo(() => resolveOrganizationName(organizations), [organizations]);
   const organizationId = useMemo(() => resolveOrganizationId(organizations), [organizations]);
   const { data: organizationDetails } = useOrganizationDetails(organizationId);
-  const organizationEmail = useMemo(
-    () => organizationDetails?.attributes?.organizationEmail?.[0] || '',
-    [organizationDetails]
+  const { data: organizationSettings } = useQuery({
+    queryKey: ['purchase-order-fulfillment-organization-settings'],
+    queryFn: getOrganizationSettings,
+    staleTime: 5 * 60 * 1000,
+  });
+  const organizationAddress = useMemo(
+    () =>
+      organizationSettings?.address?.trim() || organizationDetails?.attributes?.address?.[0] || '',
+    [organizationDetails, organizationSettings]
   );
+  const organizationDisplayName =
+    organizationSettings?.name?.trim() || organizationName || 'Organization';
+  const organizationLogoUrl =
+    organizationSettings?.logoUrl?.trim() ||
+    (organizationSettings?.logo?.trim()?.startsWith('http')
+      ? organizationSettings.logo.trim()
+      : '');
+  const organizationWhatsApp = organizationSettings?.whatsApp?.trim() || '';
+  const organizationWhatsAppHref = getWhatsAppHref(organizationWhatsApp);
 
   const invoiceLabel = getFulfillmentRecordLabel(order.orderId, {
     invoiceId: generation.id,
@@ -227,7 +382,7 @@ export function OrderFulfillmentHistoryDetail({
     contentRef: printContainerRef,
     documentTitle: invoiceLabel.replace(/\s+/g, '-'),
     pageStyle: `
-      @page { size: A4 portrait; margin: 0; }
+      @page { size: A4 portrait; margin: 6mm; }
       html, body { margin: 0 !important; padding: 0 !important; }
       body {
         background: #ffffff !important;
@@ -257,7 +412,6 @@ export function OrderFulfillmentHistoryDetail({
   const shipToPhone = order.address.shipTo.phone || creditorPhone;
   const shipToEmail = order.address.shipTo.email || creditorEmail;
   const billToPhone = order.address.billTo.phone || creditorPhone;
-  const billToEmail = order.address.billTo.email || creditorEmail;
   const shipToAddress = compactJoin(shipToLines, ', ') || '—';
   const billToAddress = compactJoin(billToLines, ', ') || '—';
   const creditorContactPerson = creditor?.contactPerson?.trim() || billToPhone;
@@ -312,7 +466,20 @@ export function OrderFulfillmentHistoryDetail({
           orderItem?.productName ||
           `Order item #${item.orderDetailId ?? index + 1}`,
         sku: item.sku || orderItem?.sku || '—',
+        displayName: resolveInvoiceItemName(
+          item.productName ||
+            orderItem?.productName ||
+            `Order item #${item.orderDetailId ?? index + 1}`,
+          item.sku || orderItem?.sku || '—'
+        ),
         variantAttributes: orderItem?.variantAttributes || '',
+        colorName: resolveVariantColor(orderItem?.variantAttributes),
+        sizeQty: resolveVariantSizeQty(orderItem?.variantAttributes),
+        summaryLabel: normalizeSummaryLabel(
+          item.productName ||
+            orderItem?.productName ||
+            `Order item #${item.orderDetailId ?? index + 1}`
+        ),
         orderedQuantity:
           originalOrderQuantityByOrderDetailId.get(item.orderDetailId ?? -1) ??
           item.requestedQuantity ??
@@ -329,12 +496,42 @@ export function OrderFulfillmentHistoryDetail({
     () => invoiceItems.reduce((sum, item) => sum + item.lineTotal, 0),
     [invoiceItems]
   );
+  const invoiceTotalQuantity = useMemo(
+    () => invoiceItems.reduce((sum, item) => sum + item.receivedQuantity, 0),
+    [invoiceItems]
+  );
+  const invoiceItemSummary = useMemo(() => {
+    const quantityByLabel = new Map<string, number>();
+
+    invoiceItems.forEach((item) => {
+      const label = item.summaryLabel || normalizeSummaryLabel(item.productName);
+
+      quantityByLabel.set(label, (quantityByLabel.get(label) ?? 0) + item.receivedQuantity);
+    });
+
+    return Array.from(quantityByLabel.entries()).map(([label, quantity]) => ({
+      label,
+      quantity,
+    }));
+  }, [invoiceItems]);
   const fulfillmentShare =
     order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
   const allocatedShippingAmount = (order.shipping.shippingAmount ?? 0) * fulfillmentShare;
   const taxableAmount = Math.max(invoiceSubtotal, 0);
   const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
   const invoiceGrandTotal = Math.max(taxableAmount + taxAmount + allocatedShippingAmount, 0);
+  const invoiceDateLabel = formatInvoiceDisplayDate(generation.createdDate);
+  const orderNumberLabel = `PO/${order.orderId}-${generation.generationNumber ?? generation.id ?? ''}`;
+  const transportLabel = compactTextValue(order.shipping.shippingMethod);
+  const bookingLabel = compactTextValue(order.shipping.shippingId);
+  const markaLabel = compactTextValue(creditorContactPerson, compactTextValue(creditorWhatsApp));
+  const remarksLabel = compactTextValue(generation.notes);
+  const gstLabel = '';
+  const termsAndConditions = [
+    '1. Received goods should be verified against purchase order before acceptance.',
+    '2. Any shortage or damage must be reported immediately.',
+    '3. This fulfillment invoice is generated from the received purchase order quantity.',
+  ];
 
   const handleDownloadPdf = async () => {
     if (!invoiceRef.current || isDownloading) {
@@ -438,212 +635,330 @@ export function OrderFulfillmentHistoryDetail({
       <div
         ref={printContainerRef}
         id="order-fulfillment-print-card"
-        className="overflow-hidden border border-slate-300 bg-white"
+        className="mx-auto w-full max-w-[820px] overflow-hidden border border-slate-300 bg-white"
       >
-        <div
-          ref={invoiceRef}
-          id="order-fulfillment-invoice"
-          className="box-border min-h-[297mm] bg-white p-[7mm] text-[10px] leading-tight text-slate-900"
-        >
+        <div ref={invoiceRef} id="order-fulfillment-invoice" className="bg-white p-4 sm:p-6">
           <style>
             {`
-              #order-fulfillment-invoice .invoice-table {
-                border-collapse: collapse;
-                table-layout: fixed;
-                width: 100%;
+              #order-fulfillment-print-card {
+                background: #ffffff !important;
+                width: 100% !important;
+                max-width: 794px !important;
+                margin: 0 auto !important;
               }
-              #order-fulfillment-invoice .invoice-table th,
-              #order-fulfillment-invoice .invoice-table td {
-                border: 1px solid #334155;
+
+              #order-fulfillment-invoice {
+                background: #ffffff !important;
+                color: #000000 !important;
+                width: 100% !important;
               }
-              #order-fulfillment-invoice .invoice-avoid-break {
-                break-inside: avoid;
-                page-break-inside: avoid;
+
+              #order-fulfillment-invoice,
+              #order-fulfillment-invoice * {
+                color: #000000 !important;
+                border-color: #000000 !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+              }
+
+              #order-fulfillment-invoice {
+                font-family: Arial, Helvetica, sans-serif !important;
+                font-size: 11px !important;
+                line-height: 1.35 !important;
+              }
+
+              #order-fulfillment-invoice .invoice-accent-red {
+                color: #b91c1c !important;
+              }
+
+              #order-fulfillment-invoice .invoice-accent-green {
+                color: #15803d !important;
+              }
+
+              #order-fulfillment-invoice .invoice-dark-fill {
+                background-color: #d1d5db !important;
+              }
+
+              #order-fulfillment-invoice .invoice-light-fill {
+                background-color: #f3f4f6 !important;
+              }
+
+              #order-fulfillment-invoice .invoice-lighter-fill {
+                background-color: #fafafa !important;
+              }
+
+              @media print {
+                #order-fulfillment-print-card {
+                  width: 760px !important;
+                  max-width: 760px !important;
+                  margin: 0 !important;
+                  zoom: 1 !important;
+                  overflow: visible !important;
+                  border: 1px solid #000000 !important;
+                  box-shadow: none !important;
+                }
+
+                #order-fulfillment-invoice {
+                  padding: 1rem !important;
+                }
+
+                #order-fulfillment-invoice .invoice-top-row {
+                  display: flex !important;
+                  align-items: flex-start !important;
+                  justify-content: space-between !important;
+                  gap: 1rem !important;
+                }
+
+                #order-fulfillment-invoice .invoice-logo-col {
+                  width: 80px !important;
+                  flex-shrink: 0 !important;
+                }
+
+                #order-fulfillment-invoice .invoice-header-text {
+                  display: flex !important;
+                  flex-direction: column !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  flex: 1 !important;
+                  text-align: center !important;
+                }
+
+                #order-fulfillment-invoice .invoice-order-info {
+                  width: 128px !important;
+                  flex-shrink: 0 !important;
+                  text-align: right !important;
+                }
+
+                #order-fulfillment-invoice .invoice-address-grid {
+                  display: grid !important;
+                  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                }
+
+                #order-fulfillment-invoice .invoice-footer-grid {
+                  display: grid !important;
+                  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr) !important;
+                  gap: 1rem !important;
+                }
+
+                #order-fulfillment-invoice .invoice-address-panel,
+                #order-fulfillment-invoice .invoice-meta-panel,
+                #order-fulfillment-invoice .invoice-footer-panel,
+                #order-fulfillment-invoice table,
+                #order-fulfillment-invoice tr,
+                #order-fulfillment-invoice td,
+                #order-fulfillment-invoice th {
+                  break-inside: avoid !important;
+                  page-break-inside: avoid !important;
+                }
+
+                #order-fulfillment-print-card {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
               }
             `}
           </style>
-
-          <div className="mb-2 flex items-start justify-between border-b-2 border-slate-900 pb-1">
-            <h1 className="text-xl font-black uppercase text-slate-950">
-              Purchase Fulfillment Invoice
-            </h1>
-            <div className="text-right text-[9px] font-semibold uppercase text-slate-700">
-              <div>{invoiceLabel}</div>
-              <div>Date: {formatInvoiceDate(generation.createdDate) || '-'}</div>
+          <div className="space-y-3 text-[11px] leading-5">
+            <div className="invoice-top-row flex items-start justify-between gap-4 border-b border-black pb-3">
+              <div className="invoice-logo-col w-20 shrink-0">
+                {organizationLogoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={organizationLogoUrl}
+                    alt={`${organizationDisplayName} logo`}
+                    className="h-16 w-16 object-contain"
+                  />
+                ) : null}
+              </div>
+              <div className="invoice-header-text flex flex-1 flex-col items-center justify-center text-center">
+                <div className="invoice-accent-red text-[17px] font-bold uppercase underline underline-offset-4">
+                  Purchase Fulfillment Invoice
+                </div>
+                <div className="mt-1 text-[22px] font-bold uppercase tracking-wide">
+                  {organizationDisplayName}
+                </div>
+                {organizationWhatsAppHref ? (
+                  <div className="mt-1">
+                    <a
+                      href={organizationWhatsAppHref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-[#0f172a] underline underline-offset-2"
+                    >
+                      {organizationWhatsApp}
+                    </a>
+                  </div>
+                ) : null}
+                {organizationAddress ? (
+                  <div className="mt-1 whitespace-pre-line text-[11px] leading-5">
+                    {organizationAddress}
+                  </div>
+                ) : null}
+              </div>
+              <div className="invoice-order-info w-32 shrink-0 text-right text-[12px] font-semibold leading-6">
+                <div>Date:-{invoiceDateLabel || formatInvoiceDate(generation.createdDate)}</div>
+                <div>Order No:-{orderNumberLabel}</div>
+              </div>
             </div>
-          </div>
 
-          <table className="invoice-table mb-2">
-            <tbody>
-              <tr>
-                <th className="w-[14%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
-                  Purchase Order
-                </th>
-                <td className="w-[18%] px-1 py-1 font-semibold">#{order.orderId}</td>
-                <th className="w-[12%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
-                  Created By
-                </th>
-                <td className="w-[20%] px-1 py-1 font-semibold">
-                  {generation.createdBy || 'System'}
-                </td>
-                <th className="w-[12%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
-                  Status
-                </th>
-                <td className="w-[24%] px-1 py-1 font-semibold uppercase">
-                  {order.orderStatus || '-'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <div className="invoice-address-panel border border-black">
+              <div className="invoice-address-grid grid grid-cols-2">
+                <div className="min-h-[110px] border-r border-black p-3">
+                  <div className="font-semibold">Bill From :</div>
+                  <div className="mt-2 space-y-1">
+                    <div className="font-semibold">{creditorName}</div>
+                    {creditorAddress ? <div>{creditorAddress}</div> : null}
+                    {creditorPhone !== '—' ? <div>{creditorPhone}</div> : null}
+                    {creditorEmail !== '—' ? <div>{creditorEmail}</div> : null}
+                  </div>
+                </div>
+                <div className="min-h-[110px] p-3">
+                  <div className="font-semibold">Ship To :</div>
+                  <div className="mt-2 space-y-1">
+                    <div className="font-semibold">{organizationDisplayName}</div>
+                    {shipToAddress ? <div>{shipToAddress}</div> : null}
+                    {shipToPhone !== '—' ? <div>{shipToPhone}</div> : null}
+                    {shipToEmail !== '—' ? <div>{shipToEmail}</div> : null}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <table className="invoice-table mb-2">
-            <thead>
-              <tr className="bg-slate-100">
-                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Billing From</th>
-                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Sundry Creditor</th>
-                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Ship To</th>
-                <th className="w-1/4 px-1 py-1 text-left font-bold uppercase">Bill To</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="align-top">
-                <td className="px-1.5 py-1">
-                  <div className="break-words font-bold">{organizationName || 'Organization'}</div>
-                  <div className="break-all">{organizationEmail || '-'}</div>
-                </td>
-                <td className="px-1.5 py-1">
-                  <div className="break-words font-bold">{creditorName}</div>
-                  <div className="break-all">{creditorPhone}</div>
-                  <div className="break-all">{creditorEmail}</div>
-                  <div className="break-words">{creditorAddress}</div>
-                </td>
-                <td className="px-1.5 py-1">
-                  <div className="break-words font-bold">{creditorName}</div>
-                  <div className="break-all">{shipToPhone}</div>
-                  <div className="break-all">{shipToEmail}</div>
-                  <div className="break-words">{shipToAddress}</div>
-                </td>
-                <td className="px-1.5 py-1">
-                  <div className="break-words font-bold">{creditorName}</div>
-                  <div className="break-all">{billToPhone}</div>
-                  <div className="break-all">{billToEmail}</div>
-                  <div className="break-words">{billToAddress}</div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <div className="invoice-meta-panel border border-black">
+              <div className="grid grid-cols-2">
+                <div className="border-r border-black">
+                  <div className="border-b border-black px-3 py-2">GST No:- {gstLabel}</div>
+                  <div className="px-3 py-2">Transport:- {transportLabel}</div>
+                </div>
+                <div>
+                  <div className="border-b border-black px-3 py-2">Booking:- {bookingLabel}</div>
+                  <div className="px-3 py-2">Marka:- {markaLabel}</div>
+                </div>
+              </div>
+              <div className="border-t border-black px-3 py-2">Remarks:- {remarksLabel}</div>
+            </div>
 
-          <div className="mb-2">
-            <table className="invoice-table text-left text-[9px]">
-              <thead>
-                <tr className="bg-slate-100">
-                  <th className="w-[4%] px-1 py-1 text-center font-bold uppercase">#</th>
-                  <th className="w-[24%] px-1 py-1 font-bold uppercase">Product</th>
-                  <th className="w-[11%] px-1 py-1 font-bold uppercase">SKU</th>
-                  <th className="w-[17%] px-1 py-1 font-bold uppercase">Variant</th>
-                  <th className="w-[8%] px-1 py-1 text-center font-bold uppercase">Ordered</th>
-                  <th className="w-[8%] px-1 py-1 text-center font-bold uppercase">Received</th>
-                  <th className="w-[8%] px-1 py-1 text-center font-bold uppercase">Remain</th>
-                  <th className="w-[10%] px-1 py-1 text-right font-bold uppercase">Unit</th>
-                  <th className="w-[10%] px-1 py-1 text-right font-bold uppercase">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoiceItems.length > 0 ? (
-                  invoiceItems.map((item, index) => (
-                    <tr key={item.id} className="invoice-avoid-break align-top">
-                      <td className="px-1 py-0.5 text-center font-semibold">{index + 1}</td>
-                      <td className="break-words px-1 py-0.5 font-semibold">{item.productName}</td>
-                      <td className="break-all px-1 py-0.5">{item.sku || '-'}</td>
-                      <td className="break-words px-1 py-0.5">{item.variantAttributes || '-'}</td>
-                      <td className="px-1 py-0.5 text-center font-semibold">
-                        {item.orderedQuantity}
-                      </td>
-                      <td className="px-1 py-0.5 text-center font-semibold">
-                        {item.receivedQuantity}
-                      </td>
-                      <td className="px-1 py-0.5 text-center font-semibold">{item.backlogLeft}</td>
-                      <td className="px-1 py-0.5 text-right">
-                        {formatOrderCurrency(item.unitPrice)}
-                      </td>
-                      <td className="px-1 py-0.5 text-right font-bold">
-                        {formatOrderCurrency(item.lineTotal)}
+            <div className="overflow-hidden border border-black">
+              <table className="w-full border-collapse text-left">
+                <thead className="invoice-dark-fill">
+                  <tr>
+                    <th className="w-[7%] border border-black px-2 py-2 text-center font-semibold">
+                      SrNo
+                    </th>
+                    <th className="w-[39%] border border-black px-2 py-2 font-semibold">
+                      Item Name
+                    </th>
+                    <th className="w-[14%] border border-black px-2 py-2 font-semibold">colour</th>
+                    <th className="w-[17%] border border-black px-2 py-2 font-semibold">
+                      Size/Qty
+                    </th>
+                    <th className="w-[8%] border border-black px-2 py-2 text-center font-semibold">
+                      Qty
+                    </th>
+                    <th className="w-[7.5%] border border-black px-2 py-2 text-right font-semibold">
+                      Price
+                    </th>
+                    <th className="w-[7.5%] border border-black px-2 py-2 text-right font-semibold">
+                      Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoiceItems.length > 0 ? (
+                    invoiceItems.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className={index % 2 === 0 ? 'invoice-lighter-fill' : 'invoice-light-fill'}
+                      >
+                        <td className="border border-black px-2 py-1.5 text-center align-top">
+                          {index + 1}
+                        </td>
+                        <td className="border border-black px-2 py-1.5 align-top">
+                          <div>{item.displayName}</div>
+                        </td>
+                        <td className="border border-black px-2 py-1.5 align-top">
+                          {item.colorName || ''}
+                        </td>
+                        <td className="border border-black px-2 py-1.5 align-top">
+                          {item.sizeQty || ''}
+                        </td>
+                        <td className="border border-black px-2 py-1.5 text-center align-top">
+                          {formatInvoiceNumberValue(item.receivedQuantity)}
+                        </td>
+                        <td className="border border-black px-2 py-1.5 text-right align-top">
+                          {formatInvoiceNumberValue(item.unitPrice)}
+                        </td>
+                        <td className="border border-black px-2 py-1.5 text-right align-top">
+                          {formatInvoiceNumberValue(item.lineTotal)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="border border-black px-3 py-8 text-center">
+                        No fulfillment line items were returned for this invoice.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={9} className="px-1 py-4 text-center text-slate-500">
-                      No fulfillment line items were returned for this invoice.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="grid grid-cols-[1fr_45%] gap-2">
-            <table className="invoice-table text-[10px]">
-              <tbody>
-                <tr>
-                  <th className="w-[28%] bg-slate-100 px-1 py-1 text-left font-bold uppercase">
-                    Business
-                  </th>
-                  <td className="px-1 py-1">{creditorName}</td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Contact</th>
-                  <td className="px-1 py-1">{creditorContactPerson || '-'}</td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">WhatsApp</th>
-                  <td className="px-1 py-1">{creditorWhatsApp || '-'}</td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Payment</th>
-                  <td className="px-1 py-1">{order.paymentStatus || '-'}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="invoice-footer-grid grid grid-cols-[minmax(0,1.35fr)_minmax(240px,0.65fr)] gap-4 pt-2">
+              <div className="invoice-footer-panel border border-black p-3">
+                <div className="invoice-accent-red text-[13px] font-semibold">
+                  Terms And Condition
+                </div>
+                <div className="mt-2 space-y-1">
+                  {termsAndConditions.map((term) => (
+                    <div key={term}>{term}</div>
+                  ))}
+                </div>
+              </div>
 
-            <table className="invoice-table text-[10px]">
-              <tbody>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Subtotal</th>
-                  <td className="px-1 py-1 text-right font-semibold">
-                    {formatOrderCurrency(invoiceSubtotal)}
-                  </td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">
-                    Taxable Amount
-                  </th>
-                  <td className="px-1 py-1 text-right font-semibold">
-                    {formatOrderCurrency(taxableAmount)}
-                  </td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Tax</th>
-                  <td className="px-1 py-1 text-right font-semibold">
-                    {formatOrderCurrency(taxAmount)}
-                  </td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-100 px-1 py-1 text-left font-bold uppercase">Shipping</th>
-                  <td className="px-1 py-1 text-right font-semibold">
-                    {formatOrderCurrency(allocatedShippingAmount)}
-                  </td>
-                </tr>
-                <tr>
-                  <th className="bg-slate-200 px-1 py-1 text-left text-xs font-black uppercase">
-                    Grand Total
-                  </th>
-                  <td className="bg-slate-200 px-1 py-1 text-right text-xs font-black">
-                    {formatOrderCurrency(invoiceGrandTotal)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+              <div className="invoice-footer-panel border border-black">
+                <table className="w-full border-collapse">
+                  <thead className="invoice-dark-fill">
+                    <tr>
+                      <th className="border border-black px-2 py-2 text-left font-semibold">
+                        Items
+                      </th>
+                      <th className="border border-black px-2 py-2 text-center font-semibold">
+                        Qty
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoiceItemSummary.map((item) => (
+                      <tr key={item.label} className="invoice-light-fill">
+                        <td className="border border-black px-2 py-1.5 font-semibold">
+                          {item.label}
+                        </td>
+                        <td className="border border-black px-2 py-1.5 text-center">
+                          {formatInvoiceNumberValue(item.quantity)}
+                        </td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td className="invoice-accent-green border border-black px-2 py-2 font-semibold">
+                        Total Qty :
+                      </td>
+                      <td className="invoice-accent-green border border-black px-2 py-2 text-center font-semibold">
+                        {formatInvoiceNumberValue(invoiceTotalQuantity)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="invoice-accent-green border border-black px-2 py-2 font-semibold">
+                        Total Amount :
+                      </td>
+                      <td className="invoice-accent-green border border-black px-2 py-2 text-center font-semibold">
+                        {formatInvoiceNumberValue(invoiceGrandTotal || invoiceSubtotal)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>

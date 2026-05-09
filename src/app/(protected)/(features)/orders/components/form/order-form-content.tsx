@@ -478,7 +478,7 @@ export function VariantWarehousePanel({
           warehouseName,
           warehouseCode,
           quantity:
-            (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) -
+            (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) +
             getReservedQuantityDelta(variant, stock),
         };
       });
