@@ -1,9 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { toast } from 'sonner';
 import {
   CheckCircle,
   ChevronDown,
@@ -42,7 +40,6 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
-import { useUpdatePurchaseOrder, type PurchaseOrderDTO } from '@/core/api/purchase-order';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
   OrderStatus,
@@ -55,15 +52,12 @@ import { usePurchaseOrderRecord, usePurchaseOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
-  Processing: 'bg-blue-100 text-blue-800 border-blue-300',
-  Shipped: 'bg-cyan-100 text-cyan-800 border-cyan-300',
-  Delivered: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  Cancelled: 'bg-rose-100 text-rose-800 border-rose-300',
-  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   Approved: 'bg-green-100 text-green-800 border-green-300',
-  Picked: 'bg-indigo-100 text-indigo-800 border-indigo-300',
-  Packed: 'bg-purple-100 text-purple-800 border-purple-300',
-  'Partially Approved': 'bg-orange-100 text-orange-800 border-orange-300',
+  PartiallyApproved: 'bg-orange-100 text-orange-800 border-orange-300',
+  Recived: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+  Unpacked: 'bg-cyan-100 text-cyan-800 border-cyan-300',
+  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  Cancel: 'bg-rose-100 text-rose-800 border-rose-300',
   Unknown: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 
@@ -146,10 +140,7 @@ export function OrderTable({
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
-  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
-  const queryClient = useQueryClient();
   const isMounted = useRef(false);
-  const { mutateAsync: updatePurchaseOrder } = useUpdatePurchaseOrder();
   const statusTabOptions = entityStatus === 'DRAFT' ? orderStatusOptions : orderStatusTabOrder;
 
   // Filter states
@@ -387,25 +378,6 @@ export function OrderTable({
   const handleStatusFilterChange = (newFilter: OrderStatus | 'All') => {
     setStatusFilter(newFilter);
     setCurrentPage(1);
-  };
-
-  const handleApprove = async (orderId: number) => {
-    if (orderId <= 0) return;
-
-    setUpdatingOrderId(orderId);
-    try {
-      await updatePurchaseOrder({
-        id: orderId,
-        data: { id: orderId, orderStatus: 6 },
-      });
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] });
-      toast.success(`Purchase order #${orderId} approved successfully.`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to approve purchase order');
-    } finally {
-      setUpdatingOrderId((currentId) => (currentId === orderId ? null : currentId));
-    }
   };
 
   const handleSearchChange = (value: string) => {
@@ -892,17 +864,8 @@ export function OrderTable({
                               View
                             </Link>
                           </DropdownMenuItem>
-                          {['Created', 'Pending', 'Partially Approved'].includes(
-                            order.orderStatus
-                          ) ? (
+                          {['Created', 'PartiallyApproved'].includes(order.orderStatus) ? (
                             <>
-                              <DropdownMenuItem
-                                disabled={updatingOrderId === order.orderId}
-                                onClick={() => handleApprove(order.orderId)}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                {updatingOrderId === order.orderId ? 'Approving...' : 'Approve'}
-                              </DropdownMenuItem>
                               <DropdownMenuItem asChild>
                                 <Link
                                   href={`/purchase-orders/${order.orderId}/edit-approve?from=list`}

@@ -8,53 +8,35 @@ const UNKNOWN_LABEL = 'Unknown';
 
 export const orderStatusOptions = [
   'Created',
-  'Processing',
-  'Shipped',
-  'Delivered',
-  'Cancelled',
-  'Pending',
   'Approved',
-  'Picked',
-  'Packed',
-  'Partially Approved',
+  'PartiallyApproved',
+  'Recived',
+  'Unpacked',
+  'Pending',
+  'Cancel',
 ] as const;
 
 export const orderStatusTabOrder = [
   'Created',
   'Approved',
-  'Partially Approved',
-  'Processing',
-  'Picked',
-  'Packed',
-  'Shipped',
-  'Delivered',
+  'PartiallyApproved',
+  'Recived',
+  'Unpacked',
   'Pending',
-  'Cancelled',
+  'Cancel',
 ] as const;
 
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
 
-export const itemStatusOptions = [
-  'Created',
-  'Approved',
-  'Picked',
-  'Packed',
-  'Pending',
-  'Completed',
-  'Issue',
-  'Cancelled',
-] as const;
+export const itemStatusOptions = ['Created', 'Approved', 'Recived', 'Pending', 'Cancel'] as const;
 
 export const itemStatusCodeOptions = [
   'CREATED',
   'APPROVED',
-  'PICKED',
-  'PACKED',
+  'RECIVED',
   'PENDING',
-  'COMPLETED',
-  'ISSUE',
   'CANCELLED',
 ] as const;
 
@@ -68,10 +50,100 @@ export type PurchaseOrderApproveDTO = {
 };
 
 export type OrderStatus = (typeof orderStatusOptions)[number] | typeof UNKNOWN_LABEL;
+
 export type PaymentStatus = (typeof paymentStatusOptions)[number] | typeof UNKNOWN_LABEL;
+
 export type ShippingMethod = (typeof shippingMethodOptions)[number] | typeof UNKNOWN_LABEL;
+
 export type ItemStatusLabel = (typeof itemStatusOptions)[number] | typeof UNKNOWN_LABEL;
+
 export type ItemStatusCode = (typeof itemStatusCodeOptions)[number];
+
+const allowedOrderStatusTransitions: Record<
+  Exclude<OrderStatus, typeof UNKNOWN_LABEL>,
+  Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]
+> = {
+  Created: ['Approved', 'PartiallyApproved', 'Cancel'],
+  Approved: ['Pending', 'Recived', 'Cancel'],
+  PartiallyApproved: ['Approved', 'Cancel'],
+  Recived: [],
+  Unpacked: [],
+  Pending: ['Recived', 'Cancel'],
+  Cancel: [],
+};
+
+const formatOrderStatusList = (statuses: readonly Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]) => {
+  if (statuses.length === 0) {
+    return '';
+  }
+
+  if (statuses.length === 1) {
+    return statuses[0];
+  }
+
+  return `${statuses.slice(0, -1).join(', ')} or ${statuses[statuses.length - 1]}`;
+};
+
+export function getNextAllowedOrderStatuses(currentStatus?: OrderStatus) {
+  if (!currentStatus || currentStatus === UNKNOWN_LABEL) {
+    return [...orderStatusOptions];
+  }
+
+  return allowedOrderStatusTransitions[currentStatus] ?? [];
+}
+
+export function getSelectableOrderStatuses(
+  currentStatus?: OrderStatus,
+  options?: { isEditing?: boolean; includeUnknown?: boolean }
+): OrderStatus[] {
+  if (!options?.isEditing) {
+    return [options?.includeUnknown ? UNKNOWN_LABEL : 'Created'].filter(
+      (status): status is OrderStatus => Boolean(status)
+    );
+  }
+
+  if (!currentStatus || currentStatus === UNKNOWN_LABEL) {
+    return options?.includeUnknown
+      ? [...orderStatusOptions, UNKNOWN_LABEL]
+      : [...orderStatusOptions];
+  }
+
+  return [currentStatus, ...getNextAllowedOrderStatuses(currentStatus)];
+}
+
+export function getOrderStatusTransitionError(
+  currentStatus: OrderStatus | undefined,
+  nextStatus: OrderStatus,
+  options?: { isEditing?: boolean }
+) {
+  if (!options?.isEditing) {
+    return nextStatus === 'Created'
+      ? undefined
+      : 'New purchase orders must start with Created status.';
+  }
+
+  if (!currentStatus || currentStatus === UNKNOWN_LABEL || currentStatus === nextStatus) {
+    return undefined;
+  }
+
+  const allowedStatuses = getNextAllowedOrderStatuses(currentStatus);
+
+  if (nextStatus !== UNKNOWN_LABEL && allowedStatuses.includes(nextStatus)) {
+    return undefined;
+  }
+
+  if (allowedStatuses.length === 0) {
+    return currentStatus === 'Recived'
+      ? 'Recived purchase orders cannot change status.'
+      : currentStatus === 'Unpacked'
+        ? 'Unpacked purchase orders cannot change status.'
+        : currentStatus === 'Cancel'
+          ? 'Cancelled purchase orders cannot change status.'
+          : `Purchase orders in ${currentStatus} cannot change status.`;
+  }
+
+  return `Purchase order status can only move from ${currentStatus} to ${formatOrderStatusList(allowedStatuses)}.`;
+}
 
 export interface OrderDetailItem {
   orderDetailId: number;
@@ -171,12 +243,14 @@ export interface OrderRecord {
 
 const getLabelFromCode = (options: readonly string[], code?: number) => {
   if (typeof code !== 'number') return UNKNOWN_LABEL;
+
   return options[code] ?? UNKNOWN_LABEL;
 };
 
 const getCodeFromLabel = (options: readonly string[], label?: string) => {
   if (!label || label === UNKNOWN_LABEL) return undefined;
   const index = options.indexOf(label);
+
   return index === -1 ? undefined : index;
 };
 
@@ -222,11 +296,13 @@ const resolveOrderTotal = (order: PurchaseOrderDTO) => {
   const taxRate = order.orderTaxRate ?? 0;
   const taxableAmount = base;
   const taxAmount = (taxRate / 100) * taxableAmount;
+
   return Math.max(taxableAmount + shipping + taxAmount, 0);
 };
 
 const toStringValue = (value?: string | number | null) => {
   if (value === null || value === undefined) return '';
+
   return String(value);
 };
 

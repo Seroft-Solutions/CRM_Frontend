@@ -25,12 +25,9 @@ type ApprovalDraftState = Record<number, { approvedQuantity: string }>;
 const itemStatusColors: Record<string, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
   Approved: 'bg-lime-100 text-lime-800 border-lime-300',
-  Picked: 'bg-indigo-100 text-indigo-800 border-indigo-300',
-  Packed: 'bg-violet-100 text-violet-800 border-violet-300',
+  Recived: 'bg-emerald-100 text-emerald-800 border-emerald-300',
   Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  Completed: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  Issue: 'bg-rose-100 text-rose-800 border-rose-300',
-  Cancelled: 'bg-slate-100 text-slate-800 border-slate-300',
+  Cancel: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 
 const parsePositiveInteger = (value: string) => {
@@ -59,22 +56,16 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
 
   const rows = useMemo(() => {
     return order.items
-      .filter(
-        (item) =>
-          !item.itemStatusCode ||
-          item.itemStatusCode === 'CREATED' ||
-          item.itemStatusCode === 'ISSUE'
-      )
+      .filter((item) => !item.itemStatusCode || item.itemStatusCode === 'CREATED')
       .map((item) => {
         const draft = draftState[item.orderDetailId] ?? { approvedQuantity: '0' };
         const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
         const approvedQty = parsePositiveInteger(draft.approvedQuantity);
         const difference = originalQty - approvedQty;
-        const isIssue = item.itemStatusCode === 'ISSUE';
 
         let validationMessage: string | undefined;
 
-        if (!isIssue && approvedQty > originalQty) {
+        if (approvedQty > originalQty) {
           validationMessage = `Cannot exceed original quantity (${originalQty})`;
         }
 
@@ -84,7 +75,6 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
           approvedQty,
           difference,
           validationMessage,
-          isIssue,
         };
       });
   }, [order.items, draftState]);
@@ -93,22 +83,17 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
   const totalApproved = rows.reduce((sum, row) => sum + row.approvedQty, 0);
   const totalDifference = totalOriginal - totalApproved;
   const hasValidationErrors = rows.some((row) => row.validationMessage);
-  const selectableRows = rows.filter((row) => !row.isIssue);
   const allRowsSelected =
-    selectableRows.length > 0 &&
-    selectableRows.every((row) => selectedItemIds.has(row.item.orderDetailId));
+    rows.length > 0 && rows.every((row) => selectedItemIds.has(row.item.orderDetailId));
   const selectedRows = rows.filter((row) => selectedItemIds.has(row.item.orderDetailId));
   const allItemsWillBeApprovedBySelected =
     selectedRows.length > 0 &&
     order.items.every(
-      (item) =>
-        item.itemStatusCode === 'APPROVED' ||
-        item.itemStatusCode === 'ISSUE' ||
-        selectedItemIds.has(item.orderDetailId)
+      (item) => item.itemStatusCode === 'APPROVED' || selectedItemIds.has(item.orderDetailId)
     );
   const selectedResultingStatus = allItemsWillBeApprovedBySelected
     ? 'Approved'
-    : 'Partially Approved';
+    : 'PartiallyApproved';
 
   const updateDraftState = (orderDetailId: number, approvedQuantity: string) => {
     setDraftState((current) => ({
@@ -124,12 +109,10 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
       return;
     }
 
-    const items = selectedRows
-      .filter((row) => !row.isIssue)
-      .map((row) => ({
-        orderDetailId: row.item.orderDetailId,
-        approvedQuantity: row.approvedQty,
-      }));
+    const items = selectedRows.map((row) => ({
+      orderDetailId: row.item.orderDetailId,
+      approvedQuantity: row.approvedQty,
+    }));
 
     if (items.length === 0) {
       toast.error('Select at least one item to approve');
@@ -155,7 +138,7 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
       return;
     }
 
-    const items = selectableRows.map((row) => ({
+    const items = rows.map((row) => ({
       orderDetailId: row.item.orderDetailId,
       approvedQuantity: row.approvedQty,
     }));
@@ -178,9 +161,7 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
   };
 
   const toggleSelectAll = (checked: boolean) => {
-    setSelectedItemIds(
-      checked ? new Set(selectableRows.map((row) => row.item.orderDetailId)) : new Set()
-    );
+    setSelectedItemIds(checked ? new Set(rows.map((row) => row.item.orderDetailId)) : new Set());
   };
 
   const toggleSelectedItem = (orderDetailId: number, checked: boolean) => {
@@ -236,15 +217,10 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
           </Badge>
           <Badge className="bg-lime-100 text-lime-900">Bulk Approve All: Approved</Badge>
         </div>
-        {selectedRows.length > 0 && selectedResultingStatus === 'Partially Approved' ? (
+        {selectedRows.length > 0 && selectedResultingStatus === 'PartiallyApproved' ? (
           <p className="mt-2 text-xs">
-            Approving only selected items will set the order status to Partially Approved. You can
+            Approving only selected items will set the order status to PartiallyApproved. You can
             approve remaining items later.
-          </p>
-        ) : null}
-        {rows.some((row) => row.isIssue) ? (
-          <p className="mt-2 text-xs text-rose-600">
-            Items with Issue status are shown for reference and cannot be approved.
           </p>
         ) : null}
       </div>
@@ -280,16 +256,11 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
             ) : null}
             {rows.map((row) => {
               const isSelected = selectedItemIds.has(row.item.orderDetailId);
-              const isDisabled = row.isIssue;
 
               return (
                 <TableRow
                   key={row.item.orderDetailId}
-                  className={cn(
-                    'hover:bg-slate-50/70',
-                    isSelected && 'bg-emerald-50/60',
-                    isDisabled && 'opacity-60'
-                  )}
+                  className={cn('hover:bg-slate-50/70', isSelected && 'bg-emerald-50/60')}
                 >
                   <TableCell className="text-center">
                     <Checkbox
@@ -297,7 +268,6 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
                       onCheckedChange={(checked) =>
                         toggleSelectedItem(row.item.orderDetailId, checked === true)
                       }
-                      disabled={isDisabled}
                       aria-label={`Select ${row.item.productName || row.item.sku || 'order item'}`}
                     />
                   </TableCell>
@@ -334,7 +304,6 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
                       max={row.originalQty}
                       value={draftState[row.item.orderDetailId]?.approvedQuantity ?? '0'}
                       onChange={(e) => updateDraftState(row.item.orderDetailId, e.target.value)}
-                      disabled={isDisabled}
                       className={cn(
                         'w-20 text-center',
                         row.validationMessage ? 'border-red-500 focus-visible:ring-red-500' : ''
@@ -373,7 +342,7 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
         <div className="flex items-center gap-2">
           <Button
             onClick={handleBulkApproveAll}
-            disabled={isPending || hasValidationErrors || selectableRows.length === 0}
+            disabled={isPending || hasValidationErrors || rows.length === 0}
             variant="outline"
             className="gap-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
           >

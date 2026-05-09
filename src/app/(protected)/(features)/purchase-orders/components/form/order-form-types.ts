@@ -70,6 +70,7 @@ export type OrderAddressForm = {
 export type ItemErrors = Partial<Record<keyof OrderItemForm, string>>;
 
 export type OrderFormErrors = {
+  orderStatus?: string;
   orderBaseAmount?: string;
   shippingAmount?: string;
   orderTaxRate?: string;

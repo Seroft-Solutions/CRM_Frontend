@@ -14,15 +14,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  type OrderStatus,
   type PaymentStatus,
   type ShippingMethod,
   OrderRecord,
+  getOrderStatusTransitionError,
   getOrderStatusCode,
   getItemStatusCode,
   getPaymentStatusCode,
+  getSelectableOrderStatuses,
   getShippingMethodCode,
-  orderStatusOptions,
   paymentStatusOptions,
   shippingMethodOptions,
 } from '../../data/purchase-order-data';
@@ -915,6 +915,16 @@ export function OrderFormContent({
     validateAmount(formState.shippingAmount, 'shippingAmount');
     validatePercentage(formState.orderTaxRate, 'orderTaxRate');
 
+    const orderStatusTransitionError = getOrderStatusTransitionError(
+      initialOrder?.orderStatus,
+      formState.orderStatus,
+      { isEditing }
+    );
+
+    if (orderStatusTransitionError) {
+      nextErrors.orderStatus = orderStatusTransitionError;
+    }
+
     if (shouldSaveAddress(address)) {
       if (address.shipTo.zipcode.trim().length > 10) {
         nextErrors.shipToZipcode = 'Max 10 characters.';
@@ -975,10 +985,10 @@ export function OrderFormContent({
     return nextErrors;
   };
 
-  const orderStatusSelectOptions: OrderStatus[] =
-    formState.orderStatus === 'Unknown'
-      ? [...orderStatusOptions, 'Unknown']
-      : [...orderStatusOptions];
+  const orderStatusSelectOptions = getSelectableOrderStatuses(initialOrder?.orderStatus, {
+    isEditing,
+    includeUnknown: formState.orderStatus === 'Unknown',
+  });
   const paymentStatusSelectOptions: PaymentStatus[] =
     formState.paymentStatus === 'Unknown'
       ? [...paymentStatusOptions, 'Unknown']

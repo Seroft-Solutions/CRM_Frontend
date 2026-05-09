@@ -55,7 +55,11 @@ const getErrorMessage = (error: unknown) => {
 const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftState =>
   Object.fromEntries(
     items
-      .filter((item) => Math.max(0, item.quantity) > 0)
+      .filter(
+        (item) =>
+          Math.max(0, item.quantity) > 0 &&
+          (item.itemStatusCode === 'APPROVED' || item.itemStatusCode === 'PENDING')
+      )
       .map((item) => [item.orderDetailId, { selected: false, quantity: '' }])
   );
 
@@ -67,7 +71,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   );
   const allItems = useMemo(() => order.items, [order.items]);
   const pendingItems = useMemo(
-    () => order.items.filter((item) => Math.max(0, item.quantity) > 0),
+    () =>
+      order.items.filter(
+        (item) =>
+          Math.max(0, item.quantity) > 0 &&
+          (item.itemStatusCode === 'APPROVED' || item.itemStatusCode === 'PENDING')
+      ),
     [order.items]
   );
   const completedItemsCount = useMemo(
@@ -136,15 +145,19 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       const originalOrderQuantity =
         originalOrderQuantityByOrderDetailId.get(item.orderDetailId) ?? remainingQuantity;
       const isCompleted = remainingQuantity === 0;
+      const isFulfillable = item.itemStatusCode === 'APPROVED' || item.itemStatusCode === 'PENDING';
       let validationMessage: string | undefined;
 
-      if (draft.selected && enteredQuantity > remainingQuantity) {
+      if (draft.selected && !isFulfillable) {
+        validationMessage = 'Only Approved or Pending items can be fulfilled.';
+      } else if (draft.selected && enteredQuantity > remainingQuantity) {
         validationMessage = `Fulfillment quantity cannot exceed remaining quantity (${remainingQuantity}).`;
       }
 
       return {
         item,
         isCompleted,
+        isFulfillable,
         selected: draft.selected,
         quantity: draft.quantity,
         enteredQuantity,
@@ -226,6 +239,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           queryKey: [`/api/purchase-orders/${order.orderId}/fulfillment-generations`],
         }),
       ]);
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: [`/api/purchase-orders/${order.orderId}`] }),
+        queryClient.refetchQueries({ queryKey: ['/api/purchase-order-details'] }),
+      ]);
 
       toast.success(
         `Purchase order fulfillment saved successfully. ${getFulfillmentRecordLabel(order.orderId, {
@@ -277,7 +294,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
             <h4 className="font-semibold text-slate-900">Purchase Order Fulfillment</h4>
             <p className="text-sm text-slate-600">
               This page shows all purchase-order items. Completed items remain in the list, while
-              only items with remaining quantity can be received again.
+              only approved or pending items with remaining quantity can be received again.
             </p>
           </div>
         </div>
@@ -314,11 +331,11 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         <TableCell className="text-center align-top">
                           <Checkbox
                             checked={row.selected}
-                            disabled={row.isCompleted}
+                            disabled={row.isCompleted || !row.isFulfillable}
                             onCheckedChange={(checked) =>
                               updateDraftState(row.item.orderDetailId, {
                                 selected: checked === true,
-                                quantity: checked === true ? row.quantity : '',
+                                quantity: checked === true ? String(row.remainingQuantity) : '',
                               })
                             }
                           />
@@ -338,6 +355,17 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 {row.item.sku}
                               </Badge>
                             ) : null}
+                            <Badge
+                              className={cn(
+                                row.isCompleted
+                                  ? 'bg-emerald-100 text-emerald-900'
+                                  : row.isFulfillable
+                                    ? 'bg-amber-100 text-amber-900'
+                                    : 'bg-slate-100 text-slate-800'
+                              )}
+                            >
+                              {row.item.itemStatus}
+                            </Badge>
                             <Badge
                               className={cn(
                                 row.isCompleted
@@ -393,7 +421,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               min={0}
                               placeholder="0"
                               value={row.quantity}
-                              disabled={!row.selected || row.isCompleted}
+                              disabled={!row.selected || row.isCompleted || !row.isFulfillable}
                               onChange={(event) =>
                                 updateDraftState(row.item.orderDetailId, {
                                   quantity: event.target.value,
@@ -408,6 +436,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             ) : row.isCompleted ? (
                               <p className="text-xs font-medium text-emerald-700">
                                 This item is completed.
+                              </p>
+                            ) : !row.isFulfillable ? (
+                              <p className="text-xs font-medium text-slate-500">
+                                Approve this item before fulfillment.
                               </p>
                             ) : null}
                           </div>

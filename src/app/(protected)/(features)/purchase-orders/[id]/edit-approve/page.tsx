@@ -106,9 +106,9 @@ export default function PurchaseOrderEditApprovePage({
             Unable to load this purchase order for approval.
           </div>
         ) : orderRecord.orderStatus !== 'Created' &&
-          orderRecord.orderStatus !== 'Partially Approved' ? (
+          orderRecord.orderStatus !== 'PartiallyApproved' ? (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-700 shadow-sm">
-            Only orders with "Created" or "Partially Approved" status can be edited and approved.
+            Only orders with "Created" or "PartiallyApproved" status can be edited and approved.
             Current status: {orderRecord.orderStatus}
           </div>
         ) : (

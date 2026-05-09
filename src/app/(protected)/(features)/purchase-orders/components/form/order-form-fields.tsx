@@ -53,6 +53,7 @@ export function OrderFormFields({
               ))}
             </SelectContent>
           </Select>
+          <FieldError message={errors.orderStatus} />
         </div>
       </div>
 

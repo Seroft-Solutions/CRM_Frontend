@@ -13,13 +13,16 @@ export function useApprovePurchaseOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderId, approveDTO }: ApprovePurchaseOrderVariables) => {
+    mutationFn: async ({ approveDTO }: ApprovePurchaseOrderVariables) => {
       return springServiceMutator<PurchaseOrderApproveDTO>(
         {
-          url: `/api/purchase-orders/${orderId}/approve`,
+          url: '/api/purchase-order-details/bulk-update-status',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          data: approveDTO,
+          data: approveDTO.items.map((item) => ({
+            orderDetailId: item.orderDetailId,
+            newStatus: 'APPROVED',
+          })),
         },
         undefined
       );
