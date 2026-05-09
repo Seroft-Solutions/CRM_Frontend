@@ -595,7 +595,12 @@ export function VariantWarehousePanel({
 
   return (
     <div className="overflow-x-auto border border-border bg-card shadow-sm">
-      <div className="grid min-h-[520px] min-w-full grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
+      <div
+        className={cn(
+          'grid min-h-[520px] min-w-full grid-cols-1 divide-border',
+          selectedCatalogId ? 'divide-y' : 'divide-y md:grid-cols-2 md:divide-x md:divide-y-0'
+        )}
+      >
         <LegacyStockTable
           title="Item Params"
           titleClassName={
@@ -608,79 +613,84 @@ export function VariantWarehousePanel({
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
         />
-        <div className="min-w-0 bg-card">
-          {warehouseList.length > 0 ? (
-            <select
-              value={selectedWarehouseId}
-              onChange={(e) => setSelectedWarehouseId(e.target.value)}
-              className="w-full px-2 py-1 text-center text-xs font-bold bg-sidebar text-sidebar-foreground focus:outline-none cursor-pointer [&>option]:text-white"
-            >
-              <option value="">Select warehouse</option>
-              {warehouseList.map((wh) => (
-                <option key={String(wh.id ?? wh.name)} value={String(wh.id ?? wh.name)}>
-                  {wh.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <div className="px-2 py-1 text-center text-xs font-bold bg-sidebar text-sidebar-foreground">
-              Select warehouse
-            </div>
-          )}
-          <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
-            <thead>
-              <tr className="bg-muted">
-                <th className="border border-border px-1 py-0.5 text-left font-bold">Image</th>
-                <th className="border border-border px-1 py-0.5 text-left font-bold">Color</th>
-                <th className="border border-border px-1 py-0.5 text-left font-bold">Size</th>
-                <th className="border border-border px-1 py-0.5 text-left font-bold">Sales Qty</th>
-                <th className="border border-border px-1 py-0.5 text-left font-bold">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRows.length === 0 ? (
-                <tr>
-                  <td className="px-2 py-3 text-muted-foreground" colSpan={5}>
-                    {selectedWarehouseId ? 'No warehouse stock' : 'Select warehouse'}
-                  </td>
+        {!selectedCatalogId && (
+          <div className="min-w-0 bg-card">
+            {warehouseList.length > 0 ? (
+              <select
+                value={selectedWarehouseId}
+                onChange={(e) => setSelectedWarehouseId(e.target.value)}
+                className="w-full cursor-pointer bg-sidebar px-2 py-1 text-center text-xs font-bold text-sidebar-foreground focus:outline-none [&>option]:text-white"
+              >
+                <option value="">Select warehouse</option>
+                {warehouseList.map((wh) => (
+                  <option key={String(wh.id ?? wh.name)} value={String(wh.id ?? wh.name)}>
+                    {wh.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="bg-sidebar px-2 py-1 text-center text-xs font-bold text-sidebar-foreground">
+                Select warehouse
+              </div>
+            )}
+            <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="border border-border px-1 py-0.5 text-left font-bold">Image</th>
+                  <th className="border border-border px-1 py-0.5 text-left font-bold">Color</th>
+                  <th className="border border-border px-1 py-0.5 text-left font-bold">Size</th>
+                  <th className="border border-border px-1 py-0.5 text-left font-bold">
+                    Sales Qty
+                  </th>
+                  <th className="border border-border px-1 py-0.5 text-left font-bold">Price</th>
                 </tr>
-              ) : (
-                filteredRows.map((row, rowIndex) => (
-                  <tr
-                    key={`warehouse-${row.key}-${rowIndex}`}
-                    onClick={() => {
-                      if (!selectedCatalogId) {
+              </thead>
+              <tbody>
+                {filteredRows.length === 0 ? (
+                  <tr>
+                    <td className="px-2 py-3 text-muted-foreground" colSpan={5}>
+                      {selectedWarehouseId ? 'No warehouse stock' : 'Select warehouse'}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRows.map((row, rowIndex) => (
+                    <tr
+                      key={`warehouse-${row.key}-${rowIndex}`}
+                      onClick={() => {
                         const selected = isWarehouseVariantSelected(row.variant, row.stock);
 
                         onToggleWarehouseVariant(row.variant, row.stock, !selected);
-                      }
-                    }}
-                    className={cn(
-                      isWarehouseVariantSelected(row.variant, row.stock)
-                        ? 'bg-sidebar-accent/10 text-black'
-                        : 'text-foreground',
-                      !selectedCatalogId && 'cursor-pointer hover:bg-sidebar-accent/10'
-                    )}
-                  >
-                    <td className="border border-border px-1 py-0.5">
-                      <VariantImageCell key={`warehouse-image-${row.key}`} variant={row.variant} />
-                    </td>
-                    <td className="border border-border px-1 py-0.5">{row.color}</td>
-                    <td className="border border-border px-1 py-0.5">{row.size}</td>
-                    <td className="border border-border px-1 py-0.5">
-                      {formatStockQuantity(row.quantity)}
-                    </td>
-                    <td className="border border-border px-1 py-0.5">
-                      {row.variant.price !== undefined && row.variant.price !== null
-                        ? `₹${row.variant.price}`
-                        : '-'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                      }}
+                      className={cn(
+                        isWarehouseVariantSelected(row.variant, row.stock)
+                          ? 'bg-sidebar-accent/10 text-black'
+                          : 'text-foreground',
+                        'cursor-pointer hover:bg-sidebar-accent/10'
+                      )}
+                    >
+                      <td className="border border-border px-1 py-0.5">
+                        <VariantImageCell
+                          key={`warehouse-image-${row.key}`}
+                          variant={row.variant}
+                        />
+                      </td>
+                      <td className="border border-border px-1 py-0.5">{row.color}</td>
+                      <td className="border border-border px-1 py-0.5">{row.size}</td>
+                      <td className="border border-border px-1 py-0.5">
+                        {formatStockQuantity(row.quantity)}
+                      </td>
+                      <td className="border border-border px-1 py-0.5">
+                        {row.variant.price !== undefined && row.variant.price !== null
+                          ? `₹${row.variant.price}`
+                          : '-'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
