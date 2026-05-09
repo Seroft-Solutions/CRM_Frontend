@@ -498,7 +498,7 @@ export function VariantWarehousePanel({
       <div className="overflow-x-auto border border-border bg-card shadow-sm">
         <div className="grid min-h-[520px] min-w-full grid-cols-1 divide-y divide-border md:grid-cols-2 md:divide-x md:divide-y-0">
           <LegacyStockTable
-            title="Item Params"
+            title="Item Cart"
             titleClassName="bg-sidebar text-sidebar-foreground"
             className="w-full"
             columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
@@ -602,7 +602,7 @@ export function VariantWarehousePanel({
         )}
       >
         <LegacyStockTable
-          title="Item Params"
+          title={selectedCatalogId ? 'Catalog Cart' : 'Item Cart'}
           titleClassName={
             selectedCatalogId
               ? 'bg-sidebar text-sidebar-foreground'
