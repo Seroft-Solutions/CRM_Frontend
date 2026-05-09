@@ -63,10 +63,10 @@ const allowedOrderStatusTransitions: Record<
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>,
   Exclude<OrderStatus, typeof UNKNOWN_LABEL>[]
 > = {
-  Created: ['Approved', 'PartiallyApproved', 'Cancel'],
-  Approved: ['Pending', 'Recived', 'Cancel'],
+  Created: ['Approved', 'Cancel'],
+  Approved: ['Recived', 'Cancel'],
   PartiallyApproved: ['Approved', 'Cancel'],
-  Recived: [],
+  Recived: ['Unpacked'],
   Unpacked: [],
   Pending: ['Recived', 'Cancel'],
   Cancel: [],
@@ -133,13 +133,11 @@ export function getOrderStatusTransitionError(
   }
 
   if (allowedStatuses.length === 0) {
-    return currentStatus === 'Recived'
-      ? 'Recived purchase orders cannot change status.'
-      : currentStatus === 'Unpacked'
-        ? 'Unpacked purchase orders cannot change status.'
-        : currentStatus === 'Cancel'
-          ? 'Cancelled purchase orders cannot change status.'
-          : `Purchase orders in ${currentStatus} cannot change status.`;
+    return currentStatus === 'Unpacked'
+      ? 'Unpacked purchase orders cannot change status.'
+      : currentStatus === 'Cancel'
+        ? 'Cancelled purchase orders cannot change status.'
+        : `Purchase orders in ${currentStatus} cannot change status.`;
   }
 
   return `Purchase order status can only move from ${currentStatus} to ${formatOrderStatusList(allowedStatuses)}.`;

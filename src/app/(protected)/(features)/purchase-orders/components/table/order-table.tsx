@@ -1,7 +1,9 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import {
   CheckCircle,
   ChevronDown,
@@ -40,8 +42,14 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
+import { type PurchaseOrderDTO, usePartialUpdatePurchaseOrder } from '@/core/api/purchase-order';
+import { useCreatePurchaseOrderHistory } from '@/core/api/purchase-order-history';
+import { InlinePermissionGuard } from '@/core/auth';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
+  getOrderStatusCode,
+  getOrderStatusTransitionError,
+  getSelectableOrderStatuses,
   OrderStatus,
   orderStatusTabOrder,
   orderStatusOptions,
@@ -83,6 +91,33 @@ function formatDate(value?: string) {
         month: 'short',
         year: 'numeric',
       });
+}
+
+function getOrderStatusErrorDescription(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    const maybeAxiosError = error as {
+      response?: {
+        data?: {
+          detail?: string;
+          title?: string;
+          message?: string;
+        };
+      };
+    };
+
+    return (
+      maybeAxiosError.response?.data?.detail ||
+      maybeAxiosError.response?.data?.title ||
+      maybeAxiosError.response?.data?.message ||
+      fallback
+    );
+  }
+
+  return fallback;
 }
 
 type EntityStatus = 'ACTIVE' | 'DRAFT';
@@ -140,7 +175,12 @@ export function OrderTable({
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [statusOverrides, setStatusOverrides] = useState<Record<number, OrderStatus>>({});
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
   const isMounted = useRef(false);
+  const { mutateAsync: partialUpdateOrder } = usePartialUpdatePurchaseOrder();
+  const { mutateAsync: createOrderHistory } = useCreatePurchaseOrderHistory();
   const statusTabOptions = entityStatus === 'DRAFT' ? orderStatusOptions : orderStatusTabOrder;
 
   // Filter states
@@ -221,7 +261,7 @@ export function OrderTable({
 
       // Status filter
       if (filters.status) {
-        const orderStatusStr = order.orderStatus || '';
+        const orderStatusStr = statusOverrides[order.orderId] ?? order.orderStatus ?? '';
 
         if (orderStatusStr.trim().toLowerCase() !== filters.status.trim().toLowerCase()) {
           return false;
@@ -315,7 +355,7 @@ export function OrderTable({
 
       return true;
     });
-  }, [orders, filters, dateFrom, dateTo, searchTerm]);
+  }, [orders, filters, dateFrom, dateTo, searchTerm, statusOverrides]);
 
   const sortedOrders = useMemo(() => {
     if (!sortColumn) {
@@ -327,7 +367,11 @@ export function OrderTable({
         case 'orderId':
           return compareSortValues(a.orderId, b.orderId, sortDirection);
         case 'status':
-          return compareSortValues(a.orderStatus ?? '', b.orderStatus ?? '', sortDirection);
+          return compareSortValues(
+            statusOverrides[a.orderId] ?? a.orderStatus ?? '',
+            statusOverrides[b.orderId] ?? b.orderStatus ?? '',
+            sortDirection
+          );
         case 'total':
           return compareSortValues(a.orderTotalAmount ?? 0, b.orderTotalAmount ?? 0, sortDirection);
         case 'shipping':
@@ -360,7 +404,7 @@ export function OrderTable({
           return 0;
       }
     });
-  }, [filteredOrders, sortColumn, sortDirection]);
+  }, [filteredOrders, sortColumn, sortDirection, statusOverrides]);
 
   const filteredCount = sortedOrders.length;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
@@ -439,6 +483,97 @@ export function OrderTable({
     if (!isMounted.current) return;
     setCurrentPage(1);
   }, [dateFrom, dateTo]);
+
+  const handleOrderStatusChange = async (
+    order: (typeof orders)[number],
+    nextStatus: OrderStatus
+  ) => {
+    if (order.orderId <= 0) {
+      return;
+    }
+
+    const currentStatus = statusOverrides[order.orderId] ?? order.orderStatus;
+
+    if (currentStatus === nextStatus) {
+      return;
+    }
+
+    const transitionError = getOrderStatusTransitionError(currentStatus, nextStatus, {
+      isEditing: true,
+    });
+
+    if (transitionError) {
+      toast.error('Invalid status change.', {
+        description: transitionError,
+      });
+
+      return;
+    }
+
+    const nextStatusCode = getOrderStatusCode(nextStatus);
+
+    if (typeof nextStatusCode !== 'number') {
+      toast.error('Unable to update purchase order status.', {
+        description: 'Selected status is not supported.',
+      });
+
+      return;
+    }
+
+    setStatusOverrides((prev) => ({
+      ...prev,
+      [order.orderId]: nextStatus,
+    }));
+    setUpdatingOrderId(order.orderId);
+
+    try {
+      await partialUpdateOrder({
+        id: order.orderId,
+        data: {
+          id: order.orderId,
+          orderStatus: nextStatusCode,
+        } satisfies PurchaseOrderDTO,
+      });
+
+      try {
+        await createOrderHistory({
+          data: {
+            purchaseOrderId: order.orderId,
+            status: `Status changed to ${nextStatus}`,
+            notificationSent: false,
+          },
+        });
+      } catch (historyError) {
+        console.error('Failed to create purchase order history after status update:', historyError);
+        toast.warning('Purchase order status updated, but history entry could not be created.');
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/purchase-orders'] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/purchase-orders/${order.orderId}`] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-details'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/purchase-order-histories'] }),
+      ]);
+
+      toast.success('Purchase order status updated.', {
+        description: `Purchase order #${order.orderId} is now ${nextStatus}.`,
+      });
+    } catch (error) {
+      console.error('Failed to update purchase order status:', error);
+      setStatusOverrides((prev) => ({
+        ...prev,
+        [order.orderId]: currentStatus,
+      }));
+      toast.error('Unable to update purchase order status.', {
+        description: getOrderStatusErrorDescription(
+          error,
+          `Purchase order #${order.orderId} could not be updated.`
+        ),
+      });
+    } finally {
+      setUpdatingOrderId((currentId) => (currentId === order.orderId ? null : currentId));
+    }
+  };
 
   if (isLoading) {
     return (
@@ -753,6 +888,9 @@ export function OrderTable({
             {paginatedOrders.map((order, index) => {
               const sundryCreditorName = order.sundryCreditor?.creditorName || order.email || '—';
               const sundryCreditorContact = order.sundryCreditor?.mobile || order.phone || '—';
+              const displayedStatus = statusOverrides[order.orderId] ?? order.orderStatus;
+              const isUpdatingThisRow = updatingOrderId === order.orderId;
+              const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
               const isExpanded = expandedOrderId === order.orderId;
 
               return (
@@ -787,12 +925,41 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`border-2 font-semibold ${statusColors[order.orderStatus] ?? statusColors.Unknown}`}
+                      <InlinePermissionGuard
+                        requiredPermission="purchase-order:update"
+                        fallback={
+                          <Badge
+                            variant="outline"
+                            className={`border-2 font-semibold ${statusClassName}`}
+                          >
+                            {displayedStatus}
+                          </Badge>
+                        }
                       >
-                        {order.orderStatus}
-                      </Badge>
+                        <Select
+                          value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
+                          onValueChange={(value) =>
+                            handleOrderStatusChange(order, value as OrderStatus)
+                          }
+                          disabled={isUpdatingThisRow}
+                        >
+                          <SelectTrigger
+                            className={`h-9 min-w-[150px] border-2 font-semibold ${statusClassName}`}
+                            aria-label={`Update status for purchase order ${order.orderId}`}
+                          >
+                            <SelectValue placeholder={displayedStatus} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
+                              (status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              )
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </InlinePermissionGuard>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
@@ -864,7 +1031,7 @@ export function OrderTable({
                               View
                             </Link>
                           </DropdownMenuItem>
-                          {['Created', 'PartiallyApproved'].includes(order.orderStatus) ? (
+                          {['Created', 'PartiallyApproved'].includes(displayedStatus) ? (
                             <>
                               <DropdownMenuItem asChild>
                                 <Link

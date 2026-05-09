@@ -31,8 +31,9 @@ export interface PurchaseOrderDTO {
   lastModifiedDate?: string;
 }
 
-export type GetAllPurchaseOrdersParams = Record<string, any>;
-export type CountPurchaseOrdersParams = Record<string, any>;
+export type GetAllPurchaseOrdersParams = Record<string, unknown>;
+
+export type CountPurchaseOrdersParams = Record<string, unknown>;
 
 export const getAllPurchaseOrders = (params?: GetAllPurchaseOrdersParams, signal?: AbortSignal) =>
   springServiceMutator<PurchaseOrderDTO[]>({
@@ -73,6 +74,14 @@ export const updatePurchaseOrder = (id: number, purchaseOrderDTO: PurchaseOrderD
     data: purchaseOrderDTO,
   });
 
+export const partialUpdatePurchaseOrder = (id: number, purchaseOrderDTO: PurchaseOrderDTO) =>
+  springServiceMutator<PurchaseOrderDTO>({
+    url: `/api/purchase-orders/${id}`,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    data: purchaseOrderDTO,
+  });
+
 export const useGetAllPurchaseOrders = (
   params?: GetAllPurchaseOrdersParams,
   options?: { query?: Partial<UseQueryOptions<PurchaseOrderDTO[], Error>> },
@@ -89,6 +98,7 @@ export const useGetAllPurchaseOrders = (
   > & { queryKey: QueryKey };
 
   query.queryKey = queryKey;
+
   return query;
 };
 
@@ -107,6 +117,7 @@ export const useGetPurchaseOrder = (
   > & { queryKey: QueryKey };
 
   query.queryKey = queryKey;
+
   return query;
 };
 
@@ -125,6 +136,7 @@ export const useCountPurchaseOrders = (
   > & { queryKey: QueryKey };
 
   query.queryKey = queryKey;
+
   return query;
 };
 
@@ -147,6 +159,18 @@ export const useUpdatePurchaseOrder = (
   useMutation(
     {
       mutationFn: ({ id, data }) => updatePurchaseOrder(id, data),
+      ...options,
+    },
+    queryClient
+  );
+
+export const usePartialUpdatePurchaseOrder = (
+  options?: UseMutationOptions<PurchaseOrderDTO, Error, { id: number; data: PurchaseOrderDTO }>,
+  queryClient?: QueryClient
+): UseMutationResult<PurchaseOrderDTO, Error, { id: number; data: PurchaseOrderDTO }> =>
+  useMutation(
+    {
+      mutationFn: ({ id, data }) => partialUpdatePurchaseOrder(id, data),
       ...options,
     },
     queryClient
