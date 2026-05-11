@@ -9,6 +9,7 @@ import { FormNavigation } from './form-navigation';
 import { FormStateManager } from './form-state-manager';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 import { stepComponents } from './steps';
 import {
@@ -199,20 +200,31 @@ function SundryCreditorFormContent({ id, registerReset }: SundryCreditorFormCont
   };
 
   const handleCancel = () => {
-    if (hasReferrer()) {
-      navigateBackToReferrer();
-    } else {
-      const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
-      const backRoute = returnUrl || '/sundry-creditors';
+    const proceed = () => {
+      if (hasReferrer()) {
+        navigateBackToReferrer();
+      } else {
+        const returnUrl = typeof window !== 'undefined' ? localStorage.getItem('returnUrl') : null;
+        const backRoute = returnUrl || '/sundry-creditors';
 
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('entityCreationContext');
-        localStorage.removeItem('referrerInfo');
-        localStorage.removeItem('returnUrl');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('entityCreationContext');
+          localStorage.removeItem('referrerInfo');
+          localStorage.removeItem('returnUrl');
+        }
+
+        router.push(backRoute);
       }
+    };
 
-      router.push(backRoute);
+    if (isNew && state.isDirty && config.behavior?.drafts?.confirmDialog) {
+      window.dispatchEvent(
+        new CustomEvent('triggerDraftCheck', { detail: { onProceed: proceed } })
+      );
+      return;
     }
+
+    proceed();
   };
 
   if (id && isLoadingEntity) {
@@ -254,7 +266,7 @@ function SundryCreditorFormContent({ id, registerReset }: SundryCreditorFormCont
       {/* Navigation */}
       <FormNavigation
         onCancel={handleCancel}
-        onSubmit={async () => { }}
+        onSubmit={async () => {}}
         isSubmitting={false}
         isNew={isNew}
       />
@@ -327,7 +339,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           createSundryCreditorAddress({
             title: address.title,
             completeAddress: address.completeAddress,
-            area: address.areaRef,
+            area: address.areaRef as any,
             isDefault: address.isDefault,
             sundryCreditor: { id: sundryCreditorId, creditorName: '' },
           })
@@ -343,7 +355,9 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
     });
     const existingAddresses = normalizeAddressList(existingResponse);
     const existingIds = new Set(existingAddresses.map((address: any) => address.id));
-    const incomingIds = new Set(trimmedAddresses.filter((address) => address.id).map((address) => address.id));
+    const incomingIds = new Set(
+      trimmedAddresses.filter((address) => address.id).map((address) => address.id)
+    );
 
     const updates = trimmedAddresses
       .filter((address) => address.id && existingIds.has(address.id))
@@ -352,7 +366,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           id: address.id,
           title: address.title,
           completeAddress: address.completeAddress,
-          area: address.areaRef,
+          area: address.areaRef as any,
           isDefault: address.isDefault,
           sundryCreditor: { id: sundryCreditorId, creditorName: undefined as any },
         })
@@ -364,7 +378,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
         createSundryCreditorAddress({
           title: address.title,
           completeAddress: address.completeAddress,
-          area: address.areaRef,
+          area: address.areaRef as any,
           isDefault: address.isDefault,
           sundryCreditor: { id: sundryCreditorId, creditorName: undefined as any },
         })
@@ -386,6 +400,43 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       'sundryCreditorId.equals': sundryCreditorId,
     });
     return normalizeAddressList(refreshed);
+  };
+
+  const invalidateSundryCreditorQueries = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['getAllSundryCreditors'],
+      refetchType: 'active',
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['countSundryCreditors'],
+      refetchType: 'active',
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['searchSundryCreditors'],
+      refetchType: 'active',
+    });
+  };
+
+  const buildDraftPayload = (transformedData: any) => {
+    const { addresses, ...sundryCreditorData } = transformedData as any;
+    const draftData: Record<string, any> = {};
+    const stringFields = ['creditorName', 'email', 'mobile', 'whatsApp', 'contactPerson'];
+
+    stringFields.forEach((field) => {
+      const value = sundryCreditorData[field];
+
+      if (typeof value === 'string' && value.trim() !== '') {
+        draftData[field] = value.trim();
+      }
+    });
+
+    if (!draftData.creditorName) {
+      draftData.creditorName = `Draft Sundry Creditor ${new Date().toISOString()}`;
+    }
+
+    draftData.status = 'DRAFT';
+
+    return { draftData, addresses: Array.isArray(addresses) ? addresses : [] };
   };
 
   if (isRedirecting) {
@@ -417,18 +468,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
             await syncSundryCreditorAddresses(createdId, addresses, { skipFetch: true });
           }
 
-          queryClient.invalidateQueries({
-            queryKey: ['getAllSundryCreditors'],
-            refetchType: 'active',
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['countSundryCreditors'],
-            refetchType: 'active',
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['searchSundryCreditors'],
-            refetchType: 'active',
-          });
+          invalidateSundryCreditorQueries();
 
           if (hasReferrer() && createdId) {
             setIsRedirecting(true);
@@ -455,18 +495,7 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           };
           await updateEntity({ id, data: entityData });
 
-          queryClient.invalidateQueries({
-            queryKey: ['getAllSundryCreditors'],
-            refetchType: 'active',
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['countSundryCreditors'],
-            refetchType: 'active',
-          });
-          queryClient.invalidateQueries({
-            queryKey: ['searchSundryCreditors'],
-            refetchType: 'active',
-          });
+          invalidateSundryCreditorQueries();
           queryClient.invalidateQueries({
             queryKey: ['getSundryCreditor', id],
             refetchType: 'active',
@@ -480,6 +509,26 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
           setIsRedirecting(true);
           sundryCreditorToast.updated();
           router.push('/sundry-creditors');
+        }
+      }}
+      onSaveDraft={async ({ entity }) => {
+        try {
+          const { draftData, addresses } = buildDraftPayload(entity);
+          const created = (await createEntity(draftData as any)) as any;
+          const createdId = created?.id;
+
+          if (createdId) {
+            await syncSundryCreditorAddresses(createdId, addresses, { skipFetch: true });
+          }
+
+          invalidateSundryCreditorQueries();
+          toast.success('Draft saved successfully');
+
+          return true;
+        } catch (error) {
+          handleSundryCreditorError(error);
+
+          return false;
         }
       }}
       onError={(error) => {

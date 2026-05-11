@@ -19,13 +19,19 @@ interface SundryCreditorFormProviderProps {
   children: React.ReactNode;
   id?: number;
   onSuccess?: (data: any) => void;
+  onSaveDraft?: (data: SundryCreditorFormSubmissionPayload) => Promise<boolean>;
   onError?: (error: any) => void;
+}
+
+export interface SundryCreditorFormSubmissionPayload {
+  entity: Record<string, any>;
 }
 
 export function SundryCreditorFormProvider({
   children,
   id,
   onSuccess,
+  onSaveDraft,
   onError,
 }: SundryCreditorFormProviderProps) {
   const router = useRouter();
@@ -56,8 +62,6 @@ export function SundryCreditorFormProvider({
   const {
     drafts,
     hasLoadingDrafts: isLoadingDrafts,
-    saveDraft,
-    loadDraft,
     restoreDraft,
     deleteDraft,
     getLatestDraft,
@@ -86,11 +90,15 @@ export function SundryCreditorFormProvider({
   });
 
   const form = useForm<Record<string, any>>({
-    resolver: zodResolver(sundryCreditorFormSchema),
+    resolver: zodResolver(sundryCreditorFormSchema) as any,
     mode: config.validation.mode,
-    revalidateMode: config.validation.revalidateMode,
+    reValidateMode: config.validation.revalidateMode,
     defaultValues: getDefaultValues(),
   });
+
+  const hasUnsavedChanges = useCallback(() => {
+    return form.formState.isDirty && isNew && draftsEnabled;
+  }, [form.formState.isDirty, isNew, draftsEnabled]);
 
   function getDefaultValues() {
     const defaults: Record<string, any> = {};
@@ -536,10 +544,23 @@ export function SundryCreditorFormProvider({
       }
     };
 
+    const handleTriggerDraftCheck = (event: CustomEvent) => {
+      const { onProceed } = event.detail;
+
+      if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
+        setPendingNavigation(() => onProceed);
+        setShowDraftDialog(true);
+      } else {
+        onProceed();
+      }
+    };
+
     window.addEventListener('saveFormState', handleSaveFormState);
+    window.addEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
 
     return () => {
       window.removeEventListener('saveFormState', handleSaveFormState);
+      window.removeEventListener('triggerDraftCheck', handleTriggerDraftCheck as EventListener);
     };
   }, [
     restorationAttempted,
@@ -549,6 +570,9 @@ export function SundryCreditorFormProvider({
     handleEntityCreated,
     clearOldFormStates,
     config,
+    hasUnsavedChanges,
+    draftRestorationInProgress,
+    formSessionId,
   ]);
 
   const getNavigationProps = useCallback(
@@ -578,37 +602,141 @@ export function SundryCreditorFormProvider({
     setAllFormData((prev) => ({ ...prev, ...currentValues }));
   }, [form]);
 
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        const message = 'You have unsaved changes. Are you sure you want to leave?';
+
+        e.preventDefault();
+        e.returnValue = message;
+
+        return message;
+      }
+    };
+
+    const handlePopState = () => {
+      if (hasUnsavedChanges()) {
+        window.history.pushState(null, '', window.location.href);
+        setPendingNavigation(() => () => {
+          window.history.back();
+        });
+        setShowDraftDialog(true);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    if (hasUnsavedChanges()) {
+      window.history.pushState(null, '', window.location.href);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled]);
+
+  useEffect(() => {
+    if (!isNew || !draftsEnabled) return;
+
+    let isNavigating = false;
+
+    const handleNavigationClick = (event: Event) => {
+      if (isNavigating) return;
+
+      const target = event.target as Element;
+      const link = target.closest('a[href]') as HTMLAnchorElement | null;
+
+      if (link && hasUnsavedChanges()) {
+        const href = link.getAttribute('href');
+
+        if (
+          href &&
+          !href.startsWith('http') &&
+          !href.startsWith('mailto:') &&
+          !href.startsWith('tel:') &&
+          !href.startsWith('#')
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          setPendingNavigation(() => () => {
+            isNavigating = true;
+            router.push(href);
+
+            setTimeout(() => {
+              isNavigating = false;
+            }, 100);
+          });
+
+          setShowDraftDialog(true);
+          return;
+        }
+      }
+
+      const button = target.closest('button') as HTMLButtonElement | null;
+
+      if (button && hasUnsavedChanges()) {
+        const linkInsideButton = button.querySelector('a[href]') as HTMLAnchorElement | null;
+
+        if (linkInsideButton) {
+          const href = linkInsideButton.getAttribute('href');
+
+          if (
+            href &&
+            !href.startsWith('http') &&
+            !href.startsWith('mailto:') &&
+            !href.startsWith('tel:') &&
+            !href.startsWith('#')
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+            setPendingNavigation(() => () => {
+              isNavigating = true;
+              router.push(href);
+
+              setTimeout(() => {
+                isNavigating = false;
+              }, 100);
+            });
+
+            setShowDraftDialog(true);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('click', handleNavigationClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleNavigationClick, true);
+    };
+  }, [hasUnsavedChanges, isNew, draftsEnabled, router]);
+
   const handleSaveDraft = useCallback(async (): Promise<boolean> => {
     if (!draftsEnabled || !isNew) return false;
 
     try {
       const currentFormValues = form.getValues();
       const completeFormData = { ...allFormData, ...currentFormValues };
+      const entityToSave = transformFormDataForSubmission(completeFormData);
 
-      const success = await saveDraft(completeFormData, currentStep, formSessionId, currentDraftId);
-
-      if (success) {
-        toast.success('Draft saved successfully');
-      } else {
-        toast.error('Failed to save draft');
+      if (onSaveDraft) {
+        return await onSaveDraft({ entity: entityToSave });
       }
 
-      return success;
+      toast.error('Draft saving is not configured for this form');
+      return false;
     } catch (error) {
       console.error('Failed to save draft:', error);
       toast.error('Failed to save draft');
       return false;
     }
-  }, [
-    draftsEnabled,
-    isNew,
-    form,
-    allFormData,
-    currentStep,
-    formSessionId,
-    currentDraftId,
-    saveDraft,
-  ]);
+  }, [draftsEnabled, isNew, form, allFormData, transformFormDataForSubmission, onSaveDraft]);
 
   const handleLoadDraft = useCallback(
     async (draftId: number, suppressToast = false): Promise<boolean> => {
@@ -737,7 +865,7 @@ export function SundryCreditorFormProvider({
       const draftCheckHandler = {
         formId: config.entity,
         checkDrafts: (onProceed: () => void) => {
-          if (form.formState.isDirty && config.behavior?.drafts?.confirmDialog) {
+          if (hasUnsavedChanges() && config.behavior?.drafts?.confirmDialog) {
             setPendingNavigation(() => onProceed);
             setShowDraftDialog(true);
           } else {
@@ -757,7 +885,7 @@ export function SundryCreditorFormProvider({
     isNew,
     config.entity,
     config.behavior?.drafts?.confirmDialog,
-    form.formState.isDirty,
+    hasUnsavedChanges,
     registerDraftCheck,
     unregisterDraftCheck,
   ]);
@@ -821,9 +949,15 @@ export function SundryCreditorFormProvider({
             entityType={config.entity}
             onSaveDraft={async () => {
               const success = await handleSaveDraft();
-              if (success && pendingNavigation) {
-                pendingNavigation();
-                setPendingNavigation(null);
+              if (success) {
+                setTimeout(() => {
+                  form.reset(form.getValues(), { keepValues: true, keepDefaultValues: true });
+                }, 50);
+
+                if (pendingNavigation) {
+                  pendingNavigation();
+                  setPendingNavigation(null);
+                }
               }
               return success;
             }}
@@ -837,6 +971,7 @@ export function SundryCreditorFormProvider({
               setPendingNavigation(null);
             }}
             isDirty={form.formState.isDirty}
+            formData={form.getValues()}
           />
 
           <DraftRestorationDialog
