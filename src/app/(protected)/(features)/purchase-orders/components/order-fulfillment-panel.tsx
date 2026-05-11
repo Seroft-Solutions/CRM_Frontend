@@ -314,7 +314,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableHead className="text-center">Order Qty</TableHead>
                     <TableHead className="text-center">Received Qty</TableHead>
                     <TableHead className="text-center">Remaining Qty</TableHead>
-                    <TableHead className="text-center">Current Stock</TableHead>
+                    <TableHead className="text-center">Available Stock</TableHead>
                     <TableHead className="min-w-[180px]">Receive Quantity</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -342,7 +342,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         </TableCell>
                       ) : null}
                       <TableCell className="align-top">
-                        <div className="space-y-1">
+                        <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
                               {index + 1}
@@ -376,26 +376,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               {row.isCompleted ? 'Completed' : 'Pending'}
                             </Badge>
                           </div>
-                          {row.item.variantAttributes ? (
-                            <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
-                          ) : null}
-                          <p className="text-xs text-slate-500">
-                            Ordered qty: {row.originalOrderQuantity}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            Received qty: {row.receivedQuantity}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            Remaining qty: {row.remainingQuantity} • Remaining after save:{' '}
-                            {isEditing && row.selected
-                              ? Math.max(row.remainingQuantity - row.enteredQuantity, 0)
-                              : row.remainingQuantity}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {typeof row.item.variantId === 'number'
-                              ? 'Variant stock based item'
-                              : 'Product stock based item'}
-                          </p>
                         </div>
                       </TableCell>
                       <TableCell className="text-center font-semibold text-slate-900">
@@ -408,10 +388,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                         {row.remainingQuantity}
                       </TableCell>
                       <TableCell className="text-center font-semibold text-slate-900">
-                        <div>{stocksLoading ? '...' : row.currentQuantity}</div>
-                        <div className="text-[11px] text-slate-500">
-                          {typeof row.item.variantId === 'number' ? 'Variant' : 'Product'}
-                        </div>
+                        {stocksLoading ? '...' : row.currentQuantity}
                       </TableCell>
                       <TableCell className="align-top">
                         {isEditing ? (

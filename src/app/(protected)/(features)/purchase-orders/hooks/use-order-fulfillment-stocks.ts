@@ -14,6 +14,10 @@ type ProductVariantWithStocks = {
   stockQuantity?: number;
   variantStocks?: Array<{
     stockQuantity?: number;
+    warehouse?: {
+      id?: number;
+      name?: string;
+    };
   }>;
 };
 
@@ -74,18 +78,14 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
   });
 
   const stockByItemId = useMemo(() => {
-    const variantStockById = new Map<number, number>();
+    const variantById = new Map<number, ProductVariantWithStocks>();
 
     variantQueries.forEach((query, index) => {
       const variant = query.data as ProductVariantWithStocks | undefined;
-      const variantStockQuantity = variant?.variantStocks?.length
-        ? variant.variantStocks.reduce(
-            (sum, stock) => sum + Math.max(0, stock.stockQuantity ?? 0),
-            0
-          )
-        : Math.max(0, variant?.stockQuantity ?? 0);
 
-      variantStockById.set(variantIds[index], variantStockQuantity);
+      if (variant) {
+        variantById.set(variantIds[index], variant);
+      }
     });
 
     const productStockById = new Map<number, number>();
@@ -97,12 +97,26 @@ export function useOrderFulfillmentStocks(items: OrderDetailItem[]) {
     const nextMap = new Map<number, ItemStockSnapshot>();
 
     trackedItems.forEach((item) => {
-      const currentQuantity =
-        typeof item.variantId === 'number'
-          ? (variantStockById.get(item.variantId) ?? 0)
-          : typeof item.productId === 'number'
-            ? (productStockById.get(item.productId) ?? 0)
-            : 0;
+      let currentQuantity = 0;
+
+      if (typeof item.variantId === 'number') {
+        const variant = variantById.get(item.variantId);
+        const hasSelectedWarehouse = typeof item.warehouseId === 'number';
+        const selectedWarehouseStock = hasSelectedWarehouse
+          ? variant?.variantStocks?.find((stock) => stock.warehouse?.id === item.warehouseId)
+          : undefined;
+
+        currentQuantity = hasSelectedWarehouse
+          ? Math.max(0, selectedWarehouseStock?.stockQuantity ?? 0)
+          : variant?.variantStocks?.length
+            ? variant.variantStocks.reduce(
+                (sum, stock) => sum + Math.max(0, stock.stockQuantity ?? 0),
+                0
+              )
+            : Math.max(0, variant?.stockQuantity ?? 0);
+      } else if (typeof item.productId === 'number') {
+        currentQuantity = productStockById.get(item.productId) ?? 0;
+      }
 
       nextMap.set(item.orderDetailId, { currentQuantity });
     });

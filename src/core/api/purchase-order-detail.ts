@@ -16,6 +16,7 @@ export interface PurchaseOrderDetailDTO {
     productId?: number;
     variantId?: number;
     productCatalogId?: number;
+    warehouseId?: number;
     productName?: string;
     sku?: string;
     variantAttributes?: string;
