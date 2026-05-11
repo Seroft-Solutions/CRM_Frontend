@@ -1179,11 +1179,13 @@ export function OrderFormContent({
 
     const timer = setTimeout(() => {
       const firstErrorEl = document.querySelector('.text-rose-600');
+
       if (firstErrorEl instanceof HTMLElement) {
         const container = firstErrorEl.parentElement;
         const focusableEl = container?.querySelector<HTMLElement>(
           'input, select, textarea, [role="combobox"], [tabindex]:not([tabindex="-1"])'
         );
+
         focusableEl?.focus({ preventScroll: true });
         firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
@@ -1439,7 +1441,7 @@ export function OrderFormContent({
     setItems((prev) => {
       setSelectedItemIndex(prev.length);
 
-      return [...prev, emptyOrderItem('catalog')];
+      return [...prev, { ...emptyOrderItem('catalog'), quantity: '1' }];
     });
   };
 

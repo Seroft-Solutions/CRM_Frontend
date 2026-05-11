@@ -1040,6 +1040,9 @@ function ProductCatalogSelector({
     onItemChange(index, 'sku', undefined);
     onItemChange(index, 'productName', catalog.productCatalogName);
     onItemChange(index, 'variantAttributes', buildCatalogAttributes(catalog));
+    if (!item.quantity?.trim()) {
+      onItemChange(index, 'quantity', '1');
+    }
 
     if (catalog.price !== undefined && catalog.price !== null) {
       onItemChange(index, 'itemPrice', String(catalog.price));
