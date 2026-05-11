@@ -1,6 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
+import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
 import { useMemo, useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -38,11 +40,73 @@ export interface InvoiceOrderRecord {
   grandTotal: number;
 }
 
-
 interface InvoicePrintButtonProps {
-  order: any; // Using any for now to handle both PurchaseOrderRecord and OrderRecord
+  order: InvoiceSourceOrder;
   orderType: 'purchase' | 'sales';
 }
+
+type OrganizationSummary = { id: string; name: string };
+
+type InvoiceAddressFields = {
+  firstName?: string;
+  lastName?: string;
+  addrLine1?: string;
+  addrLine2?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
+};
+
+type InvoiceSourceItem = {
+  orderDetailId?: number;
+  productName?: string;
+  sku?: string;
+  variantAttributes?: string;
+  quantity?: number;
+  backOrderQuantity?: number;
+  itemPrice?: number;
+  itemTaxAmount?: number;
+  itemTotalAmount?: number;
+};
+
+type InvoiceSourceOrder = {
+  orderId?: number;
+  createdDate?: string;
+  orderStatus?: string;
+  paymentStatus?: string | number;
+  shippingId?: string;
+  phone?: string;
+  email?: string;
+  orderBaseAmount?: number;
+  orderTotalAmount?: number;
+  address?: {
+    shipTo?: InvoiceAddressFields;
+    billTo?: InvoiceAddressFields;
+  };
+  customer?: {
+    customerBusinessName?: string;
+    name?: string;
+    mobile?: string;
+    email?: string;
+    defaultAddress?: {
+      completeAddress?: string;
+    };
+  };
+  sundryCreditor?: {
+    creditorName?: string;
+    name?: string;
+    mobile?: string;
+    email?: string;
+    defaultAddress?: {
+      completeAddress?: string;
+    };
+  };
+  shipping?: {
+    shippingId?: string;
+    shippingAmount?: number;
+  };
+  items?: InvoiceSourceItem[];
+};
 
 const compactJoin = (parts: Array<string | undefined>, separator = ', ') =>
   parts
@@ -69,34 +133,36 @@ const formatAddressFromFields = (fields?: {
   return { line1, line2, full };
 };
 
-const resolveOrganizationName = (
-  organizations?: Array<{ id: string; name: string }>,
-) => {
+const resolveOrganizationName = (organizations?: OrganizationSummary[]) => {
   if (typeof window === 'undefined') return '';
 
   const selectedOrgName = localStorage.getItem('selectedOrganizationName');
+
   if (selectedOrgName) return selectedOrgName;
 
   const selectedOrgId = localStorage.getItem('selectedOrganizationId');
+
   if (selectedOrgId && organizations?.length) {
     const selectedOrg = organizations.find((org) => org.id === selectedOrgId);
+
     if (selectedOrg) return selectedOrg.name;
   }
 
   return organizations?.[0]?.name || '';
 };
 
-const resolveOrganizationId = (
-  organizations?: Array<{ id: string; name: string }>,
-) => {
+const resolveOrganizationId = (organizations?: OrganizationSummary[]) => {
   if (typeof window === 'undefined') return '';
 
   const selectedOrgId = localStorage.getItem('selectedOrganizationId');
+
   if (selectedOrgId) return selectedOrgId;
 
   const selectedOrgName = localStorage.getItem('selectedOrganizationName');
+
   if (selectedOrgName && organizations?.length) {
     const selectedOrg = organizations.find((org) => org.name === selectedOrgName);
+
     if (selectedOrg) return selectedOrg.id;
   }
 
@@ -106,14 +172,17 @@ const resolveOrganizationId = (
 const formatInvoiceDate = (value?: string) => {
   if (!value) return '';
   const trimmed = value.trim();
+
   if (!trimmed) return '';
 
   const [datePart] = trimmed.split('T');
+
   if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
     return datePart;
   }
 
   const parsed = new Date(trimmed);
+
   if (!Number.isNaN(parsed.getTime())) {
     return parsed.toISOString().slice(0, 10);
   }
@@ -121,16 +190,67 @@ const formatInvoiceDate = (value?: string) => {
   return trimmed;
 };
 
+type FulfillmentGeneration = {
+  items?: Array<{
+    orderDetailId?: number;
+    deliveredQuantity?: number;
+    requestedQuantity?: number;
+  }>;
+};
+
+const buildOriginalQuantityByDetailId = (
+  items: InvoiceSourceItem[],
+  generations: FulfillmentGeneration[],
+  options?: { includeBackOrderQuantity?: boolean; useRequestedQuantityFallback?: boolean }
+) => {
+  const quantityByDetailId = new Map<number, number>();
+
+  items.forEach((item) => {
+    if (typeof item.orderDetailId !== 'number') {
+      return;
+    }
+
+    const baseQuantity =
+      Math.max(0, item.quantity ?? 0) +
+      (options?.includeBackOrderQuantity ? Math.max(0, item.backOrderQuantity ?? 0) : 0);
+
+    quantityByDetailId.set(item.orderDetailId, baseQuantity);
+  });
+
+  generations.forEach((generation) => {
+    generation.items?.forEach((item) => {
+      if (typeof item.orderDetailId !== 'number') {
+        return;
+      }
+
+      const fulfilledQuantity = Math.max(
+        0,
+        item.deliveredQuantity ??
+          (options?.useRequestedQuantityFallback ? item.requestedQuantity : undefined) ??
+          0
+      );
+
+      quantityByDetailId.set(
+        item.orderDetailId,
+        (quantityByDetailId.get(item.orderDetailId) ?? 0) + fulfilledQuantity
+      );
+    });
+  });
+
+  return quantityByDetailId;
+};
+
 function mapOrderRecordToInvoiceOrderRecord(
-  order: any,
+  order: InvoiceSourceOrder,
   orderType: 'purchase' | 'sales',
   organizationName: string,
   organizationEmail: string,
+  originalQuantityByDetailId?: Map<number, number>
 ): InvoiceOrderRecord {
   const isPurchase = orderType === 'purchase';
   const shipToName = compactJoin(
     [order.address?.shipTo?.firstName, order.address?.shipTo?.lastName],
-    ' ',
+    ' '
   );
 
   const customerName = isPurchase
@@ -164,9 +284,9 @@ function mapOrderRecordToInvoiceOrderRecord(
   const billingAddress = resolvedAddress.full;
 
   return {
-    id: String(order.orderId),
+    id: String(order.orderId ?? ''),
     orderDate: formatInvoiceDate(order.createdDate),
-    orderStatus: order.orderStatus,
+    orderStatus: order.orderStatus ?? '',
     paymentStatus: order.paymentStatus ? String(order.paymentStatus) : undefined,
     shippingTrackingId: order.shipping?.shippingId || order.shippingId || undefined,
     organizationName,
@@ -177,40 +297,70 @@ function mapOrderRecordToInvoiceOrderRecord(
       email: customerEmail,
       billingAddress: billingAddress,
     },
-    items: (order.items || []).map((item: any) => ({
-      productName: item.productName || 'N/A',
-      sku: item.sku || 'N/A',
-      variantAttributes: item.variantAttributes || 'N/A',
-      quantity: item.quantity,
-      unitPrice: item.itemPrice,
-      tax: item.itemTaxAmount,
-      total: item.itemTotalAmount,
-    })),
-    subtotal: order.orderBaseAmount,
+    items: (order.items || []).map((item) => {
+      const quantity =
+        typeof item.orderDetailId === 'number'
+          ? (originalQuantityByDetailId?.get(item.orderDetailId) ?? item.quantity ?? 0)
+          : (item.quantity ?? 0);
+
+      return {
+        productName: item.productName || 'N/A',
+        sku: item.sku || 'N/A',
+        variantAttributes: item.variantAttributes || 'N/A',
+        quantity,
+        unitPrice: item.itemPrice ?? 0,
+        tax: item.itemTaxAmount ?? 0,
+        total: item.itemTotalAmount ?? 0,
+      };
+    }),
+    subtotal: order.orderBaseAmount ?? 0,
     discount: 0, // No discount field in OrderRecord
     shipping: order.shipping?.shippingAmount || 0,
-    tax: (order.orderTotalAmount || 0) - (order.orderBaseAmount || 0) - (order.shipping?.shippingAmount || 0),
-    grandTotal: order.orderTotalAmount,
+    tax:
+      (order.orderTotalAmount || 0) -
+      (order.orderBaseAmount || 0) -
+      (order.shipping?.shippingAmount || 0),
+    grandTotal: order.orderTotalAmount ?? 0,
   };
 }
-
 
 export function InvoicePrintButton({ order, orderType }: InvoicePrintButtonProps) {
   const componentRef = useRef<HTMLDivElement>(null);
   const { data: organizations } = useUserOrganizations();
+  const orderId = typeof order?.orderId === 'number' ? order.orderId : 0;
+  const { data: salesGenerations = [] } = useGetOrderFulfillmentGenerations(orderId, {
+    query: {
+      enabled: orderType === 'sales' && orderId > 0,
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
+  });
+  const { data: purchaseGenerations = [] } = useGetPurchaseOrderFulfillmentGenerations(orderId, {
+    query: {
+      enabled: orderType === 'purchase' && orderId > 0,
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
+  });
   const buttonLabel = orderType === 'purchase' ? 'Print Purchase Order' : 'Print Sale Order';
-  const organizationName = useMemo(
-    () => resolveOrganizationName(organizations),
-    [organizations],
-  );
-  const organizationId = useMemo(
-    () => resolveOrganizationId(organizations),
-    [organizations],
-  );
+  const organizationName = useMemo(() => resolveOrganizationName(organizations), [organizations]);
+  const organizationId = useMemo(() => resolveOrganizationId(organizations), [organizations]);
   const { data: organizationDetails } = useOrganizationDetails(organizationId);
   const organizationEmail = useMemo(() => {
     return organizationDetails?.attributes?.organizationEmail?.[0] || '';
   }, [organizationDetails]);
+  const originalQuantityByDetailId = useMemo(
+    () =>
+      buildOriginalQuantityByDetailId(
+        order.items || [],
+        orderType === 'purchase' ? purchaseGenerations : salesGenerations,
+        {
+          includeBackOrderQuantity: orderType === 'sales',
+          useRequestedQuantityFallback: orderType === 'purchase',
+        }
+      ),
+    [order.items, orderType, purchaseGenerations, salesGenerations]
+  );
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -221,6 +371,7 @@ export function InvoicePrintButton({ order, orderType }: InvoicePrintButtonProps
     orderType,
     organizationName,
     organizationEmail,
+    originalQuantityByDetailId
   );
 
   return (
