@@ -57,7 +57,7 @@ import { AdvancedPagination, usePaginationState } from './table/advanced-paginat
 import { useAccount, useUserAuthorities } from '@/core/auth';
 
 const TABLE_CONFIG = {
-  showDraftTab: false,
+  showDraftTab: true,
   centerAlignActions: true,
 };
 
@@ -391,7 +391,9 @@ export function SundryCreditorTable() {
                   if (city) parts.push(city);
                   if (state) parts.push(state);
                   const cityState = parts.join(', ');
-                  value = cityState ? `${cityState}${pincode ? ` (${pincode})` : ''}` : pincode || '';
+                  value = cityState
+                    ? `${cityState}${pincode ? ` (${pincode})` : ''}`
+                    : pincode || '';
                 }
               }
               if (col.id === 'completeAddress') {
@@ -552,36 +554,36 @@ export function SundryCreditorTable() {
 
   const { data, isLoading, refetch } = searchTerm
     ? useSearchSundryCreditors(
-      {
-        query: searchTerm,
-        page: apiPage,
-        size: pageSize,
-        sort: [`${sort},${order}`],
-        ...filterParams,
-      },
-      {
-        query: {
-          enabled: true,
-          staleTime: 0,
-          refetchOnWindowFocus: true,
+        {
+          query: searchTerm,
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
         },
-      }
-    )
+        {
+          query: {
+            enabled: true,
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+          },
+        }
+      )
     : useGetAllSundryCreditors(
-      {
-        page: apiPage,
-        size: pageSize,
-        sort: [`${sort},${order}`],
-        ...filterParams,
-      },
-      {
-        query: {
-          enabled: true,
-          staleTime: 0,
-          refetchOnWindowFocus: true,
+        {
+          page: apiPage,
+          size: pageSize,
+          sort: [`${sort},${order}`],
+          ...filterParams,
         },
-      }
-    );
+        {
+          query: {
+            enabled: true,
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+          },
+        }
+      );
 
   const { data: countData } = useCountSundryCreditors(filterParams, {
     query: {
@@ -777,7 +779,10 @@ export function SundryCreditorTable() {
         const statusLabel =
           statusOptions.find((opt) => opt.value.includes(variables.data.status))?.label ||
           variables.data.status;
-        sundryCreditorToast.custom.success(`Status Updated`, `Sundry creditor status changed to ${statusLabel}`);
+        sundryCreditorToast.custom.success(
+          `Status Updated`,
+          `Sundry creditor status changed to ${statusLabel}`
+        );
 
         const currentFilter = getStatusFilter();
         const currentStatusFilter = currentFilter['status.equals'];
@@ -1581,8 +1586,8 @@ export function SundryCreditorTable() {
             <AlertDialogHeader>
               <AlertDialogTitle>Archive this sundry creditor?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will change the status to "Archived". The sundry creditor will no longer
-                appear in the active view but can be restored later.
+                This will change the status to "Archived". The sundry creditor will no longer appear
+                in the active view but can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
