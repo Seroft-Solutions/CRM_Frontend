@@ -677,18 +677,18 @@ export function ProductBasicInfoSection({
                         min="0"
                         value={field.value || ''}
                         placeholder="0.00"
+                        readOnly
                         className={cn(
-                          'h-9 pl-8',
+                          'h-9 pl-8 bg-slate-50 text-slate-700',
                           errors.productCatalogPrice &&
                             'border-rose-500 focus-visible:ring-rose-500'
                         )}
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
-                          form.trigger('productCatalogPrice');
-                        }}
                       />
                     </div>
                   </FormControl>
+                  <p className="text-[10px] text-muted-foreground">
+                    Auto-calculated from variant prices
+                  </p>
                   {errors.productCatalogPrice && (
                     <p className="text-xs text-rose-600">
                       {String(errors.productCatalogPrice.message)}

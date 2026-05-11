@@ -118,6 +118,9 @@ export function ProductVariantManager({
 }: ProductVariantManagerProps) {
   const queryClient = useQueryClient();
   const submitCount = form?.formState.submitCount ?? 0;
+  const [saveAsCatalog, setSaveAsCatalog] = useState(() =>
+    Boolean(form?.getValues?.('saveAsCatalog'))
+  );
 
   const defaultGeneratedStatus = ProductVariantDTOStatus.ACTIVE;
   const [preSelectedOptionIdsByAttributeId, setPreSelectedOptionIdsByAttributeId] = useState<
@@ -132,6 +135,19 @@ export function ProductVariantManager({
   >({});
   const [editingRowData, setEditingRowData] = useState<ExistingVariantRow | null>(null);
   const validationErrorsRef = useRef<Record<string, string[]>>({});
+
+  useEffect(() => {
+    if (!form) return;
+
+    setSaveAsCatalog(Boolean(form.getValues('saveAsCatalog')));
+    const subscription = form.watch((value, { name }) => {
+      if (!name || name === 'saveAsCatalog') {
+        setSaveAsCatalog(Boolean(value.saveAsCatalog));
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const createEmptyImageFiles = () =>
     VARIANT_IMAGE_ORDER.reduce(
@@ -1032,6 +1048,25 @@ export function ProductVariantManager({
     return existingStock + draftStock;
   }, [mergedExistingRowsForStock, newDraftVariants]);
 
+  const mergedExistingRowsForCatalog = useMemo(() => {
+    return displayExistingVariantRows.map((row) =>
+      editingRowData && editingRowData.id === row.id ? editingRowData : row
+    );
+  }, [displayExistingVariantRows, editingRowData]);
+
+  const totalVariantPrice = useMemo(() => {
+    const existingPrice = mergedExistingRowsForCatalog.reduce(
+      (sum, variant) => sum + (Number(variant.price) || 0),
+      0
+    );
+    const draftPrice = newDraftVariants.reduce(
+      (sum, variant) => sum + (Number(variant.price) || 0),
+      0
+    );
+
+    return existingPrice + draftPrice;
+  }, [mergedExistingRowsForCatalog, newDraftVariants]);
+
   useEffect(() => {
     if (isViewMode || !form) return;
 
@@ -1040,6 +1075,15 @@ export function ProductVariantManager({
       shouldDirty: false,
     });
   }, [form, isViewMode, totalStockQuantity]);
+
+  useEffect(() => {
+    if (isViewMode || !form || !saveAsCatalog) return;
+
+    form.setValue('productCatalogPrice', totalVariantPrice > 0 ? String(totalVariantPrice) : '', {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [form, isViewMode, saveAsCatalog, totalVariantPrice]);
 
   // #region Form Validator Registration
   useEffect(() => {
