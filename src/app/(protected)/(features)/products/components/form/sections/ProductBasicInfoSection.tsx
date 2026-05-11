@@ -686,9 +686,6 @@ export function ProductBasicInfoSection({
                       />
                     </div>
                   </FormControl>
-                  <p className="text-[10px] text-muted-foreground">
-                    Auto-calculated from variant prices
-                  </p>
                   {errors.productCatalogPrice && (
                     <p className="text-xs text-rose-600">
                       {String(errors.productCatalogPrice.message)}
