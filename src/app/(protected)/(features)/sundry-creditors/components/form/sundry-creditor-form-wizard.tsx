@@ -417,6 +417,45 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
     });
   };
 
+  type DraftAddressInput = {
+    id?: number;
+    title?: string | null;
+    completeAddress?: string | null;
+    area?: unknown;
+    isDefault?: boolean | null;
+  };
+
+  const normalizeDraftAddresses = (addresses: DraftAddressInput[]) => {
+    const normalized = addresses.flatMap((address) => {
+      const completeAddress = address.completeAddress?.trim();
+
+      if (!completeAddress) {
+        return [];
+      }
+
+      return [
+        {
+          id: address.id,
+          title: address.title?.trim?.() || undefined,
+          completeAddress,
+          area: toAreaRef(address.area),
+          isDefault: Boolean(address.isDefault),
+        },
+      ];
+    });
+
+    if (normalized.length > 0 && !normalized.some((address) => address.isDefault)) {
+      normalized[0].isDefault = true;
+    }
+
+    const defaultIndex = normalized.findIndex((item) => item.isDefault);
+
+    return normalized.map((address, index) => ({
+      ...address,
+      isDefault: index === defaultIndex,
+    }));
+  };
+
   const buildDraftPayload = (transformedData: any) => {
     const { addresses, ...sundryCreditorData } = transformedData as any;
     const draftData: Record<string, any> = {};
@@ -436,7 +475,13 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
 
     draftData.status = 'DRAFT';
 
-    return { draftData, addresses: Array.isArray(addresses) ? addresses : [] };
+    const normalizedAddresses = normalizeDraftAddresses(Array.isArray(addresses) ? addresses : []);
+
+    if (normalizedAddresses.length > 0) {
+      draftData.addresses = normalizedAddresses;
+    }
+
+    return { draftData };
   };
 
   if (isRedirecting) {
@@ -513,13 +558,8 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
       }}
       onSaveDraft={async ({ entity }) => {
         try {
-          const { draftData, addresses } = buildDraftPayload(entity);
-          const created = (await createEntity(draftData as any)) as any;
-          const createdId = created?.id;
-
-          if (createdId) {
-            await syncSundryCreditorAddresses(createdId, addresses, { skipFetch: true });
-          }
+          const { draftData } = buildDraftPayload(entity);
+          await createEntity(draftData as any);
 
           invalidateSundryCreditorQueries();
           toast.success('Draft saved successfully');
