@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -22,6 +22,8 @@ import { cn } from '@/lib/utils';
 import { TableRowActions } from '@/entity-library/components/tables/TableRowActions';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
+import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas';
 import {
   useCreateOrderFulfillmentGeneration,
   useGetOrderFulfillmentGenerations,
@@ -108,6 +110,30 @@ const canTransitionToPickPack = (item: OrderDetailItem) =>
 const isTerminalItem = (item: OrderDetailItem) =>
   item.itemStatusCode === 'COMPLETED' || item.itemStatusCode === 'CANCELLED';
 
+function getCatalogItemNames(
+  catalog: ProductCatalogDTO | undefined,
+  fallbackProductName: string | undefined
+) {
+  const productName = catalog?.product?.name ?? fallbackProductName;
+  const variants = [...(catalog?.variants ?? [])].sort((left, right) =>
+    (left.sku ?? '').localeCompare(right.sku ?? '')
+  );
+
+  if (variants.length > 0) {
+    return variants.map((variant) => {
+      const sku = variant.sku?.trim();
+
+      if (productName && sku) {
+        return `${productName} - ${sku}`;
+      }
+
+      return sku || productName || 'Catalog item';
+    });
+  }
+
+  return [productName || 'Catalog item'];
+}
+
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -136,13 +162,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ),
     [order.items]
   );
-  const completedItemsCount = useMemo(
-    () =>
-      allItems.filter(
-        (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) === 0
-      ).length,
-    [allItems]
-  );
   const totalPendingUnits = useMemo(
     () =>
       pendingItems.reduce(
@@ -150,6 +169,78 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         0
       ),
     [pendingItems]
+  );
+  const catalogIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          order.items
+            .map((item) => item.productCatalogId)
+            .filter(
+              (productCatalogId): productCatalogId is number => typeof productCatalogId === 'number'
+            )
+        )
+      ).sort((left, right) => left - right),
+    [order.items]
+  );
+  const catalogQueryParams = useMemo(
+    () =>
+      catalogIds.length > 0
+        ? {
+            'id.in': catalogIds,
+            size: catalogIds.length,
+            sort: ['id,asc'],
+          }
+        : undefined,
+    [catalogIds]
+  );
+  const { data: catalogs = [] } = useGetAllProductCatalogs(catalogQueryParams, {
+    query: {
+      enabled: catalogIds.length > 0,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const catalogById = useMemo(() => {
+    const map = new Map<number, ProductCatalogDTO>();
+
+    catalogs.forEach((catalog) => {
+      if (typeof catalog.id === 'number') {
+        map.set(catalog.id, catalog);
+      }
+    });
+
+    return map;
+  }, [catalogs]);
+  const getDisplayRowCount = useCallback(
+    (items: OrderDetailItem[]) =>
+      items.reduce((count, item) => {
+        if (!item.productCatalogId) {
+          return count + 1;
+        }
+
+        const catalog = catalogById.get(item.productCatalogId);
+        const catalogItemCount = catalog?.variants?.length ?? 0;
+
+        return count + Math.max(catalogItemCount, 1);
+      }, 0),
+    [catalogById]
+  );
+  const displayedTotalItems = useMemo(
+    () => getDisplayRowCount(allItems),
+    [allItems, getDisplayRowCount]
+  );
+  const displayedPendingItems = useMemo(
+    () => getDisplayRowCount(pendingItems),
+    [getDisplayRowCount, pendingItems]
+  );
+  const displayedCompletedItemsCount = useMemo(
+    () =>
+      getDisplayRowCount(
+        allItems.filter(
+          (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) === 0
+        )
+      ),
+    [allItems, getDisplayRowCount]
   );
   const warehouseQueryParams = useMemo(
     () => ({
@@ -484,10 +575,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ) : null}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge className="bg-cyan-100 text-cyan-900">{allItems.length} total items</Badge>
-          <Badge className="bg-amber-100 text-amber-900">{pendingItems.length} pending items</Badge>
+          <Badge className="bg-cyan-100 text-cyan-900">{displayedTotalItems} total items</Badge>
+          <Badge className="bg-amber-100 text-amber-900">
+            {displayedPendingItems} pending items
+          </Badge>
           <Badge className="bg-emerald-100 text-emerald-900">
-            {completedItemsCount} completed items
+            {displayedCompletedItemsCount} completed items
           </Badge>
           <Badge className="bg-slate-100 text-slate-900">{totalPendingUnits} pending units</Badge>
         </div>
@@ -557,197 +650,252 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       typeof row.item.variantId === 'number'
                         ? 'Warehouse main stock'
                         : 'Product main stock';
+                    const catalog = row.item.productCatalogId
+                      ? catalogById.get(row.item.productCatalogId)
+                      : undefined;
+                    const catalogItemNames = row.item.productCatalogId
+                      ? getCatalogItemNames(catalog, row.item.productName)
+                      : [];
+                    const displayNames =
+                      catalogItemNames.length > 0
+                        ? catalogItemNames
+                        : [row.item.productName || row.item.sku || `Item #${index + 1}`];
 
-                    return (
+                    return displayNames.map((displayName, displayIndex) => (
                       <TableRow
-                        key={row.item.orderDetailId}
+                        key={`${row.item.orderDetailId}-${displayIndex}`}
                         className={cn(
                           backlogResolved && 'opacity-80',
                           isEditing && row.selected && 'bg-cyan-50/60'
                         )}
                       >
-                        {isEditing ? (
-                          <TableCell className="text-center align-top">
-                            <Checkbox
-                              checked={row.selected}
-                              disabled={row.isCompleted || row.deliverableQuantity === 0}
-                              onCheckedChange={(checked) =>
-                                updateDraftState(row.item.orderDetailId, {
-                                  selected: checked === true,
-                                  quantity: checked === true ? row.quantity : '',
-                                  damageQuantity: checked === true ? row.damageQuantity : '',
-                                  picked: checked === true ? row.picked : false,
-                                  packed: checked === true ? row.packed : false,
-                                })
-                              }
-                            />
+                        {isEditing && displayIndex === 0 ? (
+                          <TableCell
+                            rowSpan={displayNames.length}
+                            className="text-center align-top"
+                          >
+                            <div className="pt-1">
+                              <Checkbox
+                                checked={row.selected}
+                                disabled={row.isCompleted || row.deliverableQuantity === 0}
+                                onCheckedChange={(checked) =>
+                                  updateDraftState(row.item.orderDetailId, {
+                                    selected: checked === true,
+                                    quantity: checked === true ? row.quantity : '',
+                                    damageQuantity: checked === true ? row.damageQuantity : '',
+                                    picked: checked === true ? row.picked : false,
+                                    packed: checked === true ? row.packed : false,
+                                  })
+                                }
+                              />
+                            </div>
                           </TableCell>
                         ) : null}
                         <TableCell className="align-top">
                           <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                                {index + 1}
+                                {displayNames.length > 1
+                                  ? `${index + 1}.${displayIndex + 1}`
+                                  : index + 1}
                               </div>
-                              <div className="font-semibold text-slate-900">
-                                {row.item.productName || row.item.sku || `Item #${index + 1}`}
-                              </div>
-                              {row.item.sku ? (
+                              <div className="font-semibold text-slate-900">{displayName}</div>
+                              {row.item.productCatalogId ? (
+                                <Badge variant="secondary" className="bg-slate-100 text-slate-700">
+                                  Catalog item
+                                </Badge>
+                              ) : row.item.sku ? (
                                 <Badge variant="secondary" className="bg-slate-100 text-slate-700">
                                   {row.item.sku}
                                 </Badge>
                               ) : null}
                             </div>
-                            {row.item.variantAttributes ? (
+                            {!row.item.productCatalogId && row.item.variantAttributes ? (
                               <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
                             ) : null}
                           </div>
                         </TableCell>
-                        <TableCell className="text-center font-semibold text-slate-900">
-                          {typeof row.item.warehouseId === 'number'
-                            ? (warehouseNameById.get(row.item.warehouseId) ??
-                              `Warehouse ${row.item.warehouseId}`)
-                            : '—'}
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-slate-900">
-                          {row.originalOrderQuantity}
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-emerald-700">
-                          {row.deliveredQuantity}
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-amber-700">
-                          {row.remainingQuantity}
-                        </TableCell>
-                        <TableCell className="text-center font-semibold text-slate-900">
-                          <div>{stocksLoading ? '...' : row.availableQuantity}</div>
-                          <div className="text-[11px] text-slate-500">{availableStockLabel}</div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="secondary" className="bg-slate-100 text-slate-800">
-                            {row.item.itemStatus}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="align-top text-sm text-slate-700">
-                          {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Checkbox
-                            checked={row.picked}
-                            disabled={
-                              !isEditing ||
-                              !row.selected ||
-                              row.isTerminalStatus ||
-                              !row.canChangePickPack ||
-                              isUpdatingStatus
-                            }
-                            onCheckedChange={(checked) => handlePickedChange(row, checked === true)}
-                            className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
-                          />
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Checkbox
-                            checked={row.packed}
-                            disabled={
-                              !isEditing ||
-                              !row.selected ||
-                              row.isTerminalStatus ||
-                              (!row.canChangePickPack && row.item.itemStatusCode !== 'PICKED') ||
-                              isUpdatingStatus
-                            }
-                            onCheckedChange={(checked) => handlePackedChange(row, checked === true)}
-                            className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
-                          />
-                        </TableCell>
-                        <TableCell className="align-top">
-                          {isEditing ? (
-                            <div className="space-y-1.5">
-                              <Input
-                                type="number"
-                                min={0}
-                                placeholder="0"
-                                value={row.quantity}
+                        {displayIndex === 0 ? (
+                          <>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="text-center font-semibold text-slate-900"
+                            >
+                              {typeof row.item.warehouseId === 'number'
+                                ? (warehouseNameById.get(row.item.warehouseId) ??
+                                  `Warehouse ${row.item.warehouseId}`)
+                                : '—'}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="text-center font-semibold text-slate-900"
+                            >
+                              {row.originalOrderQuantity}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="text-center font-semibold text-emerald-700"
+                            >
+                              {row.deliveredQuantity}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="text-center font-semibold text-amber-700"
+                            >
+                              {row.remainingQuantity}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="text-center font-semibold text-slate-900"
+                            >
+                              <div>{stocksLoading ? '...' : row.availableQuantity}</div>
+                              <div className="text-[11px] text-slate-500">
+                                {availableStockLabel}
+                              </div>
+                            </TableCell>
+                            <TableCell rowSpan={displayNames.length} className="text-center">
+                              <Badge variant="secondary" className="bg-slate-100 text-slate-800">
+                                {row.item.itemStatus}
+                              </Badge>
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="align-top text-sm text-slate-700"
+                            >
+                              {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
+                            </TableCell>
+                            <TableCell rowSpan={displayNames.length} className="text-center">
+                              <Checkbox
+                                checked={row.picked}
                                 disabled={
-                                  !row.selected || row.isCompleted || row.deliverableQuantity === 0
+                                  !isEditing ||
+                                  !row.selected ||
+                                  row.isTerminalStatus ||
+                                  !row.canChangePickPack ||
+                                  isUpdatingStatus
                                 }
-                                onChange={(event) =>
-                                  updateDraftState(row.item.orderDetailId, {
-                                    quantity: event.target.value,
-                                  })
+                                onCheckedChange={(checked) =>
+                                  handlePickedChange(row, checked === true)
                                 }
-                                className="border-slate-300"
+                                className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                               />
-                              {row.validationMessage ? (
-                                <p className="text-xs font-medium text-rose-600">
-                                  {row.validationMessage}
-                                </p>
-                              ) : row.isCompleted ? (
-                                <p className="text-xs font-medium text-emerald-700">
-                                  This item is completed.
-                                </p>
-                              ) : row.deliverableQuantity === 0 ? (
-                                <p className="text-xs font-medium text-amber-700">
-                                  No inventory is currently available for this item.
-                                </p>
-                              ) : null}
-                            </div>
-                          ) : (
-                            <span className="font-semibold text-slate-500">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="align-top">
-                          {isEditing ? (
-                            <Input
-                              type="number"
-                              min={0}
-                              placeholder="0"
-                              value={row.damageQuantity}
-                              disabled={
-                                !row.selected || row.isCompleted || row.deliverableQuantity === 0
-                              }
-                              onChange={(event) =>
-                                updateDraftState(row.item.orderDetailId, {
-                                  damageQuantity: event.target.value,
-                                })
-                              }
-                              className="border-slate-300"
-                            />
-                          ) : (
-                            <span className="font-semibold text-slate-500">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center align-top">
-                          <TableRowActions
-                            row={row}
-                            actions={[
-                              {
-                                id: 'mark-picked',
-                                label: 'Mark picked',
-                                onClick: async (selectedRow) => {
-                                  await handlePickedChange(selectedRow, true);
-                                },
-                              },
-                              {
-                                id: 'mark-packed',
-                                label: 'Mark packed',
-                                onClick: async (selectedRow) => {
-                                  await handlePackedChange(selectedRow, true);
-                                },
-                              },
-                              {
-                                id: 'back-to-manager',
-                                label: 'Back to Manager',
-                                onClick: (selectedRow) => {
-                                  setBackToManagerItem({
-                                    orderItemId: selectedRow.item.orderDetailId,
-                                    orderId: selectedRow.item.orderId,
-                                  });
-                                },
-                              },
-                            ]}
-                          />
-                        </TableCell>
+                            </TableCell>
+                            <TableCell rowSpan={displayNames.length} className="text-center">
+                              <Checkbox
+                                checked={row.packed}
+                                disabled={
+                                  !isEditing ||
+                                  !row.selected ||
+                                  row.isTerminalStatus ||
+                                  (!row.canChangePickPack &&
+                                    row.item.itemStatusCode !== 'PICKED') ||
+                                  isUpdatingStatus
+                                }
+                                onCheckedChange={(checked) =>
+                                  handlePackedChange(row, checked === true)
+                                }
+                                className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
+                              />
+                            </TableCell>
+                            <TableCell rowSpan={displayNames.length} className="align-top">
+                              {isEditing ? (
+                                <div className="space-y-1.5">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    placeholder="0"
+                                    value={row.quantity}
+                                    disabled={
+                                      !row.selected ||
+                                      row.isCompleted ||
+                                      row.deliverableQuantity === 0
+                                    }
+                                    onChange={(event) =>
+                                      updateDraftState(row.item.orderDetailId, {
+                                        quantity: event.target.value,
+                                      })
+                                    }
+                                    className="border-slate-300"
+                                  />
+                                  {row.validationMessage ? (
+                                    <p className="text-xs font-medium text-rose-600">
+                                      {row.validationMessage}
+                                    </p>
+                                  ) : row.isCompleted ? (
+                                    <p className="text-xs font-medium text-emerald-700">
+                                      This item is completed.
+                                    </p>
+                                  ) : row.deliverableQuantity === 0 ? (
+                                    <p className="text-xs font-medium text-amber-700">
+                                      No inventory is currently available for this item.
+                                    </p>
+                                  ) : null}
+                                </div>
+                              ) : (
+                                <span className="font-semibold text-slate-500">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell rowSpan={displayNames.length} className="align-top">
+                              {isEditing ? (
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  placeholder="0"
+                                  value={row.damageQuantity}
+                                  disabled={
+                                    !row.selected ||
+                                    row.isCompleted ||
+                                    row.deliverableQuantity === 0
+                                  }
+                                  onChange={(event) =>
+                                    updateDraftState(row.item.orderDetailId, {
+                                      damageQuantity: event.target.value,
+                                    })
+                                  }
+                                  className="border-slate-300"
+                                />
+                              ) : (
+                                <span className="font-semibold text-slate-500">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="text-center align-top"
+                            >
+                              <TableRowActions
+                                row={row}
+                                actions={[
+                                  {
+                                    id: 'mark-picked',
+                                    label: 'Mark picked',
+                                    onClick: async (selectedRow: (typeof rows)[number]) => {
+                                      await handlePickedChange(selectedRow, true);
+                                    },
+                                  },
+                                  {
+                                    id: 'mark-packed',
+                                    label: 'Mark packed',
+                                    onClick: async (selectedRow: (typeof rows)[number]) => {
+                                      await handlePackedChange(selectedRow, true);
+                                    },
+                                  },
+                                  {
+                                    id: 'back-to-manager',
+                                    label: 'Back to Manager',
+                                    onClick: (selectedRow: (typeof rows)[number]) => {
+                                      setBackToManagerItem({
+                                        orderItemId: selectedRow.item.orderDetailId,
+                                        orderId: selectedRow.item.orderId,
+                                      });
+                                    },
+                                  },
+                                ]}
+                              />
+                            </TableCell>
+                          </>
+                        ) : null}
                       </TableRow>
-                    );
+                    ));
                   })}
                 </TableBody>
               </Table>

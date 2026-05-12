@@ -255,6 +255,32 @@ function getVariantDisplayParts(
   return { color, size, label: variantLabel };
 }
 
+const getStockWarehouseValue = (
+  stock: NonNullable<ProductVariantDTO['variantStocks']>[number],
+  fallbackName: string
+) => String(stock.warehouse?.id ?? fallbackName);
+
+const getStockSalesQuantity = (stock: NonNullable<ProductVariantDTO['variantStocks']>[number]) =>
+  stock.salesStockQuantity ?? stock.stockQuantity ?? 0;
+
+function getSelectedCatalogWarehouseSalesStock(
+  variant: ProductVariantDTO,
+  warehouseValue?: string
+) {
+  if (!warehouseValue) {
+    return undefined;
+  }
+
+  const selectedStock = (variant.variantStocks ?? []).find((stock, stockIndex) => {
+    const warehouseName =
+      stock.warehouse?.name || `Warehouse ${stock.warehouse?.id ?? stockIndex + 1}`;
+
+    return getStockWarehouseValue(stock, warehouseName) === warehouseValue;
+  });
+
+  return selectedStock ? getStockSalesQuantity(selectedStock) : undefined;
+}
+
 export function VariantWarehousePanel({
   selectedItem,
   selectedItemIndex,
@@ -540,6 +566,11 @@ export function VariantWarehousePanel({
             variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
           const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
           const catalogQuantity = Number.parseInt(selectedCatalogItem.quantity, 10) || 0;
+          const selectedWarehouseValue = selectedCatalogWarehouseByVariant[variantKey];
+          const selectedSalesStock = getSelectedCatalogWarehouseSalesStock(
+            variant,
+            selectedWarehouseValue
+          );
 
           return [
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
@@ -559,7 +590,7 @@ export function VariantWarehousePanel({
             <CatalogVariantWarehouseSelect
               key={`catalog-warehouse-${variantKey}`}
               variant={variant}
-              value={selectedCatalogWarehouseByVariant[variantKey]}
+              value={selectedWarehouseValue}
               onChange={(value) =>
                 setSelectedCatalogWarehouseByVariant((current) => ({
                   ...current,
@@ -567,6 +598,7 @@ export function VariantWarehousePanel({
                 }))
               }
             />,
+            selectedSalesStock === undefined ? '-' : formatStockQuantity(selectedSalesStock),
           ];
         })
       : selectedProductItems.map(({ item, index }) => {
@@ -609,7 +641,11 @@ export function VariantWarehousePanel({
               : 'bg-sidebar-accent text-sidebar-accent-foreground'
           }
           className="w-full"
-          columns={['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']}
+          columns={
+            selectedCatalogId
+              ? ['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse', 'Sales Stock']
+              : ['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']
+          }
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
         />
@@ -746,13 +782,13 @@ function CatalogVariantWarehouseSelect({
 }) {
   const warehouseOptions = (variant.variantStocks ?? [])
     .map((stock, stockIndex) => {
-      const quantity = stock.salesStockQuantity ?? stock.stockQuantity ?? 0;
       const warehouseId = stock.warehouse?.id;
       const warehouseCode = (stock.warehouse as { code?: string } | undefined)?.code;
       const warehouseName = stock.warehouse?.name || `Warehouse ${warehouseId ?? stockIndex + 1}`;
+      const quantity = getStockSalesQuantity(stock);
 
       return {
-        value: String(warehouseId ?? warehouseName),
+        value: getStockWarehouseValue(stock, warehouseName),
         label: warehouseCode ? `${warehouseName} (${warehouseCode})` : warehouseName,
         quantity,
       };
