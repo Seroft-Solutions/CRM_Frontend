@@ -13,6 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { OrderRecord, OrderStatus } from '../data/order-data';
 import { History, PackageCheck, Undo2 } from 'lucide-react';
@@ -48,6 +50,30 @@ function normalizeHistoryStatus(status?: string) {
   return status.trim().toLowerCase() === 'pending' ? 'Created' : status;
 }
 
+function getCatalogItemNames(
+  catalog: ProductCatalogDTO | undefined,
+  fallbackProductName: string | undefined
+) {
+  const productName = catalog?.product?.name ?? fallbackProductName;
+  const variants = [...(catalog?.variants ?? [])].sort((left, right) =>
+    (left.sku ?? '').localeCompare(right.sku ?? '')
+  );
+
+  if (variants.length > 0) {
+    return variants.map((variant) => {
+      const sku = variant.sku?.trim();
+
+      if (productName && sku) {
+        return `${productName} - ${sku}`;
+      }
+
+      return sku || productName || 'Catalog item';
+    });
+  }
+
+  return [productName || 'Catalog item'];
+}
+
 interface OrderDetailProps {
   order: OrderRecord;
 }
@@ -59,6 +85,47 @@ export function OrderDetail({ order }: OrderDetailProps) {
       staleTime: 30_000,
     },
   });
+  const catalogIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          order.items
+            .map((item) => item.productCatalogId)
+            .filter(
+              (productCatalogId): productCatalogId is number => typeof productCatalogId === 'number'
+            )
+        )
+      ).sort((left, right) => left - right),
+    [order.items]
+  );
+  const catalogQueryParams = useMemo(
+    () =>
+      catalogIds.length > 0
+        ? {
+            'id.in': catalogIds,
+            size: catalogIds.length,
+            sort: ['id,asc'],
+          }
+        : undefined,
+    [catalogIds]
+  );
+  const { data: catalogs = [] } = useGetAllProductCatalogs(catalogQueryParams, {
+    query: {
+      enabled: catalogIds.length > 0,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const catalogById = useMemo(() => {
+    const map = new Map<number, ProductCatalogDTO>();
+
+    catalogs.forEach((catalog) => {
+      if (typeof catalog.id === 'number') {
+        map.set(catalog.id, catalog);
+      }
+    });
+
+    return map;
+  }, [catalogs]);
   const deliveredQuantityByOrderDetailId = useMemo(() => {
     const deliveredMap = new Map<number, number>();
 
@@ -93,6 +160,20 @@ export function OrderDetail({ order }: OrderDetailProps) {
 
     return orderedQuantityMap;
   }, [deliveredQuantityByOrderDetailId, order.items]);
+  const displayedItemCount = useMemo(
+    () =>
+      order.items.reduce((count, item) => {
+        if (!item.productCatalogId) {
+          return count + 1;
+        }
+
+        const catalog = catalogById.get(item.productCatalogId);
+        const catalogItemCount = catalog?.variants?.length ?? 0;
+
+        return count + Math.max(catalogItemCount, 1);
+      }, 0),
+    [catalogById, order.items]
+  );
   const recalculatedBaseAmount = useMemo(
     () =>
       order.items.reduce((sum, item) => {
@@ -345,7 +426,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
                   Order Fulfillment
                 </Link>
               </Button>
-              <Badge className="bg-cyan-100 text-cyan-900">{order.items.length} items</Badge>
+              <Badge className="bg-cyan-100 text-cyan-900">{displayedItemCount} items</Badge>
             </div>
           </CardTitle>
         </CardHeader>
@@ -368,33 +449,48 @@ export function OrderDetail({ order }: OrderDetailProps) {
                       orderedQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
                     const calculatedItemTotal =
                       orderedQuantity * item.itemPrice + item.itemTaxAmount;
+                    const catalog = item.productCatalogId
+                      ? catalogById.get(item.productCatalogId)
+                      : undefined;
+                    const catalogItemNames = item.productCatalogId
+                      ? getCatalogItemNames(catalog, item.productName)
+                      : [];
+                    const displayNames =
+                      catalogItemNames.length > 0
+                        ? catalogItemNames
+                        : [item.productName || `Item #${index + 1}`];
 
-                    return (
-                      <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
+                    return displayNames.map((displayName, displayIndex) => (
+                      <TableRow
+                        key={`${item.orderDetailId}-${displayIndex}`}
+                        className="hover:bg-cyan-50/30"
+                      >
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                              {index + 1}
+                              {displayNames.length > 1
+                                ? `${index + 1}.${displayIndex + 1}`
+                                : index + 1}
                             </div>
                             <div>
-                              {item.productName ? (
+                              {displayName ? (
                                 <>
                                   <div className="flex flex-wrap items-center gap-2">
                                     {item.productCatalogId ? (
                                       <Badge variant="secondary" className="text-xs">
-                                        Catalog
+                                        Catalog item
                                       </Badge>
                                     ) : null}
                                     <div className="font-semibold text-slate-800">
-                                      {item.productName}
+                                      {displayName}
                                     </div>
                                   </div>
-                                  {item.sku && (
+                                  {!item.productCatalogId && item.sku && (
                                     <div className="text-xs text-muted-foreground">
                                       SKU: {item.sku}
                                     </div>
                                   )}
-                                  {item.variantAttributes && (
+                                  {!item.productCatalogId && item.variantAttributes && (
                                     <div className="text-xs text-blue-600">
                                       {item.variantAttributes.split(',').map((attr, i) => (
                                         <div key={i}>{attr.trim()}</div>
@@ -420,20 +516,36 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="font-semibold text-slate-800">
-                          <div>{orderedQuantity}</div>
-                        </TableCell>
-                        <TableCell className="font-semibold text-slate-800">
-                          {formatCurrency(item.itemPrice)}
-                        </TableCell>
-                        <TableCell className="font-semibold text-slate-800">
-                          {formatCurrency(item.itemTaxAmount)}
-                        </TableCell>
-                        <TableCell className="font-bold text-slate-900">
-                          {formatCurrency(calculatedItemTotal)}
-                        </TableCell>
+                        {displayIndex === 0 ? (
+                          <>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="font-semibold text-slate-800"
+                            >
+                              <div>{orderedQuantity}</div>
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="font-semibold text-slate-800"
+                            >
+                              {formatCurrency(item.itemPrice)}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="font-semibold text-slate-800"
+                            >
+                              {formatCurrency(item.itemTaxAmount)}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="font-bold text-slate-900"
+                            >
+                              {formatCurrency(calculatedItemTotal)}
+                            </TableCell>
+                          </>
+                        ) : null}
                       </TableRow>
-                    );
+                    ));
                   })
                 ) : (
                   <TableRow>
