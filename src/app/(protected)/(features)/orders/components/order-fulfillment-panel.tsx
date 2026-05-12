@@ -214,7 +214,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const getDisplayRowCount = useCallback(
     (items: OrderDetailItem[]) =>
       items.reduce((count, item) => {
-        if (!item.productCatalogId) {
+        if (!item.productCatalogId || item.variantId) {
           return count + 1;
         }
 
@@ -650,10 +650,11 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       typeof row.item.variantId === 'number'
                         ? 'Warehouse main stock'
                         : 'Product main stock';
-                    const catalog = row.item.productCatalogId
+                    const isLegacyCatalog = Boolean(row.item.productCatalogId) && !row.item.variantId;
+                    const catalog = isLegacyCatalog && typeof row.item.productCatalogId === 'number'
                       ? catalogById.get(row.item.productCatalogId)
                       : undefined;
-                    const catalogItemNames = row.item.productCatalogId
+                    const catalogItemNames = isLegacyCatalog
                       ? getCatalogItemNames(catalog, row.item.productName)
                       : [];
                     const displayNames =

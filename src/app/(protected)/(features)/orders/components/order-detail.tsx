@@ -17,6 +17,8 @@ import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/
 import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import { OrderRecord, OrderStatus } from '../data/order-data';
+import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
+import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import { History, PackageCheck, Undo2 } from 'lucide-react';
 
 const statusColors: Record<OrderStatus, string> = {
@@ -126,6 +128,28 @@ export function OrderDetail({ order }: OrderDetailProps) {
 
     return map;
   }, [catalogs]);
+  const warehouseQueryParams = useMemo(
+    () => ({
+      page: 0,
+      size: 1000,
+      sort: ['name,asc'],
+      'status.equals': 'ACTIVE' as const,
+    }),
+    []
+  );
+  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
+  const warehouseNameById = useMemo(
+    () =>
+      new Map(
+        (warehouseRows as IWarehouse[])
+          .filter(
+            (warehouse): warehouse is IWarehouse & { id: number } =>
+              typeof warehouse.id === 'number'
+          )
+          .map((warehouse) => [warehouse.id, warehouse.name])
+      ),
+    [warehouseRows]
+  );
   const deliveredQuantityByOrderDetailId = useMemo(() => {
     const deliveredMap = new Map<number, number>();
 
@@ -163,7 +187,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
   const displayedItemCount = useMemo(
     () =>
       order.items.reduce((count, item) => {
-        if (!item.productCatalogId) {
+        if (!item.productCatalogId || item.variantId) {
           return count + 1;
         }
 
@@ -434,13 +458,14 @@ export function OrderDetail({ order }: OrderDetailProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
-                  <TableHead className="font-bold text-slate-700">Item</TableHead>
-                  <TableHead className="font-bold text-slate-700">Quantity</TableHead>
-                  <TableHead className="font-bold text-slate-700">Price</TableHead>
-                  <TableHead className="font-bold text-slate-700">Tax</TableHead>
-                  <TableHead className="font-bold text-slate-700">Total</TableHead>
-                </TableRow>
+                  <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
+                    <TableHead className="font-bold text-slate-700">Item</TableHead>
+                    <TableHead className="font-bold text-slate-700">Warehouse</TableHead>
+                    <TableHead className="font-bold text-slate-700">Quantity</TableHead>
+                    <TableHead className="font-bold text-slate-700">Price</TableHead>
+                    <TableHead className="font-bold text-slate-700">Tax</TableHead>
+                    <TableHead className="font-bold text-slate-700">Total</TableHead>
+                  </TableRow>
               </TableHeader>
               <TableBody>
                 {order.items.length > 0 ? (
@@ -449,16 +474,22 @@ export function OrderDetail({ order }: OrderDetailProps) {
                       orderedQuantityByOrderDetailId.get(item.orderDetailId) ?? 0;
                     const calculatedItemTotal =
                       orderedQuantity * item.itemPrice + item.itemTaxAmount;
-                    const catalog = item.productCatalogId
+                    const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
+                    const catalog = isLegacyCatalog && typeof item.productCatalogId === 'number'
                       ? catalogById.get(item.productCatalogId)
                       : undefined;
-                    const catalogItemNames = item.productCatalogId
+                    const catalogItemNames = isLegacyCatalog
                       ? getCatalogItemNames(catalog, item.productName)
                       : [];
                     const displayNames =
                       catalogItemNames.length > 0
                         ? catalogItemNames
-                        : [item.productName || `Item #${index + 1}`];
+                        : [item.productName || item.sku || `Item #${index + 1}`];
+                    const warehouseName =
+                      typeof item.warehouseId === 'number'
+                        ? (warehouseNameById.get(item.warehouseId) ??
+                          `Warehouse ${item.warehouseId}`)
+                        : '—';
 
                     return displayNames.map((displayName, displayIndex) => (
                       <TableRow
@@ -516,7 +547,21 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             </div>
                           </div>
                         </TableCell>
-                        {displayIndex === 0 ? (
+                        {isLegacyCatalog ? (
+                          displayIndex === 0 ? (
+                            <TableCell
+                              rowSpan={displayNames.length}
+                              className="font-semibold text-slate-800"
+                            >
+                              {warehouseName}
+                            </TableCell>
+                          ) : null
+                        ) : (
+                          <TableCell className="font-semibold text-slate-800">
+                            {warehouseName}
+                          </TableCell>
+                        )}
+                        {isLegacyCatalog && displayIndex === 0 ? (
                           <>
                             <TableCell
                               rowSpan={displayNames.length}
@@ -544,12 +589,28 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             </TableCell>
                           </>
                         ) : null}
+                        {!isLegacyCatalog ? (
+                          <>
+                            <TableCell className="font-semibold text-slate-800">
+                              <div>{orderedQuantity}</div>
+                            </TableCell>
+                            <TableCell className="font-semibold text-slate-800">
+                              {formatCurrency(item.itemPrice)}
+                            </TableCell>
+                            <TableCell className="font-semibold text-slate-800">
+                              {formatCurrency(item.itemTaxAmount)}
+                            </TableCell>
+                            <TableCell className="font-bold text-slate-900">
+                              {formatCurrency(calculatedItemTotal)}
+                            </TableCell>
+                          </>
+                        ) : null}
                       </TableRow>
                     ));
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-12 text-center">
+                    <TableCell colSpan={6} className="py-12 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
                           <svg

@@ -287,6 +287,7 @@ export function VariantWarehousePanel({
   items,
   onToggleWarehouseVariant,
   onAdjustItemQuantity,
+  onToggleCatalogVariant,
 }: {
   selectedItem?: OrderItemForm;
   selectedItemIndex: number | null;
@@ -297,6 +298,14 @@ export function VariantWarehousePanel({
     checked: boolean
   ) => void;
   onAdjustItemQuantity: (itemIndex: number, delta: number) => void;
+  onToggleCatalogVariant?: (
+    catalogId: number,
+    productId: number | undefined,
+    variant: ProductVariantDTO,
+    warehouseId: number | undefined,
+    quantity: number,
+    price: number | undefined
+  ) => void;
 }) {
   const selectedProductId =
     selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
@@ -306,6 +315,9 @@ export function VariantWarehousePanel({
   const [selectedCatalogWarehouseByVariant, setSelectedCatalogWarehouseByVariant] = useState<
     Record<string, string>
   >({});
+  const [catalogVariantQuantities, setCatalogVariantQuantities] = useState<Record<string, number>>(
+    {}
+  );
   const { data: variantsData = [], isFetching } = useGetAllProductVariants(
     {
       'productId.equals': selectedProductId,
@@ -480,6 +492,7 @@ export function VariantWarehousePanel({
   useEffect(() => {
     setSelectedWarehouseId('');
     setSelectedCatalogWarehouseByVariant({});
+    setCatalogVariantQuantities({});
   }, [selectedProductId, selectedCatalogId]);
 
   const allWarehouseRows = useMemo(() => {
@@ -565,7 +578,7 @@ export function VariantWarehousePanel({
           const price =
             variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
           const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
-          const catalogQuantity = Number.parseInt(selectedCatalogItem.quantity, 10) || 0;
+          const variantQuantity = catalogVariantQuantities[variantKey] ?? 0;
           const selectedWarehouseValue = selectedCatalogWarehouseByVariant[variantKey];
           const selectedSalesStock = getSelectedCatalogWarehouseSalesStock(
             variant,
@@ -578,25 +591,57 @@ export function VariantWarehousePanel({
             size,
             <QuantityStepper
               key={`catalog-qty-${variantKey}`}
-              quantity={catalogQuantity}
-              onDecrease={() =>
-                selectedItemIndex !== null && onAdjustItemQuantity(selectedItemIndex, -1)
-              }
-              onIncrease={() =>
-                selectedItemIndex !== null && onAdjustItemQuantity(selectedItemIndex, 1)
-              }
+              quantity={variantQuantity}
+              onDecrease={() => {
+                const nextQty = Math.max(0, variantQuantity - 1);
+                setCatalogVariantQuantities((current) => ({
+                  ...current,
+                  [variantKey]: nextQty,
+                }));
+                onToggleCatalogVariant?.(
+                  selectedCatalogId,
+                  selectedCatalogProductId,
+                  variant,
+                  selectedWarehouseValue ? Number(selectedWarehouseValue) : undefined,
+                  nextQty,
+                  variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
+                );
+              }}
+              onIncrease={() => {
+                const nextQty = variantQuantity + 1;
+                setCatalogVariantQuantities((current) => ({
+                  ...current,
+                  [variantKey]: nextQty,
+                }));
+                onToggleCatalogVariant?.(
+                  selectedCatalogId,
+                  selectedCatalogProductId,
+                  variant,
+                  selectedWarehouseValue ? Number(selectedWarehouseValue) : undefined,
+                  nextQty,
+                  variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
+                );
+              }}
             />,
             price,
             <CatalogVariantWarehouseSelect
               key={`catalog-warehouse-${variantKey}`}
               variant={variant}
               value={selectedWarehouseValue}
-              onChange={(value) =>
+              onChange={(value) => {
                 setSelectedCatalogWarehouseByVariant((current) => ({
                   ...current,
                   [variantKey]: value,
-                }))
-              }
+                }));
+                onToggleCatalogVariant?.(
+                  selectedCatalogId,
+                  selectedCatalogProductId,
+                  variant,
+                  value ? Number(value) : undefined,
+                  variantQuantity,
+                  variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
+                );
+              }}
             />,
             selectedSalesStock === undefined ? '-' : formatStockQuantity(selectedSalesStock),
           ];
@@ -1668,6 +1713,70 @@ export function OrderFormContent({
     setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
   };
 
+  const handleToggleCatalogVariant = (
+    catalogId: number,
+    productId: number | undefined,
+    variant: ProductVariantDTO,
+    warehouseId: number | undefined,
+    quantity: number,
+    price: number | undefined
+  ) => {
+    if (selectedItemIndex === null) return;
+
+    const selectedItem = items[selectedItemIndex];
+    if (!selectedItem?.productCatalogId || selectedItem.productCatalogId !== catalogId) return;
+    if (!productId) return;
+
+    setItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) => item.productCatalogId === catalogId && item.variantId === variant.id
+      );
+
+      if (!warehouseId || quantity <= 0) {
+        if (existingIndex === -1) return prev;
+        const next = [...prev];
+        const [removed] = next.splice(existingIndex, 1);
+        if (removed?.id) {
+          setRemovedItemIds((current) => [...current, removed.id!]);
+        }
+        if (existingIndex <= selectedItemIndex && selectedItemIndex > 0) {
+          setSelectedItemIndex(selectedItemIndex - 1);
+        }
+        return next;
+      }
+
+      const newItem: OrderItemForm = {
+        ...emptyOrderItem('product'),
+        productId,
+        productCatalogId: catalogId,
+        productName: selectedItem.productName,
+        variantId: variant.id,
+        sku: variant.sku,
+        warehouseId,
+        quantity: String(quantity),
+        itemPrice: price !== undefined && price !== null ? String(price) : selectedItem.itemPrice,
+      };
+
+      if (existingIndex !== -1) {
+        const next = [...prev];
+        next[existingIndex] = { ...next[existingIndex], ...newItem };
+        return next;
+      }
+
+      const insertAfterIndex = Math.max(
+        ...prev
+          .map((item, index) =>
+            item.productCatalogId === catalogId && item.itemType === 'catalog' ? index : -1
+          )
+          .filter((index) => index >= 0),
+        selectedItemIndex
+      );
+
+      return [...prev.slice(0, insertAfterIndex + 1), newItem, ...prev.slice(insertAfterIndex + 1)];
+    });
+    setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
+  };
+
   const handleAdjustItemQuantity = (itemIndex: number, delta: number) => {
     setItems((prev) =>
       prev.map((item, index) => {
@@ -2213,10 +2322,20 @@ export function OrderFormContent({
         throw new Error('Order ID missing after draft save.');
       }
 
+      const catalogIdsWithExpandedVariants = new Set(
+        items
+          .filter((item) => hasItemData(item) && item.productCatalogId && item.variantId)
+          .map((item) => item.productCatalogId!)
+      );
+
       const detailTasks = items
-        .filter((item) => hasItemData(item))
+        .filter(
+          (item) =>
+            hasItemData(item) &&
+            !(item.productCatalogId && !item.variantId && catalogIdsWithExpandedVariants.has(item.productCatalogId))
+        )
         .map((item) => {
-          const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
+          const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
           const breakdown = getOrderItemBillingBreakdown(item);
           const quantity = breakdown.billableQuantity;
           const backOrderQuantity = breakdown.backOrderQuantity;
@@ -2227,10 +2346,10 @@ export function OrderFormContent({
 
           const detailPayload = {
             orderId,
-            productId: isCatalog ? undefined : item.productId || undefined,
-            variantId: isCatalog ? undefined : item.variantId || undefined,
-            productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
-            warehouseId: isCatalog ? undefined : item.warehouseId || undefined,
+            productId: isLegacyCatalog ? undefined : item.productId || undefined,
+            variantId: isLegacyCatalog ? undefined : item.variantId || undefined,
+            productCatalogId: item.productCatalogId || undefined,
+            warehouseId: isLegacyCatalog ? undefined : item.warehouseId || undefined,
             productName: item.productName || undefined,
             sku: item.sku || undefined,
             variantAttributes: item.variantAttributes || undefined,
@@ -2491,6 +2610,23 @@ export function OrderFormContent({
         throw new Error('Order ID missing after save.');
       }
 
+      const catalogIdsWithExpandedVariantsInSubmit = new Set(
+        items
+          .filter(
+            (item) =>
+              (item.productId ||
+                item.variantId ||
+                item.productCatalogId ||
+                item.quantity?.trim() ||
+                item.itemPrice?.trim() ||
+                item.itemTaxAmount?.trim() ||
+                item.itemComment?.trim()) &&
+              item.productCatalogId &&
+              item.variantId
+          )
+          .map((item) => item.productCatalogId!)
+      );
+
       const itemTasks = items
         .filter((item) => {
           const hasData =
@@ -2502,10 +2638,13 @@ export function OrderFormContent({
             item.itemTaxAmount?.trim() ||
             item.itemComment?.trim();
 
-          return hasData;
+          return (
+            hasData &&
+            !(item.productCatalogId && !item.variantId && catalogIdsWithExpandedVariantsInSubmit.has(item.productCatalogId))
+          );
         })
         .map((item) => {
-          const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
+          const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
           const breakdown = getOrderItemBillingBreakdown(item);
           const quantity = breakdown.billableQuantity;
           const backOrderQuantity = breakdown.backOrderQuantity;
@@ -2517,10 +2656,10 @@ export function OrderFormContent({
           const detailPayload = {
             id: item.id,
             orderId,
-            productId: isCatalog ? undefined : item.productId || undefined,
-            variantId: isCatalog ? undefined : item.variantId || undefined,
-            productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
-            warehouseId: isCatalog ? undefined : item.warehouseId || undefined,
+            productId: isLegacyCatalog ? undefined : item.productId || undefined,
+            variantId: isLegacyCatalog ? undefined : item.variantId || undefined,
+            productCatalogId: item.productCatalogId || undefined,
+            warehouseId: isLegacyCatalog ? undefined : item.warehouseId || undefined,
             productName: item.productName || undefined,
             sku: item.sku || undefined,
             variantAttributes: item.variantAttributes || undefined,
@@ -2552,7 +2691,18 @@ export function OrderFormContent({
         })
         .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
-      const deleteTasks = removedItemIds.map((id) => deleteOrderDetail({ id }));
+      const catalogItemsToDelete = items
+        .filter(
+          (item) =>
+            item.id &&
+            item.productCatalogId &&
+            !item.variantId &&
+            catalogIdsWithExpandedVariantsInSubmit.has(item.productCatalogId)
+        )
+        .map((item) => item.id!);
+      const deleteTasks = [...new Set([...removedItemIds, ...catalogItemsToDelete])].map((id) =>
+        deleteOrderDetail({ id })
+      );
 
       const addressTasks: Promise<unknown>[] = [];
 
@@ -2776,6 +2926,7 @@ export function OrderFormContent({
                 items={items}
                 onToggleWarehouseVariant={handleToggleWarehouseVariant}
                 onAdjustItemQuantity={handleAdjustItemQuantity}
+                onToggleCatalogVariant={handleToggleCatalogVariant}
               />
 
               <div className="rounded-none border border-border bg-muted/30 p-3 shadow-sm">
