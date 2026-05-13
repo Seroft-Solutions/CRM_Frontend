@@ -46,6 +46,7 @@ import type {
   CustomerDTO,
   OrderDTO,
   OrderDetailDTO,
+  ProductCatalogDTO,
   ProductVariantDTO,
 } from '@/core/api/generated/spring/schemas';
 import type { ProductVariantImageDTO } from '@/core/api/generated/spring/schemas/ProductVariantImageDTO';
@@ -54,9 +55,15 @@ import {
   useDeleteOrderDetail,
   useUpdateOrderDetail,
 } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
-import { useGetAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import {
+  getAllProductVariants,
+  useGetAllProductVariants,
+} from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
 import { useGetAllProductVariantImagesByVariant } from '@/core/api/generated/spring/endpoints/product-variant-images/product-variant-images.gen';
-import { useGetProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import {
+  getProductCatalog,
+  useGetProductCatalog,
+} from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import {
   useCreateOrderAddressDetail,
   useUpdateOrderAddressDetail,
@@ -161,6 +168,147 @@ const hasItemData = (item: OrderItemForm) => {
       hasText(item.itemTaxAmount) ||
       hasText(item.itemComment)
   );
+};
+
+const getCatalogIdsWithExpandedVariants = (items: OrderItemForm[]) =>
+  new Set(
+    items
+      .filter((item) => hasItemData(item) && item.productCatalogId && item.variantId)
+      .map((item) => item.productCatalogId!)
+  );
+
+const getPersistableOrderDetailItems = (items: OrderItemForm[]) => {
+  const catalogIdsWithExpandedVariants = getCatalogIdsWithExpandedVariants(items);
+
+  return items.filter(
+    (item) =>
+      hasItemData(item) &&
+      !(
+        item.productCatalogId &&
+        !item.variantId &&
+        catalogIdsWithExpandedVariants.has(item.productCatalogId)
+      )
+  );
+};
+
+const getCatalogVariantAttributes = (variant: ProductVariantDTO) => {
+  const attributes = (variant.selections ?? [])
+    .map((selection) => {
+      const label = selection.attribute?.label ?? selection.attribute?.name;
+      const value = selection.option?.label ?? selection.rawValue ?? selection.option?.code;
+
+      return label && value ? `${label}: ${value}` : value;
+    })
+    .filter((value): value is string => Boolean(value?.trim()));
+
+  return attributes.length > 0 ? attributes.join(', ') : undefined;
+};
+
+const mergeCatalogVariantsForSave = (
+  catalog: ProductCatalogDTO,
+  hydratedVariants: ProductVariantDTO[]
+) => {
+  const hydratedById = new Map(
+    hydratedVariants
+      .filter((variant) => typeof variant.id === 'number')
+      .map((variant) => [variant.id!, variant])
+  );
+
+  return (catalog.variants ?? []).map((variant) => {
+    const hydratedVariant = typeof variant.id === 'number' ? hydratedById.get(variant.id) : null;
+
+    return hydratedVariant
+      ? {
+          ...variant,
+          ...hydratedVariant,
+          selections: hydratedVariant.selections ?? variant.selections,
+          variantStocks: hydratedVariant.variantStocks ?? variant.variantStocks,
+        }
+      : variant;
+  });
+};
+
+const getDefaultWarehouseStock = (variant: ProductVariantDTO) => {
+  const stocks = variant.variantStocks ?? [];
+
+  return (
+    stocks.find(
+      (stock) => typeof stock.warehouse?.id === 'number' && getStockSalesQuantity(stock) > 0
+    ) ?? stocks.find((stock) => typeof stock.warehouse?.id === 'number')
+  );
+};
+
+const buildCatalogVariantItemsForSave = async (item: OrderItemForm) => {
+  if (!item.productCatalogId || item.variantId) {
+    return [item];
+  }
+
+  const catalog = await getProductCatalog(item.productCatalogId);
+  const productId = catalog.product?.id ?? item.productId;
+
+  if (typeof productId !== 'number') {
+    return [item];
+  }
+
+  const hydratedVariants = (await getAllProductVariants({
+    'productId.equals': productId,
+    'status.equals': 'ACTIVE',
+    size: 1000,
+  })) as ProductVariantDTO[];
+  const variants = mergeCatalogVariantsForSave(catalog, hydratedVariants).filter(
+    (variant) => typeof variant.id === 'number'
+  );
+
+  if (variants.length === 0) {
+    return [item];
+  }
+
+  const quantity = item.quantity?.trim() || '1';
+  const fallbackPrice = item.itemPrice || String(catalog.price ?? '');
+  const productName = catalog.product?.name ?? item.productName ?? catalog.productCatalogName;
+
+  return variants.map((variant) => {
+    const stock = getDefaultWarehouseStock(variant);
+
+    return {
+      ...emptyOrderItem('product'),
+      productId,
+      productCatalogId: item.productCatalogId,
+      productName,
+      variantId: variant.id,
+      sku: variant.sku,
+      variantAttributes: getCatalogVariantAttributes(variant),
+      warehouseId: stock?.warehouse?.id,
+      warehouseName: stock?.warehouse?.name,
+      quantity,
+      itemPrice:
+        variant.price !== undefined && variant.price !== null
+          ? String(variant.price)
+          : fallbackPrice,
+      itemTaxAmount: item.itemTaxAmount,
+      itemStatus: item.itemStatus,
+      itemComment: item.itemComment,
+    } satisfies OrderItemForm;
+  });
+};
+
+const expandCatalogItemsForPersistence = async (items: OrderItemForm[]) => {
+  const catalogIdsWithExpandedVariants = getCatalogIdsWithExpandedVariants(items);
+  const expandedGroups = await Promise.all(
+    items.map((item) => {
+      if (
+        item.productCatalogId &&
+        !item.variantId &&
+        !catalogIdsWithExpandedVariants.has(item.productCatalogId)
+      ) {
+        return buildCatalogVariantItemsForSave(item);
+      }
+
+      return Promise.resolve([item]);
+    })
+  );
+
+  return expandedGroups.flat();
 };
 
 const parseItemStatusValue = (value?: string) => {
@@ -1080,7 +1228,7 @@ export function OrderFormContent({
 
     return initialOrder.items.map((item) => ({
       id: item.orderDetailId || undefined,
-      itemType: item.productCatalogId ? 'catalog' : 'product',
+      itemType: item.productCatalogId && !item.variantId ? 'catalog' : 'product',
       productId: item.productId || undefined,
       initialProductId: item.productId || undefined,
       variantId: item.variantId || undefined,
@@ -2337,7 +2485,9 @@ export function OrderFormContent({
     };
 
     try {
-      const itemsTotal = calculateItemsTotal(items);
+      const expandedItems = await expandCatalogItemsForPersistence(items);
+      const persistableItems = getPersistableOrderDetailItems(expandedItems);
+      const itemsTotal = calculateItemsTotal(persistableItems);
       const baseAmount = itemsTotal;
       const shippingAmount = parseAmount(formState.shippingAmount || '0');
       const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
@@ -2374,57 +2524,45 @@ export function OrderFormContent({
         throw new Error('Order ID missing after draft save.');
       }
 
-      const catalogIdsWithExpandedVariants = new Set(
-        items
-          .filter((item) => hasItemData(item) && item.productCatalogId && item.variantId)
-          .map((item) => item.productCatalogId!)
-      );
+      const detailTasks = persistableItems.map((item) => {
+        const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
+        const breakdown = getOrderItemBillingBreakdown(item);
+        const quantity = breakdown.billableQuantity;
+        const backOrderQuantity = breakdown.backOrderQuantity;
+        const itemPrice = parseAmount(item.itemPrice || '0');
+        const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
+        const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
+        const itemStatus = getItemStatusCode(item.itemStatus) || 'CREATED';
 
-      const detailTasks = items
-        .filter(
-          (item) =>
-            hasItemData(item) &&
-            !(item.productCatalogId && !item.variantId && catalogIdsWithExpandedVariants.has(item.productCatalogId))
-        )
-        .map((item) => {
-          const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
-          const breakdown = getOrderItemBillingBreakdown(item);
-          const quantity = breakdown.billableQuantity;
-          const backOrderQuantity = breakdown.backOrderQuantity;
-          const itemPrice = parseAmount(item.itemPrice || '0');
-          const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
-          const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
-          const itemStatus = getItemStatusCode(item.itemStatus) || 'CREATED';
+        const detailPayload = {
+          orderId,
+          productId: isLegacyCatalog ? undefined : item.productId || undefined,
+          variantId: isLegacyCatalog ? undefined : item.variantId || undefined,
+          productCatalogId: item.productCatalogId || undefined,
+          warehouseId: isLegacyCatalog ? undefined : item.warehouseId || undefined,
+          productName: item.productName || undefined,
+          sku: item.sku || undefined,
+          variantAttributes: item.variantAttributes || undefined,
+          itemStatus,
+          quantity,
+          backOrderQuantity,
+          itemPrice,
+          itemTaxAmount,
+          itemTotalAmount,
+          comment: item.itemComment || undefined,
+        } as OrderDetailDTO & {
+          itemStatus: string;
+          itemTaxAmount?: number;
+        };
 
-          const detailPayload = {
-            orderId,
-            productId: isLegacyCatalog ? undefined : item.productId || undefined,
-            variantId: isLegacyCatalog ? undefined : item.variantId || undefined,
-            productCatalogId: item.productCatalogId || undefined,
-            warehouseId: isLegacyCatalog ? undefined : item.warehouseId || undefined,
-            productName: item.productName || undefined,
-            sku: item.sku || undefined,
-            variantAttributes: item.variantAttributes || undefined,
-            itemStatus,
-            quantity,
-            backOrderQuantity,
-            itemPrice,
-            itemTaxAmount,
-            itemTotalAmount,
-            itemComment: item.itemComment || undefined,
-          } as OrderDetailDTO & {
-            itemStatus: string;
-            itemTaxAmount?: number;
-            itemComment?: string;
-          };
-
-          return createOrderDetail({
-            data: detailPayload,
-          });
+        return createOrderDetail({
+          data: detailPayload,
         });
-      const totalBackOrderUnits = items
-        .filter((item) => hasItemData(item))
-        .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
+      });
+      const totalBackOrderUnits = persistableItems.reduce(
+        (sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity,
+        0
+      );
 
       const addressTasks: Promise<unknown>[] = [];
 
@@ -2470,10 +2608,8 @@ export function OrderFormContent({
             })
           : null;
 
+      await Promise.all([...detailTasks, ...addressTasks, ...shippingTasks]);
       await Promise.allSettled([
-        ...detailTasks,
-        ...addressTasks,
-        ...shippingTasks,
         historyTask,
         ...(backOrderHistoryTask ? [backOrderHistoryTask] : []),
       ]);
@@ -2601,7 +2737,9 @@ export function OrderFormContent({
       };
     };
 
-    const itemsTotal = calculateItemsTotal(items);
+    const expandedItems = await expandCatalogItemsForPersistence(items);
+    const persistableItems = getPersistableOrderDetailItems(expandedItems);
+    const itemsTotal = calculateItemsTotal(persistableItems);
     const baseAmount = itemsTotal;
     const discountCode = formState.discountCode?.trim() || '';
     let resolvedDiscount = discountData;
@@ -2662,86 +2800,45 @@ export function OrderFormContent({
         throw new Error('Order ID missing after save.');
       }
 
-      const catalogIdsWithExpandedVariantsInSubmit = new Set(
-        items
-          .filter(
-            (item) =>
-              (item.productId ||
-                item.variantId ||
-                item.productCatalogId ||
-                item.quantity?.trim() ||
-                item.itemPrice?.trim() ||
-                item.itemTaxAmount?.trim() ||
-                item.itemComment?.trim()) &&
-              item.productCatalogId &&
-              item.variantId
-          )
-          .map((item) => item.productCatalogId!)
+      const catalogIdsWithExpandedVariantsInSubmit =
+        getCatalogIdsWithExpandedVariants(expandedItems);
+      const itemTasks = persistableItems.map((item) => {
+        const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
+        const breakdown = getOrderItemBillingBreakdown(item);
+        const quantity = breakdown.billableQuantity;
+        const backOrderQuantity = breakdown.backOrderQuantity;
+        const itemPrice = parseAmount(item.itemPrice || '0');
+        const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
+        const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
+        const itemStatus = getItemStatusCode(item.itemStatus) || 'CREATED';
+
+        const detailPayload = {
+          id: item.id,
+          orderId,
+          productId: isLegacyCatalog ? undefined : item.productId || undefined,
+          variantId: isLegacyCatalog ? undefined : item.variantId || undefined,
+          productCatalogId: item.productCatalogId || undefined,
+          warehouseId: isLegacyCatalog ? undefined : item.warehouseId || undefined,
+          productName: item.productName || undefined,
+          sku: item.sku || undefined,
+          variantAttributes: item.variantAttributes || undefined,
+          itemStatus,
+          quantity,
+          backOrderQuantity,
+          itemPrice,
+          itemTaxAmount,
+          itemTotalAmount,
+          comment: item.itemComment || undefined,
+        };
+
+        return item.id
+          ? updateOrderDetail({ id: item.id, data: detailPayload })
+          : createOrderDetail({ data: detailPayload });
+      });
+      const totalBackOrderUnits = persistableItems.reduce(
+        (sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity,
+        0
       );
-
-      const itemTasks = items
-        .filter((item) => {
-          const hasData =
-            item.productId ||
-            item.variantId ||
-            item.productCatalogId ||
-            item.quantity?.trim() ||
-            item.itemPrice?.trim() ||
-            item.itemTaxAmount?.trim() ||
-            item.itemComment?.trim();
-
-          return (
-            hasData &&
-            !(item.productCatalogId && !item.variantId && catalogIdsWithExpandedVariantsInSubmit.has(item.productCatalogId))
-          );
-        })
-        .map((item) => {
-          const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
-          const breakdown = getOrderItemBillingBreakdown(item);
-          const quantity = breakdown.billableQuantity;
-          const backOrderQuantity = breakdown.backOrderQuantity;
-          const itemPrice = parseAmount(item.itemPrice || '0');
-          const itemTaxAmount = parseAmount(item.itemTaxAmount || '0');
-          const itemTotalAmount = Math.max(quantity * itemPrice + itemTaxAmount, 0);
-          const itemStatus = getItemStatusCode(item.itemStatus) || 'CREATED';
-
-          const detailPayload = {
-            id: item.id,
-            orderId,
-            productId: isLegacyCatalog ? undefined : item.productId || undefined,
-            variantId: isLegacyCatalog ? undefined : item.variantId || undefined,
-            productCatalogId: item.productCatalogId || undefined,
-            warehouseId: isLegacyCatalog ? undefined : item.warehouseId || undefined,
-            productName: item.productName || undefined,
-            sku: item.sku || undefined,
-            variantAttributes: item.variantAttributes || undefined,
-            itemStatus,
-            quantity,
-            backOrderQuantity,
-            itemPrice,
-            itemTaxAmount,
-            itemTotalAmount,
-            itemComment: item.itemComment || undefined,
-          };
-
-          return item.id
-            ? updateOrderDetail({ id: item.id, data: detailPayload })
-            : createOrderDetail({ data: detailPayload });
-        });
-      const totalBackOrderUnits = items
-        .filter((item) => {
-          const hasData =
-            item.productId ||
-            item.variantId ||
-            item.productCatalogId ||
-            item.quantity?.trim() ||
-            item.itemPrice?.trim() ||
-            item.itemTaxAmount?.trim() ||
-            item.itemComment?.trim();
-
-          return hasData;
-        })
-        .reduce((sum, item) => sum + getOrderItemBillingBreakdown(item).backOrderQuantity, 0);
 
       const catalogItemsToDelete = items
         .filter(
@@ -2816,22 +2913,11 @@ export function OrderFormContent({
             })
           : null;
 
-      const results = await Promise.allSettled([
-        ...itemTasks,
-        ...deleteTasks,
-        ...addressTasks,
-        ...shippingTasks,
+      await Promise.all([...itemTasks, ...deleteTasks, ...addressTasks, ...shippingTasks]);
+      await Promise.allSettled([
         historyTask,
         ...(backOrderHistoryTask ? [backOrderHistoryTask] : []),
       ]);
-
-      const failed = results.filter((entry) => entry.status === 'rejected');
-
-      if (failed.length > 0) {
-        toast.error('Order saved, but some related records failed.', {
-          description: 'Please review items, address, or history.',
-        });
-      }
 
       await queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       if (result?.id) {

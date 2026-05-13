@@ -16,7 +16,7 @@ import {
 import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas';
 import { useGetOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
-import { OrderRecord, OrderStatus } from '../data/order-data';
+import type { OrderDetailItem, OrderRecord, OrderStatus } from '../data/order-data';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import { History, PackageCheck, Undo2 } from 'lucide-react';
@@ -52,28 +52,49 @@ function normalizeHistoryStatus(status?: string) {
   return status.trim().toLowerCase() === 'pending' ? 'Created' : status;
 }
 
-function getCatalogItemNames(
+function getVariantAttributesFromCatalog(
   catalog: ProductCatalogDTO | undefined,
-  fallbackProductName: string | undefined
+  variantId: number | undefined
 ) {
-  const productName = catalog?.product?.name ?? fallbackProductName;
-  const variants = [...(catalog?.variants ?? [])].sort((left, right) =>
-    (left.sku ?? '').localeCompare(right.sku ?? '')
-  );
+  if (typeof variantId !== 'number') return undefined;
 
-  if (variants.length > 0) {
-    return variants.map((variant) => {
-      const sku = variant.sku?.trim();
+  const variant = catalog?.variants?.find((entry) => entry.id === variantId);
+  const attributes = variant?.selections
+    ?.map((selection) => {
+      const label = selection.attribute?.label ?? selection.attribute?.name;
+      const value = selection.option?.label ?? selection.rawValue;
 
-      if (productName && sku) {
-        return `${productName} - ${sku}`;
-      }
+      return label && value ? `${label}: ${value}` : value;
+    })
+    .filter((value): value is string => Boolean(value?.trim()));
 
-      return sku || productName || 'Catalog item';
-    });
+  return attributes?.length ? attributes.join(', ') : undefined;
+}
+
+function getCatalogVariantDisplay(
+  item: OrderDetailItem,
+  catalog: ProductCatalogDTO | undefined,
+  fallbackLabel: string
+) {
+  if (!item.productCatalogId || !item.variantId) {
+    return {
+      name: item.productName || catalog?.productCatalogName || item.sku || fallbackLabel,
+      sku: item.sku,
+      variantAttributes: item.variantAttributes,
+    };
   }
 
-  return [productName || 'Catalog item'];
+  const catalogVariant = catalog?.variants?.find((variant) => variant.id === item.variantId);
+  const productName = item.productName ?? catalog?.product?.name;
+  const sku = item.sku ?? catalogVariant?.sku;
+  const variantAttributes =
+    item.variantAttributes ?? getVariantAttributesFromCatalog(catalog, item.variantId);
+
+  return {
+    name: productName && sku ? `${productName} - ${sku}` : productName || sku || fallbackLabel,
+    sku,
+    variantAttributes,
+  };
 }
 
 interface OrderDetailProps {
@@ -184,20 +205,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
 
     return orderedQuantityMap;
   }, [deliveredQuantityByOrderDetailId, order.items]);
-  const displayedItemCount = useMemo(
-    () =>
-      order.items.reduce((count, item) => {
-        if (!item.productCatalogId || item.variantId) {
-          return count + 1;
-        }
-
-        const catalog = catalogById.get(item.productCatalogId);
-        const catalogItemCount = catalog?.variants?.length ?? 0;
-
-        return count + Math.max(catalogItemCount, 1);
-      }, 0),
-    [catalogById, order.items]
-  );
+  const displayedItemCount = useMemo(() => order.items.length, [order.items]);
   const recalculatedBaseAmount = useMemo(
     () =>
       order.items.reduce((sum, item) => {
@@ -458,14 +466,14 @@ export function OrderDetail({ order }: OrderDetailProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                  <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
-                    <TableHead className="font-bold text-slate-700">Item</TableHead>
-                    <TableHead className="font-bold text-slate-700">Warehouse</TableHead>
-                    <TableHead className="font-bold text-slate-700">Quantity</TableHead>
-                    <TableHead className="font-bold text-slate-700">Price</TableHead>
-                    <TableHead className="font-bold text-slate-700">Tax</TableHead>
-                    <TableHead className="font-bold text-slate-700">Total</TableHead>
-                  </TableRow>
+                <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
+                  <TableHead className="font-bold text-slate-700">Item</TableHead>
+                  <TableHead className="font-bold text-slate-700">Warehouse</TableHead>
+                  <TableHead className="font-bold text-slate-700">Quantity</TableHead>
+                  <TableHead className="font-bold text-slate-700">Price</TableHead>
+                  <TableHead className="font-bold text-slate-700">Tax</TableHead>
+                  <TableHead className="font-bold text-slate-700">Total</TableHead>
+                </TableRow>
               </TableHeader>
               <TableBody>
                 {order.items.length > 0 ? (
@@ -475,33 +483,28 @@ export function OrderDetail({ order }: OrderDetailProps) {
                     const calculatedItemTotal =
                       orderedQuantity * item.itemPrice + item.itemTaxAmount;
                     const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
-                    const catalog = isLegacyCatalog && typeof item.productCatalogId === 'number'
-                      ? catalogById.get(item.productCatalogId)
-                      : undefined;
-                    const catalogItemNames = isLegacyCatalog
-                      ? getCatalogItemNames(catalog, item.productName)
-                      : [];
-                    const displayNames =
-                      catalogItemNames.length > 0
-                        ? catalogItemNames
-                        : [item.productName || item.sku || `Item #${index + 1}`];
+                    const catalog =
+                      typeof item.productCatalogId === 'number'
+                        ? catalogById.get(item.productCatalogId)
+                        : undefined;
+                    const itemDisplay = getCatalogVariantDisplay(
+                      item,
+                      catalog,
+                      `Item #${index + 1}`
+                    );
+                    const displayName = itemDisplay.name;
                     const warehouseName =
                       typeof item.warehouseId === 'number'
                         ? (warehouseNameById.get(item.warehouseId) ??
                           `Warehouse ${item.warehouseId}`)
                         : '—';
 
-                    return displayNames.map((displayName, displayIndex) => (
-                      <TableRow
-                        key={`${item.orderDetailId}-${displayIndex}`}
-                        className="hover:bg-cyan-50/30"
-                      >
+                    return (
+                      <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                              {displayNames.length > 1
-                                ? `${index + 1}.${displayIndex + 1}`
-                                : index + 1}
+                              {index + 1}
                             </div>
                             <div>
                               {displayName ? (
@@ -509,21 +512,21 @@ export function OrderDetail({ order }: OrderDetailProps) {
                                   <div className="flex flex-wrap items-center gap-2">
                                     {item.productCatalogId ? (
                                       <Badge variant="secondary" className="text-xs">
-                                        Catalog item
+                                        {item.variantId ? 'Catalog variant' : 'Catalog item'}
                                       </Badge>
                                     ) : null}
                                     <div className="font-semibold text-slate-800">
                                       {displayName}
                                     </div>
                                   </div>
-                                  {!item.productCatalogId && item.sku && (
+                                  {!isLegacyCatalog && itemDisplay.sku && (
                                     <div className="text-xs text-muted-foreground">
-                                      SKU: {item.sku}
+                                      SKU: {itemDisplay.sku}
                                     </div>
                                   )}
-                                  {!item.productCatalogId && item.variantAttributes && (
+                                  {!isLegacyCatalog && itemDisplay.variantAttributes && (
                                     <div className="text-xs text-blue-600">
-                                      {item.variantAttributes.split(',').map((attr, i) => (
+                                      {itemDisplay.variantAttributes.split(',').map((attr, i) => (
                                         <div key={i}>{attr.trim()}</div>
                                       ))}
                                     </div>
@@ -547,66 +550,23 @@ export function OrderDetail({ order }: OrderDetailProps) {
                             </div>
                           </div>
                         </TableCell>
-                        {isLegacyCatalog ? (
-                          displayIndex === 0 ? (
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="font-semibold text-slate-800"
-                            >
-                              {warehouseName}
-                            </TableCell>
-                          ) : null
-                        ) : (
-                          <TableCell className="font-semibold text-slate-800">
-                            {warehouseName}
-                          </TableCell>
-                        )}
-                        {isLegacyCatalog && displayIndex === 0 ? (
-                          <>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="font-semibold text-slate-800"
-                            >
-                              <div>{orderedQuantity}</div>
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="font-semibold text-slate-800"
-                            >
-                              {formatCurrency(item.itemPrice)}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="font-semibold text-slate-800"
-                            >
-                              {formatCurrency(item.itemTaxAmount)}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="font-bold text-slate-900"
-                            >
-                              {formatCurrency(calculatedItemTotal)}
-                            </TableCell>
-                          </>
-                        ) : null}
-                        {!isLegacyCatalog ? (
-                          <>
-                            <TableCell className="font-semibold text-slate-800">
-                              <div>{orderedQuantity}</div>
-                            </TableCell>
-                            <TableCell className="font-semibold text-slate-800">
-                              {formatCurrency(item.itemPrice)}
-                            </TableCell>
-                            <TableCell className="font-semibold text-slate-800">
-                              {formatCurrency(item.itemTaxAmount)}
-                            </TableCell>
-                            <TableCell className="font-bold text-slate-900">
-                              {formatCurrency(calculatedItemTotal)}
-                            </TableCell>
-                          </>
-                        ) : null}
+                        <TableCell className="font-semibold text-slate-800">
+                          {warehouseName}
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-800">
+                          <div>{orderedQuantity}</div>
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-800">
+                          {formatCurrency(item.itemPrice)}
+                        </TableCell>
+                        <TableCell className="font-semibold text-slate-800">
+                          {formatCurrency(item.itemTaxAmount)}
+                        </TableCell>
+                        <TableCell className="font-bold text-slate-900">
+                          {formatCurrency(calculatedItemTotal)}
+                        </TableCell>
                       </TableRow>
-                    ));
+                    );
                   })
                 ) : (
                   <TableRow>
