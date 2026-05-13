@@ -427,18 +427,20 @@ export function SundryCreditorForm({ id }: SundryCreditorFormProps) {
 
   const normalizeDraftAddresses = (addresses: DraftAddressInput[]) => {
     const normalized = addresses.flatMap((address) => {
+      const title = address.title?.trim?.();
       const completeAddress = address.completeAddress?.trim();
+      const area = toAreaRef(address.area);
 
-      if (!completeAddress) {
+      if (!title && !completeAddress && !area) {
         return [];
       }
 
       return [
         {
           id: address.id,
-          title: address.title?.trim?.() || undefined,
-          completeAddress,
-          area: toAreaRef(address.area),
+          title: title || undefined,
+          completeAddress: completeAddress || '',
+          area,
           isDefault: Boolean(address.isDefault),
         },
       ];
