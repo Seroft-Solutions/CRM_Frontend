@@ -315,9 +315,7 @@ export function VariantWarehousePanel({
   const [selectedCatalogWarehouseByVariant, setSelectedCatalogWarehouseByVariant] = useState<
     Record<string, string>
   >({});
-  const [catalogVariantQuantities, setCatalogVariantQuantities] = useState<Record<string, number>>(
-    {}
-  );
+  const catalogQuantity = selectedCatalogId ? Number(selectedItem?.quantity) || 1 : 1;
   const { data: variantsData = [], isFetching } = useGetAllProductVariants(
     {
       'productId.equals': selectedProductId,
@@ -492,8 +490,63 @@ export function VariantWarehousePanel({
   useEffect(() => {
     setSelectedWarehouseId('');
     setSelectedCatalogWarehouseByVariant({});
-    setCatalogVariantQuantities({});
   }, [selectedProductId, selectedCatalogId]);
+
+  useEffect(() => {
+    if (!selectedCatalogId || hydratedCatalogVariants.length === 0) return;
+
+    const warehouseSelection: Record<string, string> = {};
+    hydratedCatalogVariants.forEach((variant, index) => {
+      const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
+      const firstStock = (variant.variantStocks ?? []).find(
+        (s) => getStockSalesQuantity(s) > 0
+      );
+      if (firstStock) {
+        const warehouseName =
+          firstStock.warehouse?.name || `Warehouse ${firstStock.warehouse?.id ?? 0}`;
+        warehouseSelection[variantKey] = getStockWarehouseValue(firstStock, warehouseName);
+      }
+    });
+
+    setSelectedCatalogWarehouseByVariant(warehouseSelection);
+
+    const initialQty = catalogQuantity;
+    hydratedCatalogVariants.forEach((variant, index) => {
+      const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
+      const warehouseValue = warehouseSelection[variantKey];
+      if (!warehouseValue) return;
+
+      onToggleCatalogVariant?.(
+        selectedCatalogId,
+        selectedCatalogProductId,
+        variant,
+        Number(warehouseValue),
+        initialQty,
+        variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCatalogId, hydratedCatalogVariants]);
+
+  useEffect(() => {
+    if (!selectedCatalogId || hydratedCatalogVariants.length === 0) return;
+
+    hydratedCatalogVariants.forEach((variant, index) => {
+      const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
+      const warehouseValue = selectedCatalogWarehouseByVariant[variantKey];
+      if (!warehouseValue) return;
+
+      onToggleCatalogVariant?.(
+        selectedCatalogId,
+        selectedCatalogProductId,
+        variant,
+        Number(warehouseValue),
+        catalogQuantity,
+        variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItem?.quantity, selectedCatalogId, hydratedCatalogVariants]);
 
   const allWarehouseRows = useMemo(() => {
     return visibleVariants.flatMap((variant, variantIndex) => {
@@ -578,7 +631,6 @@ export function VariantWarehousePanel({
           const price =
             variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
           const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
-          const variantQuantity = catalogVariantQuantities[variantKey] ?? 0;
           const selectedWarehouseValue = selectedCatalogWarehouseByVariant[variantKey];
           const selectedSalesStock = getSelectedCatalogWarehouseSalesStock(
             variant,
@@ -589,40 +641,12 @@ export function VariantWarehousePanel({
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
             color,
             size,
-            <QuantityStepper
+            <span
               key={`catalog-qty-${variantKey}`}
-              quantity={variantQuantity}
-              onDecrease={() => {
-                const nextQty = Math.max(0, variantQuantity - 1);
-                setCatalogVariantQuantities((current) => ({
-                  ...current,
-                  [variantKey]: nextQty,
-                }));
-                onToggleCatalogVariant?.(
-                  selectedCatalogId,
-                  selectedCatalogProductId,
-                  variant,
-                  selectedWarehouseValue ? Number(selectedWarehouseValue) : undefined,
-                  nextQty,
-                  variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
-                );
-              }}
-              onIncrease={() => {
-                const nextQty = variantQuantity + 1;
-                setCatalogVariantQuantities((current) => ({
-                  ...current,
-                  [variantKey]: nextQty,
-                }));
-                onToggleCatalogVariant?.(
-                  selectedCatalogId,
-                  selectedCatalogProductId,
-                  variant,
-                  selectedWarehouseValue ? Number(selectedWarehouseValue) : undefined,
-                  nextQty,
-                  variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
-                );
-              }}
-            />,
+              className="min-w-5 text-center font-semibold"
+            >
+              {catalogQuantity}
+            </span>,
             price,
             <CatalogVariantWarehouseSelect
               key={`catalog-warehouse-${variantKey}`}
@@ -638,7 +662,7 @@ export function VariantWarehousePanel({
                   selectedCatalogProductId,
                   variant,
                   value ? Number(value) : undefined,
-                  variantQuantity,
+                  catalogQuantity,
                   variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
                 );
               }}
@@ -693,6 +717,27 @@ export function VariantWarehousePanel({
           }
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
+          titleExtra={
+            selectedCatalogId ? (
+              <div className="flex items-center gap-1.5">
+                <span className="font-normal text-sidebar-foreground/70">Qty:</span>
+                <QuantityStepper
+                  quantity={catalogQuantity}
+                  onDecrease={() => {
+                    const current = Number(selectedItem?.quantity) || 1;
+                    if (current > 1 && selectedItemIndex !== null) {
+                      onAdjustItemQuantity(selectedItemIndex, -1);
+                    }
+                  }}
+                  onIncrease={() => {
+                    if (selectedItemIndex !== null) {
+                      onAdjustItemQuantity(selectedItemIndex, 1);
+                    }
+                  }}
+                />
+              </div>
+            ) : undefined
+          }
         />
         {!selectedCatalogId && (
           <div className="min-w-0 bg-card">
@@ -870,6 +915,7 @@ function LegacyStockTable({
   highlightNegative = false,
   onRowClick,
   rowClassName,
+  titleExtra,
 }: {
   title: string;
   titleClassName: string;
@@ -880,10 +926,16 @@ function LegacyStockTable({
   highlightNegative?: boolean;
   onRowClick?: (rowIndex: number) => void;
   rowClassName?: (rowIndex: number) => string | undefined;
+  titleExtra?: ReactNode;
 }) {
   return (
     <div className={cn('min-w-0 bg-card', className)}>
-      <div className={`px-2 py-1 text-center text-xs font-bold ${titleClassName}`}>{title}</div>
+      <div
+        className={`px-2 py-1 text-xs font-bold ${titleClassName} flex items-center justify-center gap-2`}
+      >
+        <span>{title}</span>
+        {titleExtra}
+      </div>
       <table className="w-full table-fixed border-collapse text-[11px] leading-tight">
         <thead>
           <tr className="bg-muted">
