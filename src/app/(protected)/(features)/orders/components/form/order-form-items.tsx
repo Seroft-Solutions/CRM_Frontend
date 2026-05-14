@@ -32,6 +32,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ProductImageThumbnail } from '@/features/product-images/components/ProductImageThumbnail';
 import { resolveCatalogImageUrl } from '@/lib/utils/catalog-image-url';
 
+type EditableOrderItemKey = Exclude<keyof OrderItemForm, 'catalogVariantSelections'>;
+
 type ProductWithStock = ProductDTO & { stockQuantity?: number; salesStockQuantity?: number };
 type ProductVariantWithWarehouseStocks = {
   id?: number;
@@ -410,7 +412,7 @@ type OrderFormItemsProps = {
   ) => void;
   onItemChange: (
     index: number,
-    key: keyof OrderItemForm,
+    key: EditableOrderItemKey,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
   selectedItemIndex?: number | null;
@@ -445,7 +447,7 @@ function ProductVariantSelector({
   ) => void;
   onItemChange: (
     index: number,
-    key: keyof OrderItemForm,
+    key: EditableOrderItemKey,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
   itemError?: ItemErrors;
@@ -1004,7 +1006,7 @@ function ProductCatalogSelector({
   index: number;
   onItemChange: (
     index: number,
-    key: keyof OrderItemForm,
+    key: EditableOrderItemKey,
     value: string | number | WarehouseStockEntry[] | undefined
   ) => void;
   tableRowMode?: boolean;
@@ -1018,7 +1020,6 @@ function ProductCatalogSelector({
     {
       query: {
         staleTime: 5 * 60 * 1000,
-        keepPreviousData: true,
       },
     }
   );
@@ -1134,7 +1135,6 @@ export function OrderFormItems({
     {
       query: {
         staleTime: 5 * 60 * 1000,
-        keepPreviousData: true,
       },
     }
   );

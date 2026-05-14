@@ -243,6 +243,27 @@ const buildCatalogVariantItemsForSave = async (item: OrderItemForm) => {
     return [item];
   }
 
+  if (item.catalogVariantSelections?.length) {
+    return item.catalogVariantSelections.map((selection) => ({
+      ...emptyOrderItem('product'),
+      productId: selection.productId ?? item.productId,
+      productCatalogId: item.productCatalogId,
+      productName: item.productName,
+      variantId: selection.variantId,
+      sku: selection.sku,
+      variantAttributes: selection.variantAttributes,
+      warehouseId: selection.warehouseId,
+      warehouseName: selection.warehouseName,
+      warehouseCode: selection.warehouseCode,
+      availableQuantity: selection.availableQuantity,
+      quantity: selection.quantity,
+      itemPrice: selection.itemPrice,
+      itemTaxAmount: selection.itemTaxAmount ?? item.itemTaxAmount,
+      itemStatus: selection.itemStatus ?? item.itemStatus,
+      itemComment: selection.itemComment ?? item.itemComment,
+    }));
+  }
+
   const catalog = await getProductCatalog(item.productCatalogId);
   const productId = catalog.product?.id ?? item.productId;
 
@@ -1681,14 +1702,9 @@ export function OrderFormContent({
       const isLastRow = index === prev.length - 1;
       const nextRow = nextItems[index + 1];
       const shouldAppendProductRow = key === 'productId' && typeof value === 'number';
-      const shouldAppendCatalogRow = key === 'productCatalogId' && typeof value === 'number';
 
-      if (
-        isLastRow &&
-        (shouldAppendProductRow || shouldAppendCatalogRow) &&
-        (!nextRow || hasItemData(nextRow))
-      ) {
-        nextItems.push(emptyOrderItem(shouldAppendCatalogRow ? 'catalog' : 'product'));
+      if (isLastRow && shouldAppendProductRow && (!nextRow || hasItemData(nextRow))) {
+        nextItems.push(emptyOrderItem('product'));
       }
 
       return nextItems;
@@ -1926,53 +1942,60 @@ export function OrderFormContent({
     const selectedItem = items[selectedItemIndex];
     if (!selectedItem?.productCatalogId || selectedItem.productCatalogId !== catalogId) return;
     if (!productId) return;
+    if (typeof variant.id !== 'number') return;
+
+    const stock = (variant.variantStocks ?? []).find(
+      (entry) => entry.warehouse?.id === warehouseId
+    );
+    const { color, size } = getVariantDisplayParts(variant, 0);
+    const nextSelection = {
+      productId,
+      variantId: variant.id,
+      sku: variant.sku,
+      variantAttributes: `${color} / ${size}`,
+      warehouseId,
+      warehouseName: stock?.warehouse?.name,
+      quantity: String(quantity),
+      itemPrice: price !== undefined && price !== null ? String(price) : selectedItem.itemPrice,
+      itemTaxAmount: selectedItem.itemTaxAmount,
+      itemStatus: selectedItem.itemStatus,
+      itemComment: selectedItem.itemComment,
+      availableQuantity: stock ? getStockSalesQuantity(stock) : undefined,
+      stockQuantity: stock?.stockQuantity,
+      salesStockQuantity: stock?.salesStockQuantity,
+    };
 
     setItems((prev) => {
-      const existingIndex = prev.findIndex(
-        (item) => item.productCatalogId === catalogId && item.variantId === variant.id
+      const catalogIndex = prev.findIndex(
+        (item) => item.itemType === 'catalog' && item.productCatalogId === catalogId
       );
 
-      if (!warehouseId || quantity <= 0) {
-        if (existingIndex === -1) return prev;
-        const next = [...prev];
-        const [removed] = next.splice(existingIndex, 1);
-        if (removed?.id) {
-          setRemovedItemIds((current) => [...current, removed.id!]);
-        }
-        if (existingIndex <= selectedItemIndex && selectedItemIndex > 0) {
-          setSelectedItemIndex(selectedItemIndex - 1);
-        }
-        return next;
+      if (catalogIndex === -1) {
+        return prev;
       }
 
-      const newItem: OrderItemForm = {
-        ...emptyOrderItem('product'),
-        productId,
-        productCatalogId: catalogId,
-        productName: selectedItem.productName,
-        variantId: variant.id,
-        sku: variant.sku,
-        warehouseId,
-        quantity: String(quantity),
-        itemPrice: price !== undefined && price !== null ? String(price) : selectedItem.itemPrice,
-      };
+      return prev
+        .map((item, index) => {
+          if (index !== catalogIndex) {
+            return item;
+          }
 
-      if (existingIndex !== -1) {
-        const next = [...prev];
-        next[existingIndex] = { ...next[existingIndex], ...newItem };
-        return next;
-      }
+          const existingSelections = item.catalogVariantSelections ?? [];
+          const otherSelections = existingSelections.filter(
+            (selection) => selection.variantId !== variant.id
+          );
 
-      const insertAfterIndex = Math.max(
-        ...prev
-          .map((item, index) =>
-            item.productCatalogId === catalogId && item.itemType === 'catalog' ? index : -1
-          )
-          .filter((index) => index >= 0),
-        selectedItemIndex
-      );
-
-      return [...prev.slice(0, insertAfterIndex + 1), newItem, ...prev.slice(insertAfterIndex + 1)];
+          return {
+            ...item,
+            catalogVariantSelections:
+              !warehouseId || quantity <= 0 ? otherSelections : [...otherSelections, nextSelection],
+          };
+        })
+        .filter(
+          (item, index) =>
+            index === catalogIndex ||
+            !(!item.id && item.productCatalogId === catalogId && item.variantId === variant.id)
+        );
     });
     setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
   };
