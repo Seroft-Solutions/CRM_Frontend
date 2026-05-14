@@ -592,6 +592,23 @@ export function VariantWarehousePanel({
     .filter(({ item }) => item.itemType === 'product' && item.productId === selectedProductId)
     .filter(({ item }) => typeof item.variantId === 'number');
   const selectedCatalogItem = selectedCatalogId ? selectedItem : undefined;
+  const selectedCatalogVariantItems = useMemo(
+    () =>
+      selectedCatalogId
+        ? items.filter(
+            (item) =>
+              item.productCatalogId === selectedCatalogId && typeof item.variantId === 'number'
+          )
+        : [],
+    [items, selectedCatalogId]
+  );
+  const selectedCatalogVariantItemsKey = useMemo(
+    () =>
+      selectedCatalogVariantItems
+        .map((item) => `${item.variantId ?? ''}:${item.warehouseId ?? ''}`)
+        .join('|'),
+    [selectedCatalogVariantItems]
+  );
   const getItemParamParts = (item: OrderItemForm) => {
     const variantIndex = variants.findIndex((variant) => variant.id === item.variantId);
     const variant = variantIndex >= 0 ? variants[variantIndex] : undefined;
@@ -667,13 +684,17 @@ export function VariantWarehousePanel({
     const warehouseSelection: Record<string, string> = {};
     hydratedCatalogVariants.forEach((variant, index) => {
       const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
-      const firstStock = (variant.variantStocks ?? []).find(
-        (s) => getStockSalesQuantity(s) > 0
+      const savedItem = selectedCatalogVariantItems.find((item) => item.variantId === variant.id);
+      const savedStock = (variant.variantStocks ?? []).find(
+        (stock) => stock.warehouse?.id === savedItem?.warehouseId
       );
-      if (firstStock) {
+      const firstStock = (variant.variantStocks ?? []).find((s) => getStockSalesQuantity(s) > 0);
+      const selectedStock = savedStock ?? firstStock;
+
+      if (selectedStock) {
         const warehouseName =
-          firstStock.warehouse?.name || `Warehouse ${firstStock.warehouse?.id ?? 0}`;
-        warehouseSelection[variantKey] = getStockWarehouseValue(firstStock, warehouseName);
+          selectedStock.warehouse?.name || `Warehouse ${selectedStock.warehouse?.id ?? 0}`;
+        warehouseSelection[variantKey] = getStockWarehouseValue(selectedStock, warehouseName);
       }
     });
 
@@ -684,6 +705,9 @@ export function VariantWarehousePanel({
       const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
       const warehouseValue = warehouseSelection[variantKey];
       if (!warehouseValue) return;
+      const savedItem = selectedCatalogVariantItems.find((item) => item.variantId === variant.id);
+
+      if (savedItem) return;
 
       onToggleCatalogVariant?.(
         selectedCatalogId,
@@ -695,7 +719,7 @@ export function VariantWarehousePanel({
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCatalogId, hydratedCatalogVariants]);
+  }, [selectedCatalogId, hydratedCatalogVariants, selectedCatalogVariantItemsKey]);
 
   useEffect(() => {
     if (!selectedCatalogId || hydratedCatalogVariants.length === 0) return;
@@ -1249,7 +1273,7 @@ export function OrderFormContent({
 
     return initialOrder.items.map((item) => ({
       id: item.orderDetailId || undefined,
-      itemType: item.productCatalogId && !item.variantId ? 'catalog' : 'product',
+      itemType: item.productCatalogId ? 'catalog' : 'product',
       productId: item.productId || undefined,
       initialProductId: item.productId || undefined,
       variantId: item.variantId || undefined,
@@ -1966,9 +1990,52 @@ export function OrderFormContent({
     };
 
     setItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) => item.productCatalogId === catalogId && item.variantId === variant.id
+      );
       const catalogIndex = prev.findIndex(
         (item) => item.itemType === 'catalog' && item.productCatalogId === catalogId
       );
+
+      if (existingIndex !== -1) {
+        return prev.map((item, index) => {
+          if (index !== existingIndex) {
+            return item;
+          }
+
+          const nextPrice =
+            price !== undefined && price !== null ? String(price) : selectedItem.itemPrice;
+          const nextQuantity = String(quantity);
+
+          if (
+            item.itemType === 'catalog' &&
+            item.productId === productId &&
+            item.productCatalogId === catalogId &&
+            item.variantId === variant.id &&
+            item.sku === variant.sku &&
+            item.warehouseId === warehouseId &&
+            item.warehouseName === stock?.warehouse?.name &&
+            item.quantity === nextQuantity &&
+            item.itemPrice === nextPrice
+          ) {
+            return item;
+          }
+
+          return {
+            ...item,
+            itemType: 'catalog',
+            productId,
+            productCatalogId: catalogId,
+            productName: selectedItem.productName,
+            variantId: variant.id,
+            sku: variant.sku,
+            warehouseId,
+            warehouseName: stock?.warehouse?.name,
+            quantity: nextQuantity,
+            itemPrice: nextPrice,
+          };
+        });
+      }
 
       if (catalogIndex === -1) {
         return prev;
