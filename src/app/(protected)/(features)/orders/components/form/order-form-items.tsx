@@ -1215,21 +1215,22 @@ export function OrderFormItems({
       [];
 
     items.forEach((item, index) => {
-      const lastGroup = groups[groups.length - 1];
-      const firstEntry = lastGroup?.entries[0]?.item;
-      const shouldGroupWithPrevious =
-        Boolean(lastGroup) &&
-        ((item.itemType === 'product' &&
-          firstEntry?.itemType === 'product' &&
-          Boolean(item.productId) &&
-          firstEntry.productId === item.productId) ||
-          (item.itemType === 'catalog' &&
-            firstEntry?.itemType === 'catalog' &&
-            Boolean(item.productCatalogId) &&
-            firstEntry.productCatalogId === item.productCatalogId));
+      const existingParentGroup = groups.find((group) => {
+        const parent = group.entries[0]?.item;
 
-      if (shouldGroupWithPrevious) {
-        lastGroup.entries.push({ item, index });
+        if (!parent || parent.itemType !== item.itemType) {
+          return false;
+        }
+
+        if (item.itemType === 'product') {
+          return Boolean(item.productId) && parent.productId === item.productId;
+        }
+
+        return Boolean(item.productCatalogId) && parent.productCatalogId === item.productCatalogId;
+      });
+
+      if (existingParentGroup) {
+        existingParentGroup.entries.push({ item, index });
 
         return;
       }

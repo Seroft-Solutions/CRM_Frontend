@@ -606,9 +606,26 @@ export function VariantWarehousePanel({
     () =>
       selectedCatalogVariantItems
         .map((item) => `${item.variantId ?? ''}:${item.warehouseId ?? ''}`)
+        .concat(
+          selectedCatalogItem?.catalogVariantSelections?.map(
+            (selection) => `${selection.variantId}:${selection.warehouseId ?? ''}`
+          ) ?? []
+        )
         .join('|'),
-    [selectedCatalogVariantItems]
+    [selectedCatalogItem?.catalogVariantSelections, selectedCatalogVariantItems]
   );
+  const getSelectedCatalogVariantSelection = (variantId?: number) => {
+    if (typeof variantId !== 'number') {
+      return undefined;
+    }
+
+    return (
+      selectedCatalogVariantItems.find((item) => item.variantId === variantId) ??
+      selectedCatalogItem?.catalogVariantSelections?.find(
+        (selection) => selection.variantId === variantId
+      )
+    );
+  };
   const getItemParamParts = (item: OrderItemForm) => {
     const variantIndex = variants.findIndex((variant) => variant.id === item.variantId);
     const variant = variantIndex >= 0 ? variants[variantIndex] : undefined;
@@ -682,9 +699,10 @@ export function VariantWarehousePanel({
     if (!selectedCatalogId || hydratedCatalogVariants.length === 0) return;
 
     const warehouseSelection: Record<string, string> = {};
+
     hydratedCatalogVariants.forEach((variant, index) => {
       const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
-      const savedItem = selectedCatalogVariantItems.find((item) => item.variantId === variant.id);
+      const savedItem = getSelectedCatalogVariantSelection(variant.id);
       const savedStock = (variant.variantStocks ?? []).find(
         (stock) => stock.warehouse?.id === savedItem?.warehouseId
       );
@@ -694,6 +712,7 @@ export function VariantWarehousePanel({
       if (selectedStock) {
         const warehouseName =
           selectedStock.warehouse?.name || `Warehouse ${selectedStock.warehouse?.id ?? 0}`;
+
         warehouseSelection[variantKey] = getStockWarehouseValue(selectedStock, warehouseName);
       }
     });
@@ -701,11 +720,14 @@ export function VariantWarehousePanel({
     setSelectedCatalogWarehouseByVariant(warehouseSelection);
 
     const initialQty = catalogQuantity;
+
     hydratedCatalogVariants.forEach((variant, index) => {
       const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
       const warehouseValue = warehouseSelection[variantKey];
+
       if (!warehouseValue) return;
-      const savedItem = selectedCatalogVariantItems.find((item) => item.variantId === variant.id);
+
+      const savedItem = getSelectedCatalogVariantSelection(variant.id);
 
       if (savedItem) return;
 
@@ -718,7 +740,6 @@ export function VariantWarehousePanel({
         variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
       );
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCatalogId, hydratedCatalogVariants, selectedCatalogVariantItemsKey]);
 
   useEffect(() => {
@@ -727,6 +748,7 @@ export function VariantWarehousePanel({
     hydratedCatalogVariants.forEach((variant, index) => {
       const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
       const warehouseValue = selectedCatalogWarehouseByVariant[variantKey];
+
       if (!warehouseValue) return;
 
       onToggleCatalogVariant?.(
@@ -738,7 +760,6 @@ export function VariantWarehousePanel({
         variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
       );
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedItem?.quantity, selectedCatalogId, hydratedCatalogVariants]);
 
   const allWarehouseRows = useMemo(() => {
@@ -834,10 +855,7 @@ export function VariantWarehousePanel({
             <VariantImageCell key={`catalog-image-${variant.id ?? index}`} variant={variant} />,
             color,
             size,
-            <span
-              key={`catalog-qty-${variantKey}`}
-              className="min-w-5 text-center font-semibold"
-            >
+            <span key={`catalog-qty-${variantKey}`} className="min-w-5 text-center font-semibold">
               {catalogQuantity}
             </span>,
             price,
@@ -856,7 +874,9 @@ export function VariantWarehousePanel({
                   variant,
                   value ? Number(value) : undefined,
                   catalogQuantity,
-                  variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
+                  variant.price !== undefined && variant.price !== null
+                    ? Number(variant.price)
+                    : undefined
                 );
               }}
             />,
@@ -918,6 +938,7 @@ export function VariantWarehousePanel({
                   quantity={catalogQuantity}
                   onDecrease={() => {
                     const current = Number(selectedItem?.quantity) || 1;
+
                     if (current > 1 && selectedItemIndex !== null) {
                       onAdjustItemQuantity(selectedItemIndex, -1);
                     }
@@ -1964,6 +1985,7 @@ export function OrderFormContent({
     if (selectedItemIndex === null) return;
 
     const selectedItem = items[selectedItemIndex];
+
     if (!selectedItem?.productCatalogId || selectedItem.productCatalogId !== catalogId) return;
     if (!productId) return;
     if (typeof variant.id !== 'number') return;

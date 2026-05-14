@@ -32,11 +32,30 @@ export type OrderItemForm = {
   productName?: string;
   sku?: string;
   variantAttributes?: string;
+  catalogVariantSelections?: CatalogVariantSelection[];
   itemStatus: string;
   quantity: string;
   itemPrice: string;
   itemTaxAmount: string;
   itemComment?: string;
+};
+
+export type CatalogVariantSelection = {
+  productId?: number;
+  variantId: number;
+  sku?: string;
+  variantAttributes?: string;
+  warehouseId?: number;
+  warehouseName?: string;
+  warehouseCode?: string;
+  quantity: string;
+  itemPrice: string;
+  itemTaxAmount?: string;
+  itemStatus?: string;
+  itemComment?: string;
+  availableQuantity?: number;
+  stockQuantity?: number;
+  salesStockQuantity?: number;
 };
 
 export type WarehouseStockEntry = {

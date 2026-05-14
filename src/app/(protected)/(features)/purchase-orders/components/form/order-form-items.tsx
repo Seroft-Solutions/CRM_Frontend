@@ -919,17 +919,22 @@ export function OrderFormItems({
       [];
 
     items.forEach((item, index) => {
-      const lastGroup = groups[groups.length - 1];
-      const firstEntry = lastGroup?.entries[0]?.item;
-      const shouldGroupWithPrevious =
-        Boolean(lastGroup) &&
-        item.itemType === 'product' &&
-        firstEntry?.itemType === 'product' &&
-        Boolean(item.productId) &&
-        firstEntry.productId === item.productId;
+      const existingParentGroup = groups.find((group) => {
+        const parent = group.entries[0]?.item;
 
-      if (shouldGroupWithPrevious) {
-        lastGroup.entries.push({ item, index });
+        if (!parent || parent.itemType !== item.itemType) {
+          return false;
+        }
+
+        if (item.itemType === 'product') {
+          return Boolean(item.productId) && parent.productId === item.productId;
+        }
+
+        return Boolean(item.productCatalogId) && parent.productCatalogId === item.productCatalogId;
+      });
+
+      if (existingParentGroup) {
+        existingParentGroup.entries.push({ item, index });
 
         return;
       }
@@ -1354,6 +1359,13 @@ export function OrderFormItems({
                     group.entries.every(
                       ({ item }) => item.itemType === 'product' && Boolean(item.productId)
                     ) && group.entries.some(({ item }) => Boolean(item.variantId));
+                  const isCatalogVariantGroup =
+                    group.entries.every(
+                      ({ item }) => item.itemType === 'catalog' && Boolean(item.productCatalogId)
+                    ) && group.entries.some(({ item }) => Boolean(item.variantId));
+                  const visibleEntries = isCatalogVariantGroup
+                    ? group.entries.slice(0, 1)
+                    : group.entries;
 
                   return (
                     <>
@@ -1365,10 +1377,10 @@ export function OrderFormItems({
                         </div>
                         <div className="col-span-11 space-y-4">
                           {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
-                          {group.entries.map(({ item, index }, entryIndex) =>
-                            renderDesktopEntry(item, index, entryIndex, group.entries.length, {
+                          {visibleEntries.map(({ item, index }, entryIndex) =>
+                            renderDesktopEntry(item, index, entryIndex, visibleEntries.length, {
                               forceHideProductSelector: isProductVariantGroup,
-                              hasGroupHeader: isProductVariantGroup,
+                              hasGroupHeader: isProductVariantGroup || isCatalogVariantGroup,
                             })
                           )}
                         </div>
@@ -1376,10 +1388,10 @@ export function OrderFormItems({
 
                       <div className="lg:hidden p-4 space-y-4">
                         {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
-                        {group.entries.map(({ item, index }, entryIndex) =>
-                          renderMobileEntry(item, index, entryIndex, group.entries.length, {
+                        {visibleEntries.map(({ item, index }, entryIndex) =>
+                          renderMobileEntry(item, index, entryIndex, visibleEntries.length, {
                             forceHideProductSelector: isProductVariantGroup,
-                            hasGroupHeader: isProductVariantGroup,
+                            hasGroupHeader: isProductVariantGroup || isCatalogVariantGroup,
                           })
                         )}
                       </div>

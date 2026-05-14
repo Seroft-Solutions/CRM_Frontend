@@ -41,7 +41,9 @@ import {
 } from '@/core/api/purchase-order';
 import { useGetSundryCreditor as useGetCustomer } from '@/core/api/generated/spring/endpoints/sundry-creditor-resource/sundry-creditor-resource.gen';
 import type { SundryCreditorDTO as CustomerDTO } from '@/core/api/generated/spring/schemas/SundryCreditorDTO';
-import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import type { ProductCatalogDTO, ProductVariantDTO } from '@/core/api/generated/spring/schemas';
+import { getAllProductVariants } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { getProductCatalog } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
 import type { PurchaseOrderDTO as OrderDTO } from '@/core/api/purchase-order';
 import {
   useCreatePurchaseOrderDetail as useCreateOrderDetail,
@@ -102,6 +104,9 @@ const calculateItemsTotal = (items: OrderItemForm[]) =>
     return sum + Math.max(qty * price + tax, 0);
   }, 0);
 
+const getStockSalesQuantity = (stock: NonNullable<ProductVariantDTO['variantStocks']>[number]) =>
+  stock.salesStockQuantity ?? stock.stockQuantity ?? 0;
+
 const calculateItemTotal = (item: OrderItemForm) => {
   const qty = Number.parseInt(item.quantity, 10) || 0;
   const price = Number.parseFloat(item.itemPrice) || 0;
@@ -122,6 +127,168 @@ const hasItemData = (item: OrderItemForm) => {
       hasText(item.itemTaxAmount) ||
       hasText(item.itemComment)
   );
+};
+
+const getCatalogIdsWithExpandedVariants = (items: OrderItemForm[]) =>
+  new Set(
+    items
+      .filter((item) => hasItemData(item) && item.productCatalogId && item.variantId)
+      .map((item) => item.productCatalogId!)
+  );
+
+const getPersistableOrderDetailItems = (items: OrderItemForm[]) => {
+  const catalogIdsWithExpandedVariants = getCatalogIdsWithExpandedVariants(items);
+
+  return items.filter(
+    (item) =>
+      hasItemData(item) &&
+      !(
+        item.productCatalogId &&
+        !item.variantId &&
+        catalogIdsWithExpandedVariants.has(item.productCatalogId)
+      )
+  );
+};
+
+const getCatalogVariantAttributes = (variant: ProductVariantDTO) => {
+  const attributes = (variant.selections ?? [])
+    .map((selection) => {
+      const label = selection.attribute?.label ?? selection.attribute?.name;
+      const value = selection.option?.label ?? selection.rawValue ?? selection.option?.code;
+
+      return label && value ? `${label}: ${value}` : value;
+    })
+    .filter((value): value is string => Boolean(value?.trim()));
+
+  return attributes.length > 0 ? attributes.join(', ') : undefined;
+};
+
+const mergeCatalogVariantsForSave = (
+  catalog: ProductCatalogDTO,
+  hydratedVariants: ProductVariantDTO[]
+) => {
+  const hydratedById = new Map(
+    hydratedVariants
+      .filter((variant) => typeof variant.id === 'number')
+      .map((variant) => [variant.id!, variant])
+  );
+
+  return (catalog.variants ?? []).map((variant) => {
+    const hydratedVariant = typeof variant.id === 'number' ? hydratedById.get(variant.id) : null;
+
+    return hydratedVariant
+      ? {
+          ...variant,
+          ...hydratedVariant,
+          selections: hydratedVariant.selections ?? variant.selections,
+          variantStocks: hydratedVariant.variantStocks ?? variant.variantStocks,
+        }
+      : variant;
+  });
+};
+
+const getDefaultWarehouseStock = (variant: ProductVariantDTO) => {
+  const stocks = variant.variantStocks ?? [];
+
+  return (
+    stocks.find(
+      (stock) => typeof stock.warehouse?.id === 'number' && getStockSalesQuantity(stock) > 0
+    ) ?? stocks.find((stock) => typeof stock.warehouse?.id === 'number')
+  );
+};
+
+const buildCatalogVariantItemsForSave = async (item: OrderItemForm) => {
+  if (!item.productCatalogId || item.variantId) {
+    return [item];
+  }
+
+  if (item.catalogVariantSelections?.length) {
+    return item.catalogVariantSelections.map((selection) => ({
+      ...emptyOrderItem('catalog'),
+      productId: selection.productId ?? item.productId,
+      productCatalogId: item.productCatalogId,
+      productName: item.productName,
+      variantId: selection.variantId,
+      sku: selection.sku,
+      variantAttributes: selection.variantAttributes,
+      warehouseId: selection.warehouseId,
+      warehouseName: selection.warehouseName,
+      warehouseCode: selection.warehouseCode,
+      availableQuantity: selection.availableQuantity,
+      quantity: selection.quantity,
+      itemPrice: selection.itemPrice,
+      itemTaxAmount: selection.itemTaxAmount ?? item.itemTaxAmount,
+      itemStatus: selection.itemStatus ?? item.itemStatus,
+      itemComment: selection.itemComment ?? item.itemComment,
+    }));
+  }
+
+  const catalog = await getProductCatalog(item.productCatalogId);
+  const productId = catalog.product?.id ?? item.productId;
+
+  if (typeof productId !== 'number') {
+    return [item];
+  }
+
+  const hydratedVariants = (await getAllProductVariants({
+    'productId.equals': productId,
+    'status.equals': 'ACTIVE',
+    size: 1000,
+  })) as ProductVariantDTO[];
+  const variants = mergeCatalogVariantsForSave(catalog, hydratedVariants).filter(
+    (variant) => typeof variant.id === 'number'
+  );
+
+  if (variants.length === 0) {
+    return [item];
+  }
+
+  const quantity = item.quantity?.trim() || '1';
+  const fallbackPrice = item.itemPrice || String(catalog.price ?? '');
+  const productName = catalog.product?.name ?? item.productName ?? catalog.productCatalogName;
+
+  return variants.map((variant) => {
+    const stock = getDefaultWarehouseStock(variant);
+
+    return {
+      ...emptyOrderItem('catalog'),
+      productId,
+      productCatalogId: item.productCatalogId,
+      productName,
+      variantId: variant.id,
+      sku: variant.sku,
+      variantAttributes: getCatalogVariantAttributes(variant),
+      warehouseId: stock?.warehouse?.id,
+      warehouseName: stock?.warehouse?.name,
+      quantity,
+      itemPrice:
+        variant.price !== undefined && variant.price !== null
+          ? String(variant.price)
+          : fallbackPrice,
+      itemTaxAmount: item.itemTaxAmount,
+      itemStatus: item.itemStatus,
+      itemComment: item.itemComment,
+    } satisfies OrderItemForm;
+  });
+};
+
+const expandCatalogItemsForPersistence = async (items: OrderItemForm[]) => {
+  const catalogIdsWithExpandedVariants = getCatalogIdsWithExpandedVariants(items);
+  const expandedGroups = await Promise.all(
+    items.map((item) => {
+      if (
+        item.productCatalogId &&
+        !item.variantId &&
+        !catalogIdsWithExpandedVariants.has(item.productCatalogId)
+      ) {
+        return buildCatalogVariantItemsForSave(item);
+      }
+
+      return Promise.resolve([item]);
+    })
+  );
+
+  return expandedGroups.flat();
 };
 
 const parseItemStatusValue = (value?: string) => {
@@ -205,6 +372,7 @@ export function OrderFormContent({
       productId: item.productId || undefined,
       variantId: item.variantId || undefined,
       productCatalogId: item.productCatalogId || undefined,
+      warehouseId: item.warehouseId || undefined,
       productName: item.productName || undefined,
       sku: item.sku || undefined,
       variantAttributes: item.variantAttributes || undefined,
@@ -823,6 +991,122 @@ export function OrderFormContent({
     setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
   };
 
+  const handleToggleCatalogVariant = (
+    catalogId: number,
+    productId: number | undefined,
+    variant: ProductVariantDTO,
+    warehouseId: number | undefined,
+    quantity: number,
+    price: number | undefined
+  ) => {
+    if (selectedItemIndex === null) return;
+
+    const selectedItem = items[selectedItemIndex];
+
+    if (!selectedItem?.productCatalogId || selectedItem.productCatalogId !== catalogId) return;
+    if (!productId) return;
+    if (typeof variant.id !== 'number') return;
+
+    const stock = (variant.variantStocks ?? []).find(
+      (entry) => entry.warehouse?.id === warehouseId
+    );
+    const nextPrice =
+      price !== undefined && price !== null ? String(price) : selectedItem.itemPrice;
+    const nextQuantity = String(quantity);
+    const nextSelection = {
+      productId,
+      variantId: variant.id,
+      sku: variant.sku,
+      variantAttributes: getCatalogVariantAttributes(variant) ?? variant.sku,
+      warehouseId,
+      warehouseName: stock?.warehouse?.name,
+      warehouseCode: (stock?.warehouse as { code?: string } | undefined)?.code,
+      quantity: nextQuantity,
+      itemPrice: nextPrice,
+      itemTaxAmount: selectedItem.itemTaxAmount,
+      itemStatus: selectedItem.itemStatus,
+      itemComment: selectedItem.itemComment,
+      availableQuantity: stock ? getStockSalesQuantity(stock) : undefined,
+      stockQuantity: stock?.stockQuantity,
+      salesStockQuantity: stock?.salesStockQuantity,
+    };
+
+    setItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) => item.productCatalogId === catalogId && item.variantId === variant.id
+      );
+      const catalogIndex = prev.findIndex(
+        (item) => item.itemType === 'catalog' && item.productCatalogId === catalogId
+      );
+
+      if (existingIndex !== -1) {
+        return prev.map((item, index) => {
+          if (index !== existingIndex) {
+            return item;
+          }
+
+          if (
+            item.itemType === 'catalog' &&
+            item.productId === productId &&
+            item.productCatalogId === catalogId &&
+            item.variantId === variant.id &&
+            item.sku === variant.sku &&
+            item.warehouseId === warehouseId &&
+            item.warehouseName === stock?.warehouse?.name &&
+            item.quantity === nextQuantity &&
+            item.itemPrice === nextPrice
+          ) {
+            return item;
+          }
+
+          return {
+            ...item,
+            itemType: 'catalog',
+            productId,
+            productCatalogId: catalogId,
+            productName: selectedItem.productName,
+            variantId: variant.id,
+            sku: variant.sku,
+            variantAttributes: getCatalogVariantAttributes(variant) ?? item.variantAttributes,
+            warehouseId,
+            warehouseName: stock?.warehouse?.name,
+            warehouseCode: (stock?.warehouse as { code?: string } | undefined)?.code,
+            quantity: nextQuantity,
+            itemPrice: nextPrice,
+          };
+        });
+      }
+
+      if (catalogIndex === -1) {
+        return prev;
+      }
+
+      return prev
+        .map((item, index) => {
+          if (index !== catalogIndex) {
+            return item;
+          }
+
+          const existingSelections = item.catalogVariantSelections ?? [];
+          const otherSelections = existingSelections.filter(
+            (selection) => selection.variantId !== variant.id
+          );
+
+          return {
+            ...item,
+            catalogVariantSelections:
+              !warehouseId || quantity <= 0 ? otherSelections : [...otherSelections, nextSelection],
+          };
+        })
+        .filter(
+          (item, index) =>
+            index === catalogIndex ||
+            !(!item.id && item.productCatalogId === catalogId && item.variantId === variant.id)
+        );
+    });
+    setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
+  };
+
   const handleAdjustItemQuantity = (itemIndex: number, delta: number) => {
     setItems((prev) =>
       prev.map((item, index) => {
@@ -1067,7 +1351,9 @@ export function OrderFormContent({
     };
 
     try {
-      const itemsTotal = calculateItemsTotal(items);
+      const expandedItems = await expandCatalogItemsForPersistence(items);
+      const persistableItems = getPersistableOrderDetailItems(expandedItems);
+      const itemsTotal = calculateItemsTotal(persistableItems);
       const baseAmount = itemsTotal;
       const shippingAmount = parseAmount(formState.shippingAmount || '0');
       const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
@@ -1102,7 +1388,7 @@ export function OrderFormContent({
         throw new Error('Order ID missing after draft save.');
       }
 
-      const detailTasks = items
+      const detailTasks = persistableItems
         .filter((item) => hasItemData(item))
         .map((item) => {
           const isCatalog = item.itemType === 'catalog' || Boolean(item.productCatalogId);
@@ -1115,9 +1401,10 @@ export function OrderFormContent({
           return createOrderDetail({
             data: {
               purchaseOrderId: orderId,
-              productId: isCatalog ? undefined : item.productId || undefined,
-              variantId: isCatalog ? undefined : item.variantId || undefined,
+              productId: item.productId || undefined,
+              variantId: item.variantId || undefined,
               productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
+              warehouseId: item.warehouseId || undefined,
               productName: item.productName || undefined,
               sku: item.sku || undefined,
               variantAttributes: item.variantAttributes || undefined,
@@ -1255,7 +1542,21 @@ export function OrderFormContent({
       };
     };
 
-    const itemsTotal = calculateItemsTotal(items);
+    let persistableItems: OrderItemForm[];
+
+    try {
+      const expandedItems = await expandCatalogItemsForPersistence(items);
+
+      persistableItems = getPersistableOrderDetailItems(expandedItems);
+    } catch (error) {
+      console.error('Failed to expand purchase catalog items:', error);
+      toast.error('Unable to prepare catalog items for saving.');
+      setSubmitting(false);
+
+      return;
+    }
+
+    const itemsTotal = calculateItemsTotal(persistableItems);
     const baseAmount = itemsTotal;
     const shippingAmount = parseAmount(formState.shippingAmount || '0');
     const taxRate = Math.min(Math.max(parseAmount(formState.orderTaxRate || '0'), 0), 100);
@@ -1300,7 +1601,7 @@ export function OrderFormContent({
         throw new Error('Order ID missing after save.');
       }
 
-      const itemTasks = items
+      const itemTasks = persistableItems
         .filter((item) => {
           const hasData =
             item.productId ||
@@ -1324,9 +1625,10 @@ export function OrderFormContent({
           const detailPayload = {
             id: item.id,
             purchaseOrderId: orderId,
-            productId: isCatalog ? undefined : item.productId || undefined,
-            variantId: isCatalog ? undefined : item.variantId || undefined,
+            productId: item.productId || undefined,
+            variantId: item.variantId || undefined,
             productCatalogId: isCatalog ? item.productCatalogId || undefined : undefined,
+            warehouseId: item.warehouseId || undefined,
             productName: item.productName || undefined,
             sku: item.sku || undefined,
             variantAttributes: item.variantAttributes || undefined,
@@ -1449,7 +1751,8 @@ export function OrderFormContent({
     }
   };
 
-  const itemsTotal = calculateItemsTotal(items);
+  const visiblePersistableItems = getPersistableOrderDetailItems(items);
+  const itemsTotal = calculateItemsTotal(visiblePersistableItems);
   const baseAmount = itemsTotal;
   const shippingAmount = Number.parseFloat(formState.shippingAmount) || 0;
   const taxRateValue = Math.min(Math.max(Number.parseFloat(formState.orderTaxRate) || 0, 0), 100);
@@ -1461,7 +1764,7 @@ export function OrderFormContent({
     : taxRateOptions.includes(formState.orderTaxRate as (typeof taxRateOptions)[number])
       ? formState.orderTaxRate
       : '';
-  const itemSummaries = items.filter(hasItemData).map((item, index) => {
+  const itemSummaries = visiblePersistableItems.filter(hasItemData).map((item, index) => {
     const name =
       item.itemType === 'catalog'
         ? item.productName
@@ -1537,6 +1840,7 @@ export function OrderFormContent({
                 selectedItemIndex={selectedItemIndex}
                 items={items}
                 onToggleWarehouseVariant={handleToggleWarehouseVariant}
+                onToggleCatalogVariant={handleToggleCatalogVariant}
                 onAdjustItemQuantity={handleAdjustItemQuantity}
               />
 

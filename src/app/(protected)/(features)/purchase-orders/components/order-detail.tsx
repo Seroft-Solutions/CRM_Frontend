@@ -15,7 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { OrderRecord, OrderStatus } from '../data/purchase-order-data';
+import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas';
+import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
+import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
+import type { OrderDetailItem, OrderRecord, OrderStatus } from '../data/purchase-order-data';
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-100 text-amber-800 border-amber-300',
@@ -45,6 +49,51 @@ function normalizeHistoryStatus(status?: string) {
   return status.trim().toLowerCase() === 'pending' ? 'Created' : status;
 }
 
+function getVariantAttributesFromCatalog(
+  catalog: ProductCatalogDTO | undefined,
+  variantId: number | undefined
+) {
+  if (typeof variantId !== 'number') return undefined;
+
+  const variant = catalog?.variants?.find((entry) => entry.id === variantId);
+  const attributes = variant?.selections
+    ?.map((selection) => {
+      const label = selection.attribute?.label ?? selection.attribute?.name;
+      const value = selection.option?.label ?? selection.rawValue;
+
+      return label && value ? `${label}: ${value}` : value;
+    })
+    .filter((value): value is string => Boolean(value?.trim()));
+
+  return attributes?.length ? attributes.join(', ') : undefined;
+}
+
+function getCatalogVariantDisplay(
+  item: OrderDetailItem,
+  catalog: ProductCatalogDTO | undefined,
+  fallbackLabel: string
+) {
+  if (!item.productCatalogId || !item.variantId) {
+    return {
+      name: item.productName || catalog?.productCatalogName || item.sku || fallbackLabel,
+      sku: item.sku,
+      variantAttributes: item.variantAttributes,
+    };
+  }
+
+  const catalogVariant = catalog?.variants?.find((variant) => variant.id === item.variantId);
+  const productName = item.productName ?? catalog?.product?.name;
+  const sku = item.sku ?? catalogVariant?.sku;
+  const variantAttributes =
+    item.variantAttributes ?? getVariantAttributesFromCatalog(catalog, item.variantId);
+
+  return {
+    name: productName && sku ? `${productName} - ${sku}` : productName || sku || fallbackLabel,
+    sku,
+    variantAttributes,
+  };
+}
+
 interface OrderDetailProps {
   order: OrderRecord;
 }
@@ -52,6 +101,69 @@ interface OrderDetailProps {
 export function OrderDetail({ order }: OrderDetailProps) {
   const { data: fulfillmentGenerations = [] } = useGetPurchaseOrderFulfillmentGenerations(
     order.orderId
+  );
+  const catalogIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          order.items
+            .map((item) => item.productCatalogId)
+            .filter(
+              (productCatalogId): productCatalogId is number => typeof productCatalogId === 'number'
+            )
+        )
+      ).sort((left, right) => left - right),
+    [order.items]
+  );
+  const catalogQueryParams = useMemo(
+    () =>
+      catalogIds.length > 0
+        ? {
+            'id.in': catalogIds,
+            size: catalogIds.length,
+            sort: ['id,asc'],
+          }
+        : undefined,
+    [catalogIds]
+  );
+  const { data: catalogs = [] } = useGetAllProductCatalogs(catalogQueryParams, {
+    query: {
+      enabled: catalogIds.length > 0,
+      staleTime: 5 * 60 * 1000,
+    },
+  });
+  const catalogById = useMemo(() => {
+    const map = new Map<number, ProductCatalogDTO>();
+
+    catalogs.forEach((catalog) => {
+      if (typeof catalog.id === 'number') {
+        map.set(catalog.id, catalog);
+      }
+    });
+
+    return map;
+  }, [catalogs]);
+  const warehouseQueryParams = useMemo(
+    () => ({
+      page: 0,
+      size: 1000,
+      sort: ['name,asc'],
+      'status.equals': 'ACTIVE' as const,
+    }),
+    []
+  );
+  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
+  const warehouseNameById = useMemo(
+    () =>
+      new Map(
+        (warehouseRows as IWarehouse[])
+          .filter(
+            (warehouse): warehouse is IWarehouse & { id: number } =>
+              typeof warehouse.id === 'number'
+          )
+          .map((warehouse) => [warehouse.id, warehouse.name])
+      ),
+    [warehouseRows]
   );
   const displayItems = useMemo(() => {
     const originalQuantityByDetailId = new Map<number, number>();
@@ -303,6 +415,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
             <TableHeader>
               <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
                 <TableHead className="font-bold text-slate-700">Item</TableHead>
+                <TableHead className="font-bold text-slate-700">Warehouse</TableHead>
                 <TableHead className="font-bold text-slate-700">Quantity</TableHead>
                 <TableHead className="font-bold text-slate-700">Price</TableHead>
                 <TableHead className="font-bold text-slate-700">Tax</TableHead>
@@ -311,72 +424,90 @@ export function OrderDetail({ order }: OrderDetailProps) {
             </TableHeader>
             <TableBody>
               {displayItems.length > 0 ? (
-                displayItems.map((item, index) => (
-                  <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                          {index + 1}
-                        </div>
-                        <div>
-                          {item.productName ? (
-                            <>
-                              <div className="flex flex-wrap items-center gap-2">
-                                {item.productCatalogId ? (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Catalog
-                                  </Badge>
-                                ) : null}
+                displayItems.map((item, index) => {
+                  const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
+                  const catalog =
+                    typeof item.productCatalogId === 'number'
+                      ? catalogById.get(item.productCatalogId)
+                      : undefined;
+                  const itemDisplay = getCatalogVariantDisplay(item, catalog, `Item #${index + 1}`);
+                  const warehouseName =
+                    typeof item.warehouseId === 'number'
+                      ? (warehouseNameById.get(item.warehouseId) ?? `Warehouse ${item.warehouseId}`)
+                      : '—';
+
+                  return (
+                    <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
+                            {index + 1}
+                          </div>
+                          <div>
+                            {itemDisplay.name ? (
+                              <>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {item.productCatalogId ? (
+                                    <Badge variant="secondary" className="text-xs">
+                                      {item.variantId ? 'Catalog variant' : 'Catalog item'}
+                                    </Badge>
+                                  ) : null}
+                                  <div className="font-semibold text-slate-800">
+                                    {itemDisplay.name}
+                                  </div>
+                                </div>
+                                {!isLegacyCatalog && itemDisplay.sku && (
+                                  <div className="text-xs text-muted-foreground">
+                                    SKU: {itemDisplay.sku}
+                                  </div>
+                                )}
+                                {!isLegacyCatalog && itemDisplay.variantAttributes && (
+                                  <div className="text-xs text-blue-600">
+                                    {itemDisplay.variantAttributes.split(',').map((attr, i) => (
+                                      <div key={i}>{attr.trim()}</div>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.itemComment && (
+                                  <div className="text-xs italic text-muted-foreground">
+                                    {item.itemComment}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <>
                                 <div className="font-semibold text-slate-800">
-                                  {item.productName}
+                                  {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
                                 </div>
-                              </div>
-                              {item.sku && (
-                                <div className="text-xs text-muted-foreground">SKU: {item.sku}</div>
-                              )}
-                              {item.variantAttributes && (
-                                <div className="text-xs text-blue-600">
-                                  {item.variantAttributes.split(',').map((attr, i) => (
-                                    <div key={i}>{attr.trim()}</div>
-                                  ))}
+                                <div className="text-xs text-muted-foreground">
+                                  {item.itemComment || 'No product selected'}
                                 </div>
-                              )}
-                              {item.itemComment && (
-                                <div className="text-xs italic text-muted-foreground">
-                                  {item.itemComment}
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <div className="font-semibold text-slate-800">
-                                {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {item.itemComment || 'No product selected'}
-                              </div>
-                            </>
-                          )}
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-semibold text-slate-800">
-                      {item.originalOrderedQuantity}
-                    </TableCell>
-                    <TableCell className="font-semibold text-slate-800">
-                      {formatCurrency(item.itemPrice)}
-                    </TableCell>
-                    <TableCell className="font-semibold text-slate-800">
-                      {formatCurrency(item.itemTaxAmount)}
-                    </TableCell>
-                    <TableCell className="font-bold text-slate-900">
-                      {formatCurrency(item.displayTotal)}
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell className="font-semibold text-slate-800">
+                        {warehouseName}
+                      </TableCell>
+                      <TableCell className="font-semibold text-slate-800">
+                        {item.originalOrderedQuantity}
+                      </TableCell>
+                      <TableCell className="font-semibold text-slate-800">
+                        {formatCurrency(item.itemPrice)}
+                      </TableCell>
+                      <TableCell className="font-semibold text-slate-800">
+                        {formatCurrency(item.itemTaxAmount)}
+                      </TableCell>
+                      <TableCell className="font-bold text-slate-900">
+                        {formatCurrency(item.displayTotal)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-12 text-center">
+                  <TableCell colSpan={6} className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
                         <svg
