@@ -1219,10 +1219,14 @@ export function OrderFormItems({
       const firstEntry = lastGroup?.entries[0]?.item;
       const shouldGroupWithPrevious =
         Boolean(lastGroup) &&
-        item.itemType === 'product' &&
-        firstEntry?.itemType === 'product' &&
-        Boolean(item.productId) &&
-        firstEntry.productId === item.productId;
+        ((item.itemType === 'product' &&
+          firstEntry?.itemType === 'product' &&
+          Boolean(item.productId) &&
+          firstEntry.productId === item.productId) ||
+          (item.itemType === 'catalog' &&
+            firstEntry?.itemType === 'catalog' &&
+            Boolean(item.productCatalogId) &&
+            firstEntry.productCatalogId === item.productCatalogId));
 
       if (shouldGroupWithPrevious) {
         lastGroup.entries.push({ item, index });
@@ -1676,30 +1680,57 @@ export function OrderFormItems({
     const isProductVariantGroup =
       group.entries.every(({ item }) => item.itemType === 'product' && Boolean(item.productId)) &&
       group.entries.some(({ item }) => Boolean(item.variantId));
+    const isCatalogVariantGroup =
+      group.entries.every(
+        ({ item }) => item.itemType === 'catalog' && Boolean(item.productCatalogId)
+      ) && group.entries.some(({ item }) => Boolean(item.variantId));
 
     return {
       entries: group.entries,
       item: group.entries[0]?.item,
       index: group.entries[0]?.index ?? 0,
       isProductVariantGroup,
+      isCatalogVariantGroup,
     };
   });
   const blankLegacyRows = Array.from({ length: Math.max(20 - legacyItemRows.length, 0) });
   const shouldScrollLegacyRows = legacyItemRows.length > 20;
-  const legacyItemsTotal = items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+  const legacyItemsTotal = legacyItemRows.reduce((sum, row) => {
+    if (row.isCatalogVariantGroup && row.item) {
+      return sum + calculateItemTotal(row.item);
+    }
+
+    return (
+      sum + row.entries.reduce((entrySum, entry) => entrySum + calculateItemTotal(entry.item), 0)
+    );
+  }, 0);
+  const legacyItemsQuantity = legacyItemRows.reduce((sum, row) => {
+    if (row.isCatalogVariantGroup && row.item) {
+      return sum + (Number.parseFloat(row.item.quantity) || 0);
+    }
+
+    return (
+      sum +
+      row.entries.reduce(
+        (entrySum, entry) => entrySum + (Number.parseFloat(entry.item.quantity) || 0),
+        0
+      )
+    );
+  }, 0);
 
   const renderLegacyItemRow = (legacyRow: (typeof legacyItemRows)[number], rowIndex: number) => {
-    const { entries, item, index, isProductVariantGroup } = legacyRow;
+    const { entries, item, index, isProductVariantGroup, isCatalogVariantGroup } = legacyRow;
 
     if (!item) {
       return null;
     }
 
-    const itemTotal = entries.reduce((sum, entry) => sum + calculateItemTotal(entry.item), 0);
-    const itemQuantity = entries.reduce(
-      (sum, entry) => sum + (Number.parseFloat(entry.item.quantity) || 0),
-      0
-    );
+    const itemTotal = isCatalogVariantGroup
+      ? calculateItemTotal(item)
+      : entries.reduce((sum, entry) => sum + calculateItemTotal(entry.item), 0);
+    const itemQuantity = isCatalogVariantGroup
+      ? Number.parseFloat(item.quantity) || 0
+      : entries.reduce((sum, entry) => sum + (Number.parseFloat(entry.item.quantity) || 0), 0);
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
@@ -1755,6 +1786,34 @@ export function OrderFormItems({
                 onItemChange={onItemChange}
                 tableRowMode
               />
+              {isCatalogVariantGroup ? (
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-[10px]">
+                    {entries.length} catalog items
+                  </Badge>
+                </div>
+              ) : item.variantId ? (
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-[10px]">
+                    Catalog item
+                  </Badge>
+                  {item.sku ? (
+                    <Badge variant="outline" className="text-[10px]">
+                      SKU: {item.sku}
+                    </Badge>
+                  ) : null}
+                  {item.variantAttributes ? (
+                    <Badge variant="outline" className="text-[10px]">
+                      {item.variantAttributes}
+                    </Badge>
+                  ) : null}
+                  {item.warehouseName || item.warehouseCode || item.warehouseId ? (
+                    <Badge variant="outline" className="text-[10px]">
+                      {item.warehouseName || item.warehouseCode || `Warehouse ${item.warehouseId}`}
+                    </Badge>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ) : (
             <ProductVariantSelector
@@ -1781,13 +1840,15 @@ export function OrderFormItems({
             type="number"
             min={0}
             placeholder="0"
-            value={isProductVariantGroup ? String(itemQuantity) : item.quantity}
+            value={
+              isProductVariantGroup || isCatalogVariantGroup ? String(itemQuantity) : item.quantity
+            }
             onChange={(event) => {
-              if (!isProductVariantGroup) {
+              if (!isProductVariantGroup && !isCatalogVariantGroup) {
                 onItemChange(index, 'quantity', event.target.value);
               }
             }}
-            readOnly={isProductVariantGroup}
+            readOnly={isProductVariantGroup || isCatalogVariantGroup}
             className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-foreground shadow-none focus-visible:ring-1"
           />
           <FieldError message={itemErrors?.[index]?.quantity} />
@@ -1860,9 +1921,9 @@ export function OrderFormItems({
           <div>
             <h3 className="text-sm font-bold text-foreground">Product Selection</h3>
             <p className="text-[11px] text-muted-foreground">
-              {items.length === 0
+              {itemGroups.length === 0
                 ? 'No items added'
-                : `${items.length} item${items.length !== 1 ? 's' : ''} in cart`}
+                : `${itemGroups.length} item${itemGroups.length !== 1 ? 's' : ''} in cart`}
             </p>
           </div>
         </div>
@@ -2003,7 +2064,7 @@ export function OrderFormItems({
                   <td className="border border-border"></td>
                   <td className="border border-border"></td>
                   <td className="border border-border px-2 py-1 text-right font-bold">
-                    {items.reduce((sum, item) => sum + (Number.parseFloat(item.quantity) || 0), 0)}
+                    {legacyItemsQuantity}
                   </td>
                   <td className="border border-border"></td>
                   <td className="border border-border px-2 py-1 text-right font-bold">
@@ -2023,15 +2084,22 @@ export function OrderFormItems({
                     group.entries.every(
                       ({ item }) => item.itemType === 'product' && Boolean(item.productId)
                     ) && group.entries.some(({ item }) => Boolean(item.variantId));
+                  const isCatalogVariantGroup =
+                    group.entries.every(
+                      ({ item }) => item.itemType === 'catalog' && Boolean(item.productCatalogId)
+                    ) && group.entries.some(({ item }) => Boolean(item.variantId));
+                  const visibleEntries = isCatalogVariantGroup
+                    ? group.entries.slice(0, 1)
+                    : group.entries;
 
                   return (
                     <>
                       <div className="lg:hidden p-4 space-y-4">
                         {isProductVariantGroup ? renderProductGroupHeader(group.entries) : null}
-                        {group.entries.map(({ item, index }, entryIndex) =>
-                          renderMobileEntry(item, index, entryIndex, group.entries.length, {
+                        {visibleEntries.map(({ item, index }, entryIndex) =>
+                          renderMobileEntry(item, index, entryIndex, visibleEntries.length, {
                             forceHideProductSelector: isProductVariantGroup,
-                            hasGroupHeader: isProductVariantGroup,
+                            hasGroupHeader: isProductVariantGroup || isCatalogVariantGroup,
                           })
                         )}
                       </div>
