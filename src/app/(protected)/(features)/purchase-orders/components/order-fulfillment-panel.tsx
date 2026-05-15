@@ -18,6 +18,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
+import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import {
   useCreatePurchaseOrderFulfillmentGeneration,
   useGetPurchaseOrderFulfillmentGenerations,
@@ -87,8 +89,18 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     () => pendingItems.reduce((sum, item) => sum + Math.max(0, item.quantity), 0),
     [pendingItems]
   );
+  const warehouseQueryParams = useMemo(
+    () => ({
+      page: 0,
+      size: 1000,
+      sort: ['name,asc'],
+      'status.equals': 'ACTIVE' as const,
+    }),
+    []
+  );
 
   const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
+  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
   const { data: generations = [], isLoading: generationsLoading } =
     useGetPurchaseOrderFulfillmentGenerations(order.orderId);
   const { mutateAsync: createGeneration, isPending: isGenerating } =
@@ -98,6 +110,19 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     setDraftState(createInitialDraftState(order.items));
     setIsEditing(false);
   }, [order.items]);
+
+  const warehouseNameById = useMemo(
+    () =>
+      new Map(
+        (warehouseRows as IWarehouse[])
+          .filter(
+            (warehouse): warehouse is IWarehouse & { id: number } =>
+              typeof warehouse.id === 'number'
+          )
+          .map((warehouse) => [warehouse.id, warehouse.name])
+      ),
+    [warehouseRows]
+  );
 
   const receivedQuantityByOrderDetailId = useMemo(() => {
     const receivedMap = new Map<number, number>();
@@ -311,6 +336,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                   <TableRow className="bg-cyan-50/70">
                     {isEditing ? <TableHead className="w-14 text-center">Select</TableHead> : null}
                     <TableHead>Item</TableHead>
+                    <TableHead className="text-center">Warehouse</TableHead>
                     <TableHead className="text-center">Order Qty</TableHead>
                     <TableHead className="text-center">Received Qty</TableHead>
                     <TableHead className="text-center">Remaining Qty</TableHead>
@@ -377,6 +403,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             </Badge>
                           </div>
                         </div>
+                      </TableCell>
+                      <TableCell className="text-center font-semibold text-slate-900">
+                        {typeof row.item.warehouseId === 'number'
+                          ? (warehouseNameById.get(row.item.warehouseId) ??
+                            `Warehouse ${row.item.warehouseId}`)
+                          : '—'}
                       </TableCell>
                       <TableCell className="text-center font-semibold text-slate-900">
                         {row.originalOrderQuantity}
