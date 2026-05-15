@@ -238,6 +238,18 @@ const getDefaultWarehouseStock = (variant: ProductVariantDTO) => {
   );
 };
 
+const getDefaultCatalogWarehouseValue = (variant: ProductVariantDTO) => {
+  const stock = getDefaultWarehouseStock(variant);
+
+  if (!stock) {
+    return undefined;
+  }
+
+  const warehouseName = stock.warehouse?.name || `Warehouse ${stock.warehouse?.id ?? 0}`;
+
+  return getStockWarehouseValue(stock, warehouseName);
+};
+
 const buildCatalogVariantItemsForSave = async (item: OrderItemForm) => {
   if (!item.productCatalogId || item.variantId) {
     return [item];
@@ -757,7 +769,13 @@ export function VariantWarehousePanel({
         variant.price !== undefined && variant.price !== null ? Number(variant.price) : undefined
       );
     });
-  }, [selectedCatalogId, hydratedCatalogVariants, selectedCatalogVariantItemsKey]);
+  }, [
+    selectedCatalogId,
+    selectedCatalogProductId,
+    catalogQuantity,
+    hydratedCatalogVariants,
+    selectedCatalogVariantItemsKey,
+  ]);
 
   useEffect(() => {
     if (!selectedCatalogId || hydratedCatalogVariants.length === 0) return;
@@ -878,7 +896,8 @@ export function VariantWarehousePanel({
           const selectedWarehouseValue =
             typeof selectedCatalogVariantItem?.warehouseId === 'number'
               ? String(selectedCatalogVariantItem.warehouseId)
-              : selectedCatalogWarehouseByVariant[variantKey];
+              : (selectedCatalogWarehouseByVariant[variantKey] ??
+                getDefaultCatalogWarehouseValue(variant));
           const selectedSalesStock = getSelectedCatalogWarehouseSalesStock(
             variant,
             selectedWarehouseValue
