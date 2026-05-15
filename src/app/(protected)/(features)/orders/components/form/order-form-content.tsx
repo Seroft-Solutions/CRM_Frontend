@@ -450,6 +450,13 @@ function getSelectedCatalogWarehouseSalesStock(
   return selectedStock ? getStockSalesQuantity(selectedStock) : undefined;
 }
 
+function haveSameRecordValues(left: Record<string, string>, right: Record<string, string>) {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  return leftKeys.length === rightKeys.length && leftKeys.every((key) => left[key] === right[key]);
+}
+
 export function VariantWarehousePanel({
   selectedItem,
   selectedItemIndex,
@@ -484,6 +491,7 @@ export function VariantWarehousePanel({
   const [selectedCatalogWarehouseByVariant, setSelectedCatalogWarehouseByVariant] = useState<
     Record<string, string>
   >({});
+  const lastCatalogQuantitySyncKeyRef = useRef('');
   const catalogQuantity = selectedCatalogId ? Number(selectedItem?.quantity) || 1 : 1;
   const { data: variantsData = [], isFetching } = useGetAllProductVariants(
     {
@@ -602,17 +610,26 @@ export function VariantWarehousePanel({
         : [],
     [items, selectedCatalogId]
   );
+  const selectedCatalogVariantSelections = useMemo(
+    () =>
+      selectedCatalogId
+        ? items
+            .filter((item) => item.productCatalogId === selectedCatalogId)
+            .flatMap((item) => item.catalogVariantSelections ?? [])
+        : [],
+    [items, selectedCatalogId]
+  );
   const selectedCatalogVariantItemsKey = useMemo(
     () =>
       selectedCatalogVariantItems
         .map((item) => `${item.variantId ?? ''}:${item.warehouseId ?? ''}`)
         .concat(
-          selectedCatalogItem?.catalogVariantSelections?.map(
+          selectedCatalogVariantSelections.map(
             (selection) => `${selection.variantId}:${selection.warehouseId ?? ''}`
-          ) ?? []
+          )
         )
         .join('|'),
-    [selectedCatalogItem?.catalogVariantSelections, selectedCatalogVariantItems]
+    [selectedCatalogVariantItems, selectedCatalogVariantSelections]
   );
   const getSelectedCatalogVariantSelection = (variantId?: number) => {
     if (typeof variantId !== 'number') {
@@ -621,9 +638,7 @@ export function VariantWarehousePanel({
 
     return (
       selectedCatalogVariantItems.find((item) => item.variantId === variantId) ??
-      selectedCatalogItem?.catalogVariantSelections?.find(
-        (selection) => selection.variantId === variantId
-      )
+      selectedCatalogVariantSelections.find((selection) => selection.variantId === variantId)
     );
   };
   const getItemParamParts = (item: OrderItemForm) => {
@@ -717,7 +732,9 @@ export function VariantWarehousePanel({
       }
     });
 
-    setSelectedCatalogWarehouseByVariant(warehouseSelection);
+    setSelectedCatalogWarehouseByVariant((current) =>
+      haveSameRecordValues(current, warehouseSelection) ? current : warehouseSelection
+    );
 
     const initialQty = catalogQuantity;
 
@@ -745,9 +762,21 @@ export function VariantWarehousePanel({
   useEffect(() => {
     if (!selectedCatalogId || hydratedCatalogVariants.length === 0) return;
 
+    const quantitySyncKey = `${selectedCatalogId}:${catalogQuantity}`;
+
+    if (lastCatalogQuantitySyncKeyRef.current === quantitySyncKey) {
+      return;
+    }
+
+    lastCatalogQuantitySyncKeyRef.current = quantitySyncKey;
+
     hydratedCatalogVariants.forEach((variant, index) => {
       const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
-      const warehouseValue = selectedCatalogWarehouseByVariant[variantKey];
+      const savedItem = getSelectedCatalogVariantSelection(variant.id);
+      const warehouseValue =
+        typeof savedItem?.warehouseId === 'number'
+          ? String(savedItem.warehouseId)
+          : selectedCatalogWarehouseByVariant[variantKey];
 
       if (!warehouseValue) return;
 
@@ -845,7 +874,11 @@ export function VariantWarehousePanel({
           const price =
             variant.price !== undefined && variant.price !== null ? `₹${variant.price}` : '-';
           const variantKey = String(variant.id ?? `${selectedCatalogId}-${index}`);
-          const selectedWarehouseValue = selectedCatalogWarehouseByVariant[variantKey];
+          const selectedCatalogVariantItem = getSelectedCatalogVariantSelection(variant.id);
+          const selectedWarehouseValue =
+            typeof selectedCatalogVariantItem?.warehouseId === 'number'
+              ? String(selectedCatalogVariantItem.warehouseId)
+              : selectedCatalogWarehouseByVariant[variantKey];
           const selectedSalesStock = getSelectedCatalogWarehouseSalesStock(
             variant,
             selectedWarehouseValue
@@ -1097,9 +1130,20 @@ function CatalogVariantWarehouseSelect({
         quantity,
       };
     })
-    .filter((option) => option.quantity > 0);
+    .filter((option) => option.quantity > 0 || option.value === value);
 
-  if (warehouseOptions.length === 0) {
+  const visibleWarehouseOptions =
+    warehouseOptions.length > 0 || !value
+      ? warehouseOptions
+      : [
+          {
+            value,
+            label: `Warehouse ${value}`,
+            quantity: 0,
+          },
+        ];
+
+  if (visibleWarehouseOptions.length === 0) {
     return <span className="text-muted-foreground">No warehouse</span>;
   }
 
@@ -1109,7 +1153,7 @@ function CatalogVariantWarehouseSelect({
         <SelectValue placeholder="Select warehouse" />
       </SelectTrigger>
       <SelectContent>
-        {warehouseOptions.map((option) => (
+        {visibleWarehouseOptions.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>
@@ -1994,97 +2038,96 @@ export function OrderFormContent({
       (entry) => entry.warehouse?.id === warehouseId
     );
     const { color, size } = getVariantDisplayParts(variant, 0);
-    const nextSelection = {
+    const nextPrice =
+      price !== undefined && price !== null ? String(price) : selectedItem.itemPrice;
+    const nextQuantity = String(quantity);
+    const nextCatalogVariantItem: OrderItemForm = {
+      ...emptyOrderItem('catalog'),
       productId,
+      productCatalogId: catalogId,
+      productName: selectedItem.productName,
       variantId: variant.id,
       sku: variant.sku,
       variantAttributes: `${color} / ${size}`,
       warehouseId,
       warehouseName: stock?.warehouse?.name,
-      quantity: String(quantity),
-      itemPrice: price !== undefined && price !== null ? String(price) : selectedItem.itemPrice,
+      quantity: nextQuantity,
+      itemPrice: nextPrice,
       itemTaxAmount: selectedItem.itemTaxAmount,
       itemStatus: selectedItem.itemStatus,
       itemComment: selectedItem.itemComment,
       availableQuantity: stock ? getStockSalesQuantity(stock) : undefined,
-      stockQuantity: stock?.stockQuantity,
-      salesStockQuantity: stock?.salesStockQuantity,
     };
 
     setItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) => item.productCatalogId === catalogId && item.variantId === variant.id
       );
-      const catalogIndex = prev.findIndex(
-        (item) => item.itemType === 'catalog' && item.productCatalogId === catalogId
+      const emptyCatalogIndex = prev.findIndex(
+        (item) =>
+          item.itemType === 'catalog' &&
+          item.productCatalogId === catalogId &&
+          typeof item.variantId !== 'number'
       );
 
       if (existingIndex !== -1) {
-        return prev.map((item, index) => {
-          if (index !== existingIndex) {
-            return item;
-          }
+        const existingItem = prev[existingIndex];
 
-          const nextPrice =
-            price !== undefined && price !== null ? String(price) : selectedItem.itemPrice;
-          const nextQuantity = String(quantity);
+        if (
+          existingItem?.itemType === 'catalog' &&
+          existingItem.productId === productId &&
+          existingItem.productCatalogId === catalogId &&
+          existingItem.variantId === variant.id &&
+          existingItem.sku === variant.sku &&
+          existingItem.variantAttributes === nextCatalogVariantItem.variantAttributes &&
+          existingItem.warehouseId === warehouseId &&
+          existingItem.warehouseName === stock?.warehouse?.name &&
+          existingItem.quantity === nextQuantity &&
+          existingItem.itemPrice === nextPrice &&
+          existingItem.itemTaxAmount === nextCatalogVariantItem.itemTaxAmount &&
+          existingItem.itemStatus === nextCatalogVariantItem.itemStatus &&
+          existingItem.itemComment === nextCatalogVariantItem.itemComment
+        ) {
+          return prev;
+        }
 
-          if (
-            item.itemType === 'catalog' &&
-            item.productId === productId &&
-            item.productCatalogId === catalogId &&
-            item.variantId === variant.id &&
-            item.sku === variant.sku &&
-            item.warehouseId === warehouseId &&
-            item.warehouseName === stock?.warehouse?.name &&
-            item.quantity === nextQuantity &&
-            item.itemPrice === nextPrice
-          ) {
-            return item;
-          }
+        const next = [...prev];
 
-          return {
-            ...item,
-            itemType: 'catalog',
-            productId,
-            productCatalogId: catalogId,
-            productName: selectedItem.productName,
-            variantId: variant.id,
-            sku: variant.sku,
-            warehouseId,
-            warehouseName: stock?.warehouse?.name,
-            quantity: nextQuantity,
-            itemPrice: nextPrice,
-          };
-        });
+        next[existingIndex] = {
+          ...existingItem,
+          ...nextCatalogVariantItem,
+          id: existingItem.id,
+          existingQuantity: existingItem.existingQuantity,
+          existingBackOrderQuantity: existingItem.existingBackOrderQuantity,
+        };
+
+        return next;
       }
 
-      if (catalogIndex === -1) {
+      if (!warehouseId || quantity <= 0) {
         return prev;
       }
 
-      return prev
-        .map((item, index) => {
-          if (index !== catalogIndex) {
-            return item;
-          }
+      if (emptyCatalogIndex !== -1) {
+        const next = [...prev];
 
-          const existingSelections = item.catalogVariantSelections ?? [];
-          const otherSelections = existingSelections.filter(
-            (selection) => selection.variantId !== variant.id
-          );
+        next[emptyCatalogIndex] = nextCatalogVariantItem;
 
-          return {
-            ...item,
-            catalogVariantSelections:
-              !warehouseId || quantity <= 0 ? otherSelections : [...otherSelections, nextSelection],
-          };
-        })
-        .filter(
-          (item, index) =>
-            index === catalogIndex ||
-            !(!item.id && item.productCatalogId === catalogId && item.variantId === variant.id)
-        );
+        return next;
+      }
+
+      const catalogIndexes = prev
+        .map((item, index) => (item.productCatalogId === catalogId ? index : -1))
+        .filter((index) => index >= 0);
+      const insertAfterIndex = catalogIndexes.length
+        ? Math.max(...catalogIndexes)
+        : selectedItemIndex;
+
+      return [
+        ...prev.slice(0, insertAfterIndex + 1),
+        nextCatalogVariantItem,
+        ...prev.slice(insertAfterIndex + 1),
+      ];
     });
     setErrors((prev) => (prev.items ? { ...prev, items: undefined } : prev));
   };
