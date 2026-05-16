@@ -58,7 +58,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                 Back
               </Link>
             </Button>
-            {orderData && orderData.orderStatus === 'Created' ? (
+            {orderData && (orderData.orderStatus === 'Created' || orderData.orderStatus === 'PartiallyApproved') ? (
               <Button
                 asChild
                 size="sm"
