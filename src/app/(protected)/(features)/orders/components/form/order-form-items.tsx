@@ -1252,9 +1252,11 @@ export function OrderFormItems({
     options?: {
       forceHideProductSelector?: boolean;
       hasGroupHeader?: boolean;
+      catalogGroupPrice?: number;
+      catalogGroupTotal?: number;
     }
   ) => {
-    const itemTotal = calculateItemTotal(item);
+    const itemTotal = options?.catalogGroupTotal ?? calculateItemTotal(item);
     const breakdown = getOrderItemBillingBreakdown(item);
     const availableQuantity = breakdown.availableQuantity ?? undefined;
     const quantityErrorMessage = itemErrors?.[index]?.quantity;
@@ -1351,7 +1353,7 @@ export function OrderFormItems({
                 min={0}
                 step="0.01"
                 placeholder="0.00"
-                value={item.itemPrice}
+                value={options?.catalogGroupPrice ?? item.itemPrice}
                 readOnly
                 className="h-9 border-border bg-muted text-muted-foreground"
               />
@@ -1493,9 +1495,11 @@ export function OrderFormItems({
     options?: {
       forceHideProductSelector?: boolean;
       hasGroupHeader?: boolean;
+      catalogGroupPrice?: number;
+      catalogGroupTotal?: number;
     }
   ) => {
-    const itemTotal = calculateItemTotal(item);
+    const itemTotal = options?.catalogGroupTotal ?? calculateItemTotal(item);
     const breakdown = getOrderItemBillingBreakdown(item);
     const availableQuantity = breakdown.availableQuantity ?? undefined;
     const quantityErrorMessage = itemErrors?.[index]?.quantity;
@@ -1634,7 +1638,7 @@ export function OrderFormItems({
                 min={0}
                 step="0.01"
                 placeholder="0.00"
-                value={item.itemPrice}
+                value={options?.catalogGroupPrice ?? item.itemPrice}
                 readOnly
                 className="h-9 border-border bg-muted text-muted-foreground"
               />
@@ -1696,9 +1700,30 @@ export function OrderFormItems({
   });
   const blankLegacyRows = Array.from({ length: Math.max(20 - legacyItemRows.length, 0) });
   const shouldScrollLegacyRows = legacyItemRows.length > 20;
+  const getCatalogGroupPrice = (entries: Array<{ item: OrderItemForm; index: number }>) => {
+    const catalogId = entries[0]?.item.productCatalogId;
+    const catalog = catalogId ? catalogData.find((entry) => entry.id === catalogId) : undefined;
+
+    return catalog?.price ?? undefined;
+  };
+  const getCatalogGroupTotal = (entries: Array<{ item: OrderItemForm; index: number }>) => {
+    const price = getCatalogGroupPrice(entries);
+
+    if (price === undefined) {
+      return undefined;
+    }
+
+    const quantity = Number.parseFloat(entries[0]?.item.quantity) || 0;
+    const tax = entries.reduce(
+      (sum, entry) => sum + (Number.parseFloat(entry.item.itemTaxAmount) || 0),
+      0
+    );
+
+    return Math.max(quantity * price + tax, 0);
+  };
   const legacyItemsTotal = legacyItemRows.reduce((sum, row) => {
     if (row.isCatalogVariantGroup && row.item) {
-      return sum + calculateItemTotal(row.item);
+      return sum + (getCatalogGroupTotal(row.entries) ?? calculateItemTotal(row.item));
     }
 
     return (
@@ -1727,7 +1752,7 @@ export function OrderFormItems({
     }
 
     const itemTotal = isCatalogVariantGroup
-      ? calculateItemTotal(item)
+      ? (getCatalogGroupTotal(entries) ?? calculateItemTotal(item))
       : entries.reduce((sum, entry) => sum + calculateItemTotal(entry.item), 0);
     const itemQuantity = isCatalogVariantGroup
       ? Number.parseFloat(item.quantity) || 0
@@ -1740,6 +1765,7 @@ export function OrderFormItems({
     const selectedVariantIds = entries
       .map((entry) => entry.item.variantId)
       .filter((variantId): variantId is number => typeof variantId === 'number');
+    const catalogGroupPrice = isCatalogVariantGroup ? getCatalogGroupPrice(entries) : undefined;
 
     return (
       <tr
@@ -1860,7 +1886,7 @@ export function OrderFormItems({
             min={0}
             step="0.01"
             placeholder="0.00"
-            value={item.itemPrice}
+            value={catalogGroupPrice ?? item.itemPrice}
             readOnly
             className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-foreground shadow-none"
           />
@@ -2092,6 +2118,12 @@ export function OrderFormItems({
                   const visibleEntries = isCatalogVariantGroup
                     ? group.entries.slice(0, 1)
                     : group.entries;
+                  const catalogGroupPrice = isCatalogVariantGroup
+                    ? getCatalogGroupPrice(group.entries)
+                    : undefined;
+                  const catalogGroupTotal = isCatalogVariantGroup
+                    ? getCatalogGroupTotal(group.entries)
+                    : undefined;
 
                   return (
                     <>
@@ -2101,6 +2133,8 @@ export function OrderFormItems({
                           renderMobileEntry(item, index, entryIndex, visibleEntries.length, {
                             forceHideProductSelector: isProductVariantGroup,
                             hasGroupHeader: isProductVariantGroup || isCatalogVariantGroup,
+                            catalogGroupPrice,
+                            catalogGroupTotal,
                           })
                         )}
                       </div>
