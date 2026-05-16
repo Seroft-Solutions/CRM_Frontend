@@ -26,6 +26,19 @@ interface RelationshipRendererProps {
   config: any;
 }
 
+type VariantPriceSource = {
+  id?: number;
+  price?: number;
+};
+
+const formatVariantPrice = (price: number) => {
+  if (!Number.isFinite(price)) {
+    return '';
+  }
+
+  return Number.isInteger(price) ? String(price) : price.toFixed(2);
+};
+
 export function RelationshipRenderer({
   relConfig,
   field,
@@ -82,6 +95,39 @@ export function RelationshipRenderer({
 
   const selectedVariantIds = isVariantsField && Array.isArray(field.value) ? field.value : [];
   const allSelected = variants.length > 0 && selectedVariantIds.length === variants.length;
+
+  const selectedCatalogPrice = useMemo(() => {
+    if (!isVariantsField) {
+      return '';
+    }
+
+    const selectedIds = new Set(selectedVariantIds);
+    const totalPrice = variants.reduce((sum: number, variant: VariantPriceSource) => {
+      if (!selectedIds.has(variant.id) || typeof variant.price !== 'number') {
+        return sum;
+      }
+
+      return sum + variant.price;
+    }, 0);
+
+    return selectedIds.size > 0 ? formatVariantPrice(totalPrice) : '';
+  }, [isVariantsField, selectedVariantIds, variants]);
+
+  useEffect(() => {
+    if (!isVariantsField) {
+      return;
+    }
+
+    const currentPrice = form.getValues('price');
+
+    if (currentPrice !== selectedCatalogPrice) {
+      form.setValue('price', selectedCatalogPrice, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+  }, [form, isVariantsField, selectedCatalogPrice]);
 
   const handleVariantToggle = (variantId: number, checked: boolean) => {
     if (!isVariantsField) {

@@ -44,6 +44,19 @@ interface ProductCatalogCreateSheetProps {
     trigger?: React.ReactNode;
 }
 
+type VariantPriceSource = {
+    id?: number;
+    price?: number;
+};
+
+const formatVariantPrice = (price: number) => {
+    if (!Number.isFinite(price)) {
+        return '';
+    }
+
+    return Number.isInteger(price) ? String(price) : price.toFixed(2);
+};
+
 export function ProductCatalogCreateSheet({
     onSuccess,
     trigger,
@@ -108,6 +121,31 @@ export function ProductCatalogCreateSheet({
     }, [variantsData]);
 
     const allSelected = variants.length > 0 && selectedVariantIds.length === variants.length;
+
+    const selectedCatalogPrice = useMemo(() => {
+        const selectedIds = new Set(selectedVariantIds);
+        const totalPrice = variants.reduce((sum: number, variant: VariantPriceSource) => {
+            if (!selectedIds.has(variant.id) || typeof variant.price !== 'number') {
+                return sum;
+            }
+
+            return sum + variant.price;
+        }, 0);
+
+        return selectedIds.size > 0 ? formatVariantPrice(totalPrice) : '';
+    }, [selectedVariantIds, variants]);
+
+    useEffect(() => {
+        const currentPrice = form.getValues('price');
+
+        if (currentPrice !== selectedCatalogPrice) {
+            form.setValue('price', selectedCatalogPrice, {
+                shouldDirty: true,
+                shouldTouch: true,
+                shouldValidate: true,
+            });
+        }
+    }, [form, selectedCatalogPrice]);
 
     const handleVariantToggle = (variantId: number, checked: boolean) => {
         const updated = checked
