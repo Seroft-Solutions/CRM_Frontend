@@ -943,6 +943,13 @@ export function VariantWarehousePanel({
             : variant?.price !== undefined && variant?.price !== null
               ? `₹${variant.price}`
               : '-';
+          const warehouseDisplay =
+            item.warehouseName ||
+            item.warehouseCode ||
+            item.warehouseStocks?.find((s) => s.warehouseId === item.warehouseId)?.warehouseName ||
+            item.warehouseStocks?.find((s) => s.warehouseId === item.warehouseId)?.warehouseCode ||
+            variant?.variantStocks?.find((s) => s.warehouse?.id === item.warehouseId)?.warehouse?.name ||
+            '-';
 
           return [
             <VariantImageCell key={`image-${index}`} variant={variant} />,
@@ -955,7 +962,7 @@ export function VariantWarehousePanel({
               onIncrease={() => onAdjustItemQuantity(index, 1)}
             />,
             price,
-            item.warehouseName || item.warehouseCode || '-',
+            warehouseDisplay,
           ];
         });
 

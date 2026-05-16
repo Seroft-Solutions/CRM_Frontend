@@ -948,6 +948,32 @@ export function OrderFormItems({
     return groups;
   }, [items]);
 
+  const getCatalogGroupPrice = (
+    entries: Array<{ item: OrderItemForm; index: number }>
+  ) => {
+    const catalogId = entries[0]?.item.productCatalogId;
+    const catalog = catalogId
+      ? catalogData.find((c) => c.id === catalogId)
+      : undefined;
+
+    return catalog?.price ?? undefined;
+  };
+
+  const getCatalogGroupTotal = (
+    entries: Array<{ item: OrderItemForm; index: number }>
+  ) => {
+    const price = getCatalogGroupPrice(entries);
+    if (price === undefined) return undefined;
+
+    const qty = Number.parseInt(entries[0]?.item.quantity, 10) || 0;
+    const tax = entries.reduce(
+      (sum, { item }) => sum + (Number.parseFloat(item.itemTaxAmount) || 0),
+      0
+    );
+
+    return Math.max(qty * price + tax, 0);
+  };
+
   const renderDesktopEntry = (
     item: OrderItemForm,
     index: number,
@@ -956,9 +982,11 @@ export function OrderFormItems({
     options?: {
       forceHideProductSelector?: boolean;
       hasGroupHeader?: boolean;
+      catalogGroupPrice?: number;
+      catalogGroupTotal?: number;
     }
   ) => {
-    const itemTotal = calculateItemTotal(item);
+    const itemTotal = options?.catalogGroupTotal ?? calculateItemTotal(item);
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
@@ -1043,7 +1071,7 @@ export function OrderFormItems({
                 min={0}
                 step="0.01"
                 placeholder="0.00"
-                value={item.itemPrice}
+                value={options?.catalogGroupPrice ?? item.itemPrice}
                 readOnly
                 className="h-9 border-slate-300 bg-slate-100 text-slate-700"
               />
@@ -1090,9 +1118,11 @@ export function OrderFormItems({
     options?: {
       forceHideProductSelector?: boolean;
       hasGroupHeader?: boolean;
+      catalogGroupPrice?: number;
+      catalogGroupTotal?: number;
     }
   ) => {
-    const itemTotal = calculateItemTotal(item);
+    const itemTotal = options?.catalogGroupTotal ?? calculateItemTotal(item);
     const selectedCatalog =
       item.itemType === 'catalog'
         ? catalogData.find((catalog) => catalog.id === item.productCatalogId)
@@ -1200,7 +1230,7 @@ export function OrderFormItems({
                 min={0}
                 step="0.01"
                 placeholder="0.00"
-                value={item.itemPrice}
+                value={options?.catalogGroupPrice ?? item.itemPrice}
                 readOnly
                 className="h-9 border-slate-300 bg-slate-100 text-slate-700"
               />
@@ -1366,6 +1396,12 @@ export function OrderFormItems({
                   const visibleEntries = isCatalogVariantGroup
                     ? group.entries.slice(0, 1)
                     : group.entries;
+                  const catalogGroupPrice = isCatalogVariantGroup
+                    ? getCatalogGroupPrice(group.entries)
+                    : undefined;
+                  const catalogGroupTotal = isCatalogVariantGroup
+                    ? getCatalogGroupTotal(group.entries)
+                    : undefined;
 
                   return (
                     <>
@@ -1381,6 +1417,8 @@ export function OrderFormItems({
                             renderDesktopEntry(item, index, entryIndex, visibleEntries.length, {
                               forceHideProductSelector: isProductVariantGroup,
                               hasGroupHeader: isProductVariantGroup || isCatalogVariantGroup,
+                              catalogGroupPrice,
+                              catalogGroupTotal,
                             })
                           )}
                         </div>
@@ -1392,6 +1430,8 @@ export function OrderFormItems({
                           renderMobileEntry(item, index, entryIndex, visibleEntries.length, {
                             forceHideProductSelector: isProductVariantGroup,
                             hasGroupHeader: isProductVariantGroup || isCatalogVariantGroup,
+                            catalogGroupPrice,
+                            catalogGroupTotal,
                           })
                         )}
                       </div>
