@@ -171,7 +171,15 @@ export function OrderTable({
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'All'>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(() => {
+    if (typeof window === 'undefined') return 10;
+    const rowHeight = 38;
+    const overhead = 290;
+    const available = Math.floor((window.innerHeight - overhead) / rowHeight);
+    const clamped = Math.max(5, Math.min(available, 100));
+    const options = [5, 10, 25, 50, 100];
+    return options.reduce((prev, opt) => (opt <= clamped ? opt : prev), 5);
+  });
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
