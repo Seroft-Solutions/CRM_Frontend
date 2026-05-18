@@ -39,8 +39,26 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         header:has(nav) { display: none !important; }
         .order-list-page ~ *, .order-list-page { max-width: 100% !important; }
         .order-list-page { overflow: hidden !important; }
-        [data-slot="sidebar-inset"] > div:last-child { overflow: hidden !important; padding: 0 !important; gap: 0 !important; }
-        [data-slot="sidebar-inset"] > div:last-child > div { max-width: 100% !important; padding: 0 !important; }
+        .order-list-page ~ *, .order-list-page { max-width: 100% !important; }
+        .order-list-page,
+        .order-list-page > *,
+        main:has(.order-list-page),
+        div:has(> main:has(.order-list-page)),
+        .container:has(.order-list-page) {
+          overflow: hidden !important;
+          min-height: 0 !important;
+          max-height: 100% !important;
+        }
+        .flex.min-w-0.flex-col:has(.order-list-page) {
+          overflow: hidden !important;
+          padding: 0 !important;
+          gap: 0 !important;
+        }
+        .container.mx-auto:has(.order-list-page) {
+          max-width: 100% !important;
+          padding: 0 !important;
+          height: 100% !important;
+        }
       `}} />
 
       {/* Dark header */}
