@@ -544,6 +544,7 @@ export function OrderTable({
     });
   }, [assigneeOverrides, filteredOrders, sortColumn, sortDirection, statusOverrides]);
 
+  const showAllColumns = statusFilter === 'All';
   const filteredCount = totalCount;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
   const startIndex = filteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -890,7 +891,7 @@ export function OrderTable({
           <TableHeader>
             {/* Header Row */}
             <TableRow className="border-b border-slate-300 bg-slate-50">
-              <TableHead className="w-32 min-w-[128px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <TableHead className="w-40 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('orderId')}
@@ -900,7 +901,8 @@ export function OrderTable({
                   {getSortIcon('orderId')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              {showAllColumns && (
+              <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('status')}
@@ -910,8 +912,9 @@ export function OrderTable({
                   {getSortIcon('status')}
                 </Button>
               </TableHead>
+              )}
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[120px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <TableHead className="w-32 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('total')}
@@ -922,8 +925,11 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[140px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <TableHead className="w-20 text-center">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</span>
+              </TableHead>
+              {showAllColumns && !showPickerPackerColumns ? (
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('shipping')}
@@ -934,8 +940,8 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              {showAllColumns && !showPickerPackerColumns ? (
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('customer')}
@@ -946,8 +952,8 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              {!hideBusinessColumns ? (
-                <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              {showAllColumns && !hideBusinessColumns ? (
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('assignee')}
@@ -958,8 +964,8 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              {!hideBusinessColumns ? (
-                <TableHead className="min-w-[120px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              {showAllColumns && !hideBusinessColumns ? (
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('payment')}
@@ -970,7 +976,7 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               ) : null}
-              <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
@@ -981,7 +987,7 @@ export function OrderTable({
                 </Button>
               </TableHead>
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('updatedDate')}
@@ -1006,6 +1012,7 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('orderId', e.target.value)}
                 />
               </TableHead>
+              {showAllColumns && (
               <TableHead className="py-2">
                 <Select
                   value={filters.status || 'all'}
@@ -1026,6 +1033,7 @@ export function OrderTable({
                   </SelectContent>
                 </Select>
               </TableHead>
+              )}
               {!hideBusinessColumns ? (
                 <TableHead className="py-2">
                   <Input
@@ -1036,7 +1044,8 @@ export function OrderTable({
                   />
                 </TableHead>
               ) : null}
-              {!showPickerPackerColumns ? (
+              <TableHead className="py-2" />
+              {showAllColumns && !showPickerPackerColumns ? (
                 <TableHead className="py-2">
                   <Select
                     value={filters.shipping || 'all'}
@@ -1058,7 +1067,7 @@ export function OrderTable({
                   </Select>
                 </TableHead>
               ) : null}
-              {!showPickerPackerColumns ? (
+              {showAllColumns && !showPickerPackerColumns ? (
                 <TableHead className="py-2">
                   <Input
                     placeholder="Filter..."
@@ -1068,7 +1077,7 @@ export function OrderTable({
                   />
                 </TableHead>
               ) : null}
-              {!hideBusinessColumns ? (
+              {showAllColumns && !hideBusinessColumns ? (
                 <TableHead className="py-2">
                   <Input
                     placeholder="Filter..."
@@ -1078,7 +1087,7 @@ export function OrderTable({
                   />
                 </TableHead>
               ) : null}
-              {!hideBusinessColumns ? (
+              {showAllColumns && !hideBusinessColumns ? (
                 <TableHead className="py-2">
                   <Select
                     value={filters.payment || 'all'}
@@ -1171,6 +1180,7 @@ export function OrderTable({
                         </div>
                       </div>
                     </TableCell>
+                    {showAllColumns && (
                     <TableCell>
                       <InlinePermissionGuard
                         requiredPermission="order:update"
@@ -1188,7 +1198,7 @@ export function OrderTable({
                           disabled={isUpdatingThisRow}
                         >
                           <SelectTrigger
-                            className={`h-7 min-w-[140px] rounded-full text-[11px] font-semibold ${statusClassName}`}
+                            className={`h-7 rounded-full text-[11px] font-semibold ${statusClassName}`}
                             aria-label={`Update status for order ${order.orderId}`}
                           >
                             <SelectValue placeholder={displayedStatus} />
@@ -1205,6 +1215,7 @@ export function OrderTable({
                         </Select>
                       </InlinePermissionGuard>
                     </TableCell>
+                    )}
                     {!hideBusinessColumns ? (
                       <TableCell>
                         <div className="space-y-1">
@@ -1219,14 +1230,19 @@ export function OrderTable({
                         </div>
                       </TableCell>
                     ) : null}
-                    {!showPickerPackerColumns ? (
+                    <TableCell className="text-center">
+                      <span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded bg-slate-100 text-[12px] font-bold text-slate-700 px-1.5">
+                        {order.totalItemQuantity}
+                      </span>
+                    </TableCell>
+                    {showAllColumns && !showPickerPackerColumns ? (
                       <TableCell>
                         <div className="text-sm font-medium text-slate-700">
                           {order.shipping.shippingMethod || 'Not set'}
                         </div>
                       </TableCell>
                     ) : null}
-                    {!showPickerPackerColumns ? (
+                    {showAllColumns && !showPickerPackerColumns ? (
                       <TableCell>
                         <Link
                           href={`/customers/${order.customer?.id || ''}`}
@@ -1236,7 +1252,7 @@ export function OrderTable({
                         </Link>
                       </TableCell>
                     ) : null}
-                    {!hideBusinessColumns ? (
+                    {showAllColumns && !hideBusinessColumns ? (
                       <TableCell>
                         <div className="space-y-1 min-w-[170px]">
                           <OrderAssigneeCell
@@ -1251,7 +1267,7 @@ export function OrderTable({
                         </div>
                       </TableCell>
                     ) : null}
-                    {!hideBusinessColumns ? (
+                    {showAllColumns && !hideBusinessColumns ? (
                       <TableCell>
                         <div className="space-y-1">
                           <Badge className="border-0 bg-sidebar-accent/10 text-[13px] font-semibold text-sidebar-accent-foreground ring-1 ring-sidebar-accent/20">

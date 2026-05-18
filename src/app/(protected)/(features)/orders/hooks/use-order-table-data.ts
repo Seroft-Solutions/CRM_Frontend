@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import type { CountOrdersParams, OrderDTO } from '@/core/api/generated/spring/schemas';
+import { useGetAllOrderDetails } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
 import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
 import {
   getOrderStatusCode,
@@ -123,6 +124,28 @@ export function useOrderTableData({
     [shippingQuery.data]
   );
 
+  const detailsQuery = useGetAllOrderDetails(
+    orderIds.length ? { 'orderId.in': orderIds, size: 9999 } : undefined,
+    {
+      query: {
+        enabled: orderIds.length > 0,
+        refetchOnWindowFocus: false,
+        placeholderData: (previousData) => previousData,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const itemCountByOrderId = useMemo(() => {
+    const map = new Map<number, number>();
+    (detailsQuery.data ?? []).forEach((detail) => {
+      const orderId = detail.orderId ?? 0;
+      const qty = Math.max(0, detail.quantity ?? 0);
+      map.set(orderId, (map.get(orderId) ?? 0) + qty);
+    });
+    return map;
+  }, [detailsQuery.data]);
+
   const orders = useMemo(() => {
     return orderRecords.map((orderRecord) => {
       const orderDto = orderDtoById.get(orderRecord.orderId) as OrderDTO | undefined;
@@ -130,10 +153,11 @@ export function useOrderTableData({
 
       return {
         ...orderRecord,
+        totalItemQuantity: itemCountByOrderId.get(orderRecord.orderId) ?? 0,
         shipping: mapOrderShippingDetail(shippingDto, orderDto),
       };
     });
-  }, [orderDtoById, orderRecords, shippingByOrderId]);
+  }, [orderDtoById, orderRecords, shippingByOrderId, itemCountByOrderId]);
 
   const totalCount = countQuery.data ?? orders.length;
   const totalPages = Math.ceil(totalCount / pageSize);

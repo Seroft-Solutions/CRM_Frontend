@@ -691,7 +691,7 @@ export function OrderTable({
           <TableHeader>
             {/* Header Row */}
             <TableRow className="border-b border-slate-300 bg-slate-50">
-              <TableHead className="w-32 min-w-[128px] font-bold text-slate-500">
+              <TableHead className="w-40 font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('orderId')}
@@ -702,7 +702,7 @@ export function OrderTable({
                 </Button>
               </TableHead>
               {showAllColumns && (
-                <TableHead className="min-w-[150px] font-bold text-slate-500">
+                <TableHead className="font-bold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('status')}
@@ -713,7 +713,7 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               )}
-              <TableHead className="min-w-[120px] font-bold text-slate-500">
+              <TableHead className="w-32 font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('total')}
@@ -723,11 +723,11 @@ export function OrderTable({
                   {getSortIcon('total')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[80px] text-center font-bold text-slate-500">
+              <TableHead className="w-20 text-center font-bold text-slate-500">
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</span>
               </TableHead>
               {showAllColumns && (
-                <TableHead className="min-w-[140px] font-bold text-slate-500">
+                <TableHead className="font-bold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('shipping')}
@@ -739,7 +739,7 @@ export function OrderTable({
                 </TableHead>
               )}
               {showAllColumns && (
-                <TableHead className="min-w-[150px] font-bold text-slate-500">
+                <TableHead className="font-bold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('sundryCreditor')}
@@ -751,7 +751,7 @@ export function OrderTable({
                 </TableHead>
               )}
               {showAllColumns && (
-                <TableHead className="min-w-[120px] font-bold text-slate-500">
+                <TableHead className="w-32 font-bold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('payment')}
@@ -762,7 +762,7 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               )}
-              <TableHead className="min-w-[150px] font-bold text-slate-500">
+              <TableHead className="font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
@@ -772,7 +772,7 @@ export function OrderTable({
                   {getSortIcon('createdDate')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-500">
+              <TableHead className="font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('updatedDate')}
@@ -969,7 +969,7 @@ export function OrderTable({
                             disabled={isUpdatingThisRow}
                           >
                             <SelectTrigger
-                              className={`h-7 min-w-[140px] rounded-full text-[11px] font-semibold ${statusClassName}`}
+                              className={`h-7 rounded-full text-[11px] font-semibold ${statusClassName}`}
                               aria-label={`Update status for purchase order ${order.orderId}`}
                             >
                               <SelectValue placeholder={displayedStatus} />
