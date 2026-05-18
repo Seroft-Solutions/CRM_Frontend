@@ -2,10 +2,21 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { History, PackageCheck } from 'lucide-react';
+import type { ReactNode } from 'react';
+import {
+  History,
+  PackageCheck,
+  TrendingUp,
+  Truck,
+  CreditCard,
+  User,
+  Phone,
+  Mail,
+  Clock,
+  Package,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import {
   Table,
@@ -21,22 +32,23 @@ import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/acti
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import type { OrderDetailItem, OrderRecord, OrderStatus } from '../data/purchase-order-data';
 
-const statusColors: Record<OrderStatus, string> = {
-  Created: 'bg-amber-100 text-amber-800 border-amber-300',
-  Approved: 'bg-green-100 text-green-800 border-green-300',
-  PartiallyApproved: 'bg-orange-100 text-orange-800 border-orange-300',
-  Recived: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  Unpacked: 'bg-cyan-100 text-cyan-800 border-cyan-300',
-  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  Cancel: 'bg-rose-100 text-rose-800 border-rose-300',
-  Unknown: 'bg-slate-100 text-slate-800 border-slate-300',
+const statusTheme: Record<OrderStatus, { pill: string; dot: string }> = {
+  Created: { pill: 'bg-amber-500/10 text-amber-600 ring-amber-500/20', dot: 'bg-amber-500' },
+  Approved: { pill: 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20', dot: 'bg-emerald-500' },
+  PartiallyApproved: { pill: 'bg-orange-500/10 text-orange-600 ring-orange-500/20', dot: 'bg-orange-500' },
+  Recived: { pill: 'bg-teal-500/10 text-teal-600 ring-teal-500/20', dot: 'bg-teal-500' },
+  Unpacked: { pill: 'bg-cyan-500/10 text-cyan-600 ring-cyan-500/20', dot: 'bg-cyan-500' },
+  Pending: { pill: 'bg-yellow-500/10 text-yellow-600 ring-yellow-500/20', dot: 'bg-yellow-500' },
+  Cancel: { pill: 'bg-rose-500/10 text-rose-600 ring-rose-500/20', dot: 'bg-rose-500' },
+  Unknown: { pill: 'bg-slate-500/10 text-slate-600 ring-slate-500/20', dot: 'bg-slate-500' },
 };
 
-function formatDateTime(value?: string) {
+function formatShortDate(value?: string) {
   if (!value) return '—';
-  const parsed = new Date(value);
-
-  return Number.isNaN(parsed.getTime()) ? '—' : parsed.toLocaleString();
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) +
+    ', ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
 
 function formatCurrency(amount: number) {
@@ -45,745 +57,299 @@ function formatCurrency(amount: number) {
 
 function normalizeHistoryStatus(status?: string) {
   if (!status) return '—';
-
   return status.trim().toLowerCase() === 'pending' ? 'Created' : status;
 }
 
-function getVariantAttributesFromCatalog(
-  catalog: ProductCatalogDTO | undefined,
-  variantId: number | undefined
-) {
+function getVariantAttributesFromCatalog(catalog: ProductCatalogDTO | undefined, variantId: number | undefined) {
   if (typeof variantId !== 'number') return undefined;
-
-  const variant = catalog?.variants?.find((entry) => entry.id === variantId);
-  const attributes = variant?.selections
-    ?.map((selection) => {
-      const label = selection.attribute?.label ?? selection.attribute?.name;
-      const value = selection.option?.label ?? selection.rawValue;
-
+  const variant = catalog?.variants?.find((e) => e.id === variantId);
+  const attrs = variant?.selections
+    ?.map((s) => {
+      const label = s.attribute?.label ?? s.attribute?.name;
+      const value = s.option?.label ?? s.rawValue;
       return label && value ? `${label}: ${value}` : value;
     })
-    .filter((value): value is string => Boolean(value?.trim()));
-
-  return attributes?.length ? attributes.join(', ') : undefined;
+    .filter((v): v is string => Boolean(v?.trim()));
+  return attrs?.length ? attrs.join(', ') : undefined;
 }
 
-function getCatalogVariantDisplay(
-  item: OrderDetailItem,
-  catalog: ProductCatalogDTO | undefined,
-  fallbackLabel: string
-) {
+function getCatalogVariantDisplay(item: OrderDetailItem, catalog: ProductCatalogDTO | undefined, fallback: string) {
   if (!item.productCatalogId || !item.variantId) {
-    return {
-      name: item.productName || catalog?.productCatalogName || item.sku || fallbackLabel,
-      sku: item.sku,
-      variantAttributes: item.variantAttributes,
-    };
+    return { name: item.productName || catalog?.productCatalogName || item.sku || fallback, sku: item.sku, variantAttributes: item.variantAttributes };
   }
-
-  const catalogVariant = catalog?.variants?.find((variant) => variant.id === item.variantId);
-  const productName = item.productName ?? catalog?.product?.name;
-  const sku = item.sku ?? catalogVariant?.sku;
-  const variantAttributes =
-    item.variantAttributes ?? getVariantAttributesFromCatalog(catalog, item.variantId);
-
-  return {
-    name: productName && sku ? `${productName} - ${sku}` : productName || sku || fallbackLabel,
-    sku,
-    variantAttributes,
-  };
+  const cv = catalog?.variants?.find((v) => v.id === item.variantId);
+  const pName = item.productName ?? catalog?.product?.name;
+  const sku = item.sku ?? cv?.sku;
+  const va = item.variantAttributes ?? getVariantAttributesFromCatalog(catalog, item.variantId);
+  return { name: pName && sku ? `${pName} - ${sku}` : pName || sku || fallback, sku, variantAttributes: va };
 }
 
-interface OrderDetailProps {
-  order: OrderRecord;
-}
-
-export function OrderDetail({ order }: OrderDetailProps) {
-  const { data: fulfillmentGenerations = [] } = useGetPurchaseOrderFulfillmentGenerations(
-    order.orderId
-  );
-  const catalogIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          order.items
-            .map((item) => item.productCatalogId)
-            .filter(
-              (productCatalogId): productCatalogId is number => typeof productCatalogId === 'number'
-            )
-        )
-      ).sort((left, right) => left - right),
-    [order.items]
-  );
-  const catalogQueryParams = useMemo(
-    () =>
-      catalogIds.length > 0
-        ? {
-            'id.in': catalogIds,
-            size: catalogIds.length,
-            sort: ['id,asc'],
-          }
-        : undefined,
-    [catalogIds]
-  );
-  const { data: catalogs = [] } = useGetAllProductCatalogs(catalogQueryParams, {
-    query: {
-      enabled: catalogIds.length > 0,
-      staleTime: 5 * 60 * 1000,
-    },
-  });
-  const catalogById = useMemo(() => {
-    const map = new Map<number, ProductCatalogDTO>();
-
-    catalogs.forEach((catalog) => {
-      if (typeof catalog.id === 'number') {
-        map.set(catalog.id, catalog);
-      }
-    });
-
-    return map;
-  }, [catalogs]);
-  const warehouseQueryParams = useMemo(
-    () => ({
-      page: 0,
-      size: 1000,
-      sort: ['name,asc'],
-      'status.equals': 'ACTIVE' as const,
-    }),
-    []
-  );
-  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
-  const warehouseNameById = useMemo(
-    () =>
-      new Map(
-        (warehouseRows as IWarehouse[])
-          .filter(
-            (warehouse): warehouse is IWarehouse & { id: number } =>
-              typeof warehouse.id === 'number'
-          )
-          .map((warehouse) => [warehouse.id, warehouse.name])
-      ),
-    [warehouseRows]
-  );
-  const displayItems = useMemo(() => {
-    const originalQuantityByDetailId = new Map<number, number>();
-
-    order.items.forEach((item) => {
-      originalQuantityByDetailId.set(item.orderDetailId, Math.max(0, item.quantity));
-    });
-
-    fulfillmentGenerations.forEach((generation) => {
-      generation.items?.forEach((item) => {
-        if (!item.orderDetailId) {
-          return;
-        }
-
-        const deliveredQuantity = Math.max(
-          0,
-          item.deliveredQuantity ?? item.requestedQuantity ?? 0
-        );
-
-        originalQuantityByDetailId.set(
-          item.orderDetailId,
-          (originalQuantityByDetailId.get(item.orderDetailId) ?? 0) + deliveredQuantity
-        );
-      });
-    });
-
-    return order.items.map((item) => {
-      const originalOrderedQuantity =
-        originalQuantityByDetailId.get(item.orderDetailId) ?? Math.max(0, item.quantity);
-      const displayTotal = Math.max(
-        originalOrderedQuantity * item.itemPrice + item.itemTaxAmount,
-        0
-      );
-
-      return {
-        ...item,
-        originalOrderedQuantity,
-        displayTotal,
-      };
-    });
-  }, [fulfillmentGenerations, order.items]);
-  const taxRate = order.orderTaxRate ?? 0;
-  const taxableAmount = displayItems.reduce((sum, item) => sum + item.displayTotal, 0);
-  const taxAmount = (taxRate / 100) * taxableAmount;
-  const orderTotalAmount = Math.max(taxableAmount + order.shipping.shippingAmount + taxAmount, 0);
-  const sundryCreditorName = order.sundryCreditor?.creditorName || order.email || '—';
-  const sundryCreditorPhone = order.sundryCreditor?.mobile || order.phone || '—';
-  const sundryCreditorEmail = order.sundryCreditor?.email || order.email || '—';
-
+function Metric({ icon, label, value, sub, accent }: { icon: ReactNode; label: string; value: ReactNode; sub?: ReactNode; accent: string }) {
   return (
-    <div className="space-y-6">
-      <div className="grid gap-5 md:grid-cols-3">
-        <Card className="overflow-hidden border-2 border-yellow-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-br from-yellow-50 to-amber-50 pb-3">
-            <CardTitle className="flex items-center justify-between text-base">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
-                  <svg
-                    className="h-4 w-4 text-slate-900"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <span className="font-bold">Order Value</span>
-              </div>
-              <Badge
-                variant="outline"
-                className={statusColors[order.orderStatus] ?? statusColors.Unknown}
-              >
-                {order.orderStatus}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5 pt-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Base</span>
-              <span className="font-semibold text-slate-800">{formatCurrency(taxableAmount)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Shipping</span>
-              <span className="font-semibold text-slate-800">
-                {formatCurrency(order.shipping.shippingAmount)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">
-                Tax{taxRate ? ` (${taxRate.toFixed(2)}%)` : ''}
-              </span>
-              <span className="font-semibold text-slate-800">{formatCurrency(taxAmount)}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-lg border-2 border-yellow-500/30 bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2.5">
-              <span className="font-bold text-slate-900">Total</span>
-              <span className="text-lg font-bold text-slate-900">
-                {formatCurrency(orderTotalAmount)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden border-2 border-blue-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-br from-blue-50 to-sky-50 pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
-                <svg
-                  className="h-4 w-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </div>
-              <span className="font-bold">Sundry Creditor</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5 pt-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Name</span>
-              <span className="truncate font-semibold text-slate-800">{sundryCreditorName}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Phone</span>
-              <span className="font-semibold text-slate-800">{sundryCreditorPhone}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Email</span>
-              <span className="truncate font-semibold text-slate-800">{sundryCreditorEmail}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden border-2 border-emerald-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-br from-emerald-50 to-green-50 pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500">
-                <svg
-                  className="h-4 w-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
-                  />
-                </svg>
-              </div>
-              <span className="font-bold">Fulfillment</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2.5 pt-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Payment</span>
-              <Badge
-                variant="secondary"
-                className="border border-emerald-300 bg-emerald-50 text-emerald-900"
-              >
-                {order.paymentStatus}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Shipping</span>
-              <span className="font-semibold text-slate-800">
-                {order.shipping.shippingMethod || 'Pending'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-600">Tracking ID</span>
-              <span className="font-semibold text-slate-800">
-                {order.shipping.shippingId || '—'}
-              </span>
-            </div>
-            <div className="rounded-md bg-slate-50 p-2">
-              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                Audit Trail
-              </div>
-              <div className="space-y-1 text-xs text-slate-700">
-                <div>Created: {order.createdBy}</div>
-                <div>Updated: {order.updatedBy || '—'}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="flex items-start gap-2.5 px-3 py-2.5">
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${accent}`}>
+        {icon}
       </div>
-
-      <Card className="overflow-hidden border-2 border-cyan-200 shadow-lg">
-        <CardHeader className="bg-gradient-to-br from-cyan-50 to-teal-50">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-600">
-              <svg
-                className="h-4 w-4 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-            </div>
-            <span className="font-bold">Order Items</span>
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="gap-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-              >
-                <Link href={`/purchase-orders/${order.orderId}/fulfillment/history`}>
-                  <History className="h-4 w-4" />
-                  Fulfillment History
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="gap-2 border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50"
-              >
-                <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
-                  <PackageCheck className="h-4 w-4" />
-                  Order Fulfillment
-                </Link>
-              </Button>
-              <Badge className="bg-cyan-100 text-cyan-900">{displayItems.length} items</Badge>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b-2 border-cyan-100 bg-cyan-50/50">
-                <TableHead className="font-bold text-slate-700">Item</TableHead>
-                <TableHead className="font-bold text-slate-700">Warehouse</TableHead>
-                <TableHead className="font-bold text-slate-700">Quantity</TableHead>
-                <TableHead className="font-bold text-slate-700">Price</TableHead>
-                <TableHead className="font-bold text-slate-700">Tax</TableHead>
-                <TableHead className="font-bold text-slate-700">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayItems.length > 0 ? (
-                displayItems.map((item, index) => {
-                  const isLegacyCatalog = Boolean(item.productCatalogId) && !item.variantId;
-                  const catalog =
-                    typeof item.productCatalogId === 'number'
-                      ? catalogById.get(item.productCatalogId)
-                      : undefined;
-                  const itemDisplay = getCatalogVariantDisplay(item, catalog, `Item #${index + 1}`);
-                  const warehouseName =
-                    typeof item.warehouseId === 'number'
-                      ? (warehouseNameById.get(item.warehouseId) ?? `Warehouse ${item.warehouseId}`)
-                      : '—';
-
-                  return (
-                    <TableRow key={item.orderDetailId} className="hover:bg-cyan-50/30">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                            {index + 1}
-                          </div>
-                          <div>
-                            {itemDisplay.name ? (
-                              <>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {item.productCatalogId ? (
-                                    <Badge variant="secondary" className="text-xs">
-                                      {item.variantId ? 'Catalog variant' : 'Catalog item'}
-                                    </Badge>
-                                  ) : null}
-                                  <div className="font-semibold text-slate-800">
-                                    {itemDisplay.name}
-                                  </div>
-                                </div>
-                                {!isLegacyCatalog && itemDisplay.sku && (
-                                  <div className="text-xs text-muted-foreground">
-                                    SKU: {itemDisplay.sku}
-                                  </div>
-                                )}
-                                {!isLegacyCatalog && itemDisplay.variantAttributes && (
-                                  <div className="text-xs text-blue-600">
-                                    {itemDisplay.variantAttributes.split(',').map((attr, i) => (
-                                      <div key={i}>{attr.trim()}</div>
-                                    ))}
-                                  </div>
-                                )}
-                                {item.itemComment && (
-                                  <div className="text-xs italic text-muted-foreground">
-                                    {item.itemComment}
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <div className="font-semibold text-slate-800">
-                                  {item.productCatalogId ? 'Catalog item' : `Item #${index + 1}`}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {item.itemComment || 'No product selected'}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {warehouseName}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {item.originalOrderedQuantity}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {formatCurrency(item.itemPrice)}
-                      </TableCell>
-                      <TableCell className="font-semibold text-slate-800">
-                        {formatCurrency(item.itemTaxAmount)}
-                      </TableCell>
-                      <TableCell className="font-bold text-slate-900">
-                        {formatCurrency(item.displayTotal)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-12 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-100">
-                        <svg
-                          className="h-6 w-6 text-cyan-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                          />
-                        </svg>
-                      </div>
-                      <p className="text-sm font-semibold text-slate-700">No items in this order</p>
-                      <p className="text-xs text-muted-foreground">
-                        Items will appear here once added
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card className="overflow-hidden border-2 border-slate-300 shadow-lg">
-        <CardHeader className="bg-gradient-to-br from-slate-50 to-gray-50">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600">
-              <svg
-                className="h-4 w-4 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <span className="font-bold">Order History</span>
-            <Badge className="ml-auto bg-slate-100 text-slate-900">
-              {order.history.length} events
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-6">
-          {order.history.map((entry, index) => (
-            <div
-              key={entry.orderHistoryId}
-              className="relative flex items-start gap-4 rounded-lg border-2 border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
-            >
-              <div className="flex flex-col items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-700 shadow-md">
-                  <span className="text-xs font-bold text-white">{index + 1}</span>
-                </div>
-                {index < order.history.length - 1 && (
-                  <div className="mt-2 h-8 w-0.5 bg-slate-300" />
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-800">
-                    {normalizeHistoryStatus(entry.status)}
-                  </span>
-                  {entry.itemStatus ? (
-                    <Badge
-                      variant="outline"
-                      className="border-cyan-300 bg-cyan-50 text-xs text-cyan-900"
-                    >
-                      Item: {entry.itemStatus}
-                    </Badge>
-                  ) : null}
-                  {entry.notificationSent ? (
-                    <Badge className="bg-green-100 text-green-900">
-                      <svg
-                        className="mr-1 h-3 w-3"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                      Notified
-                    </Badge>
-                  ) : null}
-                </div>
-                <div className="text-sm text-slate-600">
-                  <span className="font-semibold">{entry.createdBy}</span> ·{' '}
-                  {formatDateTime(entry.createdDate)}
-                  {entry.updatedBy && (
-                    <span className="ml-2">
-                      · Updated by <span className="font-semibold">{entry.updatedBy}</span>
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Last updated {formatDateTime(entry.lastUpdated || entry.createdDate)}
-                </div>
-              </div>
-            </div>
-          ))}
-          {order.history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center">
-              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
-                <svg
-                  className="h-7 w-7 text-slate-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <p className="font-semibold text-slate-700">No history recorded yet</p>
-              <p className="text-sm text-muted-foreground">
-                Activity will appear here as the order progresses
-              </p>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <Card className="overflow-hidden border-2 border-emerald-200 shadow-lg">
-        <CardHeader className="bg-gradient-to-br from-emerald-50 to-green-50">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500">
-              <svg
-                className="h-4 w-4 text-white"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-            </div>
-            <span className="font-bold">Shipping & Billing Addresses</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="rounded-xl border-2 border-emerald-300/50 bg-white p-5 shadow-md">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="h-5 w-5 text-emerald-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
-                  <h3 className="font-bold text-slate-800">Ship To</h3>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="border-emerald-300 bg-emerald-50 text-emerald-900"
-                >
-                  {order.shipping.shippingMethod || 'Pending'}
-                </Badge>
-              </div>
-              <AddressBlock {...order.address.shipTo} />
-            </div>
-            <div className="rounded-xl border-2 border-emerald-300/50 bg-white p-5 shadow-md">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <svg
-                    className="h-5 w-5 text-emerald-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                  <h3 className="font-bold text-slate-800">Bill To</h3>
-                </div>
-                {order.address.billToSameAsShip ? (
-                  <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-900">
-                    Same as shipping
-                  </Badge>
-                ) : null}
-              </div>
-              <AddressBlock {...order.address.billTo} />
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-lg bg-slate-50 p-3">
-            <div className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-600">
-              Address Metadata
-            </div>
-            <div className="grid gap-2 text-sm text-slate-700 md:grid-cols-3">
-              <div>
-                <span className="font-semibold">Created:</span>{' '}
-                {formatDateTime(order.address.createdDate)}
-              </div>
-              <div>
-                <span className="font-semibold">Updated:</span>{' '}
-                {formatDateTime(order.address.lastUpdated)}
-              </div>
-              <div>
-                <span className="font-semibold">Updated By:</span> {order.address.updatedBy || '—'}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{label}</div>
+        <div className="text-sm font-bold text-slate-800 truncate leading-tight mt-0.5">{value}</div>
+        {sub && <div className="text-[10px] text-slate-400 mt-0.5 truncate">{sub}</div>}
+      </div>
     </div>
   );
 }
 
-function AddressBlock(address: {
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  addrLine1?: string;
-  addrLine2?: string;
-  city?: string;
-  state?: string;
-  zipcode?: string;
-  country?: string;
-  phone?: string;
-  email?: string;
-}) {
-  const displayValue = (value?: string) => value || '—';
+interface OrderDetailProps {
+  order: OrderRecord;
+  headerSlot?: ReactNode;
+}
+
+export function OrderDetail({ order, headerSlot }: OrderDetailProps) {
+  const { data: fulfillmentGenerations = [] } = useGetPurchaseOrderFulfillmentGenerations(order.orderId);
+  const catalogIds = useMemo(() =>
+    Array.from(new Set(order.items.map((i) => i.productCatalogId).filter((id): id is number => typeof id === 'number'))).sort((a, b) => a - b),
+    [order.items]
+  );
+  const catalogQueryParams = useMemo(() => catalogIds.length > 0 ? { 'id.in': catalogIds, size: catalogIds.length, sort: ['id,asc'] } : undefined, [catalogIds]);
+  const { data: catalogs = [] } = useGetAllProductCatalogs(catalogQueryParams, { query: { enabled: catalogIds.length > 0, staleTime: 5 * 60 * 1000 } });
+  const catalogById = useMemo(() => { const m = new Map<number, ProductCatalogDTO>(); catalogs.forEach((c) => { if (typeof c.id === 'number') m.set(c.id, c); }); return m; }, [catalogs]);
+  const warehouseQueryParams = useMemo(() => ({ page: 0, size: 1000, sort: ['name,asc'], 'status.equals': 'ACTIVE' as const }), []);
+  const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
+  const warehouseNameById = useMemo(() =>
+    new Map((warehouseRows as IWarehouse[]).filter((w): w is IWarehouse & { id: number } => typeof w.id === 'number').map((w) => [w.id, w.name])),
+    [warehouseRows]
+  );
+  const displayItems = useMemo(() => {
+    const qMap = new Map<number, number>();
+    order.items.forEach((i) => qMap.set(i.orderDetailId, Math.max(0, i.quantity)));
+    fulfillmentGenerations.forEach((g) => {
+      g.items?.forEach((i) => {
+        if (!i.orderDetailId) return;
+        const dq = Math.max(0, i.deliveredQuantity ?? i.requestedQuantity ?? 0);
+        qMap.set(i.orderDetailId, (qMap.get(i.orderDetailId) ?? 0) + dq);
+      });
+    });
+    return order.items.map((item) => {
+      const oq = qMap.get(item.orderDetailId) ?? Math.max(0, item.quantity);
+      return { ...item, originalOrderedQuantity: oq, displayTotal: Math.max(oq * item.itemPrice + item.itemTaxAmount, 0) };
+    });
+  }, [fulfillmentGenerations, order.items]);
+
+  const taxRate = order.orderTaxRate ?? 0;
+  const taxableAmount = displayItems.reduce((s, i) => s + i.displayTotal, 0);
+  const taxAmount = (taxRate / 100) * taxableAmount;
+  const total = Math.max(taxableAmount + order.shipping.shippingAmount + taxAmount, 0);
+  const creditorName = order.sundryCreditor?.creditorName || order.email || '—';
+  const creditorPhone = order.sundryCreditor?.mobile || order.phone || '—';
+  const creditorEmail = order.sundryCreditor?.email || order.email || '—';
+  const st = statusTheme[order.orderStatus] ?? statusTheme.Unknown;
 
   return (
-    <div className="space-y-1 text-sm">
-      <div className="font-semibold text-slate-800">
-        {[address.firstName, address.middleName, address.lastName].filter(Boolean).join(' ') || '—'}
+    <div className="flex flex-col h-[calc(100vh-12px)] bg-slate-100 overflow-hidden border border-slate-300">
+      {headerSlot}
+
+      {/* ── Metric strip ── */}
+      <div className="grid grid-cols-5 divide-x divide-slate-200 border-b border-slate-300 bg-white">
+        <Metric icon={<TrendingUp className="h-4 w-4 text-white" />} label="Order Total" value={formatCurrency(total)} sub={`Base ${formatCurrency(taxableAmount)} + Tax ${formatCurrency(taxAmount)}`} accent="bg-sidebar-accent" />
+        <Metric icon={<CreditCard className="h-4 w-4 text-white" />} label="Payment" value={order.paymentStatus} sub={`Shipping: ${formatCurrency(order.shipping.shippingAmount)}`} accent="bg-emerald-500" />
+        <Metric icon={<Truck className="h-4 w-4 text-white" />} label="Shipping" value={order.shipping.shippingMethod || 'Pending'} sub={order.shipping.shippingId ? `ID: ${order.shipping.shippingId}` : 'No tracking yet'} accent="bg-sky-500" />
+        <Metric icon={<User className="h-4 w-4 text-white" />} label="Creditor" value={creditorName} sub={creditorPhone !== '—' ? creditorPhone : creditorEmail} accent="bg-violet-500" />
+        <div className="flex items-center justify-center px-3 py-2.5">
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ring-1 ${st.pill}`}>
+            <span className={`w-2 h-2 rounded-full ${st.dot} animate-pulse`} />
+            <span className="text-xs font-bold">{order.orderStatus}</span>
+          </div>
+        </div>
       </div>
-      <div>{displayValue(address.addrLine1)}</div>
-      {address.addrLine2 ? <div>{address.addrLine2}</div> : null}
-      <div>
-        {displayValue(address.city)}, {displayValue(address.state)} {displayValue(address.zipcode)}
+
+      {/* ── 2-column body: fills remaining height ── */}
+      <div className="flex-1 grid grid-cols-[1fr_280px] min-h-0">
+
+        {/* ── LEFT: Items table (fills all left space) ── */}
+        <div className="flex flex-col border-r border-slate-300 min-h-0">
+          {/* Items header */}
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-300 bg-white">
+            <Package className="h-3.5 w-3.5 text-sidebar-accent" />
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Items</span>
+            <span className="text-[10px] font-bold text-sidebar-accent-foreground bg-sidebar-accent/10 px-1.5 py-0.5 rounded-full">{displayItems.length}</span>
+            <div className="ml-auto flex items-center gap-1">
+              <Button asChild size="sm" variant="ghost" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-sidebar-accent-foreground">
+                <Link href={`/purchase-orders/${order.orderId}/fulfillment/history`}><History className="h-3 w-3" />History</Link>
+              </Button>
+              <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-sidebar-accent hover:bg-sidebar-accent/90 text-white">
+                <Link href={`/purchase-orders/${order.orderId}/fulfillment`}><PackageCheck className="h-3 w-3" />Fulfill</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Items table — flex-1 fills space */}
+          <div className="flex-1 overflow-auto bg-white">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-slate-300 bg-slate-50">
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2 px-4 w-10">#</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2">Product</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2">SKU</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2">Variant</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2">Warehouse</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2 text-center w-12">Qty</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2 text-right">Price</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2 text-right">Tax</TableHead>
+                  <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider py-2 text-right pr-4">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayItems.map((item, idx) => {
+                  const isLegacy = Boolean(item.productCatalogId) && !item.variantId;
+                  const catalog = typeof item.productCatalogId === 'number' ? catalogById.get(item.productCatalogId) : undefined;
+                  const disp = getCatalogVariantDisplay(item, catalog, `Item #${idx + 1}`);
+                  const wh = typeof item.warehouseId === 'number' ? (warehouseNameById.get(item.warehouseId) ?? `WH-${item.warehouseId}`) : '—';
+                  return (
+                    <TableRow key={item.orderDetailId} className="border-b border-slate-200 hover:bg-sidebar-accent/5 transition-colors">
+                      <TableCell className="py-1.5 px-4">
+                        <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-800 text-[9px] font-bold text-white">{idx + 1}</span>
+                      </TableCell>
+                      <TableCell className="py-1.5 text-[13px] font-semibold text-slate-800">{disp.name}</TableCell>
+                      <TableCell className="py-1.5 text-[12px] text-slate-500 font-mono">{(!isLegacy && disp.sku) || '—'}</TableCell>
+                      <TableCell className="py-1.5 text-[12px] text-slate-500">{(!isLegacy && disp.variantAttributes) || '—'}</TableCell>
+                      <TableCell className="py-1.5 text-[12px] text-slate-500">{wh}</TableCell>
+                      <TableCell className="py-1.5 text-center">
+                        <span className="inline-flex h-5 min-w-[22px] items-center justify-center rounded bg-slate-100 text-[12px] font-bold text-slate-700 px-1.5">{item.originalOrderedQuantity}</span>
+                      </TableCell>
+                      <TableCell className="py-1.5 text-right text-[12px] text-slate-600">{formatCurrency(item.itemPrice)}</TableCell>
+                      <TableCell className="py-1.5 text-right text-[12px] text-slate-400">{formatCurrency(item.itemTaxAmount)}</TableCell>
+                      <TableCell className="py-1.5 text-right pr-4 text-[13px] font-bold text-slate-800">{formatCurrency(item.displayTotal)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+                {displayItems.length === 0 && (
+                  <TableRow><TableCell colSpan={9} className="py-6 text-center text-xs text-slate-400">No items</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Total bar — pinned at bottom of left column */}
+          <div className="flex items-center justify-between px-4 py-2 border-t border-slate-300 bg-slate-900 text-white mt-auto">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+              {displayItems.length} item{displayItems.length !== 1 ? 's' : ''} · Base {formatCurrency(taxableAmount)}
+              {taxRate > 0 && ` · Tax ${taxRate}%`}
+              {order.shipping.shippingAmount > 0 && ` · Ship ${formatCurrency(order.shipping.shippingAmount)}`}
+            </span>
+            <span className="text-base font-black">{formatCurrency(total)}</span>
+          </div>
+        </div>
+
+        {/* ── RIGHT SIDEBAR: Creditor → History → Addresses (stacked, fills height) ── */}
+        <div className="flex flex-col bg-white min-h-0 overflow-hidden">
+
+          {/* Creditor */}
+          <div className="border-b border-slate-300 px-3 py-2.5">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Creditor Details</div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <User className="h-3 w-3 text-violet-400 shrink-0" />
+                <span className="text-[12px] font-semibold text-slate-800 truncate">{creditorName}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-3 w-3 text-violet-400 shrink-0" />
+                <span className="text-[11px] text-slate-600 truncate">{creditorPhone}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="h-3 w-3 text-violet-400 shrink-0" />
+                <span className="text-[11px] text-slate-600 truncate">{creditorEmail}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* History — flex-1 fills middle */}
+          <div className="flex-1 flex flex-col border-b border-slate-300">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50">
+              <Clock className="h-3 w-3 text-slate-400" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">History</span>
+              <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full ml-auto">{order.history.length}</span>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {order.history.map((entry, idx) => (
+                <div key={entry.orderHistoryId} className="flex gap-2.5 px-3 py-2 border-b border-slate-200 hover:bg-slate-50/50 transition-colors">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0 ${idx === 0 ? 'bg-sidebar-accent' : 'bg-slate-300'}`}>
+                      {idx + 1}
+                    </div>
+                    {idx < order.history.length - 1 && <div className="w-px flex-1 bg-slate-200 mt-1" />}
+                  </div>
+                  <div className="min-w-0 flex-1 pb-1">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className="text-[11px] font-semibold text-slate-700">{normalizeHistoryStatus(entry.status)}</span>
+                      {entry.itemStatus && <span className="text-[9px] text-sidebar-accent-foreground bg-sidebar-accent/10 px-1 py-0.5 rounded">{entry.itemStatus}</span>}
+                      {entry.notificationSent && <span className="text-[9px] text-emerald-600">Notified</span>}
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">{entry.createdBy} · {formatShortDate(entry.createdDate)}</div>
+                  </div>
+                </div>
+              ))}
+              {order.history.length === 0 && <div className="px-3 py-4 text-center text-[11px] text-slate-400">No history</div>}
+            </div>
+          </div>
+
+          {/* Addresses — pinned at bottom of right sidebar */}
+          <div className="px-3 py-2.5 border-b border-slate-300">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Addresses</div>
+            <div className="space-y-2">
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <Truck className="h-3 w-3 text-sky-400" />
+                  <span className="text-[10px] font-bold text-sky-600 uppercase">Ship To</span>
+                  <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded ml-auto">{order.shipping.shippingMethod || 'Pending'}</span>
+                </div>
+                <CompactAddress {...order.address.shipTo} />
+              </div>
+              <div className="h-px bg-slate-200" />
+              <div>
+                <div className="flex items-center gap-1 mb-1">
+                  <CreditCard className="h-3 w-3 text-violet-400" />
+                  <span className="text-[10px] font-bold text-violet-600 uppercase">Bill To</span>
+                  {order.address.billToSameAsShip && (
+                    <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded ml-auto">Same as ship</span>
+                  )}
+                </div>
+                {order.address.billToSameAsShip ? (
+                  <div className="text-[11px] text-slate-400 italic">Same as shipping address</div>
+                ) : (
+                  <CompactAddress {...order.address.billTo} />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Audit footer */}
+          <div className="px-3 py-1.5 border-t border-slate-300 bg-slate-50 text-[10px] text-slate-400 mt-auto">
+            Created by {order.createdBy}{order.updatedBy ? ` · Updated by ${order.updatedBy}` : ''}
+          </div>
+        </div>
       </div>
-      <div>{displayValue(address.country)}</div>
-      {address.phone ? <div className="text-muted-foreground">Phone: {address.phone}</div> : null}
-      {address.email ? <div className="text-muted-foreground">Email: {address.email}</div> : null}
+    </div>
+  );
+}
+
+function CompactAddress(address: {
+  firstName?: string; middleName?: string; lastName?: string;
+  addrLine1?: string; addrLine2?: string; city?: string; state?: string;
+  zipcode?: string; country?: string; phone?: string; email?: string;
+}) {
+  const name = [address.firstName, address.middleName, address.lastName].filter(Boolean).join(' ');
+  const city = [address.city, address.state, address.zipcode].filter(Boolean).join(', ');
+  return (
+    <div className="space-y-0.5 text-[11px] text-slate-600">
+      {name && <div className="font-semibold text-slate-700">{name}</div>}
+      {address.addrLine1 && <div>{address.addrLine1}</div>}
+      {address.addrLine2 && <div>{address.addrLine2}</div>}
+      {city && <div>{city}</div>}
+      {(address.phone || address.email) && (
+        <div className="text-[10px] text-slate-400 mt-0.5">
+          {address.phone}{address.phone && address.email ? ' · ' : ''}{address.email}
+        </div>
+      )}
     </div>
   );
 }

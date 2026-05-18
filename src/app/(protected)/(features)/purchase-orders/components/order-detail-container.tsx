@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import type { OrderRecord } from '../data/purchase-order-data';
 import { usePurchaseOrderRecord } from '../hooks';
 import { OrderDetail } from './order-detail';
@@ -8,9 +9,10 @@ import { OrderDetail } from './order-detail';
 interface OrderDetailContainerProps {
   orderId: number;
   onOrderLoaded?: (order: OrderRecord) => void;
+  headerSlot?: ReactNode;
 }
 
-export function OrderDetailContainer({ orderId, onOrderLoaded }: OrderDetailContainerProps) {
+export function OrderDetailContainer({ orderId, onOrderLoaded, headerSlot }: OrderDetailContainerProps) {
   const { orderRecord, isLoading, isError } = usePurchaseOrderRecord(orderId, {
     includeHistory: true,
   });
@@ -45,5 +47,5 @@ export function OrderDetailContainer({ orderId, onOrderLoaded }: OrderDetailCont
     );
   }
 
-  return <OrderDetail order={orderRecord} />;
+  return <OrderDetail order={orderRecord} headerSlot={headerSlot} />;
 }
