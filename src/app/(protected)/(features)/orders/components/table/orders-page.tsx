@@ -33,42 +33,17 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
   };
 
   return (
-    <div className="order-list-page -m-4 flex flex-col h-full overflow-hidden">
+    <div className="order-list-page flex flex-col h-[100vh] overflow-hidden bg-slate-100">
       <style dangerouslySetInnerHTML={{ __html: `
-        .order-list-page { margin: -16px; }
         header:has(nav) { display: none !important; }
-        .order-list-page ~ *, .order-list-page { max-width: 100% !important; }
-        .order-list-page { overflow: hidden !important; }
-        .order-list-page ~ *, .order-list-page { max-width: 100% !important; }
-        /* Kill all ancestor overflow/height that prevents containment */
-        .order-list-page,
-        .order-list-page > *,
-        main:has(.order-list-page),
-        div:has(> main:has(.order-list-page)),
-        .container:has(.order-list-page) {
-          overflow: hidden !important;
-          min-height: 0 !important;
-          max-height: 100% !important;
-        }
-        .flex.min-w-0.flex-col:has(.order-list-page) {
-          overflow: hidden !important;
-          padding: 0 !important;
-          gap: 0 !important;
-          height: 100vh !important;
-        }
-        .container.mx-auto:has(.order-list-page) {
-          max-width: 100% !important;
-          padding: 0 !important;
-          height: 100% !important;
-        }
-        div.flex.min-h-screen:has(.order-list-page) {
-          min-height: 0 !important;
-          height: 100% !important;
-        }
+        .flex.flex-1.min-w-0.flex-col { overflow: hidden !important; padding: 0 !important; gap: 0 !important; }
+        .container.mx-auto { max-width: 100% !important; padding: 0 !important; height: 100% !important; }
+        div.flex.min-h-screen:has(.order-list-page) { min-height: 0 !important; height: 100% !important; }
+        main:has(.order-list-page) { overflow: hidden !important; min-height: 0 !important; }
       `}} />
 
       {/* Dark header */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white">
+      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white shrink-0">
         <div className="flex items-center gap-2.5 mr-auto">
           <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
             <ShoppingBag className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
@@ -118,7 +93,8 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden bg-slate-100">
+      {/* Table area with padding for floating card */}
+      <div className="flex-1 overflow-hidden p-3">
         <OrderTable
           entityStatus={draftOnly ? 'DRAFT' : 'ACTIVE'}
           title={draftOnly ? 'Draft Sale Orders' : 'All Orders'}
