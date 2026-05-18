@@ -33,7 +33,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
   };
 
   return (
-    <div className="order-list-page -m-4 flex flex-col h-[calc(100vh-12px)] overflow-hidden">
+    <div className="order-list-page -m-4 flex flex-col h-full overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: `
         .order-list-page { margin: -16px; }
         header:has(nav) { display: none !important; }
@@ -52,12 +52,17 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         }
         .flex.min-w-0.flex-col:has(.order-list-page) {
           overflow: hidden !important;
-          padding: 8px !important;
+          padding: 0 !important;
           gap: 0 !important;
+          height: 100vh !important;
         }
         .container.mx-auto:has(.order-list-page) {
           max-width: 100% !important;
           padding: 0 !important;
+          height: 100% !important;
+        }
+        div.flex.min-h-screen:has(.order-list-page) {
+          min-height: 0 !important;
           height: 100% !important;
         }
       `}} />
