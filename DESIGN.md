@@ -166,7 +166,7 @@ A dense, polished design system for all order pages (Purchase Orders & Sale Orde
 </span>
 
 // Dropdown
-<SelectTrigger className={`h-7 min-w-[140px] rounded-full text-[11px] font-semibold ${statusClassName}`}>
+<SelectTrigger className={`h-7 rounded-full text-[11px] font-semibold ${statusClassName}`}>
 
 // Status theme map
 const statusColors = {
@@ -197,6 +197,63 @@ const statusColors = {
     <div className="text-[10px] text-slate-400 truncate">Sub-info</div>
   </div>
 </div>
+```
+
+### Action Buttons (Inline, Colorful)
+
+Replaces the old three-dot dropdown menu. Each action has a distinct color for quick visual identification.
+
+```jsx
+<div className="flex items-center justify-end gap-1">
+  <Button className="h-6 px-2 text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded">View</Button>
+  <Button className="h-6 px-2 text-[10px] bg-emerald-500 hover:bg-emerald-600 text-white rounded">Approve</Button>
+  <Button className="h-6 px-2 text-[10px] bg-violet-500 hover:bg-violet-600 text-white rounded">Start Packing</Button>
+  <Button className="h-6 px-2 text-[10px] bg-slate-600 hover:bg-slate-700 text-white rounded">Edit</Button>
+</div>
+```
+
+| Action | Color | Visibility |
+|--------|-------|------------|
+| View | `bg-sky-500` (blue) | Always |
+| Approve | `bg-emerald-500` (green) | Only Created/PartiallyApproved |
+| Start Packing | `bg-violet-500` (purple) | Always |
+| Edit | `bg-slate-600` (dark gray) | Always |
+
+### Conditional Column Visibility
+
+When a specific status tab is selected (not "All"), redundant columns are hidden:
+
+```js
+const showAllColumns = statusFilter === 'All';
+```
+
+| Column | "All" tab | Status tab |
+|--------|-----------|------------|
+| Order | Visible | Visible |
+| Status | Visible | **Hidden** |
+| Total | Visible | Visible |
+| Qty | Visible | Visible |
+| Shipping | Visible | **Hidden** |
+| Customer/Creditor | Visible | **Hidden** |
+| Assignee | Visible | **Hidden** |
+| Payment | Visible | **Hidden** |
+| Created At | Visible | Visible |
+| Actions | Visible | Visible |
+
+Column widths: Order `w-40`, Total `w-32`, Qty `w-20`, Created At `w-32`, others auto-size.
+No "Updated At" column (removed).
+
+### Qty Column (Total Item Quantity)
+
+Fetched from order details API per page load:
+- PO: `useGetAllPurchaseOrderDetails({ 'purchaseOrderId.in': orderIds, size: 9999 })`
+- SO: `useGetAllOrderDetails({ 'orderId.in': orderIds, size: 9999 })`
+
+Sums `quantity` per order. Displayed as pill badge:
+```jsx
+<span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded bg-slate-100 text-[12px] font-bold text-slate-700 px-1.5">
+  {order.totalItemQuantity}
+</span>
 ```
 
 ### Auto Page Size
