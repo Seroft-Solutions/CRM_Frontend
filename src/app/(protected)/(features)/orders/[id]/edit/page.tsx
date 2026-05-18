@@ -22,6 +22,7 @@ export default async function EditOrderPage({ params }: EditOrderPageProps) {
       unauthorizedDescription="You don't have permission to edit order records."
     >
       <div className="relative left-1/2 w-[calc(100vw-var(--sidebar-width,16rem)-2rem)] max-w-none -translate-x-1/2">
+        <style dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }} />
         <OrderEditForm orderId={id} />
       </div>
     </PermissionGuard>

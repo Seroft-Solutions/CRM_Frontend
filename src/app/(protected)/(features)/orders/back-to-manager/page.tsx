@@ -15,17 +15,13 @@ export default function BackToManagerPage() {
       unauthorizedDescription="You don't have permission to review fulfillment issues."
     >
       <div className="space-y-4">
-        <div className="rounded-md border border-sidebar-border bg-sidebar p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sidebar-accent shadow-sm">
-              <Undo2 className="h-4 w-4 text-sidebar-accent-foreground" />
+        <style dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }} />
+        <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-t-lg">
+          <div className="flex items-center gap-2.5 mr-auto">
+            <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
+              <Undo2 className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
             </div>
-            <div>
-              <h1 className="text-xl font-semibold text-sidebar-foreground">Back to Manager</h1>
-              <p className="text-sm text-sidebar-foreground/80">
-                Review sale order items returned from fulfillment.
-              </p>
-            </div>
+            <span className="text-sm font-bold">Back to Manager</span>
           </div>
         </div>
 

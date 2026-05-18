@@ -13,29 +13,13 @@ export default function CreateOrderPage() {
     //   unauthorizedDescription="You don't have permission to create new purchase orders."
     // >
     <div className="relative left-1/2 w-[calc(100vw-var(--sidebar-width,16rem)-0.5rem)] max-w-none -translate-x-1/2 space-y-6 group-has-data-[collapsible=icon]/sidebar-wrapper:w-[calc(100vw-var(--sidebar-width-icon,3rem)-0.5rem)]">
-      {/* Modern Centered Header for Create Page */}
-      <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
-        <div className="flex items-center justify-center">
-          {/* Left Section: Icon and Title */}
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
-              <Plus className="w-4 h-4 text-sidebar-accent-foreground" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-sidebar-foreground">
-                Create Purchase Order
-              </h1>
-              <p className="text-sm text-sidebar-foreground/80">
-                Add a new purchase order to the system
-              </p>
-            </div>
+      <style dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }} />
+      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-t-lg">
+        <div className="flex items-center gap-2.5 mr-auto">
+          <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
+            <Plus className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
           </div>
-
-          {/* Center Section: Empty for balance */}
-          <div className="flex-1"></div>
-
-          {/* Right Section: Spacer for balance */}
-          <div className="flex-1"></div>
+          <span className="text-sm font-bold">Create Purchase Order</span>
         </div>
       </div>
 

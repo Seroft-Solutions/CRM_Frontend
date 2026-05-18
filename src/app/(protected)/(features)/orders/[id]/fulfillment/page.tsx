@@ -34,72 +34,64 @@ export default function OrderFulfillmentPage({ params, searchParams }: OrderFulf
       unauthorizedDescription="You don't have permission to manage order fulfillment for this sale order."
     >
       <div className="space-y-6">
-        <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
-          <div className="flex items-center justify-center">
-            <div className="flex flex-1 items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sidebar-accent shadow-sm">
-                <PackageCheck className="h-4 w-4 text-sidebar-accent-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Order Fulfillment</h1>
-                <p className="text-sm text-sidebar-foreground/80">
-                  Fulfill pending order quantities using current product and variant stock.
-                </p>
-              </div>
+        <style dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }} />
+        <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-t-lg">
+          <div className="flex items-center gap-2.5 mr-auto">
+            <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
+              <PackageCheck className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
             </div>
-
-            <div className="flex flex-1 justify-center gap-2">
+            <span className="text-sm font-bold">Order Fulfillment</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              asChild
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2.5 text-[11px] gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+            >
+              <Link href={`/orders/${id}/fulfillment/history?from=${navigationSource}`}>
+                <History className="h-3.5 w-3.5" />
+                Fulfillment History
+              </Link>
+            </Button>
+            {navigationSource === 'order' ? (
               <Button
                 asChild
                 size="sm"
-                variant="outline"
-                className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
+                variant="ghost"
+                className="h-7 px-2.5 text-[11px] gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
               >
-                <Link href={`/orders/${id}/fulfillment/history?from=${navigationSource}`}>
-                  <History className="h-4 w-4" />
-                  Fulfillment History
+                <Link href={`/orders/${id}`}>
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back To Order
                 </Link>
               </Button>
-              {navigationSource === 'order' ? (
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
-                >
-                  <Link href={`/orders/${id}`}>
-                    <ArrowLeft className="h-4 w-4" />
-                    Back To Order
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-2 border-yellow-500 bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 shadow-sm hover:from-yellow-600 hover:to-amber-600 hover:border-amber-600"
-                  onClick={() => {
-                    if (window.history.length > 1) {
-                      router.back();
+            ) : (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2.5 text-[11px] gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    router.back();
 
-                      return;
-                    }
+                    return;
+                  }
 
-                    router.push('/orders');
-                  }}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </Button>
-              )}
-            </div>
-
-            <div className="flex flex-1 justify-end">
-              {orderRecord ? (
-                <Badge className="bg-sidebar-accent text-sidebar-accent-foreground">
-                  Order #{orderRecord.orderId}
-                </Badge>
-              ) : null}
-            </div>
+                  router.push('/orders');
+                }}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center">
+            {orderRecord ? (
+              <Badge className="text-[11px] bg-sidebar-accent text-sidebar-accent-foreground">
+                Order #{orderRecord.orderId}
+              </Badge>
+            ) : null}
           </div>
         </div>
 
