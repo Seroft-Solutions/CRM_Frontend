@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PermissionGuard } from '@/core/auth';
 import { OrderDetailContainer } from '@/app/(protected)/(features)/orders/components/order-detail-container';
-import { Eye, ArrowLeft, Edit, CheckCircle } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Edit } from 'lucide-react';
 import { useState, use } from 'react';
 import { OrderRecord } from '../data/order-data';
 import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
+import { PermissionGuard } from '@/core/auth';
 
 interface OrderPageProps {
   params: Promise<{
@@ -26,67 +26,53 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
       unauthorizedTitle="Access Denied to Order Details"
       unauthorizedDescription="You don't have permission to view this order."
     >
-      <div className="space-y-6">
-        {/* Modern Centered Header for View Page */}
-        <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
-          <div className="flex items-center justify-center">
-            {/* Left Section: Icon and Title */}
-            <div className="flex items-center gap-3 flex-1">
-              <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
-                <Eye className="w-4 h-4 text-sidebar-accent-foreground" />
+      <div className="so-detail-page -m-4 flex flex-col min-h-[calc(100vh-12px)]">
+        <style dangerouslySetInnerHTML={{ __html: `
+          /* SO detail: hide breadcrumb header, remove parent padding */
+          .so-detail-page { margin: -16px; }
+          header:has(nav) { display: none !important; }
+          .so-detail-page ~ *, .so-detail-page { max-width: 100% !important; }
+        `}} />
+        <OrderDetailContainer orderId={id} onOrderLoaded={setOrderData} headerSlot={
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white">
+            <div className="flex items-center gap-2.5 mr-auto">
+              <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
+                <span className="text-xs font-black text-sidebar-accent-foreground">SO</span>
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Order #{idParam}</h1>
-                <p className="text-sm text-sidebar-foreground/80">View order details and history</p>
+              <div className="leading-tight">
+                <span className="text-sm font-bold">#{idParam}</span>
+                <span className="text-[11px] text-slate-400 ml-2">Sale Order</span>
               </div>
             </div>
-
-            {/* Center Section: Action Buttons */}
-              <div className="flex-1 flex justify-center gap-2">
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="gap-2 bg-sidebar-accent/10 text-sidebar-accent-foreground border-sidebar-accent/20 hover:bg-sidebar-accent/20"
-                >
-                  <Link href="/orders">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
+            <div className="flex items-center gap-1.5">
+              <Button asChild size="sm" variant="ghost" className="h-7 px-2.5 text-[11px] gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+                <Link href="/orders">
+                  <ArrowLeft className="h-3 w-3" />
+                  Back
+                </Link>
+              </Button>
+              {orderData && orderData.orderStatus === 'Created' && (
+                <Button asChild size="sm" className="h-7 px-2.5 text-[11px] gap-1.5 bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground border-0">
+                  <Link href={`/orders/${id}/edit-approve?from=order`}>
+                    <CheckCircle className="h-3 w-3" />
+                    Approve
                   </Link>
                 </Button>
-                {orderData && orderData.orderStatus === 'Created' ? (
-                  <Button
-                    asChild
-                    size="sm"
-                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    <Link href={`/orders/${id}/edit-approve?from=order`}>
-                      <CheckCircle className="h-4 w-4" />
-                      Edit & Approve
-                    </Link>
-                  </Button>
-                ) : null}
-                <Button
-                  asChild
-                  size="sm"
-                  className="gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90"
-                >
-                  <Link href={`/orders/${id}/edit`}>
-                    <Edit className="h-4 w-4" />
-                    Edit
-                  </Link>
-                </Button>
-                {orderData && <InvoicePrintButton order={orderData} orderType="sales" />}
-              </div>
-
-            {/* Right Section: Spacer for balance */}
-            <div className="flex-1"></div>
+              )}
+              <Button asChild size="sm" variant="ghost" className="h-7 px-2.5 text-[11px] gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800">
+                <Link href={`/orders/${id}/edit`}>
+                  <Edit className="h-3 w-3" />
+                  Edit
+                </Link>
+              </Button>
+              {orderData && (
+                <div className="[&_button]:bg-transparent [&_button]:border-slate-600 [&_button]:text-slate-300 [&_button]:hover:bg-slate-800 [&_button]:hover:text-white [&_button]:h-7 [&_button]:px-2.5 [&_button]:text-[11px]">
+                  <InvoicePrintButton order={orderData} orderType="sales" />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <OrderDetailContainer orderId={id} onOrderLoaded={setOrderData} />
-        </div>
+        } />
       </div>
     </PermissionGuard>
   );
