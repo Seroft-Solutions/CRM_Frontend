@@ -59,14 +59,14 @@ import {
 import { usePurchaseOrderRecord, usePurchaseOrderTableData } from '../../hooks';
 
 const statusColors: Record<OrderStatus, string> = {
-  Created: 'bg-amber-100 text-amber-800 border-amber-300',
-  Approved: 'bg-green-100 text-green-800 border-green-300',
-  PartiallyApproved: 'bg-orange-100 text-orange-800 border-orange-300',
-  Recived: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  Unpacked: 'bg-cyan-100 text-cyan-800 border-cyan-300',
-  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  Cancel: 'bg-rose-100 text-rose-800 border-rose-300',
-  Unknown: 'bg-slate-100 text-slate-800 border-slate-300',
+  Created: 'bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20',
+  Approved: 'bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20',
+  PartiallyApproved: 'bg-orange-500/10 text-orange-600 ring-1 ring-orange-500/20',
+  Recived: 'bg-teal-500/10 text-teal-600 ring-1 ring-teal-500/20',
+  Unpacked: 'bg-cyan-500/10 text-cyan-600 ring-1 ring-cyan-500/20',
+  Pending: 'bg-yellow-500/10 text-yellow-600 ring-1 ring-yellow-500/20',
+  Cancel: 'bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20',
+  Unknown: 'bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20',
 };
 
 function formatCurrency(amount: number) {
@@ -592,9 +592,9 @@ export function OrderTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
+    <div className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
       {showStatusTabs ? (
-        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3 overflow-x-auto">
+        <div className="border-b border-slate-300 bg-slate-50 px-6 py-3 overflow-x-auto">
           <Tabs
             value={statusFilter}
             onValueChange={(value) => handleStatusFilterChange(value as OrderStatus | 'All')}
@@ -614,7 +614,7 @@ export function OrderTable({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-slate-300 bg-white px-6 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-600">
             <svg
@@ -632,7 +632,7 @@ export function OrderTable({
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">{title}</h3>
+            <h3 className="text-sm font-bold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
               Search by order number, creditor, email, or phone · {totalCount}{' '}
               {totalCount === 1 ? subtitle : `${subtitle}s`}
@@ -683,93 +683,93 @@ export function OrderTable({
         <Table>
           <TableHeader>
             {/* Header Row */}
-            <TableRow className="border-b-2 border-slate-200 bg-slate-50">
-              <TableHead className="w-32 min-w-[128px] font-bold text-slate-700">
+            <TableRow className="border-b border-slate-300 bg-slate-50">
+              <TableHead className="w-32 min-w-[128px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('orderId')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Order</span>
                   {getSortIcon('orderId')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
+              <TableHead className="min-w-[150px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('status')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Status</span>
                   {getSortIcon('status')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-700">
+              <TableHead className="min-w-[120px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('total')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Total</span>
                   {getSortIcon('total')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[140px] font-bold text-slate-700">
+              <TableHead className="min-w-[140px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('shipping')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Shipping</span>
                   {getSortIcon('shipping')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
+              <TableHead className="min-w-[150px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('sundryCreditor')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Sundry Creditor</span>
                   {getSortIcon('sundryCreditor')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-700">
+              <TableHead className="min-w-[120px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('payment')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Payment</span>
                   {getSortIcon('payment')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
+              <TableHead className="min-w-[150px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Created At</span>
                   {getSortIcon('createdDate')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
+              <TableHead className="min-w-[150px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('updatedDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
                 >
                   <span>Updated At</span>
                   {getSortIcon('updatedDate')}
                 </Button>
               </TableHead>
-              <TableHead className="w-[150px] text-right font-bold text-slate-700">
+              <TableHead className="w-[150px] text-right font-bold text-slate-500">
                 Actions
               </TableHead>
             </TableRow>
             {/* Filter Row */}
-            <TableRow className="border-b border-slate-200 bg-white">
+            <TableRow className="border-b border-slate-300 bg-white">
               <TableHead className="py-2">
                 <Input
                   placeholder="Filter..."
@@ -895,7 +895,7 @@ export function OrderTable({
 
               return (
                 <Fragment key={order.orderId}>
-                  <TableRow className="transition-colors hover:bg-slate-50/70">
+                  <TableRow className="border-b border-slate-200 transition-colors hover:bg-sidebar-accent/5">
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
@@ -930,7 +930,7 @@ export function OrderTable({
                         fallback={
                           <Badge
                             variant="outline"
-                            className={`border-2 font-semibold ${statusClassName}`}
+                            className={`border-0 font-semibold ${statusClassName}`}
                           >
                             {displayedStatus}
                           </Badge>
@@ -944,7 +944,7 @@ export function OrderTable({
                           disabled={isUpdatingThisRow}
                         >
                           <SelectTrigger
-                            className={`h-9 min-w-[150px] border-2 font-semibold ${statusClassName}`}
+                            className={`h-9 min-w-[150px] border-0 font-semibold ${statusClassName}`}
                             aria-label={`Update status for purchase order ${order.orderId}`}
                           >
                             <SelectValue placeholder={displayedStatus} />
@@ -984,7 +984,7 @@ export function OrderTable({
                         {order.shipping.shippingId ? (
                           <Badge
                             variant="outline"
-                            className="border-emerald-300 bg-emerald-50 text-xs text-emerald-900"
+                            className="bg-sidebar-accent/10 text-xs text-sidebar-accent-foreground"
                           >
                             #{order.shipping.shippingId}
                           </Badge>
@@ -999,7 +999,7 @@ export function OrderTable({
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
+                        <Badge className="bg-sidebar-accent/10 font-semibold text-sidebar-accent-foreground">
                           {order.paymentStatus}
                         </Badge>
                       </div>
@@ -1099,14 +1099,14 @@ export function OrderTable({
       </div>
 
       {filteredCount > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-6 py-4 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-slate-700">Rows per page:</label>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="rounded-md border-2 border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
+                className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -1231,7 +1231,7 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
   return (
     <TableRow className="hover:bg-slate-50/50">
       <TableCell colSpan={9} className="p-0">
-        <div className="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
+        <div className="border-t border-slate-200 bg-slate-50 px-6 py-4">
           {isLoading || isOrderLoading ? (
             <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
           ) : isError || isOrderError ? (

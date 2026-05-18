@@ -1,43 +1,31 @@
-import { PermissionGuard } from '@/core/auth';
 import { OrderHistoryTable } from '@/app/(protected)/(features)/purchase-orders/components/table/order-history-table';
 import { History } from 'lucide-react';
 
 export const metadata = {
-  title: 'Order History',
+  title: 'Purchase Order History',
 };
 
 export default function OrderHistoryPage() {
   return (
-    // <PermissionGuard
-    //   requiredPermission="order:read"
-    //   unauthorizedTitle="Access Denied to Order History"
-    //   unauthorizedDescription="You don't have permission to view order history."
-    // >
-      <div className="space-y-6">
-        {/* Modern Centered Header for History Page */}
-        <div className="bg-sidebar border border-sidebar-border rounded-md p-4 shadow-sm">
-          <div className="flex items-center justify-center">
-            {/* Left Section: Icon and Title */}
-            <div className="flex items-center gap-3 flex-1">
-              <div className="w-8 h-8 bg-sidebar-accent rounded-md flex items-center justify-center shadow-sm">
-                <History className="w-4 h-4 text-sidebar-accent-foreground" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-sidebar-foreground">Order History</h1>
-                <p className="text-sm text-sidebar-foreground/80">Track order status changes and updates</p>
-              </div>
-            </div>
+    <div className="po-history-page -m-4 flex flex-col min-h-[calc(100vh-12px)]">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .po-history-page { margin: -16px; }
+        header:has(nav) { display: none !important; }
+        .po-history-page ~ *, .po-history-page { max-width: 100% !important; }
+      `}} />
 
-            {/* Center Section: Empty for balance */}
-            <div className="flex-1"></div>
-
-            {/* Right Section: Spacer for balance */}
-            <div className="flex-1"></div>
+      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
+            <History className="h-3.5 w-3.5 text-sidebar-accent-foreground" />
           </div>
+          <span className="text-sm font-bold">Purchase Order History</span>
         </div>
+      </div>
 
+      <div className="flex-1 overflow-auto bg-white">
         <OrderHistoryTable />
       </div>
-    // </PermissionGuard>
+    </div>
   );
 }

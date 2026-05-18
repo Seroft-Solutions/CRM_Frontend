@@ -35,12 +35,12 @@ export function OrderFulfillmentHistoryTable({
 }: OrderFulfillmentHistoryTableProps) {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
         {showHeader ? (
-          <div className="flex flex-col gap-3 border-b border-slate-200 bg-slate-50 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 border-b border-slate-300 bg-slate-50 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
-                <PackageCheck className="h-5 w-5 text-cyan-700" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+                <PackageCheck className="h-5 w-5 text-slate-500" />
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900">Order Fulfillment History</h3>
@@ -49,7 +49,7 @@ export function OrderFulfillmentHistoryTable({
                 </p>
               </div>
             </div>
-            <Button asChild size="sm" className="gap-2 bg-cyan-700 text-white hover:bg-cyan-800">
+            <Button asChild size="sm" className="gap-2 bg-slate-800 text-white hover:bg-slate-900">
               <Link href={`/orders/${order.orderId}/fulfillment`}>
                 <PackageCheck className="h-4 w-4" />
                 Back To Fulfillment
@@ -61,14 +61,14 @@ export function OrderFulfillmentHistoryTable({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead>Record</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-center">Items</TableHead>
-                <TableHead className="text-center">Delivered</TableHead>
-                <TableHead className="text-center">Remaining</TableHead>
-                <TableHead className="text-right">Total Amount</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="bg-slate-50 border-slate-300">
+                <TableHead className="text-slate-500">Record</TableHead>
+                <TableHead className="text-slate-500">Created</TableHead>
+                <TableHead className="text-center text-slate-500">Items</TableHead>
+                <TableHead className="text-center text-slate-500">Delivered</TableHead>
+                <TableHead className="text-center text-slate-500">Remaining</TableHead>
+                <TableHead className="text-right text-slate-500">Total Amount</TableHead>
+                <TableHead className="text-right text-slate-500">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -76,7 +76,7 @@ export function OrderFulfillmentHistoryTable({
                 generations.map((generation) => (
                   <TableRow
                     key={generation.id ?? generation.generationNumber}
-                    className="hover:bg-slate-50/80"
+                    className="border-slate-200 hover:bg-sidebar-accent/5"
                   >
                     <TableCell>
                       <div className="space-y-1">
@@ -95,14 +95,14 @@ export function OrderFulfillmentHistoryTable({
                       {formatOrderDateTime(generation.createdDate)}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="secondary" className="bg-slate-100 text-slate-800">
+                      <Badge variant="secondary" className="bg-white text-slate-700 ring-1 ring-slate-300">
                         {generation.items?.length ?? 0} lines
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center font-semibold text-emerald-700">
+                    <TableCell className="text-center font-semibold text-slate-700">
                       {generation.totalGeneratedQuantity ?? 0}
                     </TableCell>
-                    <TableCell className="text-center font-semibold text-amber-700">
+                    <TableCell className="text-center font-semibold text-slate-700">
                       {generation.totalBacklogQuantity ?? 0}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-slate-900">

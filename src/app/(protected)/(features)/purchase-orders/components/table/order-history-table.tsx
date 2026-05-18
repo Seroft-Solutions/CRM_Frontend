@@ -98,8 +98,8 @@ export function OrderHistoryTable() {
   }, [currentPage, totalPages]);
 
   return (
-    <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
-      <div className="flex items-center justify-between border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
+    <div className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-lg">
+      <div className="flex items-center justify-between border-b border-slate-300 bg-slate-50 px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-600">
             <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,7 +107,7 @@ export function OrderHistoryTable() {
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">Complete Purchase Order History</h3>
+            <h3 className="text-sm font-bold text-slate-800">Complete Purchase Order History</h3>
             <p className="text-sm text-muted-foreground">
               Timeline of every status change across all purchase orders and items
             </p>
@@ -148,19 +148,19 @@ export function OrderHistoryTable() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-b-2 border-slate-200 bg-slate-50">
-                <TableHead className="font-bold text-slate-700">Order</TableHead>
-                <TableHead className="font-bold text-slate-700">Status</TableHead>
-                <TableHead className="font-bold text-slate-700">Item Status</TableHead>
-                <TableHead className="font-bold text-slate-700">Notification</TableHead>
-                <TableHead className="font-bold text-slate-700">Created</TableHead>
-                <TableHead className="font-bold text-slate-700">Updated</TableHead>
-                <TableHead className="text-right font-bold text-slate-700">Actions</TableHead>
+              <TableRow className="border-b border-slate-300 bg-slate-50">
+                <TableHead className="font-bold text-slate-500">Order</TableHead>
+                <TableHead className="font-bold text-slate-500">Status</TableHead>
+                <TableHead className="font-bold text-slate-500">Item Status</TableHead>
+                <TableHead className="font-bold text-slate-500">Notification</TableHead>
+                <TableHead className="font-bold text-slate-500">Created</TableHead>
+                <TableHead className="font-bold text-slate-500">Updated</TableHead>
+                <TableHead className="text-right font-bold text-slate-500">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedRows.map((entry, index) => (
-                <TableRow key={entry.orderHistoryId} className="hover:bg-slate-50/50">
+                <TableRow key={entry.orderHistoryId} className="border-slate-200 hover:bg-sidebar-accent/5">
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
@@ -176,14 +176,14 @@ export function OrderHistoryTable() {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className="border-2 border-blue-300 bg-blue-50 font-semibold text-blue-900"
+                      className="bg-amber-500/10 font-semibold text-amber-600 ring-1 ring-amber-500/20"
                     >
                       {entry.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     {entry.itemStatus ? (
-                      <Badge variant="outline" className="border-cyan-300 bg-cyan-50 text-cyan-900">
+                      <Badge variant="outline" className="border-0 bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20">
                         {entry.itemStatus}
                       </Badge>
                     ) : (
@@ -192,7 +192,7 @@ export function OrderHistoryTable() {
                   </TableCell>
                   <TableCell>
                     {entry.notificationSent ? (
-                      <Badge className="bg-emerald-100 font-semibold text-emerald-900">
+                      <Badge className="bg-amber-500/10 font-semibold text-amber-600 ring-1 ring-amber-500/20">
                         <svg className="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
@@ -245,7 +245,7 @@ export function OrderHistoryTable() {
       )}
 
       {!isLoading && !isError && totalCount > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-6 py-4 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label htmlFor="pageSize" className="text-sm font-semibold text-slate-700">
@@ -255,7 +255,7 @@ export function OrderHistoryTable() {
                 id="pageSize"
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="rounded-md border-2 border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>

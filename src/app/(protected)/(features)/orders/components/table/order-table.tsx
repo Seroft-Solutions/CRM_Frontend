@@ -77,17 +77,17 @@ const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
 const normalizeGroupName = (name?: string) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const statusColors: Record<OrderStatus, string> = {
-  Created: 'bg-amber-100 text-amber-800 border-amber-300',
-  Processing: 'bg-blue-100 text-blue-800 border-blue-300',
-  Pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  Approved: 'bg-lime-100 text-lime-800 border-lime-300',
-  'Partially Approved': 'bg-orange-100 text-orange-800 border-orange-300',
-  Picked: 'bg-indigo-100 text-indigo-800 border-indigo-300',
-  Packed: 'bg-violet-100 text-violet-800 border-violet-300',
-  Shipped: 'bg-cyan-100 text-cyan-800 border-cyan-300',
-  Delivered: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  Cancelled: 'bg-rose-100 text-rose-800 border-rose-300',
-  Unknown: 'bg-slate-100 text-slate-800 border-slate-300',
+  Created: 'bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20',
+  Processing: 'bg-blue-500/10 text-blue-600 ring-1 ring-blue-500/20',
+  Pending: 'bg-yellow-500/10 text-yellow-600 ring-1 ring-yellow-500/20',
+  Approved: 'bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20',
+  'Partially Approved': 'bg-orange-500/10 text-orange-600 ring-1 ring-orange-500/20',
+  Picked: 'bg-indigo-500/10 text-indigo-600 ring-1 ring-indigo-500/20',
+  Packed: 'bg-violet-500/10 text-violet-600 ring-1 ring-violet-500/20',
+  Shipped: 'bg-cyan-500/10 text-cyan-600 ring-1 ring-cyan-500/20',
+  Delivered: 'bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20',
+  Cancelled: 'bg-rose-500/10 text-rose-600 ring-1 ring-rose-500/20',
+  Unknown: 'bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20',
 };
 
 function formatCurrency(amount: number) {
@@ -790,9 +790,9 @@ export function OrderTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-lg">
+    <div className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
       {showStatusTabs ? (
-        <div className="border-b-2 border-slate-200 bg-slate-50/50 px-6 py-3 overflow-x-auto">
+        <div className="border-b border-slate-300 bg-slate-50 px-6 py-3 overflow-x-auto">
           <Tabs
             value={statusFilter}
             onValueChange={(value) => handleStatusFilterChange(value as OrderStatus | 'All')}
@@ -814,9 +814,9 @@ export function OrderTable({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-slate-300 bg-white px-6 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-500">
             <svg
               className="h-5 w-5 text-white"
               fill="none"
@@ -832,7 +832,7 @@ export function OrderTable({
             </svg>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">{title}</h3>
+            <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
             <p className="text-sm text-muted-foreground">
               Search by order number, customer, email, or phone · {totalCount}{' '}
               {totalCount === 1 ? subtitle : `${subtitle}s`}
@@ -883,33 +883,33 @@ export function OrderTable({
         <Table>
           <TableHeader>
             {/* Header Row */}
-            <TableRow className="border-b-2 border-slate-200 bg-slate-50">
-              <TableHead className="w-32 min-w-[128px] font-bold text-slate-700">
+            <TableRow className="border-b border-slate-300 bg-slate-50">
+              <TableHead className="w-32 min-w-[128px] text-[13px] font-semibold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('orderId')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                 >
                   <span>Order</span>
                   {getSortIcon('orderId')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
+              <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('status')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                 >
                   <span>Status</span>
                   {getSortIcon('status')}
                 </Button>
               </TableHead>
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[120px] font-bold text-slate-700">
+                <TableHead className="min-w-[120px] text-[13px] font-semibold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('total')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                   >
                     <span>Total</span>
                     {getSortIcon('total')}
@@ -917,11 +917,11 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[140px] font-bold text-slate-700">
+                <TableHead className="min-w-[140px] text-[13px] font-semibold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('shipping')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                   >
                     <span>Shipping</span>
                     {getSortIcon('shipping')}
@@ -929,11 +929,11 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('customer')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                   >
                     <span>Customer</span>
                     {getSortIcon('customer')}
@@ -941,11 +941,11 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('assignee')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                   >
                     <span>Assignee</span>
                     {getSortIcon('assignee')}
@@ -953,45 +953,45 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[120px] font-bold text-slate-700">
+                <TableHead className="min-w-[120px] text-[13px] font-semibold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('payment')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                   >
                     <span>Payment</span>
                     {getSortIcon('payment')}
                   </Button>
                 </TableHead>
               ) : null}
-              <TableHead className="min-w-[150px] font-bold text-slate-700">
+              <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                 >
                   <span>Created At</span>
                   {getSortIcon('createdDate')}
                 </Button>
               </TableHead>
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[150px] font-bold text-slate-700">
+                <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('updatedDate')}
-                    className="h-auto px-2 py-1 font-bold text-slate-700 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
                   >
                     <span>Updated At</span>
                     {getSortIcon('updatedDate')}
                   </Button>
                 </TableHead>
               ) : null}
-              <TableHead className="w-[120px] text-right font-bold text-slate-700">
+              <TableHead className="w-[120px] text-right text-[13px] font-semibold text-slate-500">
                 Actions
               </TableHead>
             </TableRow>
             {/* Filter Row */}
-            <TableRow className="border-b border-slate-200 bg-white">
+            <TableRow className="border-b border-slate-300 bg-white">
               <TableHead className="py-2">
                 <Input
                   placeholder="Filter..."
@@ -1139,7 +1139,7 @@ export function OrderTable({
 
               return (
                 <Fragment key={order.orderId}>
-                  <TableRow className="transition-colors hover:bg-slate-50/70">
+                  <TableRow className="border-b border-slate-200 transition-colors hover:bg-sidebar-accent/5">
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
@@ -1147,7 +1147,7 @@ export function OrderTable({
                         </div>
                         <div>
                           <div className="flex items-center gap-1">
-                            <span className="font-bold text-slate-800">#{order.orderId}</span>
+                            <span className="text-sm font-semibold text-slate-800">#{order.orderId}</span>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1171,7 +1171,7 @@ export function OrderTable({
                         fallback={
                           <Badge
                             variant="outline"
-                            className={`border-2 font-semibold ${statusClassName}`}
+                            className={`border-0 text-[13px] font-semibold ${statusClassName}`}
                           >
                             {displayedStatus}
                           </Badge>
@@ -1185,7 +1185,7 @@ export function OrderTable({
                           disabled={isUpdatingThisRow}
                         >
                           <SelectTrigger
-                            className={`h-9 min-w-[150px] border-2 font-semibold ${statusClassName}`}
+                            className={`h-9 min-w-[150px] border-0 text-[13px] font-semibold ${statusClassName}`}
                             aria-label={`Update status for order ${order.orderId}`}
                           >
                             <SelectValue placeholder={displayedStatus} />
@@ -1205,7 +1205,7 @@ export function OrderTable({
                     {!hideBusinessColumns ? (
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-bold text-slate-900">
+                          <div className="text-sm font-semibold text-slate-900">
                             {formatCurrency(order.orderTotalAmount)}
                           </div>
                           {resolveDiscountAmount(order) > 0 && (
@@ -1218,7 +1218,7 @@ export function OrderTable({
                     ) : null}
                     {!showPickerPackerColumns ? (
                       <TableCell>
-                        <div className="font-semibold text-slate-700">
+                        <div className="text-sm font-medium text-slate-700">
                           {order.shipping.shippingMethod || 'Not set'}
                         </div>
                       </TableCell>
@@ -1227,7 +1227,7 @@ export function OrderTable({
                       <TableCell>
                         <Link
                           href={`/customers/${order.customer?.id || ''}`}
-                          className="font-semibold text-slate-800 hover:text-blue-600 hover:underline"
+                          className="text-sm font-medium text-slate-800 hover:text-blue-600 hover:underline"
                         >
                           {customerName}
                         </Link>
@@ -1251,7 +1251,7 @@ export function OrderTable({
                     {!hideBusinessColumns ? (
                       <TableCell>
                         <div className="space-y-1">
-                          <Badge className="border-2 border-emerald-300 bg-emerald-50 font-semibold text-emerald-900">
+                          <Badge className="border-0 bg-sidebar-accent/10 text-[13px] font-semibold text-sidebar-accent-foreground ring-1 ring-sidebar-accent/20">
                             {order.paymentStatus}
                           </Badge>
                           {order.discountCode ? (
@@ -1392,14 +1392,14 @@ export function OrderTable({
       </div>
 
       {filteredCount > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 border-t-2 border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-6 py-4 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-slate-700">Rows per page:</label>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="rounded-md border-2 border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
+                className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -1524,7 +1524,7 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
   return (
     <TableRow className="hover:bg-slate-50/50">
       <TableCell colSpan={10} className="p-0">
-        <div className="border-t border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4">
+        <div className="border-t border-slate-200 bg-slate-50 px-6 py-4">
           {isLoading || isOrderLoading ? (
             <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
           ) : isError || isOrderError ? (
