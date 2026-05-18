@@ -174,7 +174,7 @@ export function OrderTable({
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window === 'undefined') return 10;
     const rowHeight = 40;
-    const overhead = 440;
+    const overhead = 480;
     const available = Math.floor((window.innerHeight - overhead) / rowHeight);
     return Math.max(5, Math.min(available, 100));
   });
@@ -412,7 +412,7 @@ export function OrderTable({
     });
   }, [filteredOrders, sortColumn, sortDirection, statusOverrides]);
 
-  const filteredCount = sortedOrders.length;
+  const filteredCount = totalCount;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
   const startIndex = filteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endIndex = filteredCount === 0 ? 0 : Math.min(currentPage * pageSize, filteredCount);
