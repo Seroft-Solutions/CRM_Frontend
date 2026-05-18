@@ -762,7 +762,7 @@ export function OrderTable({
                   </Button>
                 </TableHead>
               )}
-              <TableHead className="font-bold text-slate-500">
+              <TableHead className="w-32 font-bold text-slate-500">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
@@ -1045,7 +1045,7 @@ export function OrderTable({
                         <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
                           <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
                             <Package className="h-3 w-3" />
-                            Fulfill
+                            Start Packing
                           </Link>
                         </Button>
                         <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
