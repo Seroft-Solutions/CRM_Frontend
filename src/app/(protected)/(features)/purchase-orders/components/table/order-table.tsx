@@ -412,6 +412,7 @@ export function OrderTable({
     });
   }, [filteredOrders, sortColumn, sortDirection, statusOverrides]);
 
+  const showAllColumns = statusFilter === 'All';
   const filteredCount = totalCount;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
   const startIndex = filteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -700,16 +701,18 @@ export function OrderTable({
                   {getSortIcon('orderId')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-500">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('status')}
-                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
-                >
-                  <span>Status</span>
-                  {getSortIcon('status')}
-                </Button>
-              </TableHead>
+              {showAllColumns && (
+                <TableHead className="min-w-[150px] font-bold text-slate-500">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('status')}
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
+                  >
+                    <span>Status</span>
+                    {getSortIcon('status')}
+                  </Button>
+                </TableHead>
+              )}
               <TableHead className="min-w-[120px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
@@ -720,36 +723,42 @@ export function OrderTable({
                   {getSortIcon('total')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[140px] font-bold text-slate-500">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('shipping')}
-                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
-                >
-                  <span>Shipping</span>
-                  {getSortIcon('shipping')}
-                </Button>
-              </TableHead>
-              <TableHead className="min-w-[150px] font-bold text-slate-500">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('sundryCreditor')}
-                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
-                >
-                  <span>Sundry Creditor</span>
-                  {getSortIcon('sundryCreditor')}
-                </Button>
-              </TableHead>
-              <TableHead className="min-w-[120px] font-bold text-slate-500">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('payment')}
-                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
-                >
-                  <span>Payment</span>
-                  {getSortIcon('payment')}
-                </Button>
-              </TableHead>
+              {showAllColumns && (
+                <TableHead className="min-w-[140px] font-bold text-slate-500">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('shipping')}
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
+                  >
+                    <span>Shipping</span>
+                    {getSortIcon('shipping')}
+                  </Button>
+                </TableHead>
+              )}
+              {showAllColumns && (
+                <TableHead className="min-w-[150px] font-bold text-slate-500">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('sundryCreditor')}
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
+                  >
+                    <span>Sundry Creditor</span>
+                    {getSortIcon('sundryCreditor')}
+                  </Button>
+                </TableHead>
+              )}
+              {showAllColumns && (
+                <TableHead className="min-w-[120px] font-bold text-slate-500">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('payment')}
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
+                  >
+                    <span>Payment</span>
+                    {getSortIcon('payment')}
+                  </Button>
+                </TableHead>
+              )}
               <TableHead className="min-w-[150px] font-bold text-slate-500">
                 <Button
                   variant="ghost"
@@ -784,26 +793,28 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('orderId', e.target.value)}
                 />
               </TableHead>
-              <TableHead className="py-2">
-                <Select
-                  value={filters.status || 'all'}
-                  onValueChange={(value) =>
-                    handleFilterChange('status', value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {orderStatusOptions.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
+              {showAllColumns && (
+                <TableHead className="py-2">
+                  <Select
+                    value={filters.status || 'all'}
+                    onValueChange={(value) =>
+                      handleFilterChange('status', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {orderStatusOptions.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
+              )}
               <TableHead className="py-2">
                 <Input
                   placeholder="Filter..."
@@ -812,54 +823,60 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('total', e.target.value)}
                 />
               </TableHead>
-              <TableHead className="py-2">
-                <Select
-                  value={filters.shipping || 'all'}
-                  onValueChange={(value) =>
-                    handleFilterChange('shipping', value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {shippingMethodOptions.map((method) => (
-                      <SelectItem key={method} value={method}>
-                        {method}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
-              <TableHead className="py-2">
-                <Input
-                  placeholder="Filter..."
-                  className="h-8 text-xs border-slate-300 w-full"
-                  value={filters.sundryCreditor || ''}
-                  onChange={(e) => handleFilterChange('sundryCreditor', e.target.value)}
-                />
-              </TableHead>
-              <TableHead className="py-2">
-                <Select
-                  value={filters.payment || 'all'}
-                  onValueChange={(value) =>
-                    handleFilterChange('payment', value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {paymentStatusOptions.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
+              {showAllColumns && (
+                <TableHead className="py-2">
+                  <Select
+                    value={filters.shipping || 'all'}
+                    onValueChange={(value) =>
+                      handleFilterChange('shipping', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {shippingMethodOptions.map((method) => (
+                        <SelectItem key={method} value={method}>
+                          {method}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
+              )}
+              {showAllColumns && (
+                <TableHead className="py-2">
+                  <Input
+                    placeholder="Filter..."
+                    className="h-8 text-xs border-slate-300 w-full"
+                    value={filters.sundryCreditor || ''}
+                    onChange={(e) => handleFilterChange('sundryCreditor', e.target.value)}
+                  />
+                </TableHead>
+              )}
+              {showAllColumns && (
+                <TableHead className="py-2">
+                  <Select
+                    value={filters.payment || 'all'}
+                    onValueChange={(value) =>
+                      handleFilterChange('payment', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {paymentStatusOptions.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
+              )}
               <TableHead className="py-2">
                 <Input
                   type="date"
@@ -930,40 +947,42 @@ export function OrderTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <InlinePermissionGuard
-                        requiredPermission="purchase-order:update"
-                        fallback={
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}>
-                            {displayedStatus}
-                          </span>
-                        }
-                      >
-                        <Select
-                          value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
-                          onValueChange={(value) =>
-                            handleOrderStatusChange(order, value as OrderStatus)
+                    {showAllColumns && (
+                      <TableCell>
+                        <InlinePermissionGuard
+                          requiredPermission="purchase-order:update"
+                          fallback={
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}>
+                              {displayedStatus}
+                            </span>
                           }
-                          disabled={isUpdatingThisRow}
                         >
-                          <SelectTrigger
-                            className={`h-7 min-w-[140px] rounded-full text-[11px] font-semibold ${statusClassName}`}
-                            aria-label={`Update status for purchase order ${order.orderId}`}
+                          <Select
+                            value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
+                            onValueChange={(value) =>
+                              handleOrderStatusChange(order, value as OrderStatus)
+                            }
+                            disabled={isUpdatingThisRow}
                           >
-                            <SelectValue placeholder={displayedStatus} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
-                              (status) => (
-                                <SelectItem key={status} value={status}>
-                                  {status}
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </InlinePermissionGuard>
-                    </TableCell>
+                            <SelectTrigger
+                              className={`h-7 min-w-[140px] rounded-full text-[11px] font-semibold ${statusClassName}`}
+                              aria-label={`Update status for purchase order ${order.orderId}`}
+                            >
+                              <SelectValue placeholder={displayedStatus} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
+                                (status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {status}
+                                  </SelectItem>
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </InlinePermissionGuard>
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="space-y-1">
                         <div className="font-bold text-slate-900">
@@ -974,39 +993,45 @@ export function OrderTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-semibold text-slate-700">
-                          {order.shipping.shippingMethod || 'Not set'}
+                    {showAllColumns && (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-semibold text-slate-700">
+                            {order.shipping.shippingMethod || 'Not set'}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {order.shipping.shippingAmount
+                              ? formatCurrency(order.shipping.shippingAmount)
+                              : 'Included'}
+                          </div>
+                          {order.shipping.shippingId ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-sidebar-accent/10 text-xs text-sidebar-accent-foreground"
+                            >
+                              #{order.shipping.shippingId}
+                            </Badge>
+                          ) : null}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {order.shipping.shippingAmount
-                            ? formatCurrency(order.shipping.shippingAmount)
-                            : 'Included'}
+                      </TableCell>
+                    )}
+                    {showAllColumns && (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
+                          <div className="text-xs text-muted-foreground">{sundryCreditorContact}</div>
                         </div>
-                        {order.shipping.shippingId ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-sidebar-accent/10 text-xs text-sidebar-accent-foreground"
-                          >
-                            #{order.shipping.shippingId}
+                      </TableCell>
+                    )}
+                    {showAllColumns && (
+                      <TableCell>
+                        <div className="space-y-1">
+                          <Badge className="bg-sidebar-accent/10 font-semibold text-sidebar-accent-foreground">
+                            {order.paymentStatus}
                           </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
-                        <div className="text-xs text-muted-foreground">{sundryCreditorContact}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Badge className="bg-sidebar-accent/10 font-semibold text-sidebar-accent-foreground">
-                          {order.paymentStatus}
-                        </Badge>
-                      </div>
-                    </TableCell>
+                        </div>
+                      </TableCell>
+                    )}
                     <TableCell>
                       <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
                     </TableCell>
