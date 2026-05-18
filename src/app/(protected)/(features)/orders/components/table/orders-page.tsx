@@ -75,34 +75,34 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
 
         {!draftOnly && (
           <>
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="text-slate-400">From</span>
+            <div className="flex items-center gap-1.5 text-[11px] bg-slate-800/60 rounded-md px-2 py-1">
+              <span className="text-slate-300 font-medium">From</span>
               <Input
                 type="date"
                 value={draftDateFrom}
                 onChange={(e) => setDraftDateFrom(e.target.value)}
-                className="h-7 w-[140px] bg-slate-800 border-slate-700 text-white text-[11px] px-2"
+                className="h-6 w-[130px] bg-slate-700 border-slate-600 text-white text-[11px] px-2 rounded"
               />
-              <span className="text-slate-400">To</span>
+              <span className="text-slate-300 font-medium">To</span>
               <Input
                 type="date"
                 value={draftDateTo}
                 onChange={(e) => setDraftDateTo(e.target.value)}
-                className="h-7 w-[140px] bg-slate-800 border-slate-700 text-white text-[11px] px-2"
+                className="h-6 w-[130px] bg-slate-700 border-slate-600 text-white text-[11px] px-2 rounded"
               />
               {hasAppliedDateFilter && !hasPendingDateChanges ? (
-                <Button variant="ghost" size="sm" onClick={handleClearDateFilter} className="h-7 px-2 text-[11px] text-slate-300 hover:text-white hover:bg-slate-800">
+                <Button variant="ghost" size="sm" onClick={handleClearDateFilter} className="h-6 px-2 text-[11px] text-slate-300 hover:text-white hover:bg-slate-700 rounded">
                   Clear
                 </Button>
               ) : (
-                <Button size="sm" onClick={handleApplyDateFilter} disabled={!hasPendingDateChanges} className="h-7 px-2 text-[11px] bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground">
+                <Button size="sm" onClick={handleApplyDateFilter} disabled={!hasPendingDateChanges} className="h-6 px-3 text-[11px] bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground rounded font-semibold">
                   Apply
                 </Button>
               )}
             </div>
 
             <InlinePermissionGuard requiredPermission="order:create">
-              <Button asChild size="sm" className="h-7 px-2.5 text-[11px] gap-1.5 bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground border-0">
+              <Button asChild size="sm" className="h-7 px-3 text-[11px] gap-1.5 bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground border-0 font-semibold rounded-md">
                 <Link href="/orders/new">
                   <Plus className="h-3 w-3" />
                   New Order
