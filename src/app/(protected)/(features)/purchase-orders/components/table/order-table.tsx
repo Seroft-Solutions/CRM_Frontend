@@ -898,7 +898,7 @@ export function OrderTable({
                   <TableRow className="border-b border-slate-200 transition-colors hover:bg-sidebar-accent/5">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
+                        <div className="flex h-5 w-5 items-center justify-center rounded bg-slate-800 text-[9px] font-bold text-white">
                           {startIndex + index + 1}
                         </div>
                         <div>
@@ -928,12 +928,9 @@ export function OrderTable({
                       <InlinePermissionGuard
                         requiredPermission="purchase-order:update"
                         fallback={
-                          <Badge
-                            variant="outline"
-                            className={`border-0 font-semibold ${statusClassName}`}
-                          >
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}>
                             {displayedStatus}
-                          </Badge>
+                          </span>
                         }
                       >
                         <Select
@@ -944,7 +941,7 @@ export function OrderTable({
                           disabled={isUpdatingThisRow}
                         >
                           <SelectTrigger
-                            className={`h-9 min-w-[150px] border-0 font-semibold ${statusClassName}`}
+                            className={`h-7 min-w-[140px] rounded-full text-[11px] font-semibold ${statusClassName}`}
                             aria-label={`Update status for purchase order ${order.orderId}`}
                           >
                             <SelectValue placeholder={displayedStatus} />
