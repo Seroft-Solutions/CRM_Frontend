@@ -790,7 +790,7 @@ export function OrderTable({
   }
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg mx-3 my-2 min-h-[calc(100vh-100px)]">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg mx-3 my-2 h-[calc(100%-16px)]">
       {showStatusTabs ? (
         <div className="border-b border-slate-300 bg-slate-50 px-4 py-2 overflow-x-auto">
           <Tabs

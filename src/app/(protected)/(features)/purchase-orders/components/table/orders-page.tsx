@@ -33,11 +33,14 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
   };
 
   return (
-    <div className="order-list-page -m-4 flex flex-col min-h-[calc(100vh-12px)]">
+    <div className="order-list-page -m-4 flex flex-col h-[calc(100vh-12px)] overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: `
         .order-list-page { margin: -16px; }
         header:has(nav) { display: none !important; }
         .order-list-page ~ *, .order-list-page { max-width: 100% !important; }
+        .order-list-page { overflow: hidden !important; }
+        [data-slot="sidebar-inset"] > div:last-child { overflow: hidden !important; padding: 0 !important; gap: 0 !important; }
+        [data-slot="sidebar-inset"] > div:last-child > div { max-width: 100% !important; padding: 0 !important; }
       `}} />
 
       {/* Dark header */}
@@ -91,7 +94,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         )}
       </div>
 
-      <div className="flex-1 overflow-auto bg-slate-100">
+      <div className="flex-1 overflow-hidden bg-slate-100">
         <OrderTable
           entityStatus={draftOnly ? 'DRAFT' : 'ACTIVE'}
           title={draftOnly ? 'Draft Purchase Orders' : 'All Purchase Orders'}
