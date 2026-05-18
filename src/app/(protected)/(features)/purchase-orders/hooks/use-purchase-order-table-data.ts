@@ -7,6 +7,7 @@ import {
   type CountPurchaseOrdersParams,
   type PurchaseOrderDTO,
 } from '@/core/api/purchase-order';
+import { useGetAllPurchaseOrderDetails } from '@/core/api/purchase-order-detail';
 import { useGetAllPurchaseOrderShippingDetails } from '@/core/api/purchase-order-shipping-detail';
 import {
   getOrderStatusCode,
@@ -124,6 +125,28 @@ export function usePurchaseOrderTableData({
     [shippingQuery.data]
   );
 
+  const detailsQuery = useGetAllPurchaseOrderDetails(
+    orderIds.length ? { 'purchaseOrderId.in': orderIds, size: 9999 } : undefined,
+    {
+      query: {
+        enabled: orderIds.length > 0,
+        refetchOnWindowFocus: false,
+        placeholderData: (previousData) => previousData,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const itemCountByOrderId = useMemo(() => {
+    const map = new Map<number, number>();
+    (detailsQuery.data ?? []).forEach((detail) => {
+      const orderId = detail.purchaseOrderId ?? 0;
+      const qty = Math.max(0, detail.quantity ?? 0);
+      map.set(orderId, (map.get(orderId) ?? 0) + qty);
+    });
+    return map;
+  }, [detailsQuery.data]);
+
   const orders = useMemo(() => {
     return orderRecords.map((orderRecord) => {
       const orderDto = orderDtoById.get(orderRecord.orderId) as PurchaseOrderDTO | undefined;
@@ -131,10 +154,11 @@ export function usePurchaseOrderTableData({
 
       return {
         ...orderRecord,
+        totalItemQuantity: itemCountByOrderId.get(orderRecord.orderId) ?? 0,
         shipping: mapOrderShippingDetail(shippingDto, orderDto),
       };
     });
-  }, [orderDtoById, orderRecords, shippingByOrderId]);
+  }, [orderDtoById, orderRecords, shippingByOrderId, itemCountByOrderId]);
 
   const totalCount = countQuery.data ?? orders.length;
   const totalPages = Math.ceil(totalCount / pageSize);

@@ -723,6 +723,9 @@ export function OrderTable({
                   {getSortIcon('total')}
                 </Button>
               </TableHead>
+              <TableHead className="min-w-[80px] text-center font-bold text-slate-500">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</span>
+              </TableHead>
               {showAllColumns && (
                 <TableHead className="min-w-[140px] font-bold text-slate-500">
                   <Button
@@ -823,6 +826,7 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('total', e.target.value)}
                 />
               </TableHead>
+              <TableHead className="py-2" />
               {showAllColumns && (
                 <TableHead className="py-2">
                   <Select
@@ -992,6 +996,11 @@ export function OrderTable({
                           Base {formatCurrency(order.orderBaseAmount)}
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded bg-slate-100 text-[12px] font-bold text-slate-700 px-1.5">
+                        {order.totalItemQuantity}
+                      </span>
                     </TableCell>
                     {showAllColumns && (
                       <TableCell>
