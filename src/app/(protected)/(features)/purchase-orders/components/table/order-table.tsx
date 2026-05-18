@@ -174,11 +174,9 @@ export function OrderTable({
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window === 'undefined') return 10;
     const rowHeight = 38;
-    const overhead = 290;
+    const overhead = 300;
     const available = Math.floor((window.innerHeight - overhead) / rowHeight);
-    const clamped = Math.max(5, Math.min(available, 100));
-    const options = [5, 10, 25, 50, 100];
-    return options.reduce((prev, opt) => (opt <= clamped ? opt : prev), 5);
+    return Math.max(5, Math.min(available, 100));
   });
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -1113,11 +1111,9 @@ export function OrderTable({
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
               >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
+                {Array.from(new Set([5, 10, pageSize, 25, 50, 100])).sort((a, b) => a - b).map((v) => (
+                  <option key={v} value={v}>{v}{v === pageSize && v !== 5 && v !== 10 && v !== 25 && v !== 50 && v !== 100 ? ' (auto)' : ''}</option>
+                ))}
               </select>
             </div>
             <div className="text-sm text-slate-600">
