@@ -1264,27 +1264,27 @@ export function OrderTable({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
+                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-sky-500 hover:bg-sky-600 text-white rounded">
                           <Link href={`/orders/${order.orderId}`}>
                             <Eye className="h-3 w-3" />
                             View
                           </Link>
                         </Button>
                         {displayedStatus === 'Created' && (
-                          <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground">
+                          <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded">
                             <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
                               <CheckCircle className="h-3 w-3" />
                               Approve
                             </Link>
                           </Button>
                         )}
-                        <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
+                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded">
                           <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
                             <Package className="h-3 w-3" />
-                            Fulfill
+                            Start Packing
                           </Link>
                         </Button>
-                        <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
+                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded">
                           <Link href={`/orders/${order.orderId}/edit`}>
                             <Pencil className="h-3 w-3" />
                             Edit
