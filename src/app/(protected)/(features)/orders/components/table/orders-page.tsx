@@ -52,7 +52,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         }
         .flex.min-w-0.flex-col:has(.order-list-page) {
           overflow: hidden !important;
-          padding: 4px !important;
+          padding: 8px !important;
           gap: 0 !important;
         }
         .container.mx-auto:has(.order-list-page) {
