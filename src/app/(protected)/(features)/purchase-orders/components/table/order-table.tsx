@@ -173,8 +173,8 @@ export function OrderTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(() => {
     if (typeof window === 'undefined') return 10;
-    const rowHeight = 38;
-    const overhead = 300;
+    const rowHeight = 40;
+    const overhead = 360;
     const available = Math.floor((window.innerHeight - overhead) / rowHeight);
     return Math.max(5, Math.min(available, 100));
   });
