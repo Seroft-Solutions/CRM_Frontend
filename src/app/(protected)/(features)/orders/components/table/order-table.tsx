@@ -986,19 +986,7 @@ export function OrderTable({
                   {getSortIcon('createdDate')}
                 </Button>
               </TableHead>
-              {!showPickerPackerColumns ? (
-                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleSort('updatedDate')}
-                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
-                  >
-                    <span>Updated At</span>
-                    {getSortIcon('updatedDate')}
-                  </Button>
-                </TableHead>
-              ) : null}
-              <TableHead className="w-[120px] text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <TableHead className="text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </TableHead>
             </TableRow>
@@ -1117,16 +1105,6 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('createdDateFrom', e.target.value)}
                 />
               </TableHead>
-              {!showPickerPackerColumns ? (
-                <TableHead className="py-2">
-                  <Input
-                    type="date"
-                    className="h-8 text-xs border-slate-300 w-full"
-                    value={filters.updatedDateFrom || ''}
-                    onChange={(e) => handleFilterChange('updatedDateFrom', e.target.value)}
-                  />
-                </TableHead>
-              ) : null}
               <TableHead className="py-2 text-right">
                 {hasActiveFilters && (
                   <Button
@@ -1284,88 +1262,35 @@ export function OrderTable({
                     <TableCell>
                       <div className="text-sm text-slate-700">{formatDate(order.createdDate)}</div>
                     </TableCell>
-                    {!showPickerPackerColumns ? (
-                      <TableCell>
-                        <div className="text-sm text-slate-700">
-                          {formatDate(order.lastModifiedDate)}
-                        </div>
-                      </TableCell>
-                    ) : null}
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            aria-label={`Order ${order.orderId} actions`}
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
+                      <div className="flex items-center justify-end gap-1">
+                        <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
+                          <Link href={`/orders/${order.orderId}`}>
+                            <Eye className="h-3 w-3" />
+                            View
+                          </Link>
+                        </Button>
+                        {displayedStatus === 'Created' && (
+                          <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground">
+                            <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
+                              <CheckCircle className="h-3 w-3" />
+                              Approve
+                            </Link>
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/orders/${order.orderId}`}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View
-                            </Link>
-                          </DropdownMenuItem>
-                          {['Created', 'Pending', 'Partially Approved'].includes(
-                            order.orderStatus
-                          ) ? (
-                            <>
-                              <DropdownMenuItem
-                                disabled={updatingOrderId === order.orderId}
-                                onClick={async () => {
-                                  try {
-                                    setUpdatingOrderId(order.orderId);
-                                    await partialUpdateOrder({
-                                      id: order.orderId,
-                                      data: { id: order.orderId, orderStatus: 6 },
-                                    });
-                                    toast.success(`Order #${order.orderId} approved successfully.`);
-                                  } catch (error) {
-                                    toast.error(
-                                      error instanceof Error
-                                        ? error.message
-                                        : 'Failed to approve order'
-                                    );
-                                  } finally {
-                                    setUpdatingOrderId(null);
-                                  }
-                                }}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                {updatingOrderId === order.orderId ? 'Approving...' : 'Approve'}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
-                                  <CheckCircle className="h-4 w-4 mr-2" />
-                                  Edit & Approve
-                                </Link>
-                              </DropdownMenuItem>
-                            </>
-                          ) : null}
-                          <DropdownMenuItem asChild>
-                            <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
-                              <Package className="h-4 w-4 mr-2" />
-                              Fulfillment
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href="/orders/back-to-manager">
-                              <Undo2 className="h-4 w-4 mr-2" />
-                              Back to Manager
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/orders/${order.orderId}/edit`}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        )}
+                        <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
+                          <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
+                            <Package className="h-3 w-3" />
+                            Fulfill
+                          </Link>
+                        </Button>
+                        <Button asChild variant="ghost" size="sm" className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-slate-800">
+                          <Link href={`/orders/${order.orderId}/edit`}>
+                            <Pencil className="h-3 w-3" />
+                            Edit
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
 
