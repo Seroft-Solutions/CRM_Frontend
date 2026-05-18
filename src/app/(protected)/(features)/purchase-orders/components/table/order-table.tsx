@@ -592,9 +592,9 @@ export function OrderTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg mx-3 my-2">
       {showStatusTabs ? (
-        <div className="border-b border-slate-300 bg-slate-50 px-6 py-3 overflow-x-auto">
+        <div className="border-b border-slate-300 bg-slate-50 px-4 py-2 overflow-x-auto">
           <Tabs
             value={statusFilter}
             onValueChange={(value) => handleStatusFilterChange(value as OrderStatus | 'All')}
@@ -614,7 +614,7 @@ export function OrderTable({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-4 border-b border-slate-300 bg-white px-6 py-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 border-b border-slate-300 bg-white px-4 py-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-600">
             <svg
@@ -1096,7 +1096,7 @@ export function OrderTable({
       </div>
 
       {filteredCount > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-6 py-4 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-4 py-3 sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-slate-700">Rows per page:</label>
@@ -1228,7 +1228,7 @@ function OrderFulfillmentHistoryRow({ order }: OrderFulfillmentHistoryRowProps) 
   return (
     <TableRow className="hover:bg-slate-50/50">
       <TableCell colSpan={9} className="p-0">
-        <div className="border-t border-slate-200 bg-slate-50 px-6 py-4">
+        <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
           {isLoading || isOrderLoading ? (
             <div className="text-sm text-muted-foreground">Loading fulfillment history...</div>
           ) : isError || isOrderError ? (

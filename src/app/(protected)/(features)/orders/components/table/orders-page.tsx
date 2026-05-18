@@ -91,7 +91,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto bg-slate-100">
         <OrderTable
           entityStatus={draftOnly ? 'DRAFT' : 'ACTIVE'}
           title={draftOnly ? 'Draft Sale Orders' : 'All Orders'}
