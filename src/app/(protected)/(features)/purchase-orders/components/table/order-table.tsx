@@ -688,7 +688,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('orderId')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Order</span>
                   {getSortIcon('orderId')}
@@ -698,7 +698,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('status')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Status</span>
                   {getSortIcon('status')}
@@ -708,7 +708,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('total')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Total</span>
                   {getSortIcon('total')}
@@ -718,7 +718,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('shipping')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Shipping</span>
                   {getSortIcon('shipping')}
@@ -728,7 +728,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('sundryCreditor')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Sundry Creditor</span>
                   {getSortIcon('sundryCreditor')}
@@ -738,7 +738,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('payment')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Payment</span>
                   {getSortIcon('payment')}
@@ -748,7 +748,7 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Created At</span>
                   {getSortIcon('createdDate')}
@@ -758,13 +758,13 @@ export function OrderTable({
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('updatedDate')}
-                  className="h-auto px-2 py-1 font-bold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Updated At</span>
                   {getSortIcon('updatedDate')}
                 </Button>
               </TableHead>
-              <TableHead className="w-[150px] text-right font-bold text-slate-500">
+              <TableHead className="w-[150px] text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </TableHead>
             </TableRow>

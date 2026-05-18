@@ -62,13 +62,13 @@ export function OrderFulfillmentHistoryTable({
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50 border-slate-300">
-                <TableHead className="text-slate-500">Record</TableHead>
-                <TableHead className="text-slate-500">Created</TableHead>
-                <TableHead className="text-center text-slate-500">Items</TableHead>
-                <TableHead className="text-center text-slate-500">Delivered</TableHead>
-                <TableHead className="text-center text-slate-500">Remaining</TableHead>
-                <TableHead className="text-right text-slate-500">Total Amount</TableHead>
-                <TableHead className="text-right text-slate-500">Actions</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Record</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Created</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Items</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Delivered</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Remaining</TableHead>
+                <TableHead className="text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Amount</TableHead>
+                <TableHead className="text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

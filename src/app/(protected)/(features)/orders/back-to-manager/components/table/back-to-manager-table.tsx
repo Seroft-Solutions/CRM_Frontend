@@ -222,16 +222,16 @@ export function BackToManagerTable() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50 text-slate-500 border-slate-300">
-                <TableHead>Item</TableHead>
-                <TableHead className="text-center">Warehouse</TableHead>
-                <TableHead className="text-center">Order Qty</TableHead>
-                <TableHead className="text-center">Delivered Qty</TableHead>
-                <TableHead className="text-center">Remaining Qty</TableHead>
-                <TableHead className="text-center">Available Stock</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="min-w-[180px]">Comment</TableHead>
-                <TableHead className="w-16 text-center">Actions</TableHead>
+              <TableRow className="bg-slate-50 border-slate-300">
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Item</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Warehouse</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Order Qty</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Delivered Qty</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Remaining Qty</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Available Stock</TableHead>
+                <TableHead className="text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status</TableHead>
+                <TableHead className="min-w-[180px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">Comment</TableHead>
+                <TableHead className="w-16 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -884,32 +884,32 @@ export function OrderTable({
           <TableHeader>
             {/* Header Row */}
             <TableRow className="border-b border-slate-300 bg-slate-50">
-              <TableHead className="w-32 min-w-[128px] text-[13px] font-semibold text-slate-500">
+              <TableHead className="w-32 min-w-[128px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('orderId')}
-                  className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Order</span>
                   {getSortIcon('orderId')}
                 </Button>
               </TableHead>
-              <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
+              <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('status')}
-                  className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Status</span>
                   {getSortIcon('status')}
                 </Button>
               </TableHead>
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[120px] text-[13px] font-semibold text-slate-500">
+                <TableHead className="min-w-[120px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('total')}
-                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                   >
                     <span>Total</span>
                     {getSortIcon('total')}
@@ -917,11 +917,11 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[140px] text-[13px] font-semibold text-slate-500">
+                <TableHead className="min-w-[140px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('shipping')}
-                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                   >
                     <span>Shipping</span>
                     {getSortIcon('shipping')}
@@ -929,11 +929,11 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
+                <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('customer')}
-                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                   >
                     <span>Customer</span>
                     {getSortIcon('customer')}
@@ -941,11 +941,11 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
+                <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('assignee')}
-                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                   >
                     <span>Assignee</span>
                     {getSortIcon('assignee')}
@@ -953,40 +953,40 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               {!hideBusinessColumns ? (
-                <TableHead className="min-w-[120px] text-[13px] font-semibold text-slate-500">
+                <TableHead className="min-w-[120px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('payment')}
-                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                   >
                     <span>Payment</span>
                     {getSortIcon('payment')}
                   </Button>
                 </TableHead>
               ) : null}
-              <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
+              <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <Button
                   variant="ghost"
                   onClick={() => handleSort('createdDate')}
-                  className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                 >
                   <span>Created At</span>
                   {getSortIcon('createdDate')}
                 </Button>
               </TableHead>
               {!showPickerPackerColumns ? (
-                <TableHead className="min-w-[150px] text-[13px] font-semibold text-slate-500">
+                <TableHead className="min-w-[150px] text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
                     onClick={() => handleSort('updatedDate')}
-                    className="h-auto px-2 py-1 text-[13px] font-semibold text-slate-500 hover:bg-white"
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
                   >
                     <span>Updated At</span>
                     {getSortIcon('updatedDate')}
                   </Button>
                 </TableHead>
               ) : null}
-              <TableHead className="w-[120px] text-right text-[13px] font-semibold text-slate-500">
+              <TableHead className="w-[120px] text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </TableHead>
             </TableRow>

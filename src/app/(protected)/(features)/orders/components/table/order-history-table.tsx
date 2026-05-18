@@ -149,13 +149,13 @@ export function OrderHistoryTable() {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-slate-300 bg-slate-50">
-                <TableHead className="text-xs font-medium text-slate-500">Order</TableHead>
-                <TableHead className="text-xs font-medium text-slate-500">Status</TableHead>
-                <TableHead className="text-xs font-medium text-slate-500">Item Status</TableHead>
-                <TableHead className="text-xs font-medium text-slate-500">Notification</TableHead>
-                <TableHead className="text-xs font-medium text-slate-500">Created</TableHead>
-                <TableHead className="text-xs font-medium text-slate-500">Updated</TableHead>
-                <TableHead className="text-right text-xs font-medium text-slate-500">Actions</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Order</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Item Status</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Notification</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Created</TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Updated</TableHead>
+                <TableHead className="text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
