@@ -61,7 +61,7 @@ export function OrdersPage({ draftOnly = false }: OrdersPageProps) {
         }
       `}} />
 
-      {/* Dark header */}
+      {/* Dark header - no margin, sits flush at top */}
       <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white">
         <div className="flex items-center gap-2.5 mr-auto">
           <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
