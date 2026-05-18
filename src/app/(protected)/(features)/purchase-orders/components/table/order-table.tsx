@@ -592,7 +592,7 @@ export function OrderTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg mx-3 my-2">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg mx-3 my-2 min-h-[calc(100vh-100px)]">
       {showStatusTabs ? (
         <div className="border-b border-slate-300 bg-slate-50 px-4 py-2 overflow-x-auto">
           <Tabs
@@ -679,7 +679,7 @@ export function OrderTable({
         </div>
       </div>
 
-      <div className="table-container overflow-x-auto">
+      <div className="table-container flex-1 overflow-auto [&_td]:py-1.5 [&_td]:text-[12px]">
         <Table>
           <TableHeader>
             {/* Header Row */}
@@ -1096,7 +1096,7 @@ export function OrderTable({
       </div>
 
       {filteredCount > 0 && (
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-4 py-3 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-300 bg-slate-50 px-4 py-3 mt-auto sm:flex-row">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm font-semibold text-slate-700">Rows per page:</label>
