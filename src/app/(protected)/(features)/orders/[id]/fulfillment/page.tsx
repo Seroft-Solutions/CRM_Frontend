@@ -34,7 +34,9 @@ export default function OrderFulfillmentPage({ params, searchParams }: OrderFulf
       unauthorizedDescription="You don't have permission to manage order fulfillment for this sale order."
     >
       <div className="space-y-6">
-        <style dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }} />
+        <style
+          dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }}
+        />
         <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-t-lg">
           <div className="flex items-center gap-2.5 mr-auto">
             <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">

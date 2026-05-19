@@ -609,7 +609,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
             <PackageCheck className="h-5 w-5 text-cyan-700" />
           </div>
           <div className="space-y-1">
-            <h4 className="font-semibold text-slate-900">Order Fulfillment</h4>
+            <h4 className="font-semibold text-slate-900">Pick & Pack</h4>
             <p className="text-sm text-slate-600">
               This page shows all order items. Completed items remain in the list, while only items
               with remaining quantity can be fulfilled again.
@@ -650,10 +650,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       typeof row.item.variantId === 'number'
                         ? 'Warehouse main stock'
                         : 'Product main stock';
-                    const isLegacyCatalog = Boolean(row.item.productCatalogId) && !row.item.variantId;
-                    const catalog = isLegacyCatalog && typeof row.item.productCatalogId === 'number'
-                      ? catalogById.get(row.item.productCatalogId)
-                      : undefined;
+                    const isLegacyCatalog =
+                      Boolean(row.item.productCatalogId) && !row.item.variantId;
+                    const catalog =
+                      isLegacyCatalog && typeof row.item.productCatalogId === 'number'
+                        ? catalogById.get(row.item.productCatalogId)
+                        : undefined;
                     const catalogItemNames = isLegacyCatalog
                       ? getCatalogItemNames(catalog, row.item.productName)
                       : [];
