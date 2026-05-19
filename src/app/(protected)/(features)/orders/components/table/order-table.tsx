@@ -14,13 +14,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -49,10 +42,8 @@ import {
   ChevronsUpDown,
   Eye,
   Loader2,
-  MoreHorizontal,
   Package,
   Pencil,
-  Undo2,
 } from 'lucide-react';
 import { useCreateOrderHistory } from '@/core/api/generated/spring/endpoints/order-history-resource/order-history-resource.gen';
 import { usePartialUpdateOrder } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
@@ -91,7 +82,7 @@ const statusColors: Record<OrderStatus, string> = {
   Unknown: 'bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20',
 };
 
-const saleOrderApproveActionStatuses: OrderStatus[] = ['Created', 'Partially Approved'];
+const saleOrderApproveActionStatuses: OrderStatus[] = ['Created', 'Partially Approved', 'Pending'];
 const saleOrderViewOnlyStatuses: OrderStatus[] = ['Shipped', 'Delivered'];
 
 function formatCurrency(amount: number) {

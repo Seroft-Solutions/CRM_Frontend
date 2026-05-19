@@ -12,19 +12,11 @@ import {
   ChevronUp,
   ChevronsUpDown,
   Eye,
-  MoreHorizontal,
   Package,
   Pencil,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -70,7 +62,11 @@ const statusColors: Record<OrderStatus, string> = {
   Unknown: 'bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20',
 };
 
-const purchaseOrderApproveActionStatuses: OrderStatus[] = ['Created', 'PartiallyApproved'];
+const purchaseOrderApproveActionStatuses: OrderStatus[] = [
+  'Created',
+  'PartiallyApproved',
+  'Pending',
+];
 const purchaseOrderViewOnlyStatuses: OrderStatus[] = ['Recived', 'Unpacked'];
 
 function formatCurrency(amount: number) {
