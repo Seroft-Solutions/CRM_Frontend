@@ -90,6 +90,9 @@ const statusColors: Record<OrderStatus, string> = {
   Unknown: 'bg-slate-500/10 text-slate-600 ring-1 ring-slate-500/20',
 };
 
+const saleOrderApproveActionStatuses: OrderStatus[] = ['Created', 'Partially Approved'];
+const saleOrderViewOnlyStatuses: OrderStatus[] = ['Shipped', 'Delivered'];
+
 function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
 }
@@ -1127,6 +1130,9 @@ export function OrderTable({
               const isUpdatingThisRow = updatingOrderId === order.orderId;
               const isUpdatingAssignee = updatingAssigneeOrderId === order.orderId;
               const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
+              const showApproveAction = saleOrderApproveActionStatuses.includes(displayedStatus);
+              const showEditAndPackingActions =
+                !saleOrderViewOnlyStatuses.includes(displayedStatus);
 
               const isExpanded = expandedOrderId === order.orderId;
 
@@ -1270,7 +1276,7 @@ export function OrderTable({
                             View
                           </Link>
                         </Button>
-                        {displayedStatus === 'Created' && (
+                        {showApproveAction && (
                           <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded">
                             <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
                               <CheckCircle className="h-3 w-3" />
@@ -1278,18 +1284,22 @@ export function OrderTable({
                             </Link>
                           </Button>
                         )}
-                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded">
-                          <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
-                            <Package className="h-3 w-3" />
-                            Start Packing
-                          </Link>
-                        </Button>
-                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded">
-                          <Link href={`/orders/${order.orderId}/edit`}>
-                            <Pencil className="h-3 w-3" />
-                            Edit
-                          </Link>
-                        </Button>
+                        {showEditAndPackingActions && (
+                          <>
+                            <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded">
+                              <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
+                                <Package className="h-3 w-3" />
+                                Start Packing
+                              </Link>
+                            </Button>
+                            <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded">
+                              <Link href={`/orders/${order.orderId}/edit`}>
+                                <Pencil className="h-3 w-3" />
+                                Edit
+                              </Link>
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
