@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import {
+  Barcode,
   CheckCircle,
   ChevronDown,
   ChevronRight,
@@ -179,6 +180,7 @@ export function OrderTable({
     const rowHeight = 40;
     const overhead = 440;
     const available = Math.floor((window.innerHeight - overhead) / rowHeight);
+
     return Math.max(5, Math.min(available, 100));
   });
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
@@ -727,7 +729,9 @@ export function OrderTable({
                 </Button>
               </TableHead>
               <TableHead className="w-20 text-center font-bold text-slate-500">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</span>
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Qty
+                </span>
               </TableHead>
               {showAllColumns && (
                 <TableHead className="font-bold text-slate-500">
@@ -947,7 +951,9 @@ export function OrderTable({
                         <InlinePermissionGuard
                           requiredPermission="purchase-order:update"
                           fallback={
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}
+                            >
                               {displayedStatus}
                             </span>
                           }
@@ -1019,7 +1025,9 @@ export function OrderTable({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
-                          <div className="text-xs text-muted-foreground">{sundryCreditorContact}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {sundryCreditorContact}
+                          </div>
                         </div>
                       </TableCell>
                     )}
@@ -1037,14 +1045,30 @@ export function OrderTable({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-sky-500 hover:bg-sky-600 text-white rounded">
+                        <Button
+                          asChild
+                          size="sm"
+                          className="h-6 px-2 text-[10px] gap-1 bg-sky-500 hover:bg-sky-600 text-white rounded"
+                        >
                           <Link href={`/purchase-orders/${order.orderId}`}>
                             <Eye className="h-3 w-3" />
                             View
                           </Link>
                         </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-6 px-2 text-[10px] gap-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded"
+                        >
+                          <Barcode className="h-3 w-3" />
+                          Print Barcode
+                        </Button>
                         {showApproveAction && (
-                          <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded">
+                          <Button
+                            asChild
+                            size="sm"
+                            className="h-6 px-2 text-[10px] gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded"
+                          >
                             <Link href={`/purchase-orders/${order.orderId}/edit-approve?from=list`}>
                               <CheckCircle className="h-3 w-3" />
                               Approve
@@ -1053,13 +1077,21 @@ export function OrderTable({
                         )}
                         {showEditAndPackingActions && (
                           <>
-                            <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded">
+                            <Button
+                              asChild
+                              size="sm"
+                              className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
+                            >
                               <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
                                 <Package className="h-3 w-3" />
                                 Start Packing
                               </Link>
                             </Button>
-                            <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded">
+                            <Button
+                              asChild
+                              size="sm"
+                              className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded"
+                            >
                               <Link href={`/purchase-orders/${order.orderId}/edit`}>
                                 <Pencil className="h-3 w-3" />
                                 Edit
@@ -1119,9 +1151,16 @@ export function OrderTable({
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
               >
-                {Array.from(new Set([5, 10, pageSize, 25, 50, 100])).sort((a, b) => a - b).map((v) => (
-                  <option key={v} value={v}>{v}{v === pageSize && v !== 5 && v !== 10 && v !== 25 && v !== 50 && v !== 100 ? ' (auto)' : ''}</option>
-                ))}
+                {Array.from(new Set([5, 10, pageSize, 25, 50, 100]))
+                  .sort((a, b) => a - b)
+                  .map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                      {v === pageSize && v !== 5 && v !== 10 && v !== 25 && v !== 50 && v !== 100
+                        ? ' (auto)'
+                        : ''}
+                    </option>
+                  ))}
               </select>
             </div>
             <div className="text-sm text-slate-600">

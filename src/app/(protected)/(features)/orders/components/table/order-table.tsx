@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  Barcode,
   Check,
   CheckCircle,
   ChevronDown,
@@ -198,6 +199,7 @@ export function OrderTable({
     const rowHeight = 40;
     const overhead = 440;
     const available = Math.floor((window.innerHeight - overhead) / rowHeight);
+
     return Math.max(5, Math.min(available, 100));
   });
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
@@ -905,16 +907,16 @@ export function OrderTable({
                 </Button>
               </TableHead>
               {showAllColumns && (
-              <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort('status')}
-                  className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
-                >
-                  <span>Status</span>
-                  {getSortIcon('status')}
-                </Button>
-              </TableHead>
+                <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort('status')}
+                    className="h-auto px-2 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:bg-white"
+                  >
+                    <span>Status</span>
+                    {getSortIcon('status')}
+                  </Button>
+                </TableHead>
               )}
               {!hideBusinessColumns ? (
                 <TableHead className="w-32 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -929,7 +931,9 @@ export function OrderTable({
                 </TableHead>
               ) : null}
               <TableHead className="w-20 text-center">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Qty</span>
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Qty
+                </span>
               </TableHead>
               {showAllColumns && !showPickerPackerColumns ? (
                 <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -1004,26 +1008,26 @@ export function OrderTable({
                 />
               </TableHead>
               {showAllColumns && (
-              <TableHead className="py-2">
-                <Select
-                  value={filters.status || 'all'}
-                  onValueChange={(value) =>
-                    handleFilterChange('status', value === 'all' ? '' : value)
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {visibleStatusTabs.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </TableHead>
+                <TableHead className="py-2">
+                  <Select
+                    value={filters.status || 'all'}
+                    onValueChange={(value) =>
+                      handleFilterChange('status', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs border-slate-300 w-full">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {visibleStatusTabs.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableHead>
               )}
               {!hideBusinessColumns ? (
                 <TableHead className="py-2">
@@ -1146,7 +1150,9 @@ export function OrderTable({
                         </div>
                         <div>
                           <div className="flex items-center gap-1">
-                            <span className="text-sm font-semibold text-slate-800">#{order.orderId}</span>
+                            <span className="text-sm font-semibold text-slate-800">
+                              #{order.orderId}
+                            </span>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1165,40 +1171,42 @@ export function OrderTable({
                       </div>
                     </TableCell>
                     {showAllColumns && (
-                    <TableCell>
-                      <InlinePermissionGuard
-                        requiredPermission="order:update"
-                        fallback={
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}>
-                            {displayedStatus}
-                          </span>
-                        }
-                      >
-                        <Select
-                          value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
-                          onValueChange={(value) =>
-                            handleOrderStatusChange(order, value as OrderStatus)
+                      <TableCell>
+                        <InlinePermissionGuard
+                          requiredPermission="order:update"
+                          fallback={
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusClassName}`}
+                            >
+                              {displayedStatus}
+                            </span>
                           }
-                          disabled={isUpdatingThisRow}
                         >
-                          <SelectTrigger
-                            className={`h-7 rounded-full text-[11px] font-semibold ${statusClassName}`}
-                            aria-label={`Update status for order ${order.orderId}`}
+                          <Select
+                            value={displayedStatus === 'Unknown' ? undefined : displayedStatus}
+                            onValueChange={(value) =>
+                              handleOrderStatusChange(order, value as OrderStatus)
+                            }
+                            disabled={isUpdatingThisRow}
                           >
-                            <SelectValue placeholder={displayedStatus} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
-                              (status) => (
-                                <SelectItem key={status} value={status}>
-                                  {status}
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </InlinePermissionGuard>
-                    </TableCell>
+                            <SelectTrigger
+                              className={`h-7 rounded-full text-[11px] font-semibold ${statusClassName}`}
+                              aria-label={`Update status for order ${order.orderId}`}
+                            >
+                              <SelectValue placeholder={displayedStatus} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getSelectableOrderStatuses(displayedStatus, { isEditing: true }).map(
+                                (status) => (
+                                  <SelectItem key={status} value={status}>
+                                    {status}
+                                  </SelectItem>
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </InlinePermissionGuard>
+                      </TableCell>
                     )}
                     {!hideBusinessColumns ? (
                       <TableCell>
@@ -1270,14 +1278,30 @@ export function OrderTable({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-sky-500 hover:bg-sky-600 text-white rounded">
+                        <Button
+                          asChild
+                          size="sm"
+                          className="h-6 px-2 text-[10px] gap-1 bg-sky-500 hover:bg-sky-600 text-white rounded"
+                        >
                           <Link href={`/orders/${order.orderId}`}>
                             <Eye className="h-3 w-3" />
                             View
                           </Link>
                         </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-6 px-2 text-[10px] gap-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded"
+                        >
+                          <Barcode className="h-3 w-3" />
+                          Print Barcode
+                        </Button>
                         {showApproveAction && (
-                          <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded">
+                          <Button
+                            asChild
+                            size="sm"
+                            className="h-6 px-2 text-[10px] gap-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded"
+                          >
                             <Link href={`/orders/${order.orderId}/edit-approve?from=list`}>
                               <CheckCircle className="h-3 w-3" />
                               Approve
@@ -1286,13 +1310,21 @@ export function OrderTable({
                         )}
                         {showEditAndPackingActions && (
                           <>
-                            <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded">
+                            <Button
+                              asChild
+                              size="sm"
+                              className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
+                            >
                               <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
                                 <Package className="h-3 w-3" />
                                 Start Packing
                               </Link>
                             </Button>
-                            <Button asChild size="sm" className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded">
+                            <Button
+                              asChild
+                              size="sm"
+                              className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded"
+                            >
                               <Link href={`/orders/${order.orderId}/edit`}>
                                 <Pencil className="h-3 w-3" />
                                 Edit
@@ -1355,9 +1387,16 @@ export function OrderTable({
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-slate-400 focus:border-blue-500 focus:outline-none"
               >
-                {Array.from(new Set([5, 10, pageSize, 25, 50, 100])).sort((a, b) => a - b).map((v) => (
-                  <option key={v} value={v}>{v}{v === pageSize && v !== 5 && v !== 10 && v !== 25 && v !== 50 && v !== 100 ? ' (auto)' : ''}</option>
-                ))}
+                {Array.from(new Set([5, 10, pageSize, 25, 50, 100]))
+                  .sort((a, b) => a - b)
+                  .map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                      {v === pageSize && v !== 5 && v !== 10 && v !== 25 && v !== 50 && v !== 100
+                        ? ' (auto)'
+                        : ''}
+                    </option>
+                  ))}
               </select>
             </div>
             <div className="text-sm text-slate-600">
