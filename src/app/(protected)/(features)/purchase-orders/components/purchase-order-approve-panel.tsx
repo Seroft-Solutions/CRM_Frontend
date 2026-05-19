@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,6 +38,7 @@ const parsePositiveInteger = (value: string) => {
 };
 
 export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
+  const router = useRouter();
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
   const [draftState, setDraftState] = useState<ApprovalDraftState>(() => {
     const initialState: ApprovalDraftState = {};
@@ -126,6 +128,7 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
         approveDTO: { items },
       });
       toast.success('Selected items approved successfully.');
+      router.push('/purchase-orders');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to approve selected items');
     }
@@ -155,6 +158,7 @@ export function PurchaseOrderApprovePanel({ order }: { order: OrderRecord }) {
         approveDTO: { items },
       });
       toast.success('All items approved successfully.');
+      router.push('/purchase-orders');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to approve all items');
     }
