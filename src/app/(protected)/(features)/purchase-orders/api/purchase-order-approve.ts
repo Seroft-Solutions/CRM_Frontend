@@ -22,6 +22,7 @@ export function useApprovePurchaseOrder() {
           data: approveDTO.items.map((item) => ({
             orderDetailId: item.orderDetailId,
             newStatus: 'APPROVED',
+            approvedQuantity: item.approvedQuantity,
           })),
         },
         undefined

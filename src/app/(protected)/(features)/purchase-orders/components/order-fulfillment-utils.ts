@@ -40,13 +40,10 @@ export function getPurchaseOrderFulfillmentTotalAmount(
     return sum + receivedQuantity * unitPrice;
   }, 0);
 
-  const fulfillmentShare =
-    order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
-  const allocatedShippingAmount = (order.shipping.shippingAmount ?? 0) * fulfillmentShare;
   const taxableAmount = Math.max(invoiceSubtotal, 0);
   const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
 
-  return Math.max(taxableAmount + taxAmount + allocatedShippingAmount, 0);
+  return Math.max(taxableAmount + taxAmount, 0);
 }
 
 export function getAddressLines(address?: AddressFields) {
