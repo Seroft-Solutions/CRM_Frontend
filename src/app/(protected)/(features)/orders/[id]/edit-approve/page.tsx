@@ -34,7 +34,9 @@ export default function OrderEditApprovePage({ params, searchParams }: OrderEdit
       unauthorizedDescription="You don't have permission to edit and approve this sale order."
     >
       <div className="space-y-6">
-        <style dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }} />
+        <style
+          dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }}
+        />
         <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-t-lg">
           <div className="flex items-center gap-2.5 mr-auto">
             <div className="w-7 h-7 rounded-md bg-sidebar-accent flex items-center justify-center">
@@ -92,10 +94,11 @@ export default function OrderEditApprovePage({ params, searchParams }: OrderEdit
             Unable to load this sale order for approval.
           </div>
         ) : orderRecord.orderStatus !== 'Created' &&
-          orderRecord.orderStatus !== 'Partially Approved' ? (
+          orderRecord.orderStatus !== 'Partially Approved' &&
+          orderRecord.orderStatus !== 'Pending' ? (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-700 shadow-sm">
-            Only orders with "Created" or "Partially Approved" status can be edited and approved.
-            Current status: {orderRecord.orderStatus}
+            Only orders with "Created", "Partially Approved" or "Pending" status can be edited and
+            approved. Current status: {orderRecord.orderStatus}
           </div>
         ) : (
           <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
