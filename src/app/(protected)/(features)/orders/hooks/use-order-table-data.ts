@@ -1,10 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useCountOrders, useGetAllOrders } from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
+import { useQueries } from '@tanstack/react-query';
+import {
+  useCountOrders,
+  useGetAllOrders,
+} from '@/core/api/generated/spring/endpoints/order-resource/order-resource.gen';
 import type { CountOrdersParams, OrderDTO } from '@/core/api/generated/spring/schemas';
 import { useGetAllOrderDetails } from '@/core/api/generated/spring/endpoints/order-detail-resource/order-detail-resource.gen';
 import { useGetAllOrderShippingDetails } from '@/core/api/order-shipping-detail';
+import { getOrderFulfillmentGenerations } from '@/core/api/order-fulfillment-generations';
 import {
   getOrderStatusCode,
   mapOrderDtoToRecord,
@@ -33,16 +38,19 @@ export function useOrderTableData({
 }: UseOrderTableDataParams) {
   const filterParams = useMemo<CountOrdersParams>(() => {
     const params: CountOrdersParams = {};
+
     (params as Record<string, unknown>)['status.equals'] = entityStatus;
 
     if (statusFilter !== 'All') {
       const statusCode = getOrderStatusCode(statusFilter);
+
       if (typeof statusCode === 'number') {
         params['orderStatus.equals'] = statusCode;
       }
     }
 
     const normalizedSearch = searchTerm.trim();
+
     if (normalizedSearch) {
       const numericOnly = /^\d+$/.test(normalizedSearch);
       const phoneLike = /^[+()\d\s-]+$/.test(normalizedSearch);
@@ -120,7 +128,10 @@ export function useOrderTableData({
   );
 
   const shippingByOrderId = useMemo(
-    () => new Map((shippingQuery.data ?? []).map((shipping) => [shipping.orderId ?? 0, shipping] as const)),
+    () =>
+      new Map(
+        (shippingQuery.data ?? []).map((shipping) => [shipping.orderId ?? 0, shipping] as const)
+      ),
     [shippingQuery.data]
   );
 
@@ -136,15 +147,53 @@ export function useOrderTableData({
     }
   );
 
+  const fulfillmentGenerationQueries = useQueries({
+    queries: orderIds.map((orderId) => ({
+      queryKey: [`/api/orders/${orderId}/fulfillment-generations`],
+      queryFn: ({ signal }) => getOrderFulfillmentGenerations(orderId, signal),
+      enabled: orderId > 0,
+      staleTime: 30_000,
+    })),
+  });
+
+  const deliveredQuantityByOrderDetailId = useMemo(() => {
+    const map = new Map<number, number>();
+
+    fulfillmentGenerationQueries.forEach((query) => {
+      query.data?.forEach((generation) => {
+        generation.items?.forEach((item) => {
+          if (typeof item.orderDetailId !== 'number') {
+            return;
+          }
+
+          map.set(
+            item.orderDetailId,
+            (map.get(item.orderDetailId) ?? 0) + Math.max(0, item.deliveredQuantity ?? 0)
+          );
+        });
+      });
+    });
+
+    return map;
+  }, [fulfillmentGenerationQueries]);
+
   const itemCountByOrderId = useMemo(() => {
     const map = new Map<number, number>();
+
     (detailsQuery.data ?? []).forEach((detail) => {
       const orderId = detail.orderId ?? 0;
-      const qty = Math.max(0, detail.quantity ?? 0);
+      const qty =
+        Math.max(0, detail.quantity ?? 0) +
+        Math.max(0, detail.backOrderQuantity ?? 0) +
+        (typeof detail.id === 'number'
+          ? (deliveredQuantityByOrderDetailId.get(detail.id) ?? 0)
+          : 0);
+
       map.set(orderId, (map.get(orderId) ?? 0) + qty);
     });
+
     return map;
-  }, [detailsQuery.data]);
+  }, [deliveredQuantityByOrderDetailId, detailsQuery.data]);
 
   const orders = useMemo(() => {
     return orderRecords.map((orderRecord) => {
@@ -170,7 +219,12 @@ export function useOrderTableData({
     totalPages,
     isLoading:
       (ordersQuery.isLoading && !ordersQuery.data) ||
-      (shippingQuery.isLoading && orderIds.length > 0 && !shippingQuery.data),
-    isError: ordersQuery.isError || countQuery.isError || shippingQuery.isError,
+      (shippingQuery.isLoading && orderIds.length > 0 && !shippingQuery.data) ||
+      fulfillmentGenerationQueries.some((query) => query.isLoading && !query.data),
+    isError:
+      ordersQuery.isError ||
+      countQuery.isError ||
+      shippingQuery.isError ||
+      fulfillmentGenerationQueries.some((query) => query.isError),
   };
 }
