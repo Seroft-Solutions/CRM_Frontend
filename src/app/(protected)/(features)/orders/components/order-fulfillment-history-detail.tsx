@@ -751,18 +751,11 @@ export function OrderFulfillmentHistoryDetail({
     const fulfillmentShare =
       order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
     const allocatedDiscountAmount = overallDiscountAmount * fulfillmentShare;
-    const allocatedShippingAmount = (order.shipping.shippingAmount ?? 0) * fulfillmentShare;
     const taxableAmount = Math.max(invoiceSubtotal - allocatedDiscountAmount, 0);
     const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
 
-    return Math.max(taxableAmount + taxAmount + allocatedShippingAmount, 0);
-  }, [
-    invoiceSubtotal,
-    order.orderBaseAmount,
-    overallDiscountAmount,
-    order.shipping.shippingAmount,
-    order.orderTaxRate,
-  ]);
+    return Math.max(taxableAmount + taxAmount, 0);
+  }, [invoiceSubtotal, order.orderBaseAmount, overallDiscountAmount, order.orderTaxRate]);
   const invoiceDateLabel = formatInvoiceDisplayDate(generation.createdDate);
   const orderNumberLabel = `ORD/${order.orderId}-${generation.generationNumber ?? generation.id ?? ''}`;
   const transportLabel = compactTextValue(order.shipping.shippingMethod);
