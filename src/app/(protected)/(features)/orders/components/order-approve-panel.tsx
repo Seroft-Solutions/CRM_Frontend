@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { Fragment, useState, useMemo } from 'react';
 import { toast } from 'sonner';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ChevronDown, ChevronRight, PackageOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +22,34 @@ import type { OrderRecord } from '../data/order-data';
 import { useApproveOrder } from '../api/order-approve';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
+import { useGetAllProductCatalogs } from '@/core/api/generated/spring/endpoints/product-catalog-resource/product-catalog-resource.gen';
+import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas/ProductCatalogDTO';
 
 type ApprovalDraftState = Record<number, { approvedQuantity: string }>;
+type OrderApprovalItem = OrderRecord['items'][number];
+type ApprovalRow =
+  | {
+      rowId: string;
+      type: 'item';
+      item: OrderApprovalItem;
+      items: OrderApprovalItem[];
+      originalQty: number;
+      approvedQty: number;
+      difference: number;
+      validationMessage?: string;
+      warehouseName: string;
+    }
+  | {
+      rowId: string;
+      type: 'catalog';
+      productCatalogId: number;
+      catalogName: string;
+      items: OrderApprovalItem[];
+      originalQty: number;
+      approvedQty: number;
+      difference: number;
+      validationMessage?: string;
+    };
 
 const parsePositiveInteger = (value: string) => {
   const parsed = Number.parseInt(value, 10);
@@ -33,7 +59,8 @@ const parsePositiveInteger = (value: string) => {
 
 export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   const router = useRouter();
-  const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(() => new Set());
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(() => new Set());
+  const [expandedCatalogIds, setExpandedCatalogIds] = useState<Set<number>>(() => new Set());
   const [draftState, setDraftState] = useState<ApprovalDraftState>(() => {
     const initialState: ApprovalDraftState = {};
 
@@ -49,10 +76,43 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   });
 
   const { mutateAsync: approveOrder, isPending } = useApproveOrder();
+  const catalogIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          order.items
+            .map((item) => item.productCatalogId)
+            .filter((id): id is number => typeof id === 'number')
+        )
+      ).sort((a, b) => a - b),
+    [order.items]
+  );
+  const catalogQueryParams = useMemo(
+    () =>
+      catalogIds.length > 0
+        ? { 'id.in': catalogIds, size: catalogIds.length, sort: ['id,asc'] }
+        : undefined,
+    [catalogIds]
+  );
+  const { data: catalogs = [] } = useGetAllProductCatalogs(catalogQueryParams, {
+    query: { enabled: catalogIds.length > 0, staleTime: 5 * 60 * 1000 },
+  });
   const { data: warehouseRows = [] } = useWarehousesQuery(
     { page: 0, size: 1000, sort: ['name,asc'], 'status.equals': 'ACTIVE' as const },
     { enabled: true }
   );
+
+  const catalogById = useMemo(() => {
+    const nextMap = new Map<number, ProductCatalogDTO>();
+
+    catalogs.forEach((catalog) => {
+      if (typeof catalog.id === 'number') {
+        nextMap.set(catalog.id, catalog);
+      }
+    });
+
+    return nextMap;
+  }, [catalogs]);
 
   const warehouseNameById = useMemo(
     () =>
@@ -64,46 +124,101 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
     [warehouseRows]
   );
 
-  const rows = useMemo(() => {
-    return order.items
-      .filter(
-        (item) =>
-          !item.itemStatusCode ||
-          item.itemStatusCode === 'CREATED' ||
-          item.itemStatusCode === 'ISSUE'
-      )
-      .map((item) => {
-        const draft = draftState[item.orderDetailId] ?? { approvedQuantity: '0' };
-        const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
-        const approvedQty = parsePositiveInteger(draft.approvedQuantity);
-        const difference = originalQty - approvedQty;
+  const rows = useMemo<ApprovalRow[]>(() => {
+    const approvableItems = order.items.filter(
+      (item) =>
+        !item.itemStatusCode || item.itemStatusCode === 'CREATED' || item.itemStatusCode === 'ISSUE'
+    );
+    const catalogItemsById = new Map<number, OrderApprovalItem[]>();
+    const standaloneItems: OrderApprovalItem[] = [];
 
+    approvableItems.forEach((item) => {
+      if (typeof item.productCatalogId === 'number') {
+        const existingItems = catalogItemsById.get(item.productCatalogId) ?? [];
+
+        existingItems.push(item);
+        catalogItemsById.set(item.productCatalogId, existingItems);
+      } else {
+        standaloneItems.push(item);
+      }
+    });
+
+    const catalogRows: ApprovalRow[] = Array.from(catalogItemsById.entries()).map(
+      ([productCatalogId, items]) => {
+        const originalQuantities = items.map(
+          (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity)
+        );
+        const firstItem = items[0];
+        const originalQty = originalQuantities[0] ?? 0;
+        const maxAllowedQty = Math.min(...originalQuantities);
+        const approvedQty = parsePositiveInteger(
+          draftState[firstItem.orderDetailId]?.approvedQuantity ?? '0'
+        );
+        const difference = originalQty - approvedQty;
+        const catalog = catalogById.get(productCatalogId);
         let validationMessage: string | undefined;
 
-        if (approvedQty > originalQty) {
-          validationMessage = `Cannot exceed original quantity (${originalQty})`;
+        if (approvedQty > maxAllowedQty) {
+          validationMessage = `Cannot exceed catalog item quantity (${maxAllowedQty})`;
         }
 
         return {
-          item,
+          rowId: `catalog-${productCatalogId}`,
+          type: 'catalog',
+          productCatalogId,
+          catalogName:
+            catalog?.productCatalogName ||
+            firstItem.productName ||
+            firstItem.sku ||
+            `Catalog #${productCatalogId}`,
+          items,
           originalQty,
           approvedQty,
           difference,
           validationMessage,
-          warehouseName: item.warehouseId
-            ? (warehouseNameById.get(item.warehouseId) ?? 'Unknown')
-            : 'Not set',
         };
-      });
-  }, [order.items, draftState, warehouseNameById]);
+      }
+    );
+
+    const itemRows: ApprovalRow[] = standaloneItems.map((item) => {
+      const draft = draftState[item.orderDetailId] ?? { approvedQuantity: '0' };
+      const originalQty = Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity);
+      const approvedQty = parsePositiveInteger(draft.approvedQuantity);
+      const difference = originalQty - approvedQty;
+
+      let validationMessage: string | undefined;
+
+      if (approvedQty > originalQty) {
+        validationMessage = `Cannot exceed original quantity (${originalQty})`;
+      }
+
+      return {
+        rowId: `item-${item.orderDetailId}`,
+        type: 'item',
+        item,
+        items: [item],
+        originalQty,
+        approvedQty,
+        difference,
+        validationMessage,
+        warehouseName: item.warehouseId
+          ? (warehouseNameById.get(item.warehouseId) ?? 'Unknown')
+          : 'Not set',
+      };
+    });
+
+    return [...catalogRows, ...itemRows];
+  }, [catalogById, order.items, draftState, warehouseNameById]);
 
   const totalOriginal = rows.reduce((sum, row) => sum + row.originalQty, 0);
   const totalApproved = rows.reduce((sum, row) => sum + row.approvedQty, 0);
   const totalDifference = totalOriginal - totalApproved;
   const hasValidationErrors = rows.some((row) => row.validationMessage);
-  const allRowsSelected =
-    rows.length > 0 && rows.every((row) => selectedItemIds.has(row.item.orderDetailId));
-  const selectedRows = rows.filter((row) => selectedItemIds.has(row.item.orderDetailId));
+  const allRowsSelected = rows.length > 0 && rows.every((row) => selectedRowIds.has(row.rowId));
+  const selectedRows = rows.filter((row) => selectedRowIds.has(row.rowId));
+  const selectedItemIds = new Set(
+    selectedRows.flatMap((row) => row.items.map((item) => item.orderDetailId))
+  );
   const allItemsWillBeApprovedBySelected =
     selectedRows.length > 0 &&
     order.items.every(
@@ -120,6 +235,26 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
     }));
   };
 
+  const updateCatalogDraftState = (items: OrderApprovalItem[], approvedQuantity: string) => {
+    setDraftState((current) => {
+      const nextState = { ...current };
+
+      items.forEach((item) => {
+        nextState[item.orderDetailId] = { approvedQuantity };
+      });
+
+      return nextState;
+    });
+  };
+
+  const toApprovePayloadItems = (approvalRows: ApprovalRow[]) =>
+    approvalRows.flatMap((row) =>
+      row.items.map((item) => ({
+        orderDetailId: item.orderDetailId,
+        approvedQuantity: row.approvedQty,
+      }))
+    );
+
   const handleApprove = async () => {
     if (hasValidationErrors) {
       toast.error('Please fix validation errors before approving');
@@ -127,10 +262,7 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
       return;
     }
 
-    const items = selectedRows.map((row) => ({
-      orderDetailId: row.item.orderDetailId,
-      approvedQuantity: row.approvedQty,
-    }));
+    const items = toApprovePayloadItems(selectedRows);
 
     if (items.length === 0) {
       toast.error('Select at least one item to approve');
@@ -157,10 +289,7 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
       return;
     }
 
-    const items = rows.map((row) => ({
-      orderDetailId: row.item.orderDetailId,
-      approvedQuantity: row.approvedQty,
-    }));
+    const items = toApprovePayloadItems(rows);
 
     if (items.length === 0) {
       toast.error('No items to approve');
@@ -181,17 +310,31 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
   };
 
   const toggleSelectAll = (checked: boolean) => {
-    setSelectedItemIds(checked ? new Set(rows.map((row) => row.item.orderDetailId)) : new Set());
+    setSelectedRowIds(checked ? new Set(rows.map((row) => row.rowId)) : new Set());
   };
 
-  const toggleSelectedItem = (orderDetailId: number, checked: boolean) => {
-    setSelectedItemIds((current) => {
+  const toggleSelectedRow = (rowId: string, checked: boolean) => {
+    setSelectedRowIds((current) => {
       const next = new Set(current);
 
       if (checked) {
-        next.add(orderDetailId);
+        next.add(rowId);
       } else {
-        next.delete(orderDetailId);
+        next.delete(rowId);
+      }
+
+      return next;
+    });
+  };
+
+  const toggleExpandedCatalog = (productCatalogId: number) => {
+    setExpandedCatalogIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(productCatalogId)) {
+        next.delete(productCatalogId);
+      } else {
+        next.add(productCatalogId);
       }
 
       return next;
@@ -275,66 +418,143 @@ export function OrderApprovePanel({ order }: { order: OrderRecord }) {
               </TableRow>
             ) : null}
             {rows.map((row) => {
-              const isSelected = selectedItemIds.has(row.item.orderDetailId);
+              const isSelected = selectedRowIds.has(row.rowId);
+              const isCatalog = row.type === 'catalog';
+              const isExpanded = isCatalog && expandedCatalogIds.has(row.productCatalogId);
+              const displayName = isCatalog ? row.catalogName : row.item.productName || 'Unknown';
+              const firstItem = row.items[0];
 
               return (
-                <TableRow
-                  key={row.item.orderDetailId}
-                  className={cn('hover:bg-slate-50/70', isSelected && 'bg-emerald-50/60')}
-                >
-                  <TableCell className="text-center">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={(checked) =>
-                        toggleSelectedItem(row.item.orderDetailId, checked === true)
-                      }
-                      aria-label={`Select ${row.item.productName || row.item.sku || 'order item'}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium text-slate-900">
-                      {row.item.productName || 'Unknown'}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center text-sm text-slate-600">
-                    {row.item.sku || '—'}
-                  </TableCell>
-                  <TableCell className="text-center text-sm text-slate-600">
-                    {row.item.variantAttributes || '—'}
-                  </TableCell>
-                  <TableCell className="text-center text-sm text-slate-600">
-                    {row.warehouseName}
-                  </TableCell>
-                  <TableCell className="text-center font-semibold text-slate-700">
-                    {row.originalQty}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Input
-                      type="number"
-                      min="0"
-                      max={row.originalQty}
-                      value={draftState[row.item.orderDetailId]?.approvedQuantity ?? '0'}
-                      onChange={(e) => updateDraftState(row.item.orderDetailId, e.target.value)}
-                      className={cn(
-                        'w-20 text-center',
-                        row.validationMessage ? 'border-red-500 focus-visible:ring-red-500' : ''
-                      )}
-                    />
-                    {row.validationMessage ? (
-                      <div className="mt-1 text-xs text-red-600">{row.validationMessage}</div>
-                    ) : null}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span
-                      className={cn(
-                        'font-semibold',
-                        row.difference > 0 ? 'text-emerald-600' : 'text-slate-500'
-                      )}
-                    >
-                      {row.difference > 0 ? `+${row.difference}` : row.difference}
-                    </span>
-                  </TableCell>
-                </TableRow>
+                <Fragment key={row.rowId}>
+                  <TableRow
+                    className={cn('hover:bg-slate-50/70', isSelected && 'bg-emerald-50/60')}
+                  >
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) =>
+                          toggleSelectedRow(row.rowId, checked === true)
+                        }
+                        aria-label={`Select ${displayName}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {isCatalog ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => toggleExpandedCatalog(row.productCatalogId)}
+                            aria-label={
+                              isExpanded ? 'Collapse catalog items' : 'Expand catalog items'
+                            }
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                          </Button>
+                        ) : null}
+                        {isCatalog ? <PackageOpen className="h-4 w-4 text-slate-500" /> : null}
+                        <div>
+                          <div className="font-medium text-slate-900">{displayName}</div>
+                          {isCatalog ? (
+                            <div className="text-xs text-slate-500">
+                              {row.items.length} synced catalog item
+                              {row.items.length === 1 ? '' : 's'}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center text-sm text-slate-600">
+                      {isCatalog ? 'Catalog' : row.item.sku || '—'}
+                    </TableCell>
+                    <TableCell className="text-center text-sm text-slate-600">
+                      {isCatalog ? 'Synced' : row.item.variantAttributes || '—'}
+                    </TableCell>
+                    <TableCell className="text-center text-sm text-slate-600">
+                      {isCatalog ? 'Multiple' : row.warehouseName}
+                    </TableCell>
+                    <TableCell className="text-center font-semibold text-slate-700">
+                      {row.originalQty}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Input
+                        type="number"
+                        min="0"
+                        max={row.originalQty}
+                        value={
+                          firstItem
+                            ? (draftState[firstItem.orderDetailId]?.approvedQuantity ?? '0')
+                            : '0'
+                        }
+                        onChange={(e) =>
+                          isCatalog
+                            ? updateCatalogDraftState(row.items, e.target.value)
+                            : updateDraftState(row.item.orderDetailId, e.target.value)
+                        }
+                        className={cn(
+                          'w-20 text-center',
+                          row.validationMessage ? 'border-red-500 focus-visible:ring-red-500' : ''
+                        )}
+                      />
+                      {row.validationMessage ? (
+                        <div className="mt-1 text-xs text-red-600">{row.validationMessage}</div>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span
+                        className={cn(
+                          'font-semibold',
+                          row.difference > 0 ? 'text-emerald-600' : 'text-slate-500'
+                        )}
+                      >
+                        {row.difference > 0 ? `+${row.difference}` : row.difference}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                  {isCatalog && isExpanded
+                    ? row.items.map((item) => (
+                        <TableRow
+                          key={`${row.rowId}-${item.orderDetailId}`}
+                          className="bg-slate-50/70"
+                        >
+                          <TableCell />
+                          <TableCell className="pl-14 text-sm text-slate-700">
+                            {item.productName || 'Unknown'}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-slate-600">
+                            {item.sku || '—'}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-slate-600">
+                            {item.variantAttributes || '—'}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-slate-600">
+                            {item.warehouseId
+                              ? (warehouseNameById.get(item.warehouseId) ?? 'Unknown')
+                              : 'Not set'}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-slate-600">
+                            {Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity)}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-slate-600">
+                            {draftState[item.orderDetailId]?.approvedQuantity ?? '0'}
+                          </TableCell>
+                          <TableCell className="text-center text-sm text-slate-600">
+                            {Math.max(0, item.quantity) +
+                              Math.max(0, item.backOrderQuantity) -
+                              parsePositiveInteger(
+                                draftState[item.orderDetailId]?.approvedQuantity ?? '0'
+                              )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : null}
+                </Fragment>
               );
             })}
           </TableBody>
