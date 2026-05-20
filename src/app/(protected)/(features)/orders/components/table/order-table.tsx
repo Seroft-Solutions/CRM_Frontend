@@ -83,7 +83,7 @@ const statusColors: Record<OrderStatus, string> = {
 };
 
 const saleOrderApproveActionStatuses: OrderStatus[] = ['Created', 'Partially Approved', 'Pending'];
-const saleOrderViewOnlyStatuses: OrderStatus[] = ['Shipped', 'Delivered'];
+const saleOrderViewOnlyStatuses: OrderStatus[] = ['Shipped', 'Delivered', 'Cancelled'];
 
 function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });

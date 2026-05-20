@@ -67,7 +67,7 @@ const purchaseOrderApproveActionStatuses: OrderStatus[] = [
   'PartiallyApproved',
   'Pending',
 ];
-const purchaseOrderViewOnlyStatuses: OrderStatus[] = ['Recived', 'Unpacked'];
+const purchaseOrderViewOnlyStatuses: OrderStatus[] = ['Recived', 'Unpacked', 'Cancel'];
 
 function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
