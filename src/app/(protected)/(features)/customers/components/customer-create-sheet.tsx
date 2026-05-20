@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,15 +24,29 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { IntelligentLocationField } from './intelligent-location-field';
+import { AddressListField } from '@/components/address-list-field';
 import { useCreateCustomer } from '@/core/api/generated/spring/endpoints/customer-resource/customer-resource.gen';
+import { createCustomerAddress } from '../api/customer-address';
 import { customerToast, handleCustomerError } from './customer-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { InlinePermissionGuard } from '@/core/auth';
 import type { AreaDTO, CustomerDTO } from '@/core/api/generated/spring/schemas';
 import { CustomerDTOStatus } from '@/core/api/generated/spring/schemas';
+
+const addressItemSchema = z.object({
+  title: z.string().optional(),
+  completeAddress: z
+    .string({ message: 'Address is required' })
+    .min(1, { message: 'Address is required' }),
+  area: z.custom<AreaDTO>(
+    (val) => {
+      return val && typeof val === 'object' && 'id' in val && 'name' in val;
+    },
+    { message: 'Please select a location' }
+  ),
+  isDefault: z.boolean().optional(),
+});
 
 const customerCreationSchema = z.object({
   customerBusinessName: z
@@ -61,18 +75,7 @@ const customerCreationSchema = z.object({
       .max(100, { message: 'Please enter no more than 100 characters' })
       .optional()
       .or(z.literal('')),
-  completeAddress: z
-      .string({ message: 'Address is required' })
-      .min(1, { message: 'Address is required' })
-      .max(255, { message: 'Please enter no more than 255 characters' }),
-  area: z.custom<AreaDTO>(
-      (val) => {
-        return val && typeof val === 'object' && 'id' in val && 'name' in val;
-      },
-      {
-        message: 'Please select a location',
-      }
-  ),
+  addresses: z.array(addressItemSchema).min(1, 'At least one address is required'),
 });
 
 type CustomerCreationFormData = z.infer<typeof customerCreationSchema>;
@@ -161,13 +164,14 @@ const detectCountryFromLocation = async (): Promise<RPNInput.Country | undefined
 };
 
 export function CustomerCreateSheet({
-                                      onSuccess,
-                                      trigger,
-                                      isBusinessPartner = false,
-                                    }: CustomerCreateSheetProps) {
+                                       onSuccess,
+                                       trigger,
+                                       isBusinessPartner = false,
+                                     }: CustomerCreateSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [whatsAppManuallyEdited, setWhatsAppManuallyEdited] = useState(false);
   const [defaultPhoneCountry, setDefaultPhoneCountry] = useState<RPNInput.Country | undefined>(undefined);
+  const pendingAddressRef = useRef<Array<{ completeAddress: string; area: AreaDTO }> | null>(null);
   const queryClient = useQueryClient();
 
   const form = useForm<CustomerCreationFormData>({
@@ -178,14 +182,33 @@ export function CustomerCreateSheet({
       mobile: '',
       whatsApp: '',
       contactPerson: '',
-      completeAddress: '',
-      area: undefined,
+      addresses: [{ title: '', completeAddress: '', area: undefined, isDefault: true }],
     },
   });
 
   const { mutate: createCustomer, isPending } = useCreateCustomer({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        const customerId = data?.id;
+        const pendingAddresses = pendingAddressRef.current;
+
+        if (customerId && pendingAddresses?.length) {
+          try {
+            await Promise.all(
+              pendingAddresses.map(address =>
+                createCustomerAddress({
+                  completeAddress: address.completeAddress,
+                  area: address.area,
+                  isDefault: true,
+                  customer: { id: customerId, customerBusinessName: undefined },
+                })
+              )
+            );
+          } catch {
+            // Address creation failure is non-blocking; customer was already created
+          }
+        }
+
         queryClient.invalidateQueries({
           queryKey: ['getAllCustomers'],
           refetchType: 'active',
@@ -204,10 +227,12 @@ export function CustomerCreateSheet({
         setIsOpen(false);
         form.reset();
         setWhatsAppManuallyEdited(false);
+        pendingAddressRef.current = null;
 
         onSuccess?.(data);
       },
       onError: (error) => {
+        pendingAddressRef.current = null;
         handleCustomerError(error);
       },
     },
@@ -220,11 +245,15 @@ export function CustomerCreateSheet({
       mobile: data.mobile,
       whatsApp: data.whatsApp || data.mobile,
       contactPerson: data.contactPerson || undefined,
-      completeAddress: data.completeAddress || undefined,
-
-      area: data.area,
       status: CustomerDTOStatus.ACTIVE,
     } as any;
+
+    pendingAddressRef.current = (data.addresses || [])
+      .filter(addr => addr.completeAddress?.trim())
+      .map(addr => ({
+        completeAddress: addr.completeAddress,
+        area: addr.area,
+      }));
 
     createCustomer({ data: customerData });
   };
@@ -456,57 +485,14 @@ export function CustomerCreateSheet({
                   />
                 </div>
 
-                {/* Location Information Section */}
-                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-base font-semibold text-slate-900">Location</h3>
-                    <p className="text-xs text-slate-500">
-                      Search for the area to automatically attach its full hierarchy.
-                    </p>
-                  </div>
-
-                  <FormField
-                      control={form.control}
-                      name="area"
-                      render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-semibold text-slate-700">
-                              City and Zipcode
-                              <span className="text-red-500 ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <IntelligentLocationField
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  onError={(error) => {
-                                    form.setError('area', { message: error });
-                                  }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                      )}
-                  />
-
-                  <FormField
-                      control={form.control}
-                      name="completeAddress"
-                      render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-semibold text-slate-700">
-                              Address
-                              <span className="text-red-500 ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Textarea
-                                  placeholder="Enter address"
-                                  {...field}
-                                  className="resize-none min-h-[80px] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                      )}
+                {/* Customer Address Section */}
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <AddressListField
+                    form={form}
+                    name="addresses"
+                    label="Addresses"
+                    description="Add one or more addresses and select the default."
+                    showLocationFields
                   />
                 </div>
               </form>
