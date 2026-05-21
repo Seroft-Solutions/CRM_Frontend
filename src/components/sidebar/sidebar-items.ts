@@ -323,6 +323,7 @@ export const sidebarItems: SidebarItem[] = [
     key: 'productManagement',
     label: 'Product Management',
     path: '/products',
+    requiredPermission: 'product:sidebar',
     icon: Box,
     expandable: false,
     children: [
