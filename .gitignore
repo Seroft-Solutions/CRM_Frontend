@@ -80,3 +80,12 @@ tasks/
 
 .gemini/
 gha-creds-*.json
+/scripts/extract-group-roles.mjs
+/src/core/auth/roles-by-group/admins.json
+/src/core/auth/roles-by-group/business-partners.json
+/src/core/auth/roles-by-group/packer.json
+/src/core/auth/roles-by-group/picker.json
+/src/core/auth/roles-by-group/sales-manager.json
+/src/core/auth/roles-by-group/salesman.json
+/src/core/auth/roles-by-group/super-admins.json
+/src/core/auth/roles-by-group/users.json

@@ -514,9 +514,6 @@ export function OrderFulfillmentHistoryDetail({
       quantity,
     }));
   }, [invoiceItems]);
-  const taxableAmount = Math.max(invoiceSubtotal, 0);
-  const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
-  const invoiceGrandTotal = Math.max(taxableAmount + taxAmount, 0);
   const invoiceDateLabel = formatInvoiceDisplayDate(generation.createdDate);
   const orderNumberLabel = `PO/${order.orderId}-${generation.generationNumber ?? generation.id ?? ''}`;
   const transportLabel = compactTextValue(order.shipping.shippingMethod);
@@ -949,7 +946,7 @@ export function OrderFulfillmentHistoryDetail({
                         Total Amount :
                       </td>
                       <td className="invoice-accent-green border border-black px-2 py-2 text-center font-semibold">
-                        {formatInvoiceNumberValue(invoiceGrandTotal || invoiceSubtotal)}
+                        {formatInvoiceNumberValue(invoiceSubtotal)}
                       </td>
                     </tr>
                   </tbody>

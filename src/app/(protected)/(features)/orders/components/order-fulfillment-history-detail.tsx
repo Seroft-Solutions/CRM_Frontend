@@ -20,7 +20,6 @@ import {
   getAddressLines,
   getCustomerDisplayName,
   getFulfillmentRecordLabel,
-  getOrderDiscountAmount,
 } from './order-fulfillment-utils';
 
 interface OrderFulfillmentHistoryDetailProps {
@@ -724,7 +723,6 @@ export function OrderFulfillmentHistoryDetail({
     [invoiceItems, optionLabelsById, selectionsByVariantId, variantById]
   );
 
-  const overallDiscountAmount = getOrderDiscountAmount(order);
   const invoiceSubtotal = useMemo(
     () => resolvedInvoiceItems.reduce((sum, item) => sum + item.lineTotal, 0),
     [resolvedInvoiceItems]
@@ -747,15 +745,6 @@ export function OrderFulfillmentHistoryDetail({
       quantity,
     }));
   }, [resolvedInvoiceItems]);
-  const invoiceGrandTotal = useMemo(() => {
-    const fulfillmentShare =
-      order.orderBaseAmount > 0 ? Math.min(invoiceSubtotal / order.orderBaseAmount, 1) : 0;
-    const allocatedDiscountAmount = overallDiscountAmount * fulfillmentShare;
-    const taxableAmount = Math.max(invoiceSubtotal - allocatedDiscountAmount, 0);
-    const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
-
-    return Math.max(taxableAmount + taxAmount, 0);
-  }, [invoiceSubtotal, order.orderBaseAmount, overallDiscountAmount, order.orderTaxRate]);
   const invoiceDateLabel = formatInvoiceDisplayDate(generation.createdDate);
   const orderNumberLabel = `ORD/${order.orderId}-${generation.generationNumber ?? generation.id ?? ''}`;
   const transportLabel = compactTextValue(order.shipping.shippingMethod);
@@ -855,7 +844,20 @@ export function OrderFulfillmentHistoryDetail({
           <Printer className="h-4 w-4" />
           Print Invoice
         </Button>
-
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleDownloadPdf}
+          disabled={isDownloading}
+          className="gap-2"
+        >
+          {isDownloading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+          Download PDF
+        </Button>
       </div>
 
       <div
@@ -1178,7 +1180,7 @@ export function OrderFulfillmentHistoryDetail({
                         Total Amount :
                       </td>
                       <td className="invoice-accent-green border border-black px-2 py-2 text-center font-semibold">
-                        {formatInvoiceNumberValue(invoiceGrandTotal || invoiceSubtotal)}
+                        {formatInvoiceNumberValue(invoiceSubtotal)}
                       </td>
                     </tr>
                   </tbody>

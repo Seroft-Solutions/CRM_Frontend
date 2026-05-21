@@ -40,10 +40,7 @@ export function getPurchaseOrderFulfillmentTotalAmount(
     return sum + receivedQuantity * unitPrice;
   }, 0);
 
-  const taxableAmount = Math.max(invoiceSubtotal, 0);
-  const taxAmount = (order.orderTaxRate / 100) * taxableAmount;
-
-  return Math.max(taxableAmount + taxAmount, 0);
+  return Math.max(invoiceSubtotal, 0);
 }
 
 export function getAddressLines(address?: AddressFields) {
