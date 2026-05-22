@@ -63,10 +63,9 @@ import {
   paymentStatusOptions,
   shippingMethodOptions,
 } from '../../data/order-data';
-import { useOrderRecord, useOrderTableData } from '../../hooks';
+import { useCurrentUserPickPackGroups, useOrderRecord, useOrderTableData } from '../../hooks';
 
 const EXCLUDED_ASSIGNED_EMAIL = 'admin@gmail.com';
-const normalizeGroupName = (name?: string) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const statusColors: Record<OrderStatus, string> = {
   Created: 'bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20',
@@ -211,39 +210,7 @@ export function OrderTable({
       sortDirection: 'asc',
     });
   const isMounted = useRef(false);
-  const currentOrganizationUser = useMemo(
-    () =>
-      (organizationMembers || []).find((user: OrganizationUser) => {
-        const accountId = accountData?.id != null ? String(accountData.id) : '';
-        const accountLogin = accountData?.login?.toLowerCase?.() || '';
-
-        return (
-          (accountId && user.id === accountId) ||
-          (accountLogin &&
-            (user.username?.toLowerCase?.() === accountLogin ||
-              user.email?.toLowerCase?.() === accountLogin))
-        );
-      }),
-    [accountData?.id, accountData?.login, organizationMembers]
-  );
-  const isPickerUser = useMemo(
-    () =>
-      (currentOrganizationUser?.assignedGroups || []).some((group: { name?: string }) => {
-        const groupName = normalizeGroupName(group.name);
-
-        return groupName === 'picker' || groupName === 'pickers';
-      }),
-    [currentOrganizationUser]
-  );
-  const isPackerUser = useMemo(
-    () =>
-      (currentOrganizationUser?.assignedGroups || []).some((group: { name?: string }) => {
-        const groupName = normalizeGroupName(group.name);
-
-        return groupName === 'packer' || groupName === 'packers';
-      }),
-    [currentOrganizationUser]
-  );
+  const { isPickerUser, isPackerUser } = useCurrentUserPickPackGroups();
   const restrictedStatusTabs = useMemo(
     () =>
       [isPickerUser || isPackerUser ? 'Approved' : null].filter((status): status is OrderStatus =>
@@ -1125,7 +1092,8 @@ export function OrderTable({
               const isUpdatingThisRow = updatingOrderId === order.orderId;
               const isUpdatingAssignee = updatingAssigneeOrderId === order.orderId;
               const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
-              const showApproveAction = saleOrderApproveActionStatuses.includes(displayedStatus);
+              const showApproveAction =
+                !isPickerPackerUser && saleOrderApproveActionStatuses.includes(displayedStatus);
               const showEditAndPackingActions =
                 !saleOrderViewOnlyStatuses.includes(displayedStatus);
 
@@ -1279,14 +1247,16 @@ export function OrderTable({
                             View
                           </Link>
                         </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-6 px-2 text-[10px] gap-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded"
-                        >
-                          <Barcode className="h-3 w-3" />
-                          Print Barcode
-                        </Button>
+                        {!isPickerPackerUser ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-6 px-2 text-[10px] gap-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded"
+                          >
+                            <Barcode className="h-3 w-3" />
+                            Print Barcode
+                          </Button>
+                        ) : null}
                         {showApproveAction && (
                           <Button
                             asChild
@@ -1308,19 +1278,21 @@ export function OrderTable({
                             >
                               <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
                                 <Package className="h-3 w-3" />
-                                Start Packing
+                                Start Picking
                               </Link>
                             </Button>
-                            <Button
-                              asChild
-                              size="sm"
-                              className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded"
-                            >
-                              <Link href={`/orders/${order.orderId}/edit`}>
-                                <Pencil className="h-3 w-3" />
-                                Edit
-                              </Link>
-                            </Button>
+                            {!isPickerPackerUser ? (
+                              <Button
+                                asChild
+                                size="sm"
+                                className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded"
+                              >
+                                <Link href={`/orders/${order.orderId}/edit`}>
+                                  <Pencil className="h-3 w-3" />
+                                  Edit
+                                </Link>
+                              </Button>
+                            ) : null}
                           </>
                         )}
                       </div>

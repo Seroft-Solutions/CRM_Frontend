@@ -37,7 +37,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import { type PurchaseOrderDTO, usePartialUpdatePurchaseOrder } from '@/core/api/purchase-order';
 import { useCreatePurchaseOrderHistory } from '@/core/api/purchase-order-history';
-import { InlinePermissionGuard, useRBAC } from '@/core/auth';
+import { InlinePermissionGuard } from '@/core/auth';
+import { useCurrentUserPickPackGroups } from '@/app/(protected)/(features)/orders/hooks';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
   getOrderStatusCode,
@@ -185,15 +186,24 @@ export function OrderTable({
   const [statusOverrides, setStatusOverrides] = useState<Record<number, OrderStatus>>({});
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const queryClient = useQueryClient();
-  const rbac = useRBAC();
-
-  const canUsePickAndPack = ['pick-and-pack', 'PICK_AND_PACK', 'PICK-AND-PACK', 'Pick & Pack'].some(
-    (group) => rbac.hasGroup(group)
-  );
+  const { isPickerUser, isPackerUser, isPickerPackerUser } = useCurrentUserPickPackGroups();
   const isMounted = useRef(false);
   const { mutateAsync: partialUpdateOrder } = usePartialUpdatePurchaseOrder();
   const { mutateAsync: createOrderHistory } = useCreatePurchaseOrderHistory();
-  const statusTabOptions = entityStatus === 'DRAFT' ? orderStatusOptions : orderStatusTabOrder;
+  const restrictedStatusTabs = useMemo(
+    () =>
+      [isPickerUser || isPackerUser ? 'Approved' : null].filter((status): status is OrderStatus =>
+        Boolean(status)
+      ),
+    [isPackerUser, isPickerUser]
+  );
+  const isPickerPackerRestrictedView = entityStatus === 'ACTIVE' && restrictedStatusTabs.length > 0;
+  const statusTabOptions = isPickerPackerRestrictedView
+    ? restrictedStatusTabs
+    : entityStatus === 'DRAFT'
+      ? orderStatusOptions
+      : orderStatusTabOrder;
+  const showAllStatusTab = !isPickerPackerRestrictedView;
 
   // Filter states
   const [filters, setFilters] = useState<{
@@ -224,6 +234,17 @@ export function OrderTable({
 
   const hasActiveFilters =
     Object.values(filters).some((v) => v && v.length > 0) || searchTerm.length > 0;
+
+  useEffect(() => {
+    if (!isPickerPackerRestrictedView) {
+      return;
+    }
+
+    if (statusFilter === 'All' || !restrictedStatusTabs.includes(statusFilter)) {
+      setStatusFilter(restrictedStatusTabs[0]);
+      setCurrentPage(1);
+    }
+  }, [isPickerPackerRestrictedView, restrictedStatusTabs, statusFilter]);
 
   const { orders, totalCount, isLoading, isError } = usePurchaseOrderTableData({
     entityStatus,
@@ -614,9 +635,11 @@ export function OrderTable({
             className="w-full"
           >
             <TabsList className="arrow-tabs h-auto w-full justify-start bg-transparent p-0">
-              <TabsTrigger value="All" className="arrow-tab">
-                {allTabLabel}
-              </TabsTrigger>
+              {showAllStatusTab ? (
+                <TabsTrigger value="All" className="arrow-tab">
+                  {allTabLabel}
+                </TabsTrigger>
+              ) : null}
               {statusTabOptions.map((status) => (
                 <TabsTrigger key={status} value={status} className="arrow-tab">
                   {status}
@@ -910,6 +933,7 @@ export function OrderTable({
               const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
               const isViewOnlyStatus = purchaseOrderViewOnlyStatuses.includes(displayedStatus);
               const showApproveAction =
+                !isPickerPackerUser &&
                 !isViewOnlyStatus &&
                 (purchaseOrderApproveActionStatuses.includes(displayedStatus) ||
                   displayedStatus !== 'Approved');
@@ -1056,14 +1080,16 @@ export function OrderTable({
                             View
                           </Link>
                         </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-6 px-2 text-[10px] gap-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded"
-                        >
-                          <Barcode className="h-3 w-3" />
-                          Print Barcode
-                        </Button>
+                        {!isPickerPackerUser ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-6 px-2 text-[10px] gap-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded"
+                          >
+                            <Barcode className="h-3 w-3" />
+                            Print Barcode
+                          </Button>
+                        ) : null}
                         {showApproveAction && (
                           <Button
                             asChild
@@ -1078,28 +1104,28 @@ export function OrderTable({
                         )}
                         {showEditAndPackingActions && (
                           <>
-                            {canUsePickAndPack ? (
-                              <Button
-                                asChild
-                                size="sm"
-                                className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
-                              >
-                                <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
-                                  <Package className="h-3 w-3" />
-                                  Start Packing
-                                </Link>
-                              </Button>
-                            ) : null}
                             <Button
                               asChild
                               size="sm"
-                              className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded"
+                              className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
                             >
-                              <Link href={`/purchase-orders/${order.orderId}/edit`}>
-                                <Pencil className="h-3 w-3" />
-                                Edit
+                              <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
+                                <Package className="h-3 w-3" />
+                                Start Picking
                               </Link>
                             </Button>
+                            {!isPickerPackerUser ? (
+                              <Button
+                                asChild
+                                size="sm"
+                                className="h-6 px-2 text-[10px] gap-1 bg-slate-600 hover:bg-slate-700 text-white rounded"
+                              >
+                                <Link href={`/purchase-orders/${order.orderId}/edit`}>
+                                  <Pencil className="h-3 w-3" />
+                                  Edit
+                                </Link>
+                              </Button>
+                            ) : null}
                           </>
                         )}
                       </div>

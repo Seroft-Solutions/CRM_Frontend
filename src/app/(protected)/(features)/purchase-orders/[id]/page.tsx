@@ -7,7 +7,7 @@ import { CheckCircle, ArrowLeft, Edit, ScanBarcode } from 'lucide-react';
 import { useState, use } from 'react';
 import { OrderRecord } from '../data/purchase-order-data';
 import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
-import { useRBAC } from '@/core/auth';
+import { useCurrentUserPickPackGroups } from '@/app/(protected)/(features)/orders/hooks';
 
 interface OrderPageProps {
   params: Promise<{
@@ -19,10 +19,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
   const { id: idParam } = use(params);
   const id = parseInt(idParam, 10);
   const [orderData, setOrderData] = useState<OrderRecord | null>(null);
-  const rbac = useRBAC();
-  const canUsePickAndPack = ['pick-and-pack', 'PICK_AND_PACK', 'PICK-AND-PACK', 'Pick & Pack'].some(
-    (group) => rbac.hasGroup(group)
-  );
+  const { isPickerPackerUser } = useCurrentUserPickPackGroups();
 
   return (
     <div className="po-detail-page -m-4 flex flex-col min-h-[calc(100vh-12px)]">
@@ -39,6 +36,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
       <OrderDetailContainer
         orderId={id}
         onOrderLoaded={setOrderData}
+        isPickerPackerUser={isPickerPackerUser}
         headerSlot={
           <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white">
             <div className="flex items-center gap-2.5 mr-auto">
@@ -63,6 +61,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                 </Link>
               </Button>
               {orderData &&
+                !isPickerPackerUser &&
                 ['Created', 'PartiallyApproved', 'Pending'].includes(orderData.orderStatus) && (
                   <Button
                     asChild
@@ -75,7 +74,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                     </Link>
                   </Button>
                 )}
-              {orderData && canUsePickAndPack ? (
+              {orderData ? (
                 <Button
                   asChild
                   size="sm"
@@ -83,22 +82,24 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                 >
                   <Link href={`/purchase-orders/${id}/fulfillment`}>
                     <ScanBarcode className="h-3 w-3" />
-                    Pick & Pack
+                    Start Picking
                   </Link>
                 </Button>
               ) : null}
-              <Button
-                asChild
-                size="sm"
-                variant="ghost"
-                className="h-7 px-2.5 text-[11px] gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800"
-              >
-                <Link href={`/purchase-orders/${id}/edit`}>
-                  <Edit className="h-3 w-3" />
-                  Edit
-                </Link>
-              </Button>
-              {orderData && (
+              {!isPickerPackerUser ? (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2.5 text-[11px] gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800"
+                >
+                  <Link href={`/purchase-orders/${id}/edit`}>
+                    <Edit className="h-3 w-3" />
+                    Edit
+                  </Link>
+                </Button>
+              ) : null}
+              {orderData && !isPickerPackerUser && (
                 <div className="[&_button]:bg-transparent [&_button]:border-slate-600 [&_button]:text-slate-300 [&_button]:hover:bg-slate-800 [&_button]:hover:text-white [&_button]:h-7 [&_button]:px-2.5 [&_button]:text-[11px]">
                   <InvoicePrintButton order={orderData} orderType="purchase" />
                 </div>

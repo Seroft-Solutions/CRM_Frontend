@@ -148,9 +148,10 @@ function Metric({
 interface OrderDetailProps {
   order: OrderRecord;
   headerSlot?: ReactNode;
+  isPickerPackerUser?: boolean;
 }
 
-export function OrderDetail({ order, headerSlot }: OrderDetailProps) {
+export function OrderDetail({ order, headerSlot, isPickerPackerUser = false }: OrderDetailProps) {
   const { data: fulfillmentGenerations = [] } = useGetPurchaseOrderFulfillmentGenerations(
     order.orderId
   );
@@ -289,17 +290,19 @@ export function OrderDetail({ order, headerSlot }: OrderDetailProps) {
               {displayItems.length}
             </span>
             <div className="ml-auto flex items-center gap-1">
-              <Button
-                asChild
-                size="sm"
-                variant="ghost"
-                className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-sidebar-accent-foreground"
-              >
-                <Link href={`/purchase-orders/${order.orderId}/fulfillment/history`}>
-                  <History className="h-3 w-3" />
-                  History
-                </Link>
-              </Button>
+              {!isPickerPackerUser ? (
+                <Button
+                  asChild
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-[10px] gap-1 text-slate-500 hover:text-sidebar-accent-foreground"
+                >
+                  <Link href={`/purchase-orders/${order.orderId}/fulfillment/history`}>
+                    <History className="h-3 w-3" />
+                    History
+                  </Link>
+                </Button>
+              ) : null}
               <Button
                 asChild
                 size="sm"
@@ -307,7 +310,7 @@ export function OrderDetail({ order, headerSlot }: OrderDetailProps) {
               >
                 <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
                   <PackageCheck className="h-3 w-3" />
-                  Fulfill
+                  Start Picking
                 </Link>
               </Button>
             </div>

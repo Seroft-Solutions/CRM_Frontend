@@ -10,9 +10,15 @@ interface OrderDetailContainerProps {
   orderId: number;
   onOrderLoaded?: (order: OrderRecord) => void;
   headerSlot?: ReactNode;
+  isPickerPackerUser?: boolean;
 }
 
-export function OrderDetailContainer({ orderId, onOrderLoaded, headerSlot }: OrderDetailContainerProps) {
+export function OrderDetailContainer({
+  orderId,
+  onOrderLoaded,
+  headerSlot,
+  isPickerPackerUser = false,
+}: OrderDetailContainerProps) {
   const { orderRecord, isLoading, isError } = useOrderRecord(orderId, { includeHistory: true });
 
   useEffect(() => {
@@ -45,5 +51,11 @@ export function OrderDetailContainer({ orderId, onOrderLoaded, headerSlot }: Ord
     );
   }
 
-  return <OrderDetail order={orderRecord} headerSlot={headerSlot} />;
+  return (
+    <OrderDetail
+      order={orderRecord}
+      headerSlot={headerSlot}
+      isPickerPackerUser={isPickerPackerUser}
+    />
+  );
 }

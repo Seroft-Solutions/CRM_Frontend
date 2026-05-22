@@ -8,6 +8,7 @@ import { useState, use } from 'react';
 import { OrderRecord } from '../data/order-data';
 import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
 import { PermissionGuard } from '@/core/auth';
+import { useCurrentUserPickPackGroups } from '../hooks';
 
 interface OrderPageProps {
   params: Promise<{
@@ -19,6 +20,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
   const { id: idParam } = use(params);
   const id = parseInt(idParam, 10);
   const [orderData, setOrderData] = useState<OrderRecord | null>(null);
+  const { isPickerPackerUser } = useCurrentUserPickPackGroups();
 
   return (
     <PermissionGuard
@@ -40,6 +42,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
         <OrderDetailContainer
           orderId={id}
           onOrderLoaded={setOrderData}
+          isPickerPackerUser={isPickerPackerUser}
           headerSlot={
             <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white">
               <div className="flex items-center gap-2.5 mr-auto">
@@ -64,6 +67,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                   </Link>
                 </Button>
                 {orderData &&
+                  !isPickerPackerUser &&
                   ['Created', 'Partially Approved', 'Pending'].includes(orderData.orderStatus) && (
                     <Button
                       asChild
@@ -76,18 +80,20 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                       </Link>
                     </Button>
                   )}
-                <Button
-                  asChild
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2.5 text-[11px] gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800"
-                >
-                  <Link href={`/orders/${id}/edit`}>
-                    <Edit className="h-3 w-3" />
-                    Edit
-                  </Link>
-                </Button>
-                {orderData && (
+                {!isPickerPackerUser ? (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2.5 text-[11px] gap-1.5 text-slate-300 hover:text-white hover:bg-slate-800"
+                  >
+                    <Link href={`/orders/${id}/edit`}>
+                      <Edit className="h-3 w-3" />
+                      Edit
+                    </Link>
+                  </Button>
+                ) : null}
+                {orderData && !isPickerPackerUser && (
                   <div className="[&_button]:bg-transparent [&_button]:border-slate-600 [&_button]:text-slate-300 [&_button]:hover:bg-slate-800 [&_button]:hover:text-white [&_button]:h-7 [&_button]:px-2.5 [&_button]:text-[11px]">
                     <InvoicePrintButton order={orderData} orderType="sales" />
                   </div>
