@@ -118,7 +118,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/crm-frontend:latest
           platforms: linux/amd64
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,ignore-error=true
           build-args: |
             BUILDKIT_INLINE_CACHE=1
             NODE_ENV=production
