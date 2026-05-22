@@ -78,7 +78,9 @@ export function useOrganizationSettings(): UseOrganizationSettingsReturn {
         organizationSettings: updatedSettings,
         isUpdating: false,
       }));
-      toast.success('Organization settings updated successfully');
+      toast.success('✅ Updated!', {
+        description: 'Organization settings updated successfully',
+      });
 
       return true;
     } catch (error) {
