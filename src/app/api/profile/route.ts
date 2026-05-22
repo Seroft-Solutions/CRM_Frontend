@@ -3,7 +3,7 @@
  * Handles user profile operations server-side to avoid CORS issues
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { keycloakService } from '@/core/api/services/keycloak-service';
 import type { UserRepresentation } from '@/core/api/generated/keycloak';
@@ -16,7 +16,7 @@ import { SPRING_API_URL } from '@/core/api/config/constants';
 /**
  * Get current user profile from both Keycloak and Spring backend
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
 
@@ -63,7 +63,7 @@ export async function GET() {
       const keycloakId = keycloakUser?.id || session.user.id;
       const email = session.user.email || keycloakUser?.email || null;
 
-      springProfile = await fetchSpringProfile(accessToken, keycloakId, email);
+      springProfile = await fetchSpringProfile(accessToken, keycloakId, email, getSelectedTenantHeader(request));
     } catch (springError) {
       console.warn('Failed to fetch Spring profile:', springError);
     }
@@ -107,10 +107,20 @@ function getErrorStatus(error: unknown): number {
   return 500;
 }
 
-async function fetchSpringProfile(accessToken: string, keycloakId: string, email: string | null) {
+function getSelectedTenantHeader(request: NextRequest): string | null {
+  return request.cookies.get('selectedOrganizationName')?.value || null;
+}
+
+async function fetchSpringProfile(
+  accessToken: string,
+  keycloakId: string,
+  email: string | null,
+  tenantHeader: string | null
+) {
   const headers = {
     Authorization: `Bearer ${accessToken}`,
     'Content-Type': 'application/json',
+    ...(tenantHeader ? { 'X-Tenant-Name': tenantHeader } : {}),
   };
 
   const byKeycloakIdResponse = await fetch(

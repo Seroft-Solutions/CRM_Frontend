@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     const springFormData = new FormData();
 
     springFormData.append('file', file);
+    const tenantHeader = getSelectedTenantHeader(request);
 
     const springResponse = await fetch(
       `${SPRING_API_URL}/api/user-profiles/current/profile-picture`,
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          ...(tenantHeader ? { 'X-Tenant-Name': tenantHeader } : {}),
         },
         body: springFormData,
       }
@@ -132,6 +134,10 @@ export async function POST(request: NextRequest) {
       { status: getErrorStatus(error) }
     );
   }
+}
+
+function getSelectedTenantHeader(request: NextRequest): string | null {
+  return request.cookies.get('selectedOrganizationName')?.value || null;
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {

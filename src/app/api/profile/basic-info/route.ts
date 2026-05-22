@@ -98,7 +98,8 @@ export async function PUT(request: NextRequest) {
         throw new Error('Missing access token in session');
       }
 
-      const existingProfile = await fetchSpringProfile(accessToken, userId, email);
+      const tenantHeader = getSelectedTenantHeader(request);
+      const existingProfile = await fetchSpringProfile(accessToken, userId, email, tenantHeader);
 
       if (existingProfile) {
         const updatedProfile: Partial<UserProfileDTO> = {
@@ -116,6 +117,7 @@ export async function PUT(request: NextRequest) {
             headers: {
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
+              ...(tenantHeader ? { 'X-Tenant-Name': tenantHeader } : {}),
             },
             body: JSON.stringify(updatedProfile),
           }
@@ -137,6 +139,7 @@ export async function PUT(request: NextRequest) {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
+            ...(tenantHeader ? { 'X-Tenant-Name': tenantHeader } : {}),
           },
           body: JSON.stringify(newProfile),
         });
@@ -203,10 +206,20 @@ function getErrorStatus(error: unknown): number {
   return 500;
 }
 
-async function fetchSpringProfile(accessToken: string, keycloakId: string, email: string | null) {
+function getSelectedTenantHeader(request: NextRequest): string | null {
+  return request.cookies.get('selectedOrganizationName')?.value || null;
+}
+
+async function fetchSpringProfile(
+  accessToken: string,
+  keycloakId: string,
+  email: string | null,
+  tenantHeader: string | null
+) {
   const headers = {
     Authorization: `Bearer ${accessToken}`,
     'Content-Type': 'application/json',
+    ...(tenantHeader ? { 'X-Tenant-Name': tenantHeader } : {}),
   };
 
   const byKeycloakIdResponse = await fetch(
