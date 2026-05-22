@@ -58,6 +58,7 @@ jobs:
     steps:
       - name: Checkout backend repo for deployment scripts
         uses: actions/checkout@v4
+        continue-on-error: true
         with:
           repository: ${{ github.repository_owner }}/CRM_Backend
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -75,6 +76,11 @@ jobs:
 
       - name: Copy deployment files
         run: |
+          if [ ! -d backend/src/main/docker ]; then
+            echo "Backend deployment files were not checked out; using existing files on server."
+            exit 0
+          fi
+
           ssh -p 50489 ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_HOST }} "mkdir -p ~/crm-deployment"
           scp -P 50489 -r backend/src/main/docker ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_HOST }}:~/crm-deployment/
           ssh -p 50489 ${{ secrets.DEV_SERVER_USER }}@${{ secrets.DEV_SERVER_HOST }} "chmod +x ~/crm-deployment/docker/deploy.sh"
