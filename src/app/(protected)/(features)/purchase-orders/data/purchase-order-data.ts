@@ -151,6 +151,8 @@ export interface OrderDetailItem {
   productCatalogId?: number;
   warehouseId?: number;
   productName?: string;
+  barcodeText?: string;
+  articleNumber?: string;
   sku?: string;
   variantAttributes?: string;
   itemStatus: string;
@@ -345,9 +347,13 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
 };
 
 type PurchaseOrderDetailDtoWithItemStatus = PurchaseOrderDetailDTO & {
+  articleNumber?: string | null;
+  barcodeText?: string | null;
   itemStatus?: ItemStatusCode | string | null;
   comment?: string | null;
   itemComment?: string | null;
+  productArticleNumber?: string | null;
+  productBarcodeText?: string | null;
 };
 
 export const mapOrderDetailDto = (detail: PurchaseOrderDetailDTO): OrderDetailItem => {
@@ -368,6 +374,9 @@ export const mapOrderDetailDto = (detail: PurchaseOrderDetailDTO): OrderDetailIt
     productCatalogId: detail.productCatalogId ?? undefined,
     warehouseId: detail.warehouseId ?? undefined,
     productName: detail.productName ?? undefined,
+    barcodeText: detailWithStatus.barcodeText ?? detailWithStatus.productBarcodeText ?? undefined,
+    articleNumber:
+      detailWithStatus.articleNumber ?? detailWithStatus.productArticleNumber ?? undefined,
     sku: detail.sku ?? undefined,
     variantAttributes: detail.variantAttributes ?? undefined,
     itemStatus,

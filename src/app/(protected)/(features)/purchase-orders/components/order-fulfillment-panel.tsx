@@ -1,14 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Eye, History, Pencil, PackageCheck, RefreshCcw, Sparkles } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Eye,
+  History,
+  Pencil,
+  PackageCheck,
+  RefreshCcw,
+  ScanBarcode,
+  Sparkles,
+  XCircle,
+} from 'lucide-react';
+import { BarcodeScanner } from '@/components/scanner/barcode-scanner';
+import {
+  normalizeScannedCode,
+  useBarcodeScanner,
+  type BarcodeScanResult,
+  type BarcodeScanSource,
+} from '@/components/scanner/use-barcode-scanner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useGetAllProducts, type ProductDTO } from '@/core/api/generated/spring';
 import {
   Table,
   TableBody,
@@ -18,7 +37,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { useRBAC } from '@/core/auth';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
+import { normalizeProductCodeForBarcode } from '@/app/(protected)/(features)/products/components/barcode-utils';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import {
   useCreatePurchaseOrderFulfillmentGeneration,
@@ -29,6 +50,14 @@ import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks
 import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillment-utils';
 
 type FulfillmentDraftState = Record<number, { selected: boolean; quantity: string }>;
+type FulfillmentScanState = 'idle' | 'scanning' | 'complete' | 'overrun';
+type FulfillmentScanMatchType = 'barcodeText' | 'sku' | 'partial';
+type ScannableFulfillmentItem = OrderDetailItem & {
+  resolvedBarcodeText?: string;
+  resolvedSku?: string;
+};
+
+const PICK_AND_PACK_GROUPS = ['pick-and-pack', 'PICK_AND_PACK', 'PICK-AND-PACK', 'Pick & Pack'];
 
 const parsePositiveInteger = (value: string) => {
   const parsed = Number.parseInt(value, 10);
@@ -54,6 +83,72 @@ const getErrorMessage = (error: unknown) => {
   return 'Unable to save purchase order fulfillment.';
 };
 
+const normalizeFulfillmentCode = (value?: string | null) => {
+  if (!value) return '';
+
+  return normalizeProductCodeForBarcode(value) || normalizeScannedCode(value);
+};
+
+const getScanState = (scannedQty: number, requiredQty: number): FulfillmentScanState => {
+  if (scannedQty <= 0) return 'idle';
+  if (scannedQty > requiredQty) return 'overrun';
+  if (scannedQty === requiredQty) return 'complete';
+
+  return 'scanning';
+};
+
+const scanStateClasses: Record<FulfillmentScanState, string> = {
+  idle: 'border-l-[#93C5FD] bg-[#EFF6FF] hover:bg-[#EFF6FF]',
+  scanning: 'border-l-[#3B82F6] bg-[#DBEAFE] hover:bg-[#DBEAFE]',
+  complete: 'border-l-[#16A34A] bg-[#DBEAFE] ring-1 ring-inset ring-[#86EFAC] hover:bg-[#DBEAFE]',
+  overrun: 'border-l-[#DC2626] bg-[#DBEAFE] ring-1 ring-inset ring-[#FECACA] hover:bg-[#DBEAFE]',
+};
+
+const getProgressClassName = (scanState: FulfillmentScanState) => {
+  if (scanState === 'complete') return 'bg-emerald-500';
+  if (scanState === 'overrun') return 'bg-rose-500';
+
+  return 'bg-amber-400';
+};
+
+const findMatchingFulfillmentItem = (
+  code: string,
+  items: ScannableFulfillmentItem[]
+): { item: ScannableFulfillmentItem; matchType: FulfillmentScanMatchType } | null => {
+  const normalizedCode = normalizeFulfillmentCode(code);
+
+  if (!normalizedCode) return null;
+
+  const exactBarcodeMatch = items.find(
+    (item) => normalizeFulfillmentCode(item.resolvedBarcodeText) === normalizedCode
+  );
+
+  if (exactBarcodeMatch) {
+    return { item: exactBarcodeMatch, matchType: 'barcodeText' };
+  }
+
+  const exactSkuMatch = items.find(
+    (item) => normalizeFulfillmentCode(item.resolvedSku) === normalizedCode
+  );
+
+  if (exactSkuMatch) {
+    return { item: exactSkuMatch, matchType: 'sku' };
+  }
+
+  const partialMatch = items.find((item) => {
+    const candidates = [
+      normalizeFulfillmentCode(item.resolvedBarcodeText),
+      normalizeFulfillmentCode(item.resolvedSku),
+    ].filter(Boolean);
+
+    return candidates.some(
+      (candidate) => candidate.includes(normalizedCode) || normalizedCode.includes(candidate)
+    );
+  });
+
+  return partialMatch ? { item: partialMatch, matchType: 'partial' } : null;
+};
+
 const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftState =>
   Object.fromEntries(
     items
@@ -67,7 +162,9 @@ const createInitialDraftState = (items: OrderDetailItem[]): FulfillmentDraftStat
 
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const queryClient = useQueryClient();
+  const rbac = useRBAC();
   const [isEditing, setIsEditing] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
@@ -101,6 +198,33 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
   const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
+  const productIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          order.items
+            .map((item) => item.productId)
+            .filter((id): id is number => typeof id === 'number')
+        )
+      ),
+    [order.items]
+  );
+  const { data: productRows = [] } = useGetAllProducts(
+    productIds.length > 0
+      ? {
+          page: 0,
+          size: Math.max(productIds.length, 1),
+          sort: ['name,asc'],
+          'id.in': productIds,
+        }
+      : undefined,
+    {
+      query: {
+        enabled: productIds.length > 0,
+        staleTime: 5 * 60 * 1000,
+      },
+    }
+  );
   const { data: generations = [], isLoading: generationsLoading } =
     useGetPurchaseOrderFulfillmentGenerations(order.orderId);
   const { mutateAsync: createGeneration, isPending: isGenerating } =
@@ -109,7 +233,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   useEffect(() => {
     setDraftState(createInitialDraftState(order.items));
     setIsEditing(false);
+    setScannerOpen(false);
   }, [order.items]);
+
+  const canUseScanner = PICK_AND_PACK_GROUPS.some((group) => rbac.hasGroup(group));
 
   const warehouseNameById = useMemo(
     () =>
@@ -158,8 +285,42 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     return originalQuantityMap;
   }, [order.items, receivedQuantityByOrderDetailId]);
 
+  const productById = useMemo(
+    () =>
+      new Map(
+        (productRows as ProductDTO[])
+          .filter(
+            (product): product is ProductDTO & { id: number } => typeof product.id === 'number'
+          )
+          .map((product) => [product.id, product])
+      ),
+    [productRows]
+  );
+
+  const scannableItems = useMemo<ScannableFulfillmentItem[]>(
+    () =>
+      pendingItems.map((item) => {
+        const product =
+          typeof item.productId === 'number' ? productById.get(item.productId) : undefined;
+
+        return {
+          ...item,
+          resolvedBarcodeText:
+            item.barcodeText ??
+            item.articleNumber ??
+            product?.barcodeText ??
+            product?.articleNumber,
+          resolvedSku:
+            item.sku ?? product?.articleNumber ?? product?.articalNumber ?? product?.barcodeText,
+        };
+      }),
+    [pendingItems, productById]
+  );
+
   const rows = useMemo(() => {
     return allItems.map((item) => {
+      const product =
+        typeof item.productId === 'number' ? productById.get(item.productId) : undefined;
       const draft = draftState[item.orderDetailId] ?? { selected: false, quantity: '' };
       const stockSnapshot = stockByItemId.get(item.orderDetailId) ?? {
         currentQuantity: 0,
@@ -190,13 +351,23 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         remainingQuantity,
         receivedQuantity,
         currentQuantity: stockSnapshot.currentQuantity,
+        resolvedBarcodeText:
+          item.barcodeText ?? item.articleNumber ?? product?.barcodeText ?? product?.articleNumber,
+        resolvedSku:
+          item.sku ?? product?.articleNumber ?? product?.articalNumber ?? product?.barcodeText,
         validationMessage,
+        scanState: getScanState(enteredQuantity, remainingQuantity),
+        scanProgress:
+          remainingQuantity > 0
+            ? Math.min(100, Math.round((enteredQuantity / remainingQuantity) * 100))
+            : 100,
       };
     });
   }, [
     allItems,
     draftState,
     originalOrderQuantityByOrderDetailId,
+    productById,
     receivedQuantityByOrderDetailId,
     stockByItemId,
   ]);
@@ -204,11 +375,20 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const selectedRows = rows.filter((row) => row.selected && row.enteredQuantity > 0);
   const selectedUnits = selectedRows.reduce((sum, row) => sum + row.enteredQuantity, 0);
   const hasValidationErrors = selectedRows.some((row) => row.validationMessage);
+  const totalScannedUnits = rows.reduce((sum, row) => sum + row.enteredQuantity, 0);
+  const remainingScanUnits = Math.max(0, totalPendingUnits - totalScannedUnits);
+  const overrunRows = rows.filter((row) => row.scanState === 'overrun');
+  const scannerCompletionSatisfied =
+    pendingItems.length > 0 &&
+    rows
+      .filter((row) => !row.isCompleted && row.isFulfillable && row.remainingQuantity > 0)
+      .every((row) => row.enteredQuantity >= row.remainingQuantity);
 
   const toggleEditMode = () => {
     if (isEditing) {
       setDraftState(createInitialDraftState(order.items));
       setIsEditing(false);
+      setScannerOpen(false);
 
       return;
     }
@@ -230,6 +410,83 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       },
     }));
   };
+
+  const handleScannerToggle = () => {
+    if (scannerOpen) {
+      setScannerOpen(false);
+
+      return;
+    }
+
+    if (!isEditing) {
+      setDraftState(createInitialDraftState(order.items));
+      setIsEditing(true);
+    }
+
+    setScannerOpen(true);
+  };
+
+  const handleScan = useCallback(
+    (code: string, source: BarcodeScanSource): BarcodeScanResult => {
+      const match = findMatchingFulfillmentItem(code, scannableItems);
+
+      if (!match) {
+        return {
+          accepted: false,
+          message: 'Not found',
+          variant: 'warning',
+        };
+      }
+
+      const requiredQty = Math.max(0, match.item.quantity);
+      let nextScannedQty = 1;
+
+      setDraftState((current) => {
+        const currentDraft = current[match.item.orderDetailId] ?? { selected: false, quantity: '' };
+        const currentQty = parsePositiveInteger(currentDraft.quantity);
+
+        nextScannedQty = currentQty + 1;
+
+        return {
+          ...current,
+          [match.item.orderDetailId]: {
+            selected: true,
+            quantity: String(nextScannedQty),
+          },
+        };
+      });
+
+      const scanState = getScanState(nextScannedQty, requiredQty);
+      const label =
+        match.item.productName || match.item.resolvedSku || `Item ${match.item.orderDetailId}`;
+      const sourceLabel = source === 'manual' ? 'manual' : 'camera';
+
+      if (scanState === 'overrun') {
+        return {
+          accepted: true,
+          message: `OVER QUANTITY ${nextScannedQty}/${requiredQty}`,
+          variant: 'error',
+        };
+      }
+
+      if (scanState === 'complete') {
+        return {
+          accepted: true,
+          message: `COMPLETE ${label}`,
+          variant: 'success',
+        };
+      }
+
+      return {
+        accepted: true,
+        message: `${nextScannedQty}/${requiredQty} scanned (${match.matchType}, ${sourceLabel})`,
+        variant: 'success',
+      };
+    },
+    [scannableItems]
+  );
+
+  const scanner = useBarcodeScanner({ onScan: handleScan });
 
   const handleGenerate = async () => {
     if (selectedRows.length === 0) {
@@ -277,6 +534,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       );
       setDraftState(createInitialDraftState(order.items));
       setIsEditing(false);
+      setScannerOpen(false);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -293,21 +551,40 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           </Badge>
           <Badge className="bg-slate-100 text-slate-900">{totalPendingUnits} pending units</Badge>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant={isEditing ? 'outline' : 'default'}
-          className={cn(
-            'gap-2',
-            isEditing
-              ? 'border-cyan-300 text-cyan-800 hover:bg-cyan-50'
-              : 'bg-cyan-700 text-white hover:bg-cyan-800'
-          )}
-          onClick={toggleEditMode}
-        >
-          <Pencil className="h-4 w-4" />
-          {isEditing ? 'Cancel Edit' : 'Edit'}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {canUseScanner ? (
+            <Button
+              type="button"
+              size="sm"
+              variant={scannerOpen ? 'outline' : 'default'}
+              className={cn(
+                'gap-2',
+                scannerOpen
+                  ? 'border-slate-400 text-slate-800 hover:bg-slate-50'
+                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              )}
+              onClick={handleScannerToggle}
+            >
+              <ScanBarcode className="h-4 w-4" />
+              {scannerOpen ? 'Close Scanner' : 'Start Scanner'}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant={isEditing ? 'outline' : 'default'}
+            className={cn(
+              'gap-2',
+              isEditing
+                ? 'border-cyan-300 text-cyan-800 hover:bg-cyan-50'
+                : 'bg-cyan-700 text-white hover:bg-cyan-800'
+            )}
+            onClick={toggleEditMode}
+          >
+            <Pencil className="h-4 w-4" />
+            {isEditing ? 'Cancel Edit' : 'Edit'}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-4 rounded-xl border border-cyan-200 bg-white p-4 shadow-sm">
@@ -323,6 +600,61 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
             </p>
           </div>
         </div>
+
+        {scannerOpen && canUseScanner ? (
+          <div className="grid gap-3 rounded-lg border border-slate-300 bg-slate-50 p-3 md:grid-cols-4">
+            <div className="rounded-md bg-white p-3 shadow-sm">
+              <div className="text-xs font-semibold uppercase text-slate-500">Scanned</div>
+              <div className="text-2xl font-bold text-slate-950">{totalScannedUnits}</div>
+            </div>
+            <div className="rounded-md bg-white p-3 shadow-sm">
+              <div className="text-xs font-semibold uppercase text-slate-500">Required</div>
+              <div className="text-2xl font-bold text-slate-950">{totalPendingUnits}</div>
+            </div>
+            <div className="rounded-md bg-white p-3 shadow-sm">
+              <div className="text-xs font-semibold uppercase text-slate-500">Remaining</div>
+              <div className="text-2xl font-bold text-amber-700">{remainingScanUnits}</div>
+            </div>
+            <div className="rounded-md bg-white p-3 shadow-sm">
+              <div className="text-xs font-semibold uppercase text-slate-500">Status</div>
+              <div
+                className={cn(
+                  'flex items-center gap-2 text-sm font-bold',
+                  overrunRows.length > 0
+                    ? 'text-rose-700'
+                    : scannerCompletionSatisfied
+                      ? 'text-emerald-700'
+                      : 'text-slate-700'
+                )}
+              >
+                {overrunRows.length > 0 ? (
+                  <XCircle className="h-4 w-4" />
+                ) : scannerCompletionSatisfied ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4" />
+                )}
+                {overrunRows.length > 0
+                  ? `${overrunRows.length} over quantity`
+                  : scannerCompletionSatisfied
+                    ? 'Ready to complete'
+                    : 'Scanning'}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {scannerOpen && canUseScanner ? (
+          <BarcodeScanner
+            feedback={scanner.feedback}
+            flashKey={scanner.flashKey}
+            onScan={(code, source) => {
+              scanner.submitScan(code, source);
+            }}
+            open={scannerOpen}
+            scanLocked={scanner.scanLocked}
+          />
+        ) : null}
 
         {allItems.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
@@ -349,8 +681,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableRow
                       key={row.item.orderDetailId}
                       className={cn(
+                        scannerOpen && 'border-l-4',
+                        scannerOpen && scanStateClasses[row.scanState],
                         row.isCompleted && 'opacity-80',
-                        isEditing && row.selected && 'bg-cyan-50/60'
+                        isEditing && row.selected && !scannerOpen && 'bg-cyan-50/60'
                       )}
                     >
                       {isEditing ? (
@@ -379,6 +713,14 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             {row.item.sku ? (
                               <Badge variant="secondary" className="bg-slate-100 text-slate-700">
                                 {row.item.sku}
+                              </Badge>
+                            ) : null}
+                            {scannerOpen && row.resolvedBarcodeText ? (
+                              <Badge
+                                variant="outline"
+                                className="border-blue-200 bg-white/70 text-blue-800"
+                              >
+                                {row.resolvedBarcodeText}
                               </Badge>
                             ) : null}
                             <Badge
@@ -425,6 +767,30 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       <TableCell className="align-top">
                         {isEditing ? (
                           <div className="space-y-1.5">
+                            {scannerOpen && row.isFulfillable && !row.isCompleted ? (
+                              <div className="space-y-1">
+                                <div className="h-2 overflow-hidden rounded-full bg-white ring-1 ring-slate-200">
+                                  <div
+                                    className={cn(
+                                      'h-full rounded-full transition-all',
+                                      getProgressClassName(row.scanState)
+                                    )}
+                                    style={{ width: `${row.scanProgress}%` }}
+                                  />
+                                </div>
+                                <div
+                                  className={cn(
+                                    'text-xs font-bold',
+                                    row.scanState === 'complete' && 'text-emerald-700',
+                                    row.scanState === 'overrun' && 'text-rose-700',
+                                    row.scanState === 'idle' && 'text-blue-700',
+                                    row.scanState === 'scanning' && 'text-blue-800'
+                                  )}
+                                >
+                                  {row.enteredQuantity}/{row.remainingQuantity} scanned
+                                </div>
+                              </div>
+                            ) : null}
                             <Input
                               type="number"
                               min={0}
@@ -478,11 +844,20 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
             <Button
               type="button"
               className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-              disabled={isGenerating || selectedRows.length === 0 || hasValidationErrors}
+              disabled={
+                isGenerating ||
+                selectedRows.length === 0 ||
+                hasValidationErrors ||
+                (scannerOpen && !scannerCompletionSatisfied)
+              }
               onClick={handleGenerate}
             >
               <Sparkles className="h-4 w-4" />
-              {isGenerating ? 'Saving...' : 'Save Fulfillment'}
+              {isGenerating
+                ? 'Saving...'
+                : scannerOpen
+                  ? 'Complete Fulfillment'
+                  : 'Save Fulfillment'}
             </Button>
           </div>
         ) : null}

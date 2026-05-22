@@ -37,7 +37,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetPurchaseOrderFulfillmentGenerations } from '@/core/api/purchase-order-fulfillment-generations';
 import { type PurchaseOrderDTO, usePartialUpdatePurchaseOrder } from '@/core/api/purchase-order';
 import { useCreatePurchaseOrderHistory } from '@/core/api/purchase-order-history';
-import { InlinePermissionGuard } from '@/core/auth';
+import { InlinePermissionGuard, useRBAC } from '@/core/auth';
 import { OrderFulfillmentHistoryTable } from '../order-fulfillment-history-table';
 import {
   getOrderStatusCode,
@@ -185,6 +185,11 @@ export function OrderTable({
   const [statusOverrides, setStatusOverrides] = useState<Record<number, OrderStatus>>({});
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const queryClient = useQueryClient();
+  const rbac = useRBAC();
+
+  const canUsePickAndPack = ['pick-and-pack', 'PICK_AND_PACK', 'PICK-AND-PACK', 'Pick & Pack'].some(
+    (group) => rbac.hasGroup(group)
+  );
   const isMounted = useRef(false);
   const { mutateAsync: partialUpdateOrder } = usePartialUpdatePurchaseOrder();
   const { mutateAsync: createOrderHistory } = useCreatePurchaseOrderHistory();
@@ -1073,16 +1078,18 @@ export function OrderTable({
                         )}
                         {showEditAndPackingActions && (
                           <>
-                            <Button
-                              asChild
-                              size="sm"
-                              className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
-                            >
-                              <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
-                                <Package className="h-3 w-3" />
-                                Start Packing
-                              </Link>
-                            </Button>
+                            {canUsePickAndPack ? (
+                              <Button
+                                asChild
+                                size="sm"
+                                className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
+                              >
+                                <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
+                                  <Package className="h-3 w-3" />
+                                  Start Packing
+                                </Link>
+                              </Button>
+                            ) : null}
                             <Button
                               asChild
                               size="sm"

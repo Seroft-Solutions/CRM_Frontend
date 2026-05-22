@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { OrderDetailContainer } from '../components/order-detail-container';
-import { CheckCircle, ArrowLeft, Edit } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Edit, ScanBarcode } from 'lucide-react';
 import { useState, use } from 'react';
 import { OrderRecord } from '../data/purchase-order-data';
 import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
+import { useRBAC } from '@/core/auth';
 
 interface OrderPageProps {
   params: Promise<{
@@ -18,6 +19,10 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
   const { id: idParam } = use(params);
   const id = parseInt(idParam, 10);
   const [orderData, setOrderData] = useState<OrderRecord | null>(null);
+  const rbac = useRBAC();
+  const canUsePickAndPack = ['pick-and-pack', 'PICK_AND_PACK', 'PICK-AND-PACK', 'Pick & Pack'].some(
+    (group) => rbac.hasGroup(group)
+  );
 
   return (
     <div className="po-detail-page -m-4 flex flex-col min-h-[calc(100vh-12px)]">
@@ -70,6 +75,18 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                     </Link>
                   </Button>
                 )}
+              {orderData && canUsePickAndPack ? (
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-7 px-2.5 text-[11px] gap-1.5 bg-cyan-500 hover:bg-cyan-600 text-white border-0"
+                >
+                  <Link href={`/purchase-orders/${id}/fulfillment`}>
+                    <ScanBarcode className="h-3 w-3" />
+                    Pick & Pack
+                  </Link>
+                </Button>
+              ) : null}
               <Button
                 asChild
                 size="sm"
