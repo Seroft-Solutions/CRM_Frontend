@@ -1,11 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Eye, History, Pencil, PackageCheck, RefreshCcw, Sparkles } from 'lucide-react';
+import { Pencil, PackageCheck, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,7 +30,7 @@ import type { OrderDetailItem, OrderRecord } from '../data/order-data';
 import { useUpdateOrderDetailStatus } from '../api/order-detail-status';
 import { useOrderFulfillmentStocks } from '../hooks/use-order-fulfillment-stocks';
 import { BackToManagerDialog } from './back-to-manager-dialog';
-import { formatOrderDateTime, getFulfillmentRecordLabel } from './order-fulfillment-utils';
+import { getFulfillmentRecordLabel } from './order-fulfillment-utils';
 
 type FulfillmentDraftState = Record<
   number,
@@ -133,9 +131,7 @@ function getCatalogItemNames(
 }
 
 export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
-  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const navigationSource = searchParams.get('from') === 'list' ? 'list' : 'order';
   const [isEditing, setIsEditing] = useState(true);
   const [backToManagerItem, setBackToManagerItem] = useState<{
     orderItemId: number;
@@ -221,8 +217,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const { stockByItemId, isLoading: stocksLoading } = useOrderFulfillmentStocks(order.items);
   const { data: warehouseRows = [] } = useWarehousesQuery(warehouseQueryParams, { enabled: true });
-  const { data: generations = [], isLoading: generationsLoading } =
-    useGetOrderFulfillmentGenerations(order.orderId);
+  const { data: generations = [] } = useGetOrderFulfillmentGenerations(order.orderId);
   const { mutateAsync: createGeneration, isPending: isGenerating } =
     useCreateOrderFulfillmentGeneration();
   const { mutateAsync: updateOrderDetailStatus, isPending: isUpdatingStatus } =
@@ -520,8 +515,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         </div>
       ) : null}
 
-      <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:order-1">
+      <div className="grid min-w-0 gap-3">
+        <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-950 text-cyan-300">
@@ -896,7 +891,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           )}
         </section>
 
-        <aside className="order-1 space-y-3 xl:order-2 xl:sticky xl:top-[4.25rem] xl:max-h-[calc(100dvh-5rem)] xl:overflow-auto xl:overscroll-contain">
+        <aside className="order-1">
           <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <div className="mb-3 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
               <div className="min-w-0">
@@ -997,120 +992,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 ) : null}
               </div>
             ) : null}
-          </section>
-
-          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="mb-3 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
-              <div className="flex min-w-0 items-center gap-2">
-                <RefreshCcw className="h-4 w-4 text-slate-600" aria-hidden="true" />
-                <div>
-                  <h3 className="text-sm font-bold text-slate-950">Fulfillment Audit</h3>
-                  <p className="text-xs text-slate-500">{generations.length} records</p>
-                </div>
-              </div>
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="min-h-10 gap-1.5 border-slate-300 px-2 text-[11px] text-slate-700 hover:bg-slate-50 min-[420px]:min-h-8"
-              >
-                <Link
-                  href={`/orders/${order.orderId}/fulfillment/history?from=${navigationSource}`}
-                >
-                  <History className="h-3.5 w-3.5" aria-hidden="true" />
-                  View Full History
-                </Link>
-              </Button>
-            </div>
-
-            {generationsLoading ? (
-              <p className="text-sm text-slate-500">Loading fulfillment history...</p>
-            ) : generations.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
-                No fulfillment records have been recorded for this order yet.
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {generations.slice(0, 5).map((generation) => (
-                  <div
-                    key={generation.id}
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-2"
-                  >
-                    <div className="flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
-                      <div className="min-w-0">
-                        <div className="truncate text-xs font-bold text-slate-950">
-                          {getFulfillmentRecordLabel(order.orderId, {
-                            invoiceId: generation.id,
-                            generationNumber: generation.generationNumber,
-                          })}
-                        </div>
-                        <div className="truncate text-[10px] text-slate-500">
-                          {formatOrderDateTime(generation.createdDate)} •{' '}
-                          {generation.createdBy || 'System'}
-                        </div>
-                      </div>
-                      {generation.id ? (
-                        <Button
-                          asChild
-                          size="sm"
-                          className="min-h-9 shrink-0 gap-1 bg-slate-800 px-2 text-[10px] text-white hover:bg-slate-900 min-[420px]:min-h-7"
-                        >
-                          <Link
-                            href={`/orders/${order.orderId}/fulfillment/history/${generation.id}`}
-                          >
-                            <Eye className="h-3 w-3" aria-hidden="true" />
-                            View
-                          </Link>
-                        </Button>
-                      ) : null}
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-1">
-                      <Badge className="justify-center bg-emerald-100 text-[10px] text-emerald-900">
-                        {generation.totalGeneratedQuantity ?? 0} Generated
-                      </Badge>
-                      <Badge className="justify-center bg-amber-100 text-[10px] text-amber-900">
-                        {generation.totalBacklogQuantity ?? 0} Left
-                      </Badge>
-                    </div>
-                    {generation.items?.length ? (
-                      <div className="mt-2 space-y-1">
-                        {generation.items.slice(0, 3).map((item) => (
-                          <div
-                            key={item.id ?? `${generation.id}-${item.orderDetailId}`}
-                            className="rounded-md bg-white px-2 py-1 text-[10px]"
-                          >
-                            <div className="truncate font-semibold text-slate-800">
-                              {item.productName || item.sku || `Order item #${item.orderDetailId}`}
-                            </div>
-                            <div className="grid grid-cols-2 gap-1 text-slate-500">
-                              <span>
-                                Ordered{' '}
-                                {originalOrderQuantityByOrderDetailId.get(
-                                  item.orderDetailId ?? -1
-                                ) ?? 0}
-                              </span>
-                              <span>Delivered {item.deliveredQuantity ?? 0}</span>
-                              <span>Before {item.availableQuantityBefore ?? 0}</span>
-                              <span>Left {item.remainingBacklogQuantity ?? 0}</span>
-                            </div>
-                          </div>
-                        ))}
-                        {generation.items.length > 3 ? (
-                          <div className="text-[10px] font-medium text-slate-500">
-                            +{generation.items.length - 3} more lines
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-                {generations.length > 5 ? (
-                  <div className="text-center text-[11px] font-medium text-slate-500">
-                    Showing latest 5 of {generations.length}
-                  </div>
-                ) : null}
-              </div>
-            )}
           </section>
         </aside>
       </div>
