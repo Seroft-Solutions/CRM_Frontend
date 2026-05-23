@@ -186,10 +186,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ),
     [order.items]
   );
-  const completedItemsCount = useMemo(
-    () => allItems.filter((item) => Math.max(0, item.quantity) === 0).length,
-    [allItems]
-  );
   const totalPendingUnits = useMemo(
     () => pendingItems.reduce((sum, item) => sum + Math.max(0, item.quantity), 0),
     [pendingItems]
@@ -565,34 +561,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   return (
     <div className="min-w-0 space-y-3 overflow-x-clip bg-slate-50 p-2 sm:p-3">
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-        {[
-          { label: 'Total Items', value: allItems.length, className: 'border-slate-200' },
-          { label: 'Pending Items', value: pendingItems.length, className: 'border-amber-200' },
-          {
-            label: 'Completed Items',
-            value: completedItemsCount,
-            className: 'border-emerald-200',
-          },
-          { label: 'Pending Units', value: totalPendingUnits, className: 'border-blue-200' },
-        ].map((metric) => (
-          <div
-            key={metric.label}
-            className={cn(
-              'min-w-0 rounded-lg border bg-white px-2.5 py-2 shadow-sm sm:px-3',
-              metric.className
-            )}
-          >
-            <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              {metric.label}
-            </div>
-            <div className="text-lg font-black tabular-nums text-slate-950 sm:text-xl">
-              {metric.value}
-            </div>
-          </div>
-        ))}
-      </div>
-
       <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:order-1">
           <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">

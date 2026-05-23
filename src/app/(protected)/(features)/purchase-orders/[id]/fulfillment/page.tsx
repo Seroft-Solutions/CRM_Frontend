@@ -24,9 +24,22 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
 
   // TODO: Add PermissionGuard when a purchase-order-fulfillment authority is defined in roles-by-group.
   return (
-    <main className="min-h-[100dvh] min-w-0 space-y-2 overflow-x-clip bg-slate-100/70 p-2 sm:space-y-3 sm:p-3">
+    <main
+      data-fulfillment-full-width
+      className="min-h-[100dvh] w-full max-w-none min-w-0 space-y-2 overflow-x-clip bg-slate-100/70 p-2 sm:space-y-3 sm:p-3"
+    >
       <style
-        dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }}
+        dangerouslySetInnerHTML={{
+          __html: `
+            header:has(nav) { display: none !important; }
+            .container:has([data-fulfillment-full-width]) {
+              width: 100% !important;
+              max-width: none !important;
+              margin-inline: 0 !important;
+              min-width: 0 !important;
+            }
+          `,
+        }}
       />
       <div className="sticky top-0 z-30 flex min-w-0 flex-col gap-2 rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-2 text-white shadow-sm sm:flex-row sm:items-center sm:px-3">
         <div className="flex min-w-0 items-center gap-2.5 sm:mr-auto">
@@ -82,7 +95,7 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
           Unable to load this purchase order for receiving.
         </div>
       ) : (
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <section className="min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <OrderFulfillmentPanel order={orderRecord} />
         </section>
       )}

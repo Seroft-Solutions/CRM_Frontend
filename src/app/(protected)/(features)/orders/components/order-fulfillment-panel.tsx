@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -209,37 +209,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
     return map;
   }, [catalogs]);
-  const getDisplayRowCount = useCallback(
-    (items: OrderDetailItem[]) =>
-      items.reduce((count, item) => {
-        if (!item.productCatalogId || item.variantId) {
-          return count + 1;
-        }
-
-        const catalog = catalogById.get(item.productCatalogId);
-        const catalogItemCount = catalog?.variants?.length ?? 0;
-
-        return count + Math.max(catalogItemCount, 1);
-      }, 0),
-    [catalogById]
-  );
-  const displayedTotalItems = useMemo(
-    () => getDisplayRowCount(allItems),
-    [allItems, getDisplayRowCount]
-  );
-  const displayedPendingItems = useMemo(
-    () => getDisplayRowCount(pendingItems),
-    [getDisplayRowCount, pendingItems]
-  );
-  const displayedCompletedItemsCount = useMemo(
-    () =>
-      getDisplayRowCount(
-        allItems.filter(
-          (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) === 0
-        )
-      ),
-    [allItems, getDisplayRowCount]
-  );
   const warehouseQueryParams = useMemo(
     () => ({
       page: 0,
@@ -550,34 +519,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           fulfillment can be saved.
         </div>
       ) : null}
-
-      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
-        {[
-          { label: 'Total Items', value: displayedTotalItems, className: 'border-slate-200' },
-          { label: 'Pending Items', value: displayedPendingItems, className: 'border-amber-200' },
-          {
-            label: 'Completed Items',
-            value: displayedCompletedItemsCount,
-            className: 'border-emerald-200',
-          },
-          { label: 'Pending Units', value: totalPendingUnits, className: 'border-blue-200' },
-        ].map((metric) => (
-          <div
-            key={metric.label}
-            className={cn(
-              'min-w-0 rounded-lg border bg-white px-2.5 py-2 shadow-sm sm:px-3',
-              metric.className
-            )}
-          >
-            <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              {metric.label}
-            </div>
-            <div className="text-lg font-black tabular-nums text-slate-950 sm:text-xl">
-              {metric.value}
-            </div>
-          </div>
-        ))}
-      </div>
 
       <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:order-1">
