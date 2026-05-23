@@ -16,7 +16,9 @@ export type AttendanceWeekStatus =
   | 'ACTIVE'
   | 'CHECKED_OUT'
   | 'LEAVE'
-  | 'INCOMPLETE';
+  | 'INCOMPLETE'
+  | 'PENDING_APPROVE'
+  | 'APPROVED';
 
 export type AttendanceWeekSummary = {
   weekId: string;
@@ -90,6 +92,17 @@ export function getWeekIdFromAttendanceDate(attendanceDate: string): string {
 }
 
 export function deriveWeekStatus(records: AttendanceRecordDTO[]): AttendanceWeekStatus {
+  const allApproved = records.length > 0 && records.every((record) => record.approvalStatus === 'APPROVED');
+  if (allApproved) {
+    return 'APPROVED';
+  }
+
+  const hasPending = records.some((record) => record.approvalStatus === 'PENDING');
+  const hasApproved = records.some((record) => record.approvalStatus === 'APPROVED');
+  if (hasPending || hasApproved) {
+    return 'PENDING_APPROVE';
+  }
+
   if (
     records.some(
       (record) =>
@@ -180,7 +193,7 @@ export function buildWeekDays(fromDate: string): AttendanceWeekDay[] {
 
   const weekStart = startOfISOWeek(parseISO(fromDate));
 
-  return Array.from({ length: 6 }, (_, index) => {
+  return Array.from({ length: 7 }, (_, index) => {
     const day = addDays(weekStart, index);
 
     return {
