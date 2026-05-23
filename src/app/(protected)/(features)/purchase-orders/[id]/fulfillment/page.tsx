@@ -24,11 +24,11 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
 
   // TODO: Add PermissionGuard when a purchase-order-fulfillment authority is defined in roles-by-group.
   return (
-    <main className="min-h-[calc(100dvh-1rem)] space-y-3 bg-slate-100/70 p-2 sm:p-3">
+    <main className="min-h-[100dvh] min-w-0 space-y-2 overflow-x-clip bg-slate-100/70 p-2 sm:space-y-3 sm:p-3">
       <style
         dangerouslySetInnerHTML={{ __html: `header:has(nav) { display: none !important; }` }}
       />
-      <div className="sticky top-0 z-30 flex flex-col gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-white shadow-sm sm:flex-row sm:items-center">
+      <div className="sticky top-0 z-30 flex min-w-0 flex-col gap-2 rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-2 text-white shadow-sm sm:flex-row sm:items-center sm:px-3">
         <div className="flex min-w-0 items-center gap-2.5 sm:mr-auto">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-400 text-slate-950">
             <PackageCheck className="h-4 w-4" aria-hidden="true" />
@@ -40,16 +40,16 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5 min-[460px]:flex min-[460px]:flex-wrap min-[460px]:items-center">
           {orderRecord ? (
-            <Badge className="bg-emerald-400 text-[11px] text-slate-950">
+            <Badge className="col-span-2 justify-center bg-emerald-400 text-[11px] text-slate-950 min-[460px]:col-span-1">
               Order #{orderRecord.orderId}
             </Badge>
           ) : null}
           <Button
             asChild
             variant="ghost"
-            className="h-8 gap-1.5 px-2.5 text-[11px] text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-300"
+            className="h-10 min-w-0 gap-1.5 px-2.5 text-[11px] text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-300 sm:h-8"
           >
             <Link href={`/purchase-orders/${isValidId ? id : ''}/fulfillment/history`}>
               <History className="h-3.5 w-3.5" aria-hidden="true" />
@@ -59,7 +59,7 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
           <Button
             asChild
             variant="ghost"
-            className="h-8 gap-1.5 px-2.5 text-[11px] text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-300"
+            className="h-10 min-w-0 gap-1.5 px-2.5 text-[11px] text-slate-300 hover:bg-slate-800 hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-300 sm:h-8"
           >
             <Link href={isValidId ? `/purchase-orders/${id}` : '/purchase-orders'}>
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />

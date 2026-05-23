@@ -533,7 +533,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   };
 
   return (
-    <div className="space-y-4 border-t border-cyan-100 bg-cyan-50/30 p-4">
+    <div className="min-w-0 space-y-3 overflow-x-clip bg-slate-50 p-2 sm:p-3">
       <BackToManagerDialog
         open={backToManagerItem !== null}
         onOpenChange={(open) => {
@@ -545,78 +545,107 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         orderId={backToManagerItem?.orderId}
       />
       {!canFulfillOrder ? (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           This order must be approved, partially approved or pending before Picker/Packer
           fulfillment can be saved.
         </div>
       ) : null}
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge className="bg-cyan-100 text-cyan-900">{displayedTotalItems} total items</Badge>
-          <Badge className="bg-amber-100 text-amber-900">
-            {displayedPendingItems} pending items
-          </Badge>
-          <Badge className="bg-emerald-100 text-emerald-900">
-            {displayedCompletedItemsCount} completed items
-          </Badge>
-          <Badge className="bg-slate-100 text-slate-900">{totalPendingUnits} pending units</Badge>
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant={isEditing ? 'outline' : 'default'}
-          className={cn(
-            'gap-2',
-            !canFulfillOrder ? 'cursor-not-allowed border-slate-200 text-slate-400' : undefined,
-            isEditing
-              ? 'border-cyan-300 text-cyan-800 hover:bg-cyan-50'
-              : 'bg-cyan-700 text-white hover:bg-cyan-800'
-          )}
-          disabled={!canFulfillOrder}
-          onClick={toggleEditMode}
-        >
-          <Pencil className="h-4 w-4" />
-          {isEditing ? 'Cancel Edit' : 'Edit'}
-        </Button>
+
+      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+        {[
+          { label: 'Total Items', value: displayedTotalItems, className: 'border-slate-200' },
+          { label: 'Pending Items', value: displayedPendingItems, className: 'border-amber-200' },
+          {
+            label: 'Completed Items',
+            value: displayedCompletedItemsCount,
+            className: 'border-emerald-200',
+          },
+          { label: 'Pending Units', value: totalPendingUnits, className: 'border-blue-200' },
+        ].map((metric) => (
+          <div
+            key={metric.label}
+            className={cn(
+              'min-w-0 rounded-lg border bg-white px-2.5 py-2 shadow-sm sm:px-3',
+              metric.className
+            )}
+          >
+            <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              {metric.label}
+            </div>
+            <div className="text-lg font-black tabular-nums text-slate-950 sm:text-xl">
+              {metric.value}
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="space-y-4 rounded-xl border border-cyan-200 bg-white p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
-            <PackageCheck className="h-5 w-5 text-cyan-700" />
+      <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:order-1">
+          <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-950 text-cyan-300">
+                <PackageCheck className="h-4 w-4" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-sm font-bold text-slate-950">Pick & Pack Lines</h2>
+                <p className="truncate text-xs text-slate-500">
+                  Fulfill sale order quantities with warehouse stock checks.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Badge className="bg-slate-100 text-[11px] text-slate-800">
+                {selectedUnits} Selected Units
+              </Badge>
+              {hasValidationErrors ? (
+                <Badge className="bg-rose-100 text-[11px] text-rose-800">
+                  Quantity Check Required
+                </Badge>
+              ) : null}
+              {hasSelectedRowsMissingPickPack ? (
+                <Badge className="bg-amber-100 text-[11px] text-amber-900">
+                  Pick/Pack Required
+                </Badge>
+              ) : null}
+            </div>
           </div>
-          <div className="space-y-1">
-            <h4 className="font-semibold text-slate-900">Pick & Pack</h4>
-            <p className="text-sm text-slate-600">
-              This page shows all order items. Completed items remain in the list, while only items
-              with remaining quantity can be fulfilled again.
-            </p>
-          </div>
-        </div>
 
-        {allItems.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-            No order items are available for fulfillment.
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-cyan-50/70">
-                    {isEditing ? <TableHead className="w-14 text-center">Select</TableHead> : null}
-                    <TableHead>Item</TableHead>
-                    <TableHead className="text-center">Warehouse</TableHead>
-                    <TableHead className="text-center">Order Qty</TableHead>
-                    <TableHead className="text-center">Delivered Qty</TableHead>
-                    <TableHead className="text-center">Remaining Qty</TableHead>
-                    <TableHead className="text-center">Available Stock</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="min-w-[180px]">Comment</TableHead>
-                    <TableHead className="text-center">Picked</TableHead>
-                    <TableHead className="text-center">Packed</TableHead>
-                    <TableHead className="min-w-[180px]">Fulfill Quantity</TableHead>
-                    <TableHead className="w-16 text-center">Actions</TableHead>
+          {allItems.length === 0 ? (
+            <div className="m-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+              No order items are available for fulfillment.
+            </div>
+          ) : (
+            <div className="max-w-full overflow-auto overscroll-contain max-sm:max-h-[70dvh] sm:max-h-[calc(100dvh-15rem)]">
+              <Table className="min-w-[1120px] text-xs sm:min-w-[1280px]">
+                <TableHeader className="sticky top-0 z-20 shadow-sm">
+                  <TableRow className="border-b border-slate-200 bg-slate-100">
+                    {isEditing ? (
+                      <TableHead className="w-10 bg-slate-100 text-center text-[10px] uppercase">
+                        Select
+                      </TableHead>
+                    ) : null}
+                    <TableHead className="sticky left-0 z-30 min-w-[220px] bg-slate-100 text-[10px] uppercase sm:min-w-[300px]">
+                      Item / SKU
+                    </TableHead>
+                    <TableHead className="min-w-[130px] text-center text-[10px] uppercase">
+                      Warehouse
+                    </TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Order Qty</TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Delivered</TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Remaining</TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Stock</TableHead>
+                    <TableHead className="min-w-[130px] text-center text-[10px] uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="min-w-[180px] text-[10px] uppercase">Comment</TableHead>
+                    <TableHead className="text-center text-[10px] uppercase">Picked</TableHead>
+                    <TableHead className="text-center text-[10px] uppercase">Packed</TableHead>
+                    <TableHead className="min-w-[170px] text-right text-[10px] uppercase">
+                      Fulfill
+                    </TableHead>
+                    <TableHead className="w-16 text-center text-[10px] uppercase">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -644,8 +673,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                       <TableRow
                         key={`${row.item.orderDetailId}-${displayIndex}`}
                         className={cn(
-                          backlogResolved && 'opacity-80',
-                          isEditing && row.selected && 'bg-cyan-50/60'
+                          'h-12 border-b border-slate-100',
+                          backlogResolved && 'bg-slate-50 text-slate-500',
+                          isEditing && row.selected && 'bg-cyan-50/70'
                         )}
                       >
                         {isEditing && displayIndex === 0 ? (
@@ -655,6 +685,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           >
                             <div className="pt-1">
                               <Checkbox
+                                aria-label={`Select ${displayName} for fulfillment`}
                                 checked={row.selected}
                                 disabled={row.isCompleted || row.deliverableQuantity === 0}
                                 onCheckedChange={(checked) =>
@@ -669,27 +700,47 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             </div>
                           </TableCell>
                         ) : null}
-                        <TableCell className="align-top">
+                        <TableCell
+                          className={cn(
+                            'sticky left-0 z-10 bg-white align-middle shadow-[1px_0_0_0_rgba(226,232,240,1)]',
+                            row.isCompleted && 'bg-slate-50',
+                            isEditing && row.selected && 'bg-cyan-50'
+                          )}
+                        >
                           <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-900 text-[10px] font-bold text-white sm:h-6 sm:w-6">
                                 {displayNames.length > 1
                                   ? `${index + 1}.${displayIndex + 1}`
                                   : index + 1}
                               </div>
-                              <div className="font-semibold text-slate-900">{displayName}</div>
-                              {row.item.productCatalogId ? (
-                                <Badge variant="secondary" className="bg-slate-100 text-slate-700">
-                                  Catalog item
-                                </Badge>
-                              ) : row.item.sku ? (
-                                <Badge variant="secondary" className="bg-slate-100 text-slate-700">
-                                  {row.item.sku}
-                                </Badge>
-                              ) : null}
+                              <div className="min-w-0">
+                                <div className="truncate font-semibold text-slate-950">
+                                  {displayName}
+                                </div>
+                                <div className="mt-1 flex min-w-0 flex-wrap gap-1">
+                                  {row.item.productCatalogId ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-5 bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                    >
+                                      Catalog item
+                                    </Badge>
+                                  ) : row.item.sku ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-5 max-w-[130px] truncate bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                    >
+                                      {row.item.sku}
+                                    </Badge>
+                                  ) : null}
+                                </div>
+                              </div>
                             </div>
                             {!row.item.productCatalogId && row.item.variantAttributes ? (
-                              <p className="text-xs text-blue-700">{row.item.variantAttributes}</p>
+                              <p className="truncate pl-9 text-[10px] text-blue-700">
+                                {row.item.variantAttributes}
+                              </p>
                             ) : null}
                           </div>
                         </TableCell>
@@ -697,34 +748,36 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           <>
                             <TableCell
                               rowSpan={displayNames.length}
-                              className="text-center font-semibold text-slate-900"
+                              className="text-center font-medium text-slate-800"
                             >
-                              {typeof row.item.warehouseId === 'number'
-                                ? (warehouseNameById.get(row.item.warehouseId) ??
-                                  `Warehouse ${row.item.warehouseId}`)
-                                : '—'}
+                              <span className="line-clamp-2">
+                                {typeof row.item.warehouseId === 'number'
+                                  ? (warehouseNameById.get(row.item.warehouseId) ??
+                                    `Warehouse ${row.item.warehouseId}`)
+                                  : '—'}
+                              </span>
                             </TableCell>
                             <TableCell
                               rowSpan={displayNames.length}
-                              className="text-center font-semibold text-slate-900"
+                              className="text-right font-semibold tabular-nums text-slate-900"
                             >
                               {row.originalOrderQuantity}
                             </TableCell>
                             <TableCell
                               rowSpan={displayNames.length}
-                              className="text-center font-semibold text-emerald-700"
+                              className="text-right font-semibold tabular-nums text-emerald-700"
                             >
                               {row.deliveredQuantity}
                             </TableCell>
                             <TableCell
                               rowSpan={displayNames.length}
-                              className="text-center font-semibold text-amber-700"
+                              className="text-right font-semibold tabular-nums text-amber-700"
                             >
                               {row.remainingQuantity}
                             </TableCell>
                             <TableCell
                               rowSpan={displayNames.length}
-                              className="text-center font-semibold text-slate-900"
+                              className="text-right font-semibold tabular-nums text-slate-900"
                             >
                               <div>{stocksLoading ? '...' : row.availableQuantity}</div>
                               <div className="text-[11px] text-slate-500">
@@ -732,18 +785,30 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               </div>
                             </TableCell>
                             <TableCell rowSpan={displayNames.length} className="text-center">
-                              <Badge variant="secondary" className="bg-slate-100 text-slate-800">
+                              <Badge
+                                className={cn(
+                                  'h-5 px-1.5 text-[10px]',
+                                  row.isCompleted
+                                    ? 'bg-emerald-100 text-emerald-900'
+                                    : row.canChangePickPack
+                                      ? 'bg-amber-100 text-amber-900'
+                                      : 'bg-slate-100 text-slate-800'
+                                )}
+                              >
                                 {row.item.itemStatus}
                               </Badge>
                             </TableCell>
                             <TableCell
                               rowSpan={displayNames.length}
-                              className="align-top text-sm text-slate-700"
+                              className="align-middle text-xs text-slate-700"
                             >
-                              {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
+                              <span className="line-clamp-2">
+                                {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
+                              </span>
                             </TableCell>
                             <TableCell rowSpan={displayNames.length} className="text-center">
                               <Checkbox
+                                aria-label={`Mark ${displayName} picked`}
                                 checked={row.picked}
                                 disabled={
                                   !isEditing ||
@@ -760,6 +825,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             </TableCell>
                             <TableCell rowSpan={displayNames.length} className="text-center">
                               <Checkbox
+                                aria-label={`Mark ${displayName} packed`}
                                 checked={row.packed}
                                 disabled={
                                   !isEditing ||
@@ -776,9 +842,35 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                               />
                             </TableCell>
                             <TableCell rowSpan={displayNames.length} className="align-top">
-                              {isEditing ? (
-                                <div className="space-y-1.5">
+                              <div className="ml-auto max-w-[150px] space-y-1">
+                                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+                                  <div
+                                    className={cn(
+                                      'h-full rounded-full',
+                                      row.isCompleted ? 'bg-emerald-500' : 'bg-cyan-500'
+                                    )}
+                                    style={{
+                                      width: `${
+                                        row.originalOrderQuantity > 0
+                                          ? Math.min(
+                                              100,
+                                              Math.round(
+                                                (row.deliveredQuantity /
+                                                  row.originalOrderQuantity) *
+                                                  100
+                                              )
+                                            )
+                                          : 100
+                                      }%`,
+                                    }}
+                                  />
+                                </div>
+                                {isEditing ? (
                                   <Input
+                                    aria-label={`Fulfill quantity for ${displayName}`}
+                                    name={`fulfillQuantity-${row.item.orderDetailId}`}
+                                    autoComplete="off"
+                                    inputMode="numeric"
                                     type="number"
                                     min={0}
                                     placeholder="0"
@@ -793,25 +885,30 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                         quantity: event.target.value,
                                       })
                                     }
-                                    className="border-slate-300"
+                                    className="h-10 border-slate-300 text-right text-sm font-bold tabular-nums focus-visible:ring-2 focus-visible:ring-cyan-300 sm:h-8 sm:text-xs"
                                   />
-                                  {row.validationMessage ? (
-                                    <p className="text-xs font-medium text-rose-600">
-                                      {row.validationMessage}
-                                    </p>
-                                  ) : row.isCompleted ? (
-                                    <p className="text-xs font-medium text-emerald-700">
-                                      This item is completed.
-                                    </p>
-                                  ) : row.deliverableQuantity === 0 ? (
-                                    <p className="text-xs font-medium text-amber-700">
-                                      No inventory is currently available for this item.
-                                    </p>
-                                  ) : null}
+                                ) : (
+                                  <div className="text-right text-xs font-semibold text-slate-400">
+                                    —
+                                  </div>
+                                )}
+                                <div className="text-right text-[10px] font-semibold tabular-nums text-slate-500">
+                                  {row.enteredQuantity}/{row.remainingQuantity} To Fulfill
                                 </div>
-                              ) : (
-                                <span className="font-semibold text-slate-500">—</span>
-                              )}
+                                {row.validationMessage ? (
+                                  <p className="text-right text-[10px] font-medium text-rose-600">
+                                    {row.validationMessage}
+                                  </p>
+                                ) : row.isCompleted ? (
+                                  <p className="text-right text-[10px] font-medium text-emerald-700">
+                                    Completed
+                                  </p>
+                                ) : row.deliverableQuantity === 0 ? (
+                                  <p className="text-right text-[10px] font-medium text-amber-700">
+                                    No inventory
+                                  </p>
+                                ) : null}
+                              </div>
                             </TableCell>
                             <TableCell
                               rowSpan={displayNames.length}
@@ -855,141 +952,226 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 </TableBody>
               </Table>
             </div>
-          </div>
-        )}
+          )}
+        </section>
 
-        {isEditing ? (
-          <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-900">
-                Selected to generate: {selectedUnits} units
+        <aside className="order-1 space-y-3 xl:order-2 xl:sticky xl:top-[4.25rem] xl:max-h-[calc(100dvh-5rem)] xl:overflow-auto xl:overscroll-contain">
+          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="mb-3 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+              <div className="min-w-0">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-950">
+                  <PackageCheck className="h-4 w-4 text-cyan-700" aria-hidden="true" />
+                  Fulfillment Control
+                </h3>
+                <p className="text-xs text-slate-600">Pick, pack, and save selected lines.</p>
               </div>
-              <p className="text-xs text-slate-600">
-                Every fulfillment generation remains recorded in the backend with per-item
-                quantities.
-              </p>
-              {selectedRows.length > 0 && !canSaveFulfillment ? (
-                <p className="text-xs font-medium text-amber-700">
-                  Each selected row must have both Picked and Packed checked before fulfillment can
-                  be saved.
-                </p>
-              ) : null}
-            </div>
-            <Button
-              type="button"
-              className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-              disabled={
-                isGenerating || hasValidationErrors || !canFulfillOrder || !canSaveFulfillment
-              }
-              onClick={handleGenerate}
-            >
-              <Sparkles className="h-4 w-4" />
-              {isGenerating ? 'Saving...' : 'Save Fulfillment'}
-            </Button>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-2">
-            <RefreshCcw className="h-4 w-4 text-slate-600" />
-            <h4 className="font-semibold text-slate-900">Fulfillment History</h4>
-            <Badge variant="secondary" className="bg-slate-100 text-slate-800">
-              {generations.length} records
-            </Badge>
-          </div>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            <Link href={`/orders/${order.orderId}/fulfillment/history?from=${navigationSource}`}>
-              <History className="h-4 w-4" />
-              View Full History
-            </Link>
-          </Button>
-        </div>
-
-        {generationsLoading ? (
-          <p className="text-sm text-slate-500">Loading fulfillment history...</p>
-        ) : generations.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-            No fulfillment records have been recorded for this order yet.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {generations.map((generation) => (
-              <div
-                key={generation.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              <Badge
+                className={cn(
+                  'text-[10px]',
+                  canSaveFulfillment
+                    ? 'bg-emerald-600 text-white'
+                    : isEditing
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'bg-slate-100 text-slate-800'
+                )}
               >
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <div className="font-semibold text-slate-900">
-                      {getFulfillmentRecordLabel(order.orderId, {
-                        invoiceId: generation.id,
-                        generationNumber: generation.generationNumber,
-                      })}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {formatOrderDateTime(generation.createdDate)} •{' '}
-                      {generation.createdBy || 'System'}
-                    </div>
+                {canSaveFulfillment ? 'Ready To Save' : isEditing ? 'Editing' : 'Review'}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={isEditing ? 'outline' : 'default'}
+                className={cn(
+                  'min-h-11 gap-2 text-xs sm:min-h-9',
+                  !canFulfillOrder ? 'cursor-not-allowed border-slate-200 text-slate-400' : '',
+                  isEditing
+                    ? 'border-slate-300 text-slate-800 hover:bg-slate-50'
+                    : 'bg-slate-950 text-white hover:bg-slate-800'
+                )}
+                disabled={!canFulfillOrder}
+                onClick={toggleEditMode}
+              >
+                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              <Button
+                type="button"
+                className="min-h-11 gap-2 bg-emerald-600 text-white hover:bg-emerald-700 sm:min-h-9"
+                disabled={
+                  isGenerating || hasValidationErrors || !canFulfillOrder || !canSaveFulfillment
+                }
+                onClick={handleGenerate}
+              >
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                {isGenerating ? 'Saving...' : 'Save Fulfillment'}
+              </Button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
+              {[
+                { label: 'Selected', value: selectedUnits, className: 'text-slate-950' },
+                { label: 'Pending', value: totalPendingUnits, className: 'text-amber-700' },
+                { label: 'Records', value: generations.length, className: 'text-slate-950' },
+              ].map((metric) => (
+                <div
+                  key={metric.label}
+                  className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2"
+                >
+                  <div className="truncate text-[10px] font-semibold uppercase text-slate-500">
+                    {metric.label}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-emerald-100 text-emerald-900">
-                      {generation.totalGeneratedQuantity ?? 0} units generated
-                    </Badge>
-                    <Badge className="bg-amber-100 text-amber-900">
-                      Remaining after save: {generation.totalBacklogQuantity ?? 0}
-                    </Badge>
-                    {generation.id ? (
-                      <Button
-                        asChild
-                        size="sm"
-                        className="gap-2 bg-slate-800 text-white hover:bg-slate-900"
-                      >
-                        <Link
-                          href={`/orders/${order.orderId}/fulfillment/history/${generation.id}`}
-                        >
-                          <Eye className="h-4 w-4" />
-                          View
-                        </Link>
-                      </Button>
-                    ) : null}
+                  <div
+                    className={cn('text-base font-black tabular-nums sm:text-lg', metric.className)}
+                  >
+                    {metric.value}
                   </div>
                 </div>
+              ))}
+            </div>
 
-                {generation.items?.length ? (
-                  <div className="mt-3 space-y-2">
-                    {generation.items.map((item) => (
-                      <div
-                        key={item.id ?? `${generation.id}-${item.orderDetailId}`}
-                        className="flex flex-col gap-1 rounded-md border border-white bg-white px-3 py-2 text-sm lg:flex-row lg:items-center lg:justify-between"
-                      >
-                        <div className="font-medium text-slate-800">
-                          {item.productName || item.sku || `Order item #${item.orderDetailId}`}
+            {isEditing ? (
+              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-600">Selected To Generate</span>
+                  <span className="font-black tabular-nums text-slate-950">
+                    {selectedUnits} Units
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Every fulfillment generation remains recorded with per-item quantities.
+                </p>
+                {selectedRows.length > 0 && !canSaveFulfillment ? (
+                  <p className="text-xs font-medium text-amber-700">
+                    Each selected row must have both Picked and Packed checked before fulfillment
+                    can be saved.
+                  </p>
+                ) : null}
+                {hasValidationErrors ? (
+                  <p className="text-xs font-medium text-rose-700">
+                    Requested quantity exceeds the deliverable inventory for one or more items.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="mb-3 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+              <div className="flex min-w-0 items-center gap-2">
+                <RefreshCcw className="h-4 w-4 text-slate-600" aria-hidden="true" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-950">Fulfillment Audit</h3>
+                  <p className="text-xs text-slate-500">{generations.length} records</p>
+                </div>
+              </div>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="min-h-10 gap-1.5 border-slate-300 px-2 text-[11px] text-slate-700 hover:bg-slate-50 min-[420px]:min-h-8"
+              >
+                <Link
+                  href={`/orders/${order.orderId}/fulfillment/history?from=${navigationSource}`}
+                >
+                  <History className="h-3.5 w-3.5" aria-hidden="true" />
+                  View Full History
+                </Link>
+              </Button>
+            </div>
+
+            {generationsLoading ? (
+              <p className="text-sm text-slate-500">Loading fulfillment history...</p>
+            ) : generations.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
+                No fulfillment records have been recorded for this order yet.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {generations.slice(0, 5).map((generation) => (
+                  <div
+                    key={generation.id}
+                    className="rounded-lg border border-slate-200 bg-slate-50 p-2"
+                  >
+                    <div className="flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-bold text-slate-950">
+                          {getFulfillmentRecordLabel(order.orderId, {
+                            invoiceId: generation.id,
+                            generationNumber: generation.generationNumber,
+                          })}
                         </div>
-                        <div className="flex flex-wrap gap-3 text-xs text-slate-600">
-                          <span>
-                            Ordered:{' '}
-                            {originalOrderQuantityByOrderDetailId.get(item.orderDetailId ?? -1) ??
-                              0}
-                          </span>
-                          <span>Delivered: {item.deliveredQuantity ?? 0}</span>
-                          <span>Available Before: {item.availableQuantityBefore ?? 0}</span>
-                          <span>Remaining After: {item.remainingBacklogQuantity ?? 0}</span>
+                        <div className="truncate text-[10px] text-slate-500">
+                          {formatOrderDateTime(generation.createdDate)} •{' '}
+                          {generation.createdBy || 'System'}
                         </div>
                       </div>
-                    ))}
+                      {generation.id ? (
+                        <Button
+                          asChild
+                          size="sm"
+                          className="min-h-9 shrink-0 gap-1 bg-slate-800 px-2 text-[10px] text-white hover:bg-slate-900 min-[420px]:min-h-7"
+                        >
+                          <Link
+                            href={`/orders/${order.orderId}/fulfillment/history/${generation.id}`}
+                          >
+                            <Eye className="h-3 w-3" aria-hidden="true" />
+                            View
+                          </Link>
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-1">
+                      <Badge className="justify-center bg-emerald-100 text-[10px] text-emerald-900">
+                        {generation.totalGeneratedQuantity ?? 0} Generated
+                      </Badge>
+                      <Badge className="justify-center bg-amber-100 text-[10px] text-amber-900">
+                        {generation.totalBacklogQuantity ?? 0} Left
+                      </Badge>
+                    </div>
+                    {generation.items?.length ? (
+                      <div className="mt-2 space-y-1">
+                        {generation.items.slice(0, 3).map((item) => (
+                          <div
+                            key={item.id ?? `${generation.id}-${item.orderDetailId}`}
+                            className="rounded-md bg-white px-2 py-1 text-[10px]"
+                          >
+                            <div className="truncate font-semibold text-slate-800">
+                              {item.productName || item.sku || `Order item #${item.orderDetailId}`}
+                            </div>
+                            <div className="grid grid-cols-2 gap-1 text-slate-500">
+                              <span>
+                                Ordered{' '}
+                                {originalOrderQuantityByOrderDetailId.get(
+                                  item.orderDetailId ?? -1
+                                ) ?? 0}
+                              </span>
+                              <span>Delivered {item.deliveredQuantity ?? 0}</span>
+                              <span>Before {item.availableQuantityBefore ?? 0}</span>
+                              <span>Left {item.remainingBacklogQuantity ?? 0}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {generation.items.length > 3 ? (
+                          <div className="text-[10px] font-medium text-slate-500">
+                            +{generation.items.length - 3} more lines
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+                {generations.length > 5 ? (
+                  <div className="text-center text-[11px] font-medium text-slate-500">
+                    Showing latest 5 of {generations.length}
                   </div>
                 ) : null}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </section>
+        </aside>
       </div>
     </div>
   );
