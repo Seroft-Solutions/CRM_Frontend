@@ -53,22 +53,32 @@ export function isNativeBarcodeDetectorAvailable() {
 
 type BarcodeScannerProps = {
   className?: string;
+  compact?: boolean;
   disabled?: boolean;
   feedback: BarcodeScanFeedback;
   flashKey: number;
+  manualButtonLabel?: string;
   onScan: (code: string, source: 'camera' | 'manual') => void;
   open: boolean;
   scanLocked: boolean;
+  showHeader?: boolean;
+  showManualEntry?: boolean;
+  showSupportedTargets?: boolean;
 };
 
 export function BarcodeScanner({
   className,
+  compact = false,
   disabled,
   feedback,
   flashKey,
+  manualButtonLabel = 'Enter',
   onScan,
   open,
   scanLocked,
+  showHeader = true,
+  showManualEntry = true,
+  showSupportedTargets = true,
 }: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -218,33 +228,40 @@ export function BarcodeScanner({
         className
       )}
     >
-      <div className="flex min-w-0 flex-col gap-3 border-b border-slate-800 px-3 py-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-400 text-slate-950">
-            <ScanBarcode className="h-4 w-4" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-sm font-semibold">Receiving Scanner</div>
-            <div className="text-xs text-slate-400 max-sm:line-clamp-2">
-              Camera scans and manual entries use the same matching path.
+      {showHeader ? (
+        <div className="flex min-w-0 flex-col gap-3 border-b border-slate-800 px-3 py-2 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-400 text-slate-950">
+              <ScanBarcode className="h-4 w-4" aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">Receiving Scanner</div>
+              <div className="text-xs text-slate-400 max-sm:line-clamp-2">
+                Camera scans and manual entries use the same matching path.
+              </div>
             </div>
           </div>
+          <div
+            className={cn(
+              'w-fit max-w-full rounded-full px-3 py-1 text-xs font-semibold',
+              feedback.variant === 'success' && 'bg-emerald-400 text-emerald-950',
+              feedback.variant === 'warning' && 'bg-amber-300 text-amber-950',
+              feedback.variant === 'error' && 'bg-rose-300 text-rose-950',
+              feedback.variant === 'idle' && 'bg-slate-800 text-slate-200'
+            )}
+          >
+            {feedback.message}
+          </div>
         </div>
+      ) : null}
+
+      <div className={cn('grid gap-3 p-2 sm:p-3', compact && 'p-0 sm:p-0')}>
         <div
           className={cn(
-            'w-fit max-w-full rounded-full px-3 py-1 text-xs font-semibold',
-            feedback.variant === 'success' && 'bg-emerald-400 text-emerald-950',
-            feedback.variant === 'warning' && 'bg-amber-300 text-amber-950',
-            feedback.variant === 'error' && 'bg-rose-300 text-rose-950',
-            feedback.variant === 'idle' && 'bg-slate-800 text-slate-200'
+            'relative h-[220px] w-full overflow-hidden rounded-md border border-slate-700 bg-black sm:h-[240px]',
+            compact && 'h-[150px] sm:h-[170px]'
           )}
         >
-          {feedback.message}
-        </div>
-      </div>
-
-      <div className="grid gap-3 p-2 sm:p-3">
-        <div className="relative h-[220px] w-full overflow-hidden rounded-md border border-slate-700 bg-black sm:h-[240px]">
           {cameraError ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-center sm:p-6">
               <CameraOff className="h-9 w-9 text-amber-300" aria-hidden="true" />
@@ -295,65 +312,71 @@ export function BarcodeScanner({
           ) : null}
         </div>
 
-        <div className="space-y-3">
-          <form
-            onSubmit={handleManualSubmit}
-            className="rounded-md border border-slate-800 bg-slate-900 p-3"
-          >
-            <label
-              htmlFor="receiving-scanner-manual-code"
-              className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-200"
-            >
-              <Keyboard className="h-4 w-4 text-emerald-300" aria-hidden="true" />
-              Manual barcode or SKU
-            </label>
-            <div className="flex flex-col gap-2 min-[420px]:flex-row">
-              <Input
-                id="receiving-scanner-manual-code"
-                name="receivingScannerManualCode"
-                value={manualValue}
-                onChange={(event) => setManualValue(event.target.value)}
-                placeholder="Scan or type code…"
-                autoComplete="off"
-                spellCheck={false}
-                className="min-h-11 border-slate-700 bg-slate-950 text-base text-white placeholder:text-slate-500 sm:min-h-9 sm:text-sm"
-                disabled={disabled || scanLocked}
-              />
-              <Button
-                type="submit"
-                className="min-h-11 bg-emerald-400 text-slate-950 hover:bg-emerald-300 sm:min-h-9"
-                disabled={disabled || scanLocked}
+        {showManualEntry || showSupportedTargets || detectorWarning ? (
+          <div className="space-y-3">
+            {showManualEntry ? (
+              <form
+                onSubmit={handleManualSubmit}
+                className="rounded-md border border-slate-800 bg-slate-900 p-3"
               >
-                Enter
-              </Button>
-            </div>
-          </form>
+                <label
+                  htmlFor="receiving-scanner-manual-code"
+                  className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-200"
+                >
+                  <Keyboard className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+                  Manual barcode or SKU
+                </label>
+                <div className="flex flex-col gap-2 min-[420px]:flex-row">
+                  <Input
+                    id="receiving-scanner-manual-code"
+                    name="receivingScannerManualCode"
+                    value={manualValue}
+                    onChange={(event) => setManualValue(event.target.value)}
+                    placeholder="Scan or type code…"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="min-h-11 border-slate-700 bg-slate-950 text-base text-white placeholder:text-slate-500 sm:min-h-9 sm:text-sm"
+                    disabled={disabled || scanLocked}
+                  />
+                  <Button
+                    type="submit"
+                    className="min-h-11 bg-emerald-400 text-slate-950 hover:bg-emerald-300 sm:min-h-9"
+                    disabled={disabled || scanLocked}
+                  >
+                    {manualButtonLabel}
+                  </Button>
+                </div>
+              </form>
+            ) : null}
 
-          <div className="rounded-md border border-slate-800 bg-slate-900 p-3 text-xs text-slate-300">
-            <div className="mb-2 flex items-center gap-2 font-semibold text-slate-100">
-              <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden="true" />
-              Supported targets
-            </div>
-            <div className="grid grid-cols-2 gap-1">
-              <span>EAN-13</span>
-              <span>EAN-8</span>
-              <span>UPC-A</span>
-              <span>UPC-E</span>
-              <span>Code128</span>
-              <span>Code39</span>
-              <span>Code93</span>
-              <span>QR</span>
-              <span>DataMatrix</span>
-            </div>
+            {showSupportedTargets ? (
+              <div className="rounded-md border border-slate-800 bg-slate-900 p-3 text-xs text-slate-300">
+                <div className="mb-2 flex items-center gap-2 font-semibold text-slate-100">
+                  <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+                  Supported targets
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                  <span>EAN-13</span>
+                  <span>EAN-8</span>
+                  <span>UPC-A</span>
+                  <span>UPC-E</span>
+                  <span>Code128</span>
+                  <span>Code39</span>
+                  <span>Code93</span>
+                  <span>QR</span>
+                  <span>DataMatrix</span>
+                </div>
+              </div>
+            ) : null}
+
+            {detectorWarning ? (
+              <div className="flex gap-2 rounded-md border border-amber-300/30 bg-amber-300/10 p-3 text-xs text-amber-100">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                {detectorWarning}
+              </div>
+            ) : null}
           </div>
-
-          {detectorWarning ? (
-            <div className="flex gap-2 rounded-md border border-amber-300/30 bg-amber-300/10 p-3 text-xs text-amber-100">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              {detectorWarning}
-            </div>
-          ) : null}
-        </div>
+        ) : null}
       </div>
     </div>
   );

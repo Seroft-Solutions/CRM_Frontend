@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
@@ -169,6 +169,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const [isEditing, setIsEditing] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [lastReceivingScan, setLastReceivingScan] = useState<LastReceivingScan | null>(null);
+  const [manualScanCode, setManualScanCode] = useState('');
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
@@ -383,6 +384,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     rows
       .filter((row) => !row.isCompleted && row.isFulfillable && row.remainingQuantity > 0)
       .every((row) => row.enteredQuantity >= row.remainingQuantity);
+  const scanProgressPercent =
+    totalPendingUnits > 0
+      ? Math.min(100, Math.round((totalScannedUnits / totalPendingUnits) * 100))
+      : 0;
 
   const toggleEditMode = () => {
     if (isEditing) {
@@ -501,6 +506,16 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const scanner = useBarcodeScanner({ onScan: handleScan });
 
+  const handleManualReceivingSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const code = manualScanCode.trim();
+
+    if (!code) return;
+
+    scanner.submitScan(code, 'manual');
+    setManualScanCode('');
+  };
+
   const handleGenerate = async () => {
     if (selectedRows.length === 0) {
       toast.error('Select at least one pending item and enter a receive quantity.');
@@ -558,26 +573,71 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     <div className="min-w-0 space-y-3 overflow-x-clip bg-slate-50 p-2 sm:p-3">
       <div className="grid min-w-0 gap-3">
         <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-950 text-emerald-300">
                 <PackageCheck className="h-4 w-4" aria-hidden="true" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-bold text-slate-950">Receiving Lines</h2>
+                <h2 className="truncate text-sm font-bold text-slate-950">
+                  Receiving Lines ({allItems.length})
+                </h2>
                 <p className="truncate text-xs text-slate-500">
                   Match received units to PO quantities and warehouse stock.
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              <Badge className="bg-slate-100 text-[11px] text-slate-800">
-                {selectedUnits} Selected Units
-              </Badge>
-              {hasValidationErrors ? (
-                <Badge className="bg-rose-100 text-[11px] text-rose-800">
-                  Quantity Check Required
-                </Badge>
+            <div className="grid grid-cols-2 gap-1.5 min-[520px]:flex min-[520px]:flex-wrap min-[520px]:items-center">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="min-h-10 gap-1.5 border-slate-300 px-3 text-xs text-slate-800 hover:bg-slate-50 sm:min-h-9"
+                disabled={!isEditing}
+                onClick={toggleEditMode}
+              >
+                <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={isEditing ? 'outline' : 'default'}
+                className={cn(
+                  'min-h-10 gap-1.5 px-3 text-xs sm:min-h-9',
+                  isEditing
+                    ? 'border-slate-300 text-slate-800 hover:bg-slate-50'
+                    : 'bg-slate-950 text-white hover:bg-slate-800'
+                )}
+                onClick={() => {
+                  if (!isEditing) {
+                    toggleEditMode();
+                  }
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                Edit
+              </Button>
+              {canUseScanner ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={scannerOpen ? 'outline' : 'default'}
+                  className={cn(
+                    'col-span-2 min-h-10 gap-1.5 px-3 text-xs min-[520px]:col-span-1 sm:min-h-9',
+                    scannerOpen
+                      ? 'border-rose-200 text-rose-700 hover:bg-rose-50'
+                      : 'bg-blue-700 text-white hover:bg-blue-800'
+                  )}
+                  onClick={handleScannerToggle}
+                >
+                  {scannerOpen ? (
+                    <CameraOff className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  {scannerOpen ? 'Stop Receiving Scanner' : 'Start Receiving Scanner'}
+                </Button>
               ) : null}
             </div>
           </div>
@@ -762,28 +822,64 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
               </Table>
             </div>
           )}
+          <div className="grid gap-3 border-t border-slate-200 bg-white p-3 md:grid-cols-[minmax(0,1fr)_minmax(240px,32%)] md:items-center">
+            <div className="grid grid-cols-2 gap-2 sm:max-w-sm">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase text-slate-500">
+                  Items Selected
+                </div>
+                <div className="text-lg font-black tabular-nums text-slate-950">
+                  {selectedRows.length}
+                </div>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase text-slate-500">
+                  Units Selected
+                </div>
+                <div className="text-lg font-black tabular-nums text-slate-950">
+                  {selectedUnits}
+                </div>
+              </div>
+            </div>
+            <Button
+              type="button"
+              className="min-h-12 w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+              disabled={
+                isGenerating ||
+                selectedRows.length === 0 ||
+                hasValidationErrors ||
+                (scannerOpen && !scannerCompletionSatisfied)
+              }
+              onClick={handleGenerate}
+            >
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              {isGenerating ? 'Saving…' : 'Submit Receiving'}
+            </Button>
+          </div>
         </section>
 
         <aside className="order-1">
           <section
             className={cn(
-              'rounded-xl border p-3 shadow-sm',
-              scannerOpen ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 bg-white'
+              'overflow-hidden rounded-xl border bg-white shadow-sm',
+              scannerOpen ? 'border-emerald-300' : 'border-slate-200'
             )}
           >
-            <div className="mb-3 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
-              <div className="min-w-0">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-950">
-                  <ScanBarcode className="h-4 w-4 text-emerald-700" aria-hidden="true" />
-                  Receiving Scanner
-                </h3>
-                <p className="text-xs text-slate-600">
-                  Camera, manual scan, and receiving save controls.
-                </p>
+            <div className="flex flex-col gap-2 border-b border-slate-200 px-3 py-2 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-950 text-emerald-300">
+                  <ScanBarcode className="h-4 w-4" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-bold text-slate-950">Receiving Scanner</h3>
+                  <p className="truncate text-xs text-slate-600">
+                    Scan barcode / SKU or enter manually to receive items.
+                  </p>
+                </div>
               </div>
               <Badge
                 className={cn(
-                  'text-[10px]',
+                  'h-6 w-fit text-[10px]',
                   scannerOpen
                     ? overrunRows.length > 0
                       ? 'bg-rose-100 text-rose-800'
@@ -799,106 +895,191 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={isEditing ? 'outline' : 'default'}
-                className={cn(
-                  'min-h-11 gap-2 text-xs sm:min-h-9',
-                  isEditing
-                    ? 'border-slate-300 text-slate-800 hover:bg-slate-50'
-                    : 'bg-slate-950 text-white hover:bg-slate-800'
-                )}
-                onClick={toggleEditMode}
-              >
-                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
-              {canUseScanner ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={scannerOpen ? 'outline' : 'default'}
-                  className={cn(
-                    'min-h-11 gap-2 text-xs sm:min-h-9',
-                    scannerOpen
-                      ? 'border-blue-300 text-blue-800 hover:bg-blue-50'
-                      : 'bg-blue-700 text-white hover:bg-blue-800'
-                  )}
-                  onClick={handleScannerToggle}
-                >
-                  {scannerOpen ? (
-                    <CameraOff className="h-3.5 w-3.5" aria-hidden="true" />
-                  ) : (
-                    <Camera className="h-3.5 w-3.5" aria-hidden="true" />
-                  )}
-                  {scannerOpen ? 'Stop Scanner' : 'Start Receiving Scanner'}
-                </Button>
-              ) : null}
-            </div>
-
-            <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
-              {[
-                { label: 'Scanned', value: totalScannedUnits, className: 'text-slate-950' },
-                { label: 'Required', value: totalPendingUnits, className: 'text-slate-950' },
-                { label: 'Left', value: remainingScanUnits, className: 'text-amber-700' },
-              ].map((metric) => (
-                <div
-                  key={metric.label}
-                  className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2"
-                >
-                  <div className="truncate text-[10px] font-semibold uppercase text-slate-500">
-                    {metric.label}
-                  </div>
-                  <div
-                    className={cn('text-base font-black tabular-nums sm:text-lg', metric.className)}
-                  >
-                    {metric.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {scannerOpen ? (
-              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-white p-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-600">Progress</span>
-                  <span className="font-black tabular-nums text-slate-950">
-                    {totalScannedUnits}/{totalPendingUnits}
-                  </span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all',
-                      overrunRows.length > 0
-                        ? 'bg-rose-500'
-                        : scannerCompletionSatisfied
-                          ? 'bg-emerald-500'
-                          : 'bg-blue-500'
-                    )}
-                    style={{
-                      width: `${
-                        totalPendingUnits > 0
-                          ? Math.min(100, Math.round((totalScannedUnits / totalPendingUnits) * 100))
-                          : 0
-                      }%`,
+            <div className="grid gap-3 p-3 lg:grid-cols-[minmax(260px,2fr)_minmax(0,3fr)]">
+              <div className="min-w-0 space-y-2">
+                {scannerOpen && canUseScanner ? (
+                  <BarcodeScanner
+                    compact
+                    className="border-slate-900 shadow-none"
+                    feedback={scanner.feedback}
+                    flashKey={scanner.flashKey}
+                    onScan={(code, source) => {
+                      scanner.submitScan(code, source);
                     }}
+                    open={scannerOpen}
+                    scanLocked={scanner.scanLocked}
+                    showHeader={false}
+                    showManualEntry={false}
+                    showSupportedTargets={false}
                   />
+                ) : (
+                  <div className="flex h-[150px] flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-100 p-4 text-center sm:h-[170px]">
+                    <Camera className="mb-2 h-7 w-7 text-slate-500" aria-hidden="true" />
+                    <div className="text-sm font-bold text-slate-950">Camera Ready</div>
+                    <div className="mt-1 max-w-xs text-xs text-slate-500">
+                      Start Receiving Scanner to request camera permission and show the preview.
+                    </div>
+                  </div>
+                )}
+
+                <form onSubmit={handleManualReceivingSubmit} className="space-y-2">
+                  <label
+                    htmlFor="purchase-receiving-manual-code"
+                    className="text-xs font-bold text-slate-700"
+                  >
+                    Manual Barcode / SKU
+                  </label>
+                  <div className="grid gap-2 min-[520px]:grid-cols-[minmax(0,1fr)_150px]">
+                    <Input
+                      id="purchase-receiving-manual-code"
+                      name="purchaseReceivingManualCode"
+                      value={manualScanCode}
+                      onChange={(event) => setManualScanCode(event.target.value)}
+                      placeholder="Enter barcode or SKU…"
+                      autoComplete="off"
+                      spellCheck={false}
+                      className="min-h-11 border-slate-300 text-sm focus-visible:ring-2 focus-visible:ring-emerald-300 sm:min-h-9"
+                      disabled={scanner.scanLocked}
+                    />
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      className="min-h-11 border-blue-200 bg-blue-50 text-xs font-bold text-blue-700 hover:bg-blue-100 sm:min-h-9"
+                      disabled={!manualScanCode.trim() || scanner.scanLocked}
+                    >
+                      Add / Match Item
+                    </Button>
+                  </div>
+                </form>
+
+                <div className="grid grid-cols-1 gap-2 min-[520px]:grid-cols-2">
+                  {canUseScanner ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="min-h-11 gap-2 bg-blue-700 text-xs text-white hover:bg-blue-800 sm:min-h-9"
+                      disabled={scannerOpen}
+                      onClick={handleScannerToggle}
+                    >
+                      <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                      Start Receiving Scanner
+                    </Button>
+                  ) : null}
+                  {canUseScanner ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="min-h-11 gap-2 border-rose-200 text-xs text-rose-700 hover:bg-rose-50 sm:min-h-9"
+                      disabled={!scannerOpen}
+                      onClick={handleScannerToggle}
+                    >
+                      <CameraOff className="h-3.5 w-3.5" aria-hidden="true" />
+                      Stop Receiving Scanner
+                    </Button>
+                  ) : null}
                 </div>
-                <div className="grid grid-cols-1 gap-2 text-xs min-[420px]:grid-cols-2">
-                  <div className="rounded-md bg-slate-50 p-2">
-                    <div className="font-semibold text-slate-500">Last Code</div>
-                    <div className="truncate font-bold text-slate-950">
+              </div>
+
+              <div className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="mb-3 flex flex-col gap-2 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between">
+                  <div className="min-w-0">
+                    <div className="text-sm font-black text-slate-950">Supported Target</div>
+                    <div className="text-xs text-slate-500">
+                      Scan progress against open purchase-order receiving quantity.
+                    </div>
+                  </div>
+                  <Badge
+                    className={cn(
+                      'w-fit text-[10px]',
+                      scannerOpen
+                        ? overrunRows.length > 0
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                        : 'bg-slate-200 text-slate-700'
+                    )}
+                  >
+                    {scannerOpen
+                      ? overrunRows.length > 0
+                        ? 'Quantity Warning'
+                        : 'Scanner Active'
+                      : 'Scanner Closed'}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+                  {[
+                    {
+                      label: 'Scanned Units',
+                      value: totalScannedUnits,
+                      className: 'text-emerald-700',
+                    },
+                    {
+                      label: 'Required Units',
+                      value: totalPendingUnits,
+                      className: 'text-blue-700',
+                    },
+                    {
+                      label: 'Remaining Units',
+                      value: remainingScanUnits,
+                      className: 'text-orange-700',
+                    },
+                    {
+                      label: 'Progress',
+                      value: `${scanProgressPercent}%`,
+                      className: 'text-slate-950',
+                    },
+                  ].map((metric) => (
+                    <div
+                      key={metric.label}
+                      className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2"
+                    >
+                      <div className="truncate text-[10px] font-semibold uppercase text-slate-500">
+                        {metric.label}
+                      </div>
+                      <div
+                        className={cn(
+                          'mt-1 text-xl font-black tabular-nums sm:text-2xl',
+                          metric.className
+                        )}
+                      >
+                        {metric.value}
+                      </div>
+                      {metric.label === 'Progress' ? (
+                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all',
+                              overrunRows.length > 0
+                                ? 'bg-rose-500'
+                                : scannerCompletionSatisfied
+                                  ? 'bg-emerald-500'
+                                  : 'bg-blue-600'
+                            )}
+                            style={{ width: `${scanProgressPercent}%` }}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 grid gap-2 min-[620px]:grid-cols-2">
+                  <div className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="text-[10px] font-semibold uppercase text-slate-500">
+                      Last Scanned
+                    </div>
+                    <div className="mt-1 truncate text-sm font-bold text-slate-950">
                       {lastReceivingScan?.code ?? 'Waiting for scan'}
                     </div>
                   </div>
-                  <div className="rounded-md bg-slate-50 p-2">
-                    <div className="font-semibold text-slate-500">Last Match</div>
+                  <div className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="text-[10px] font-semibold uppercase text-slate-500">
+                      Last Matched Item
+                    </div>
                     <div
                       className={cn(
-                        'truncate font-bold',
+                        'mt-1 truncate text-sm font-bold',
                         lastReceivingScan?.status === 'not-found'
                           ? 'text-amber-700'
                           : 'text-slate-950'
@@ -908,82 +1089,34 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
 
-            <div
-              className={cn(
-                'mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold',
-                overrunRows.length > 0
-                  ? 'border-rose-200 bg-rose-50 text-rose-700'
-                  : scannerCompletionSatisfied
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                    : 'border-slate-200 bg-slate-50 text-slate-700'
-              )}
-            >
-              {overrunRows.length > 0 ? (
-                <XCircle className="h-4 w-4" aria-hidden="true" />
-              ) : scannerCompletionSatisfied ? (
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-              )}
-              {overrunRows.length > 0
-                ? `${overrunRows.length} over quantity`
-                : scannerCompletionSatisfied
-                  ? 'Ready To Complete'
-                  : scannerOpen
-                    ? 'Scanning'
-                    : 'Awaiting Receiving'}
-            </div>
-
-            {scannerOpen && canUseScanner ? (
-              <div className="mt-3">
-                <BarcodeScanner
-                  className="border-slate-900"
-                  feedback={scanner.feedback}
-                  flashKey={scanner.flashKey}
-                  onScan={(code, source) => {
-                    scanner.submitScan(code, source);
-                  }}
-                  open={scannerOpen}
-                  scanLocked={scanner.scanLocked}
-                />
-              </div>
-            ) : null}
-
-            {isEditing ? (
-              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-600">Selected To Save</span>
-                  <span className="font-black tabular-nums text-slate-950">
-                    {selectedUnits} Units
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Every receiving save remains recorded with per-item quantities.
-                </p>
-                {scannerOpen && !scannerCompletionSatisfied && selectedRows.length > 0 ? (
-                  <p className="text-xs font-medium text-amber-700">
-                    Complete the scanner count before saving receiving.
-                  </p>
-                ) : null}
-                <Button
-                  type="button"
-                  className="min-h-11 w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700 sm:min-h-9"
-                  disabled={
-                    isGenerating ||
-                    selectedRows.length === 0 ||
-                    hasValidationErrors ||
-                    (scannerOpen && !scannerCompletionSatisfied)
-                  }
-                  onClick={handleGenerate}
+                <div
+                  className={cn(
+                    'mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold',
+                    overrunRows.length > 0
+                      ? 'border-rose-200 bg-rose-50 text-rose-700'
+                      : scannerCompletionSatisfied
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 bg-white text-slate-700'
+                  )}
                 >
-                  <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  {isGenerating ? 'Saving…' : scannerOpen ? 'Complete Receiving' : 'Save Receiving'}
-                </Button>
+                  {overrunRows.length > 0 ? (
+                    <XCircle className="h-4 w-4" aria-hidden="true" />
+                  ) : scannerCompletionSatisfied ? (
+                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {overrunRows.length > 0
+                    ? `${overrunRows.length} over quantity`
+                    : scannerCompletionSatisfied
+                      ? 'Ready To Complete'
+                      : scannerOpen
+                        ? 'Scanning'
+                        : 'Awaiting Receiving'}
+                </div>
               </div>
-            ) : null}
+            </div>
           </section>
         </aside>
       </div>

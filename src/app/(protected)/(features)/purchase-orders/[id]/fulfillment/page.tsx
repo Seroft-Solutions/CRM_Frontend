@@ -66,7 +66,7 @@ export default function OrderFulfillmentPage({ params }: OrderFulfillmentPagePro
           >
             <Link href={`/purchase-orders/${isValidId ? id : ''}/fulfillment/history`}>
               <History className="h-3.5 w-3.5" aria-hidden="true" />
-              Receiving History
+              View Fulfillment History
             </Link>
           </Button>
           <Button
