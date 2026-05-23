@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import {
   AlertTriangle,
   CheckCircle2,
+  Camera,
+  CameraOff,
   Eye,
   History,
   Pencil,
@@ -55,6 +57,11 @@ type FulfillmentScanMatchType = 'barcodeText' | 'sku' | 'partial';
 type ScannableFulfillmentItem = OrderDetailItem & {
   resolvedBarcodeText?: string;
   resolvedSku?: string;
+};
+type LastReceivingScan = {
+  code: string;
+  label: string;
+  status: 'matched' | 'not-found';
 };
 
 const PICK_AND_PACK_GROUPS = ['pick-and-pack', 'PICK_AND_PACK', 'PICK-AND-PACK', 'Pick & Pack'];
@@ -165,6 +172,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const rbac = useRBAC();
   const [isEditing, setIsEditing] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [lastReceivingScan, setLastReceivingScan] = useState<LastReceivingScan | null>(null);
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
@@ -234,6 +242,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     setDraftState(createInitialDraftState(order.items));
     setIsEditing(false);
     setScannerOpen(false);
+    setLastReceivingScan(null);
   }, [order.items]);
 
   const canUseScanner = PICK_AND_PACK_GROUPS.some((group) => rbac.hasGroup(group));
@@ -414,6 +423,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const handleScannerToggle = () => {
     if (scannerOpen) {
       setScannerOpen(false);
+      setLastReceivingScan(null);
 
       return;
     }
@@ -431,6 +441,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       const match = findMatchingFulfillmentItem(code, scannableItems);
 
       if (!match) {
+        setLastReceivingScan({
+          code,
+          label: 'No purchase order line matched',
+          status: 'not-found',
+        });
+
         return {
           accepted: false,
           message: 'Not found',
@@ -460,6 +476,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       const label =
         match.item.productName || match.item.resolvedSku || `Item ${match.item.orderDetailId}`;
       const sourceLabel = source === 'manual' ? 'manual' : 'camera';
+
+      setLastReceivingScan({
+        code,
+        label,
+        status: 'matched',
+      });
 
       if (scanState === 'overrun') {
         return {
@@ -535,6 +557,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       setDraftState(createInitialDraftState(order.items));
       setIsEditing(false);
       setScannerOpen(false);
+      setLastReceivingScan(null);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -565,8 +588,8 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
         ))}
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_330px]">
-        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm xl:order-1">
           <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-950 text-emerald-300">
@@ -773,20 +796,38 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
           )}
         </section>
 
-        <aside className="space-y-3 xl:sticky xl:top-[4.25rem] xl:max-h-[calc(100dvh-5rem)] xl:overflow-auto xl:overscroll-contain">
-          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <aside className="order-1 space-y-3 xl:order-2 xl:sticky xl:top-[4.25rem] xl:max-h-[calc(100dvh-5rem)] xl:overflow-auto xl:overscroll-contain">
+          <section
+            className={cn(
+              'rounded-xl border p-3 shadow-sm',
+              scannerOpen ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 bg-white'
+            )}
+          >
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-bold text-slate-950">Receiving Control</h3>
-                <p className="text-xs text-slate-500">Edit, scan, and save received units.</p>
+                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-950">
+                  <ScanBarcode className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                  Receiving Scanner
+                </h3>
+                <p className="text-xs text-slate-600">
+                  Camera, manual scan, and receiving save controls.
+                </p>
               </div>
               <Badge
                 className={cn(
                   'text-[10px]',
-                  isEditing ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-100 text-slate-800'
+                  scannerOpen
+                    ? overrunRows.length > 0
+                      ? 'bg-rose-100 text-rose-800'
+                      : 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-800'
                 )}
               >
-                {isEditing ? 'Editing' : 'Review'}
+                {scannerOpen
+                  ? overrunRows.length > 0
+                    ? 'Quantity Warning'
+                    : 'Scanner Active'
+                  : 'Scanner Closed'}
               </Badge>
             </div>
 
@@ -819,8 +860,12 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                   )}
                   onClick={handleScannerToggle}
                 >
-                  <ScanBarcode className="h-3.5 w-3.5" aria-hidden="true" />
-                  {scannerOpen ? 'Close Scanner' : 'Start Receiving'}
+                  {scannerOpen ? (
+                    <CameraOff className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  {scannerOpen ? 'Stop Scanner' : 'Start Receiving Scanner'}
                 </Button>
               ) : null}
             </div>
@@ -844,6 +889,57 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 </div>
               ))}
             </div>
+
+            {scannerOpen ? (
+              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-600">Progress</span>
+                  <span className="font-black tabular-nums text-slate-950">
+                    {totalScannedUnits}/{totalPendingUnits}
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all',
+                      overrunRows.length > 0
+                        ? 'bg-rose-500'
+                        : scannerCompletionSatisfied
+                          ? 'bg-emerald-500'
+                          : 'bg-blue-500'
+                    )}
+                    style={{
+                      width: `${
+                        totalPendingUnits > 0
+                          ? Math.min(100, Math.round((totalScannedUnits / totalPendingUnits) * 100))
+                          : 0
+                      }%`,
+                    }}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="rounded-md bg-slate-50 p-2">
+                    <div className="font-semibold text-slate-500">Last Code</div>
+                    <div className="truncate font-bold text-slate-950">
+                      {lastReceivingScan?.code ?? 'Waiting for scan'}
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-2">
+                    <div className="font-semibold text-slate-500">Last Match</div>
+                    <div
+                      className={cn(
+                        'truncate font-bold',
+                        lastReceivingScan?.status === 'not-found'
+                          ? 'text-amber-700'
+                          : 'text-slate-950'
+                      )}
+                    >
+                      {lastReceivingScan?.label ?? 'No scan yet'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div
               className={cn(
@@ -870,6 +966,21 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     ? 'Scanning'
                     : 'Awaiting Receiving'}
             </div>
+
+            {scannerOpen && canUseScanner ? (
+              <div className="mt-3">
+                <BarcodeScanner
+                  className="border-slate-900"
+                  feedback={scanner.feedback}
+                  flashKey={scanner.flashKey}
+                  onScan={(code, source) => {
+                    scanner.submitScan(code, source);
+                  }}
+                  open={scannerOpen}
+                  scanLocked={scanner.scanLocked}
+                />
+              </div>
+            ) : null}
 
             {isEditing ? (
               <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -901,20 +1012,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                   <Sparkles className="h-4 w-4" aria-hidden="true" />
                   {isGenerating ? 'Saving…' : scannerOpen ? 'Complete Receiving' : 'Save Receiving'}
                 </Button>
-              </div>
-            ) : null}
-
-            {scannerOpen && canUseScanner ? (
-              <div className="mt-3">
-                <BarcodeScanner
-                  feedback={scanner.feedback}
-                  flashKey={scanner.flashKey}
-                  onScan={(code, source) => {
-                    scanner.submitScan(code, source);
-                  }}
-                  open={scannerOpen}
-                  scanLocked={scanner.scanLocked}
-                />
               </div>
             ) : null}
           </section>

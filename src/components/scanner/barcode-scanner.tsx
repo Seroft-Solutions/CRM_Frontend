@@ -52,6 +52,7 @@ export function isNativeBarcodeDetectorAvailable() {
 }
 
 type BarcodeScannerProps = {
+  className?: string;
   disabled?: boolean;
   feedback: BarcodeScanFeedback;
   flashKey: number;
@@ -61,6 +62,7 @@ type BarcodeScannerProps = {
 };
 
 export function BarcodeScanner({
+  className,
   disabled,
   feedback,
   flashKey,
@@ -74,12 +76,15 @@ export function BarcodeScanner({
   const lastCameraCodeRef = useRef<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
+  const [detectorWarning, setDetectorWarning] = useState<string | null>(null);
   const [manualValue, setManualValue] = useState('');
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!open || disabled) {
       setCameraReady(false);
       setCameraError(null);
+      setDetectorWarning(null);
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
 
@@ -89,16 +94,20 @@ export function BarcodeScanner({
     let cancelled = false;
     const Detector = getBarcodeDetector();
 
-    if (!Detector) {
-      setCameraError(
-        'Native barcode detection is not available in this browser. Use manual entry.'
-      );
-
-      return;
-    }
+    setDetectorWarning(
+      Detector
+        ? null
+        : 'Native barcode detection is not available in this browser. Use manual entry while the camera preview remains active.'
+    );
 
     async function startCamera() {
       try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error(
+            'Camera access is not available in this browser or this page is not running in a secure context.'
+          );
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
           video: {
@@ -139,7 +148,7 @@ export function BarcodeScanner({
       streamRef.current = null;
       setCameraReady(false);
     };
-  }, [disabled, open]);
+  }, [disabled, open, retryKey]);
 
   useEffect(() => {
     if (!open || disabled || !cameraReady || scanLocked) return;
@@ -203,14 +212,19 @@ export function BarcodeScanner({
   if (!open) return null;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-300 bg-slate-950 text-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-slate-800 px-4 py-3 md:flex-row md:items-center md:justify-between">
+    <div
+      className={cn(
+        'overflow-hidden rounded-lg border border-slate-800 bg-slate-950 text-white shadow-sm',
+        className
+      )}
+    >
+      <div className="flex flex-col gap-3 border-b border-slate-800 px-3 py-2 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-cyan-400 text-slate-950">
-            <ScanBarcode className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-400 text-slate-950">
+            <ScanBarcode className="h-4 w-4" aria-hidden="true" />
           </div>
           <div>
-            <div className="text-sm font-semibold">Pick & Pack scanner</div>
+            <div className="text-sm font-semibold">Receiving Scanner</div>
             <div className="text-xs text-slate-400">
               Camera scans and manual entries use the same matching path.
             </div>
@@ -229,15 +243,26 @@ export function BarcodeScanner({
         </div>
       </div>
 
-      <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="relative aspect-video overflow-hidden rounded-md border border-slate-700 bg-black">
+      <div className="grid gap-3 p-3">
+        <div className="relative h-[240px] overflow-hidden rounded-md border border-slate-700 bg-black">
           {cameraError ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-              <CameraOff className="h-9 w-9 text-amber-300" />
+              <CameraOff className="h-9 w-9 text-amber-300" aria-hidden="true" />
               <div className="space-y-1">
-                <div className="text-sm font-semibold">Camera scanner unavailable</div>
+                <div className="text-sm font-semibold">Camera permission required</div>
                 <div className="text-xs text-slate-400">{cameraError}</div>
               </div>
+              <Button
+                type="button"
+                size="sm"
+                className="bg-amber-300 text-amber-950 hover:bg-amber-200"
+                onClick={() => {
+                  setCameraError(null);
+                  setRetryKey((current) => current + 1);
+                }}
+              >
+                Retry Camera
+              </Button>
             </div>
           ) : (
             <>
@@ -249,7 +274,7 @@ export function BarcodeScanner({
                 aria-label="Barcode scanner camera preview"
               />
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="h-28 w-72 max-w-[82%] rounded-md border-2 border-cyan-300/80 shadow-[0_0_0_999px_rgba(2,6,23,0.42)]" />
+                <div className="h-24 w-64 max-w-[82%] rounded-md border-2 border-emerald-300/80 shadow-[0_0_0_999px_rgba(2,6,23,0.42)]" />
               </div>
               {flashKey > 0 ? (
                 <div
@@ -260,7 +285,7 @@ export function BarcodeScanner({
             </>
           )}
           <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-            <Camera className="h-3.5 w-3.5" />
+            <Camera className="h-3.5 w-3.5" aria-hidden="true" />
             {cameraReady ? 'Camera active' : 'Starting camera'}
           </div>
           {scanLocked ? (
@@ -270,26 +295,33 @@ export function BarcodeScanner({
           ) : null}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <form
             onSubmit={handleManualSubmit}
             className="rounded-md border border-slate-800 bg-slate-900 p-3"
           >
-            <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-200">
-              <Keyboard className="h-4 w-4 text-cyan-300" />
+            <label
+              htmlFor="receiving-scanner-manual-code"
+              className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-200"
+            >
+              <Keyboard className="h-4 w-4 text-emerald-300" aria-hidden="true" />
               Manual barcode or SKU
             </label>
             <div className="flex gap-2">
               <Input
+                id="receiving-scanner-manual-code"
+                name="receivingScannerManualCode"
                 value={manualValue}
                 onChange={(event) => setManualValue(event.target.value)}
-                placeholder="Scan or type code"
+                placeholder="Scan or type code…"
+                autoComplete="off"
+                spellCheck={false}
                 className="border-slate-700 bg-slate-950 text-white placeholder:text-slate-500"
                 disabled={disabled || scanLocked}
               />
               <Button
                 type="submit"
-                className="bg-cyan-400 text-slate-950 hover:bg-cyan-300"
+                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300"
                 disabled={disabled || scanLocked}
               >
                 Enter
@@ -299,7 +331,7 @@ export function BarcodeScanner({
 
           <div className="rounded-md border border-slate-800 bg-slate-900 p-3 text-xs text-slate-300">
             <div className="mb-2 flex items-center gap-2 font-semibold text-slate-100">
-              <ShieldCheck className="h-4 w-4 text-emerald-300" />
+              <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden="true" />
               Supported targets
             </div>
             <div className="grid grid-cols-2 gap-1">
@@ -315,10 +347,10 @@ export function BarcodeScanner({
             </div>
           </div>
 
-          {!isNativeBarcodeDetectorAvailable() ? (
+          {detectorWarning ? (
             <div className="flex gap-2 rounded-md border border-amber-300/30 bg-amber-300/10 p-3 text-xs text-amber-100">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              This browser does not expose native BarcodeDetector. Manual entry remains available.
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {detectorWarning}
             </div>
           ) : null}
         </div>
