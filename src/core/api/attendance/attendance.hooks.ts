@@ -141,6 +141,20 @@ export const markLeaveAttendance = () =>
     method: 'POST',
   });
 
+export const submitApprovalRequest = (weekStartDate: string) =>
+  springServiceMutator<AttendanceRecordDTO[]>({
+    url: '/api/attendance/submit-approval-request',
+    method: 'POST',
+    params: { weekStartDate },
+  });
+
+export const approveWeeklyAttendance = (payload: { userId: string; weekStartDate: string }) =>
+  springServiceMutator<AttendanceRecordDTO[]>({
+    url: '/api/attendance/admin/approve',
+    method: 'POST',
+    params: payload,
+  });
+
 export const useGetMyTodayAttendance = (
   options?: { query?: Partial<UseQueryOptions<AttendanceTodayStatusDTO, Error>> },
   queryClient?: QueryClient
@@ -319,6 +333,24 @@ export const useMarkLeaveAttendance = (
 ): UseMutationResult<AttendanceRecordDTO, Error, void> => {
   return useMutation({
     mutationFn: markLeaveAttendance,
+    ...options,
+  });
+};
+
+export const useSubmitApprovalRequest = (
+  options?: UseMutationOptions<AttendanceRecordDTO[], Error, string>
+): UseMutationResult<AttendanceRecordDTO[], Error, string> => {
+  return useMutation({
+    mutationFn: submitApprovalRequest,
+    ...options,
+  });
+};
+
+export const useApproveWeeklyAttendance = (
+  options?: UseMutationOptions<AttendanceRecordDTO[], Error, { userId: string; weekStartDate: string }>
+): UseMutationResult<AttendanceRecordDTO[], Error, { userId: string; weekStartDate: string }> => {
+  return useMutation({
+    mutationFn: approveWeeklyAttendance,
     ...options,
   });
 };
