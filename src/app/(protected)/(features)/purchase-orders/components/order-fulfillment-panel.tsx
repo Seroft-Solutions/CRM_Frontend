@@ -76,11 +76,11 @@ const getErrorMessage = (error: unknown) => {
     return (
       maybeResponse.response?.data?.message ||
       maybeResponse.response?.data?.title ||
-      'Unable to save purchase order fulfillment.'
+      'Unable to save purchase order receiving.'
     );
   }
 
-  return 'Unable to save purchase order fulfillment.';
+  return 'Unable to save purchase order receiving.';
 };
 
 const normalizeFulfillmentCode = (value?: string | null) => {
@@ -337,7 +337,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       if (draft.selected && !isFulfillable) {
         validationMessage = 'Only Approved or Pending items can be fulfilled.';
       } else if (draft.selected && enteredQuantity > remainingQuantity) {
-        validationMessage = `Fulfillment quantity cannot exceed remaining quantity (${remainingQuantity}).`;
+        validationMessage = `Receive quantity cannot exceed remaining quantity (${remainingQuantity}).`;
       }
 
       return {
@@ -490,13 +490,13 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
 
   const handleGenerate = async () => {
     if (selectedRows.length === 0) {
-      toast.error('Select at least one pending item and enter a quantity.');
+      toast.error('Select at least one pending item and enter a receive quantity.');
 
       return;
     }
 
     if (hasValidationErrors) {
-      toast.error('Requested quantity exceeds the remaining quantity for one or more items.');
+      toast.error('Receive quantity exceeds the remaining quantity for one or more items.');
 
       return;
     }
@@ -527,7 +527,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ]);
 
       toast.success(
-        `Purchase order fulfillment saved successfully. ${getFulfillmentRecordLabel(order.orderId, {
+        `Purchase order receiving saved successfully. ${getFulfillmentRecordLabel(order.orderId, {
           invoiceId: result.id,
           generationNumber: result.generationNumber,
         })}.`
@@ -541,139 +541,83 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   };
 
   return (
-    <div className="space-y-4 border-t border-cyan-100 bg-cyan-50/30 p-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge className="bg-cyan-100 text-cyan-900">{allItems.length} total items</Badge>
-          <Badge className="bg-amber-100 text-amber-900">{pendingItems.length} pending items</Badge>
-          <Badge className="bg-emerald-100 text-emerald-900">
-            {completedItemsCount} completed items
-          </Badge>
-          <Badge className="bg-slate-100 text-slate-900">{totalPendingUnits} pending units</Badge>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {canUseScanner ? (
-            <Button
-              type="button"
-              size="sm"
-              variant={scannerOpen ? 'outline' : 'default'}
-              className={cn(
-                'gap-2',
-                scannerOpen
-                  ? 'border-slate-400 text-slate-800 hover:bg-slate-50'
-                  : 'bg-slate-900 text-white hover:bg-slate-800'
-              )}
-              onClick={handleScannerToggle}
-            >
-              <ScanBarcode className="h-4 w-4" />
-              {scannerOpen ? 'Close Scanner' : 'Start Scanner'}
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            size="sm"
-            variant={isEditing ? 'outline' : 'default'}
-            className={cn(
-              'gap-2',
-              isEditing
-                ? 'border-cyan-300 text-cyan-800 hover:bg-cyan-50'
-                : 'bg-cyan-700 text-white hover:bg-cyan-800'
-            )}
-            onClick={toggleEditMode}
+    <div className="space-y-3 bg-slate-50 p-3">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: 'Total Items', value: allItems.length, className: 'border-slate-200' },
+          { label: 'Pending Items', value: pendingItems.length, className: 'border-amber-200' },
+          {
+            label: 'Completed Items',
+            value: completedItemsCount,
+            className: 'border-emerald-200',
+          },
+          { label: 'Pending Units', value: totalPendingUnits, className: 'border-blue-200' },
+        ].map((metric) => (
+          <div
+            key={metric.label}
+            className={cn('rounded-lg border bg-white px-3 py-2 shadow-sm', metric.className)}
           >
-            <Pencil className="h-4 w-4" />
-            {isEditing ? 'Cancel Edit' : 'Edit'}
-          </Button>
-        </div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              {metric.label}
+            </div>
+            <div className="text-xl font-black tabular-nums text-slate-950">{metric.value}</div>
+          </div>
+        ))}
       </div>
 
-      <div className="space-y-4 rounded-xl border border-cyan-200 bg-white p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100">
-            <PackageCheck className="h-5 w-5 text-cyan-700" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="font-semibold text-slate-900">Purchase Order Fulfillment</h4>
-            <p className="text-sm text-slate-600">
-              This page shows all purchase-order items. Completed items remain in the list, while
-              only approved or pending items with remaining quantity can be received again.
-            </p>
-          </div>
-        </div>
-
-        {scannerOpen && canUseScanner ? (
-          <div className="grid gap-3 rounded-lg border border-slate-300 bg-slate-50 p-3 md:grid-cols-4">
-            <div className="rounded-md bg-white p-3 shadow-sm">
-              <div className="text-xs font-semibold uppercase text-slate-500">Scanned</div>
-              <div className="text-2xl font-bold text-slate-950">{totalScannedUnits}</div>
-            </div>
-            <div className="rounded-md bg-white p-3 shadow-sm">
-              <div className="text-xs font-semibold uppercase text-slate-500">Required</div>
-              <div className="text-2xl font-bold text-slate-950">{totalPendingUnits}</div>
-            </div>
-            <div className="rounded-md bg-white p-3 shadow-sm">
-              <div className="text-xs font-semibold uppercase text-slate-500">Remaining</div>
-              <div className="text-2xl font-bold text-amber-700">{remainingScanUnits}</div>
-            </div>
-            <div className="rounded-md bg-white p-3 shadow-sm">
-              <div className="text-xs font-semibold uppercase text-slate-500">Status</div>
-              <div
-                className={cn(
-                  'flex items-center gap-2 text-sm font-bold',
-                  overrunRows.length > 0
-                    ? 'text-rose-700'
-                    : scannerCompletionSatisfied
-                      ? 'text-emerald-700'
-                      : 'text-slate-700'
-                )}
-              >
-                {overrunRows.length > 0 ? (
-                  <XCircle className="h-4 w-4" />
-                ) : scannerCompletionSatisfied ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : (
-                  <AlertTriangle className="h-4 w-4" />
-                )}
-                {overrunRows.length > 0
-                  ? `${overrunRows.length} over quantity`
-                  : scannerCompletionSatisfied
-                    ? 'Ready to complete'
-                    : 'Scanning'}
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_330px]">
+        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-950 text-emerald-300">
+                <PackageCheck className="h-4 w-4" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-sm font-bold text-slate-950">Receiving Lines</h2>
+                <p className="truncate text-xs text-slate-500">
+                  Match received units to PO quantities and warehouse stock.
+                </p>
               </div>
             </div>
+            <div className="flex flex-wrap gap-1.5">
+              <Badge className="bg-slate-100 text-[11px] text-slate-800">
+                {selectedUnits} Selected Units
+              </Badge>
+              {hasValidationErrors ? (
+                <Badge className="bg-rose-100 text-[11px] text-rose-800">
+                  Quantity Check Required
+                </Badge>
+              ) : null}
+            </div>
           </div>
-        ) : null}
 
-        {scannerOpen && canUseScanner ? (
-          <BarcodeScanner
-            feedback={scanner.feedback}
-            flashKey={scanner.flashKey}
-            onScan={(code, source) => {
-              scanner.submitScan(code, source);
-            }}
-            open={scannerOpen}
-            scanLocked={scanner.scanLocked}
-          />
-        ) : null}
-
-        {allItems.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-            No purchase-order items are available for fulfillment.
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-cyan-50/70">
-                    {isEditing ? <TableHead className="w-14 text-center">Select</TableHead> : null}
-                    <TableHead>Item</TableHead>
-                    <TableHead className="text-center">Warehouse</TableHead>
-                    <TableHead className="text-center">Order Qty</TableHead>
-                    <TableHead className="text-center">Received Qty</TableHead>
-                    <TableHead className="text-center">Remaining Qty</TableHead>
-                    <TableHead className="text-center">Available Stock</TableHead>
-                    <TableHead className="min-w-[180px]">Receive Quantity</TableHead>
+          {allItems.length === 0 ? (
+            <div className="m-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+              No purchase-order items are available for receiving.
+            </div>
+          ) : (
+            <div className="max-h-[calc(100dvh-15rem)] overflow-auto overscroll-contain">
+              <Table className="min-w-[980px] text-xs">
+                <TableHeader className="sticky top-0 z-20 shadow-sm">
+                  <TableRow className="border-b border-slate-200 bg-slate-100">
+                    {isEditing ? (
+                      <TableHead className="w-10 bg-slate-100 text-center text-[10px] uppercase">
+                        Select
+                      </TableHead>
+                    ) : null}
+                    <TableHead className="sticky left-0 z-30 min-w-[280px] bg-slate-100 text-[10px] uppercase">
+                      Product / SKU
+                    </TableHead>
+                    <TableHead className="min-w-[130px] text-center text-[10px] uppercase">
+                      Warehouse
+                    </TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Ordered</TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Received</TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Remaining</TableHead>
+                    <TableHead className="text-right text-[10px] uppercase">Stock</TableHead>
+                    <TableHead className="min-w-[170px] text-right text-[10px] uppercase">
+                      Receive
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -681,15 +625,17 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableRow
                       key={row.item.orderDetailId}
                       className={cn(
+                        'h-12 border-b border-slate-100',
                         scannerOpen && 'border-l-4',
                         scannerOpen && scanStateClasses[row.scanState],
-                        row.isCompleted && 'opacity-80',
-                        isEditing && row.selected && !scannerOpen && 'bg-cyan-50/60'
+                        row.isCompleted && 'bg-slate-50 text-slate-500',
+                        isEditing && row.selected && !scannerOpen && 'bg-emerald-50/70'
                       )}
                     >
                       {isEditing ? (
-                        <TableCell className="text-center align-top">
+                        <TableCell className="text-center align-middle">
                           <Checkbox
+                            aria-label={`Select ${row.item.productName || row.item.sku || `item ${index + 1}`} for receiving`}
                             checked={row.selected}
                             disabled={row.isCompleted || !row.isFulfillable}
                             onCheckedChange={(checked) =>
@@ -701,97 +647,91 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                           />
                         </TableCell>
                       ) : null}
-                      <TableCell className="align-top">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <div className="flex h-6 w-6 items-center justify-center rounded bg-cyan-100 text-xs font-bold text-cyan-900">
-                              {index + 1}
-                            </div>
-                            <div className="font-semibold text-slate-900">
+                      <TableCell
+                        className={cn(
+                          'sticky left-0 z-10 bg-white align-middle shadow-[1px_0_0_0_rgba(226,232,240,1)]',
+                          row.isCompleted && 'bg-slate-50',
+                          isEditing && row.selected && !scannerOpen && 'bg-emerald-50'
+                        )}
+                      >
+                        <div className="flex min-w-0 items-center gap-2">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-slate-900 text-[10px] font-bold text-white">
+                            {index + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold text-slate-950">
                               {row.item.productName || row.item.sku || `Item #${index + 1}`}
                             </div>
-                            {row.item.sku ? (
-                              <Badge variant="secondary" className="bg-slate-100 text-slate-700">
-                                {row.item.sku}
-                              </Badge>
-                            ) : null}
-                            {scannerOpen && row.resolvedBarcodeText ? (
+                            <div className="mt-1 flex min-w-0 flex-wrap gap-1">
+                              {row.item.sku ? (
+                                <Badge
+                                  variant="secondary"
+                                  className="h-5 max-w-[130px] truncate bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                >
+                                  {row.item.sku}
+                                </Badge>
+                              ) : null}
+                              {scannerOpen && row.resolvedBarcodeText ? (
+                                <Badge
+                                  variant="outline"
+                                  className="h-5 max-w-[130px] truncate border-blue-200 bg-blue-50 px-1.5 text-[10px] text-blue-800"
+                                >
+                                  {row.resolvedBarcodeText}
+                                </Badge>
+                              ) : null}
                               <Badge
-                                variant="outline"
-                                className="border-blue-200 bg-white/70 text-blue-800"
+                                className={cn(
+                                  'h-5 px-1.5 text-[10px]',
+                                  row.isCompleted
+                                    ? 'bg-emerald-100 text-emerald-900'
+                                    : row.isFulfillable
+                                      ? 'bg-amber-100 text-amber-900'
+                                      : 'bg-slate-100 text-slate-800'
+                                )}
                               >
-                                {row.resolvedBarcodeText}
+                                {row.item.itemStatus}
                               </Badge>
-                            ) : null}
-                            <Badge
-                              className={cn(
-                                row.isCompleted
-                                  ? 'bg-emerald-100 text-emerald-900'
-                                  : row.isFulfillable
-                                    ? 'bg-amber-100 text-amber-900'
-                                    : 'bg-slate-100 text-slate-800'
-                              )}
-                            >
-                              {row.item.itemStatus}
-                            </Badge>
-                            <Badge
-                              className={cn(
-                                row.isCompleted
-                                  ? 'bg-emerald-100 text-emerald-900'
-                                  : 'bg-amber-100 text-amber-900'
-                              )}
-                            >
-                              {row.isCompleted ? 'Completed' : 'Pending'}
-                            </Badge>
+                            </div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center font-semibold text-slate-900">
-                        {typeof row.item.warehouseId === 'number'
-                          ? (warehouseNameById.get(row.item.warehouseId) ??
-                            `Warehouse ${row.item.warehouseId}`)
-                          : '—'}
+                      <TableCell className="text-center font-medium text-slate-800">
+                        <span className="line-clamp-2">
+                          {typeof row.item.warehouseId === 'number'
+                            ? (warehouseNameById.get(row.item.warehouseId) ??
+                              `Warehouse ${row.item.warehouseId}`)
+                            : '—'}
+                        </span>
                       </TableCell>
-                      <TableCell className="text-center font-semibold text-slate-900">
+                      <TableCell className="text-right font-semibold tabular-nums text-slate-900">
                         {row.originalOrderQuantity}
                       </TableCell>
-                      <TableCell className="text-center font-semibold text-emerald-700">
+                      <TableCell className="text-right font-semibold tabular-nums text-emerald-700">
                         {row.receivedQuantity}
                       </TableCell>
-                      <TableCell className="text-center font-semibold text-amber-700">
+                      <TableCell className="text-right font-semibold tabular-nums text-amber-700">
                         {row.remainingQuantity}
                       </TableCell>
-                      <TableCell className="text-center font-semibold text-slate-900">
-                        {stocksLoading ? '...' : row.currentQuantity}
+                      <TableCell className="text-right font-semibold tabular-nums text-slate-900">
+                        {stocksLoading ? '…' : row.currentQuantity}
                       </TableCell>
-                      <TableCell className="align-top">
-                        {isEditing ? (
-                          <div className="space-y-1.5">
-                            {scannerOpen && row.isFulfillable && !row.isCompleted ? (
-                              <div className="space-y-1">
-                                <div className="h-2 overflow-hidden rounded-full bg-white ring-1 ring-slate-200">
-                                  <div
-                                    className={cn(
-                                      'h-full rounded-full transition-all',
-                                      getProgressClassName(row.scanState)
-                                    )}
-                                    style={{ width: `${row.scanProgress}%` }}
-                                  />
-                                </div>
-                                <div
-                                  className={cn(
-                                    'text-xs font-bold',
-                                    row.scanState === 'complete' && 'text-emerald-700',
-                                    row.scanState === 'overrun' && 'text-rose-700',
-                                    row.scanState === 'idle' && 'text-blue-700',
-                                    row.scanState === 'scanning' && 'text-blue-800'
-                                  )}
-                                >
-                                  {row.enteredQuantity}/{row.remainingQuantity} scanned
-                                </div>
-                              </div>
-                            ) : null}
+                      <TableCell className="align-middle">
+                        <div className="ml-auto max-w-[150px] space-y-1">
+                          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+                            <div
+                              className={cn(
+                                'h-full rounded-full',
+                                getProgressClassName(row.scanState)
+                              )}
+                              style={{ width: `${row.scanProgress}%` }}
+                            />
+                          </div>
+                          {isEditing ? (
                             <Input
+                              aria-label={`Receive quantity for ${row.item.productName || row.item.sku || `item ${index + 1}`}`}
+                              name={`receiveQuantity-${row.item.orderDetailId}`}
+                              autoComplete="off"
+                              inputMode="numeric"
                               type="number"
                               min={0}
                               placeholder="0"
@@ -802,167 +742,294 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                   quantity: event.target.value,
                                 })
                               }
-                              className="border-slate-300"
+                              className="h-8 border-slate-300 text-right text-xs font-bold tabular-nums focus-visible:ring-2 focus-visible:ring-emerald-300"
                             />
-                            {row.validationMessage ? (
-                              <p className="text-xs font-medium text-rose-600">
-                                {row.validationMessage}
-                              </p>
-                            ) : row.isCompleted ? (
-                              <p className="text-xs font-medium text-emerald-700">
-                                This item is completed.
-                              </p>
-                            ) : !row.isFulfillable ? (
-                              <p className="text-xs font-medium text-slate-500">
-                                Approve this item before fulfillment.
-                              </p>
-                            ) : null}
+                          ) : (
+                            <div className="text-right text-xs font-semibold text-slate-400">—</div>
+                          )}
+                          <div className="text-right text-[10px] font-semibold tabular-nums text-slate-500">
+                            {row.enteredQuantity}/{row.remainingQuantity} Ready
                           </div>
-                        ) : (
-                          <span className="font-semibold text-slate-500">—</span>
-                        )}
+                          {row.validationMessage ? (
+                            <p className="text-right text-[10px] font-medium text-rose-600">
+                              {row.validationMessage}
+                            </p>
+                          ) : row.isCompleted ? (
+                            <p className="text-right text-[10px] font-medium text-emerald-700">
+                              Completed
+                            </p>
+                          ) : !row.isFulfillable ? (
+                            <p className="text-right text-[10px] font-medium text-slate-500">
+                              Needs approval
+                            </p>
+                          ) : null}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          </div>
-        )}
+          )}
+        </section>
 
-        {isEditing ? (
-          <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-slate-900">
-                Selected to generate: {selectedUnits} units
+        <aside className="space-y-3 xl:sticky xl:top-[4.25rem] xl:max-h-[calc(100dvh-5rem)] xl:overflow-auto xl:overscroll-contain">
+          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-slate-950">Receiving Control</h3>
+                <p className="text-xs text-slate-500">Edit, scan, and save received units.</p>
               </div>
-              <p className="text-xs text-slate-600">
-                Every fulfillment generation remains recorded in the backend with per-item
-                quantities.
-              </p>
-            </div>
-            <Button
-              type="button"
-              className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
-              disabled={
-                isGenerating ||
-                selectedRows.length === 0 ||
-                hasValidationErrors ||
-                (scannerOpen && !scannerCompletionSatisfied)
-              }
-              onClick={handleGenerate}
-            >
-              <Sparkles className="h-4 w-4" />
-              {isGenerating
-                ? 'Saving...'
-                : scannerOpen
-                  ? 'Complete Fulfillment'
-                  : 'Save Fulfillment'}
-            </Button>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-2">
-            <RefreshCcw className="h-4 w-4 text-slate-600" />
-            <h4 className="font-semibold text-slate-900">Fulfillment History</h4>
-            <Badge variant="secondary" className="bg-slate-100 text-slate-800">
-              {generations.length} records
-            </Badge>
-          </div>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
-          >
-            <Link href={`/purchase-orders/${order.orderId}/fulfillment/history`}>
-              <History className="h-4 w-4" />
-              View Full History
-            </Link>
-          </Button>
-        </div>
-
-        {generationsLoading ? (
-          <p className="text-sm text-slate-500">Loading fulfillment history...</p>
-        ) : generations.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-            No fulfillment records have been recorded for this purchase order yet.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {generations.map((generation) => (
-              <div
-                key={generation.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4"
+              <Badge
+                className={cn(
+                  'text-[10px]',
+                  isEditing ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-100 text-slate-800'
+                )}
               >
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <div className="font-semibold text-slate-900">
-                      {getFulfillmentRecordLabel(order.orderId, {
-                        invoiceId: generation.id,
-                        generationNumber: generation.generationNumber,
-                      })}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {formatOrderDateTime(generation.createdDate)} •{' '}
-                      {generation.createdBy || 'System'}
-                    </div>
+                {isEditing ? 'Editing' : 'Review'}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={isEditing ? 'outline' : 'default'}
+                className={cn(
+                  'h-9 gap-2 text-xs',
+                  isEditing
+                    ? 'border-slate-300 text-slate-800 hover:bg-slate-50'
+                    : 'bg-slate-950 text-white hover:bg-slate-800'
+                )}
+                onClick={toggleEditMode}
+              >
+                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
+              {canUseScanner ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={scannerOpen ? 'outline' : 'default'}
+                  className={cn(
+                    'h-9 gap-2 text-xs',
+                    scannerOpen
+                      ? 'border-blue-300 text-blue-800 hover:bg-blue-50'
+                      : 'bg-blue-700 text-white hover:bg-blue-800'
+                  )}
+                  onClick={handleScannerToggle}
+                >
+                  <ScanBarcode className="h-3.5 w-3.5" aria-hidden="true" />
+                  {scannerOpen ? 'Close Scanner' : 'Start Receiving'}
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {[
+                { label: 'Scanned', value: totalScannedUnits, className: 'text-slate-950' },
+                { label: 'Required', value: totalPendingUnits, className: 'text-slate-950' },
+                { label: 'Left', value: remainingScanUnits, className: 'text-amber-700' },
+              ].map((metric) => (
+                <div
+                  key={metric.label}
+                  className="rounded-lg border border-slate-200 bg-slate-50 p-2"
+                >
+                  <div className="text-[10px] font-semibold uppercase text-slate-500">
+                    {metric.label}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-emerald-100 text-emerald-900">
-                      {generation.totalGeneratedQuantity ?? 0} units received
-                    </Badge>
-                    <Badge className="bg-amber-100 text-amber-900">
-                      Remaining after save: {generation.totalBacklogQuantity ?? 0}
-                    </Badge>
-                    {generation.id ? (
-                      <Button
-                        asChild
-                        size="sm"
-                        className="gap-2 bg-slate-800 text-white hover:bg-slate-900"
-                      >
-                        <Link
-                          href={`/purchase-orders/${order.orderId}/fulfillment/history/${generation.id}`}
-                        >
-                          <Eye className="h-4 w-4" />
-                          View
-                        </Link>
-                      </Button>
-                    ) : null}
+                  <div className={cn('text-lg font-black tabular-nums', metric.className)}>
+                    {metric.value}
                   </div>
                 </div>
+              ))}
+            </div>
 
-                {generation.items?.length ? (
-                  <div className="mt-3 space-y-2">
-                    {generation.items.map((item) => (
-                      <div
-                        key={item.id ?? `${generation.id}-${item.orderDetailId}`}
-                        className="flex flex-col gap-1 rounded-md border border-white bg-white px-3 py-2 text-sm lg:flex-row lg:items-center lg:justify-between"
-                      >
-                        <div className="font-medium text-slate-800">
-                          {item.productName || item.sku || `Order item #${item.orderDetailId}`}
+            <div
+              className={cn(
+                'mt-3 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold',
+                overrunRows.length > 0
+                  ? 'border-rose-200 bg-rose-50 text-rose-700'
+                  : scannerCompletionSatisfied
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+              )}
+            >
+              {overrunRows.length > 0 ? (
+                <XCircle className="h-4 w-4" aria-hidden="true" />
+              ) : scannerCompletionSatisfied ? (
+                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              )}
+              {overrunRows.length > 0
+                ? `${overrunRows.length} over quantity`
+                : scannerCompletionSatisfied
+                  ? 'Ready To Complete'
+                  : scannerOpen
+                    ? 'Scanning'
+                    : 'Awaiting Receiving'}
+            </div>
+
+            {isEditing ? (
+              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-600">Selected To Save</span>
+                  <span className="font-black tabular-nums text-slate-950">
+                    {selectedUnits} Units
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Every receiving save remains recorded with per-item quantities.
+                </p>
+                {scannerOpen && !scannerCompletionSatisfied && selectedRows.length > 0 ? (
+                  <p className="text-xs font-medium text-amber-700">
+                    Complete the scanner count before saving receiving.
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  className="h-9 w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+                  disabled={
+                    isGenerating ||
+                    selectedRows.length === 0 ||
+                    hasValidationErrors ||
+                    (scannerOpen && !scannerCompletionSatisfied)
+                  }
+                  onClick={handleGenerate}
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
+                  {isGenerating ? 'Saving…' : scannerOpen ? 'Complete Receiving' : 'Save Receiving'}
+                </Button>
+              </div>
+            ) : null}
+
+            {scannerOpen && canUseScanner ? (
+              <div className="mt-3">
+                <BarcodeScanner
+                  feedback={scanner.feedback}
+                  flashKey={scanner.flashKey}
+                  onScan={(code, source) => {
+                    scanner.submitScan(code, source);
+                  }}
+                  open={scannerOpen}
+                  scanLocked={scanner.scanLocked}
+                />
+              </div>
+            ) : null}
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <RefreshCcw className="h-4 w-4 text-slate-600" aria-hidden="true" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-950">Receiving Audit</h3>
+                  <p className="text-xs text-slate-500">{generations.length} records</p>
+                </div>
+              </div>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5 border-slate-300 px-2 text-[11px] text-slate-700 hover:bg-slate-50"
+              >
+                <Link href={`/purchase-orders/${order.orderId}/fulfillment/history`}>
+                  <History className="h-3.5 w-3.5" aria-hidden="true" />
+                  View Full History
+                </Link>
+              </Button>
+            </div>
+
+            {generationsLoading ? (
+              <p className="text-sm text-slate-500">Loading receiving history…</p>
+            ) : generations.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
+                No receiving records have been recorded for this purchase order yet.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {generations.slice(0, 5).map((generation) => (
+                  <div
+                    key={generation.id}
+                    className="rounded-lg border border-slate-200 bg-slate-50 p-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-xs font-bold text-slate-950">
+                          {getFulfillmentRecordLabel(order.orderId, {
+                            invoiceId: generation.id,
+                            generationNumber: generation.generationNumber,
+                          })}
                         </div>
-                        <div className="flex flex-wrap gap-3 text-xs text-slate-600">
-                          <span>
-                            Ordered:{' '}
-                            {originalOrderQuantityByOrderDetailId.get(item.orderDetailId ?? -1) ??
-                              0}
-                          </span>
-                          <span>Received: {item.deliveredQuantity ?? 0}</span>
-                          <span>Pending Before: {item.availableQuantityBefore ?? 0}</span>
-                          <span>Remaining After: {item.remainingBacklogQuantity ?? 0}</span>
+                        <div className="truncate text-[10px] text-slate-500">
+                          {formatOrderDateTime(generation.createdDate)} •{' '}
+                          {generation.createdBy || 'System'}
                         </div>
                       </div>
-                    ))}
+                      {generation.id ? (
+                        <Button
+                          asChild
+                          size="sm"
+                          className="h-7 shrink-0 gap-1 bg-slate-800 px-2 text-[10px] text-white hover:bg-slate-900"
+                        >
+                          <Link
+                            href={`/purchase-orders/${order.orderId}/fulfillment/history/${generation.id}`}
+                          >
+                            <Eye className="h-3 w-3" aria-hidden="true" />
+                            View
+                          </Link>
+                        </Button>
+                      ) : null}
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-1">
+                      <Badge className="justify-center bg-emerald-100 text-[10px] text-emerald-900">
+                        {generation.totalGeneratedQuantity ?? 0} Received
+                      </Badge>
+                      <Badge className="justify-center bg-amber-100 text-[10px] text-amber-900">
+                        {generation.totalBacklogQuantity ?? 0} Left
+                      </Badge>
+                    </div>
+                    {generation.items?.length ? (
+                      <div className="mt-2 space-y-1">
+                        {generation.items.slice(0, 3).map((item) => (
+                          <div
+                            key={item.id ?? `${generation.id}-${item.orderDetailId}`}
+                            className="rounded-md bg-white px-2 py-1 text-[10px]"
+                          >
+                            <div className="truncate font-semibold text-slate-800">
+                              {item.productName || item.sku || `Order item #${item.orderDetailId}`}
+                            </div>
+                            <div className="flex justify-between gap-2 text-slate-500">
+                              <span>
+                                Ordered{' '}
+                                {originalOrderQuantityByOrderDetailId.get(
+                                  item.orderDetailId ?? -1
+                                ) ?? 0}
+                              </span>
+                              <span>Received {item.deliveredQuantity ?? 0}</span>
+                              <span>Left {item.remainingBacklogQuantity ?? 0}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {generation.items.length > 3 ? (
+                          <div className="text-[10px] font-medium text-slate-500">
+                            +{generation.items.length - 3} more lines
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+                {generations.length > 5 ? (
+                  <div className="text-center text-[11px] font-medium text-slate-500">
+                    Showing latest 5 of {generations.length}
                   </div>
                 ) : null}
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </section>
+        </aside>
       </div>
     </div>
   );
