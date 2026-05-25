@@ -97,7 +97,11 @@ interface AreaShelvesProps {
   onRemoveArea: () => void;
 }
 
-const createEmptyShelf = () => ({ name: '', capacity: '' });
+const createEmptyShelf = (): WarehouseFormValues['areas'][number]['shelves'][number] => ({
+  id: undefined,
+  name: '',
+  capacity: '',
+});
 
 const AreaShelvesFields = ({ areaIndex, form, control, onRemoveArea }: AreaShelvesProps) => {
   const {
@@ -282,7 +286,9 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
           : undefined,
       areas: (existingWarehouse.areas || []).map((area) => {
         const legacyArea = area as IWarehouseArea & { capacity?: number };
-        const mappedShelves = (area.shelves || []).map((shelf) => ({
+        const mappedShelves: WarehouseFormValues['areas'][number]['shelves'] = (
+          area.shelves || []
+        ).map((shelf) => ({
           id: shelf.id,
           name: shelf.name || '',
           capacity: typeof shelf.capacity === 'number' ? String(shelf.capacity) : '',
@@ -290,6 +296,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
 
         if (mappedShelves.length === 0 && typeof legacyArea.capacity === 'number') {
           mappedShelves.push({
+            id: undefined,
             name: 'Shelf 1',
             capacity: String(legacyArea.capacity),
           });
@@ -377,7 +384,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
   return (
     <Form {...form}>
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)} noValidate>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
             name="name"
@@ -405,20 +412,6 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="Warehouse address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <div className="rounded-lg border p-4">
@@ -438,11 +431,26 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
                 <FormControl>
                   <IntelligentLocationField
                     value={field.value ?? null}
+                    placeholder="Enter the City name and zipcode"
                     onChange={(value) => {
                       field.onChange(value);
                       form.clearErrors('area');
                     }}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem className="mt-4">
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="Warehouse address" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
