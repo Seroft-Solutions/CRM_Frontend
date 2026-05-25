@@ -701,7 +701,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     </TableHead>
                     <TableHead className="min-w-[150px] bg-slate-100 text-center text-[10px] uppercase">
                       <div className="flex flex-col items-center gap-1">
-                        <span>Warehouse</span>
                         <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
                           <SelectTrigger
                             aria-label="Filter by warehouse"
