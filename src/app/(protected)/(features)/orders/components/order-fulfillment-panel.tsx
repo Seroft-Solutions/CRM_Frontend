@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -36,6 +43,8 @@ type FulfillmentDraftState = Record<
   number,
   { selected: boolean; quantity: string; picked: boolean; packed: boolean }
 >;
+
+const ALL_WAREHOUSES_FILTER = '__all__';
 
 const parsePositiveInteger = (value: string) => {
   const parsed = Number.parseInt(value, 10);
@@ -140,6 +149,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   const [draftState, setDraftState] = useState<FulfillmentDraftState>(() =>
     createInitialDraftState(order.items)
   );
+  const [warehouseFilter, setWarehouseFilter] = useState(ALL_WAREHOUSES_FILTER);
   const allItems = useMemo(() => {
     if (order.orderStatus !== 'Partially Approved') {
       return order.items;
@@ -215,6 +225,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
   useEffect(() => {
     setDraftState((current) => mergeDraftStateWithItems(order.items, current));
     setIsEditing(true);
+    setWarehouseFilter(ALL_WAREHOUSES_FILTER);
   }, [order.items]);
 
   const deliveredQuantityByOrderDetailId = useMemo(() => {
@@ -249,6 +260,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ),
     [warehouseRows]
   );
+  const getWarehouseLabel = (warehouseId?: number) =>
+    typeof warehouseId === 'number'
+      ? (warehouseNameById.get(warehouseId) ?? `Warehouse ${warehouseId}`)
+      : '—';
 
   const originalOrderQuantityByOrderDetailId = useMemo(() => {
     const originalQuantityMap = new Map<number, number>();
@@ -316,6 +331,32 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
     originalOrderQuantityByOrderDetailId,
     stockByItemId,
   ]);
+  const warehouseFilterOptions = useMemo(() => {
+    const optionsByName = new Map<string, string>();
+
+    allItems.forEach((item) => {
+      const warehouseName = getWarehouseLabel(item.warehouseId);
+
+      if (warehouseName === '—') {
+        return;
+      }
+
+      const normalizedName = warehouseName.trim().toLowerCase();
+
+      if (!optionsByName.has(normalizedName)) {
+        optionsByName.set(normalizedName, warehouseName);
+      }
+    });
+
+    return Array.from(optionsByName.values()).sort((left, right) => left.localeCompare(right));
+  }, [allItems, warehouseNameById]);
+  const visibleRows = useMemo(
+    () =>
+      warehouseFilter === ALL_WAREHOUSES_FILTER
+        ? rows
+        : rows.filter((row) => getWarehouseLabel(row.item.warehouseId) === warehouseFilter),
+    [rows, warehouseFilter, warehouseNameById]
+  );
 
   const selectedRows = rows.filter((row) => row.selected && row.enteredQuantity > 0);
   const selectedUnits = selectedRows.reduce((sum, row) => sum + row.enteredQuantity, 0);
@@ -567,8 +608,26 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                     <TableHead className="sticky left-0 z-30 min-w-[220px] bg-slate-100 text-[10px] uppercase sm:min-w-[300px]">
                       Item / SKU
                     </TableHead>
-                    <TableHead className="min-w-[130px] text-center text-[10px] uppercase">
-                      Warehouse
+                    <TableHead className="min-w-[150px] bg-slate-100 text-center text-[10px] uppercase">
+                      <div className="flex flex-col items-center gap-1">
+                        <span>Warehouse</span>
+                        <Select value={warehouseFilter} onValueChange={setWarehouseFilter}>
+                          <SelectTrigger
+                            aria-label="Filter by warehouse"
+                            className="h-7 w-[140px] border-slate-300 bg-white px-2 text-[11px] normal-case"
+                          >
+                            <SelectValue placeholder="All warehouses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={ALL_WAREHOUSES_FILTER}>All warehouses</SelectItem>
+                            {warehouseFilterOptions.map((warehouseName) => (
+                              <SelectItem key={warehouseName} value={warehouseName}>
+                                {warehouseName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TableHead>
                     <TableHead className="text-right text-[10px] uppercase">Order Qty</TableHead>
                     <TableHead className="text-right text-[10px] uppercase">Delivered</TableHead>
@@ -589,306 +648,313 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((row, index) => {
-                    const backlogResolved = row.isCompleted;
-                    const availableStockLabel =
-                      typeof row.item.variantId === 'number'
-                        ? 'Warehouse main stock'
-                        : 'Product main stock';
-                    const isLegacyCatalog =
-                      Boolean(row.item.productCatalogId) && !row.item.variantId;
-                    const catalog =
-                      isLegacyCatalog && typeof row.item.productCatalogId === 'number'
-                        ? catalogById.get(row.item.productCatalogId)
-                        : undefined;
-                    const catalogItemNames = isLegacyCatalog
-                      ? getCatalogItemNames(catalog, row.item.productName)
-                      : [];
-                    const displayNames =
-                      catalogItemNames.length > 0
-                        ? catalogItemNames
-                        : [row.item.productName || row.item.sku || `Item #${index + 1}`];
+                  {visibleRows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={isEditing ? 13 : 12} className="h-24 text-center">
+                        <p className="text-sm text-slate-500">
+                          No fulfillment items match the selected warehouse.
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    visibleRows.map((row, index) => {
+                      const backlogResolved = row.isCompleted;
+                      const availableStockLabel =
+                        typeof row.item.variantId === 'number'
+                          ? 'Warehouse main stock'
+                          : 'Product main stock';
+                      const isLegacyCatalog =
+                        Boolean(row.item.productCatalogId) && !row.item.variantId;
+                      const catalog =
+                        isLegacyCatalog && typeof row.item.productCatalogId === 'number'
+                          ? catalogById.get(row.item.productCatalogId)
+                          : undefined;
+                      const catalogItemNames = isLegacyCatalog
+                        ? getCatalogItemNames(catalog, row.item.productName)
+                        : [];
+                      const displayNames =
+                        catalogItemNames.length > 0
+                          ? catalogItemNames
+                          : [row.item.productName || row.item.sku || `Item #${index + 1}`];
 
-                    return displayNames.map((displayName, displayIndex) => (
-                      <TableRow
-                        key={`${row.item.orderDetailId}-${displayIndex}`}
-                        className={cn(
-                          'h-12 border-b border-slate-100',
-                          backlogResolved && 'bg-slate-50 text-slate-500',
-                          isEditing && row.selected && 'bg-cyan-50/70'
-                        )}
-                      >
-                        {isEditing && displayIndex === 0 ? (
-                          <TableCell
-                            rowSpan={displayNames.length}
-                            className="text-center align-top"
-                          >
-                            <div className="pt-1">
-                              <Checkbox
-                                aria-label={`Select ${displayName} for fulfillment`}
-                                checked={row.selected}
-                                disabled={row.isCompleted || row.deliverableQuantity === 0}
-                                onCheckedChange={(checked) =>
-                                  updateDraftState(row.item.orderDetailId, {
-                                    selected: checked === true,
-                                    quantity: checked === true ? row.quantity : '',
-                                    picked: checked === true ? row.picked : false,
-                                    packed: checked === true ? row.packed : false,
-                                  })
-                                }
-                              />
-                            </div>
-                          </TableCell>
-                        ) : null}
-                        <TableCell
+                      return displayNames.map((displayName, displayIndex) => (
+                        <TableRow
+                          key={`${row.item.orderDetailId}-${displayIndex}`}
                           className={cn(
-                            'sticky left-0 z-10 bg-white align-middle shadow-[1px_0_0_0_rgba(226,232,240,1)]',
-                            row.isCompleted && 'bg-slate-50',
-                            isEditing && row.selected && 'bg-cyan-50'
+                            'h-12 border-b border-slate-100',
+                            backlogResolved && 'bg-slate-50 text-slate-500',
+                            isEditing && row.selected && 'bg-cyan-50/70'
                           )}
                         >
-                          <div className="space-y-1">
-                            <div className="flex min-w-0 items-center gap-2">
-                              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-900 text-[10px] font-bold text-white sm:h-6 sm:w-6">
-                                {displayNames.length > 1
-                                  ? `${index + 1}.${displayIndex + 1}`
-                                  : index + 1}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="truncate font-semibold text-slate-950">
-                                  {displayName}
-                                </div>
-                                <div className="mt-1 flex min-w-0 flex-wrap gap-1">
-                                  {row.item.productCatalogId ? (
-                                    <Badge
-                                      variant="secondary"
-                                      className="h-5 bg-slate-100 px-1.5 text-[10px] text-slate-700"
-                                    >
-                                      Catalog item
-                                    </Badge>
-                                  ) : row.item.sku ? (
-                                    <Badge
-                                      variant="secondary"
-                                      className="h-5 max-w-[130px] truncate bg-slate-100 px-1.5 text-[10px] text-slate-700"
-                                    >
-                                      {row.item.sku}
-                                    </Badge>
-                                  ) : null}
-                                </div>
-                              </div>
-                            </div>
-                            {!row.item.productCatalogId && row.item.variantAttributes ? (
-                              <p className="truncate pl-9 text-[10px] text-blue-700">
-                                {row.item.variantAttributes}
-                              </p>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                        {displayIndex === 0 ? (
-                          <>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="text-center font-medium text-slate-800"
-                            >
-                              <span className="line-clamp-2">
-                                {typeof row.item.warehouseId === 'number'
-                                  ? (warehouseNameById.get(row.item.warehouseId) ??
-                                    `Warehouse ${row.item.warehouseId}`)
-                                  : '—'}
-                              </span>
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="text-right font-semibold tabular-nums text-slate-900"
-                            >
-                              {row.originalOrderQuantity}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="text-right font-semibold tabular-nums text-emerald-700"
-                            >
-                              {row.deliveredQuantity}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="text-right font-semibold tabular-nums text-amber-700"
-                            >
-                              {row.remainingQuantity}
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="text-right font-semibold tabular-nums text-slate-900"
-                            >
-                              <div>{stocksLoading ? '...' : row.availableQuantity}</div>
-                              <div className="text-[11px] text-slate-500">
-                                {availableStockLabel}
-                              </div>
-                            </TableCell>
-                            <TableCell rowSpan={displayNames.length} className="text-center">
-                              <Badge
-                                className={cn(
-                                  'h-5 px-1.5 text-[10px]',
-                                  row.isCompleted
-                                    ? 'bg-emerald-100 text-emerald-900'
-                                    : row.canChangePickPack
-                                      ? 'bg-amber-100 text-amber-900'
-                                      : 'bg-slate-100 text-slate-800'
-                                )}
-                              >
-                                {row.item.itemStatus}
-                              </Badge>
-                            </TableCell>
-                            <TableCell
-                              rowSpan={displayNames.length}
-                              className="align-middle text-xs text-slate-700"
-                            >
-                              <span className="line-clamp-2">
-                                {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
-                              </span>
-                            </TableCell>
-                            <TableCell rowSpan={displayNames.length} className="text-center">
-                              <Checkbox
-                                aria-label={`Mark ${displayName} picked`}
-                                checked={row.picked}
-                                disabled={
-                                  !isEditing ||
-                                  !row.selected ||
-                                  row.isTerminalStatus ||
-                                  !row.canChangePickPack ||
-                                  isUpdatingStatus
-                                }
-                                onCheckedChange={(checked) =>
-                                  handlePickedChange(row, checked === true)
-                                }
-                                className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
-                              />
-                            </TableCell>
-                            <TableCell rowSpan={displayNames.length} className="text-center">
-                              <Checkbox
-                                aria-label={`Mark ${displayName} packed`}
-                                checked={row.packed}
-                                disabled={
-                                  !isEditing ||
-                                  !row.selected ||
-                                  row.isTerminalStatus ||
-                                  (!row.canChangePickPack &&
-                                    row.item.itemStatusCode !== 'PICKED') ||
-                                  isUpdatingStatus
-                                }
-                                onCheckedChange={(checked) =>
-                                  handlePackedChange(row, checked === true)
-                                }
-                                className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
-                              />
-                            </TableCell>
-                            <TableCell rowSpan={displayNames.length} className="align-top">
-                              <div className="ml-auto max-w-[150px] space-y-1">
-                                <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
-                                  <div
-                                    className={cn(
-                                      'h-full rounded-full',
-                                      row.isCompleted ? 'bg-emerald-500' : 'bg-cyan-500'
-                                    )}
-                                    style={{
-                                      width: `${
-                                        row.originalOrderQuantity > 0
-                                          ? Math.min(
-                                              100,
-                                              Math.round(
-                                                (row.deliveredQuantity /
-                                                  row.originalOrderQuantity) *
-                                                  100
-                                              )
-                                            )
-                                          : 100
-                                      }%`,
-                                    }}
-                                  />
-                                </div>
-                                {isEditing ? (
-                                  <Input
-                                    aria-label={`Fulfill quantity for ${displayName}`}
-                                    name={`fulfillQuantity-${row.item.orderDetailId}`}
-                                    autoComplete="off"
-                                    inputMode="numeric"
-                                    type="number"
-                                    min={0}
-                                    placeholder="0"
-                                    value={row.quantity}
-                                    disabled={
-                                      !row.selected ||
-                                      row.isCompleted ||
-                                      row.deliverableQuantity === 0
-                                    }
-                                    onChange={(event) =>
-                                      updateDraftState(row.item.orderDetailId, {
-                                        quantity: event.target.value,
-                                      })
-                                    }
-                                    className="h-10 border-slate-300 text-right text-sm font-bold tabular-nums focus-visible:ring-2 focus-visible:ring-cyan-300 sm:h-8 sm:text-xs"
-                                  />
-                                ) : (
-                                  <div className="text-right text-xs font-semibold text-slate-400">
-                                    —
-                                  </div>
-                                )}
-                                <div className="text-right text-[10px] font-semibold tabular-nums text-slate-500">
-                                  {row.enteredQuantity}/{row.remainingQuantity} To Fulfill
-                                </div>
-                                {row.validationMessage ? (
-                                  <p className="text-right text-[10px] font-medium text-rose-600">
-                                    {row.validationMessage}
-                                  </p>
-                                ) : row.isCompleted ? (
-                                  <p className="text-right text-[10px] font-medium text-emerald-700">
-                                    Completed
-                                  </p>
-                                ) : row.deliverableQuantity === 0 ? (
-                                  <p className="text-right text-[10px] font-medium text-amber-700">
-                                    No inventory
-                                  </p>
-                                ) : null}
-                              </div>
-                            </TableCell>
+                          {isEditing && displayIndex === 0 ? (
                             <TableCell
                               rowSpan={displayNames.length}
                               className="text-center align-top"
                             >
-                              <TableRowActions
-                                row={row}
-                                actions={[
-                                  {
-                                    id: 'mark-picked',
-                                    label: 'Mark picked',
-                                    onClick: async (selectedRow: (typeof rows)[number]) => {
-                                      await handlePickedChange(selectedRow, true);
-                                    },
-                                  },
-                                  {
-                                    id: 'mark-packed',
-                                    label: 'Mark packed',
-                                    onClick: async (selectedRow: (typeof rows)[number]) => {
-                                      await handlePackedChange(selectedRow, true);
-                                    },
-                                  },
-                                  {
-                                    id: 'back-to-manager',
-                                    label: 'Back to Manager',
-                                    onClick: (selectedRow: (typeof rows)[number]) => {
-                                      setBackToManagerItem({
-                                        orderItemId: selectedRow.item.orderDetailId,
-                                        orderId: selectedRow.item.orderId,
-                                      });
-                                    },
-                                  },
-                                ]}
-                              />
+                              <div className="pt-1">
+                                <Checkbox
+                                  aria-label={`Select ${displayName} for fulfillment`}
+                                  checked={row.selected}
+                                  disabled={row.isCompleted || row.deliverableQuantity === 0}
+                                  onCheckedChange={(checked) =>
+                                    updateDraftState(row.item.orderDetailId, {
+                                      selected: checked === true,
+                                      quantity: checked === true ? row.quantity : '',
+                                      picked: checked === true ? row.picked : false,
+                                      packed: checked === true ? row.packed : false,
+                                    })
+                                  }
+                                />
+                              </div>
                             </TableCell>
-                          </>
-                        ) : null}
-                      </TableRow>
-                    ));
-                  })}
+                          ) : null}
+                          <TableCell
+                            className={cn(
+                              'sticky left-0 z-10 bg-white align-middle shadow-[1px_0_0_0_rgba(226,232,240,1)]',
+                              row.isCompleted && 'bg-slate-50',
+                              isEditing && row.selected && 'bg-cyan-50'
+                            )}
+                          >
+                            <div className="space-y-1">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-900 text-[10px] font-bold text-white sm:h-6 sm:w-6">
+                                  {displayNames.length > 1
+                                    ? `${index + 1}.${displayIndex + 1}`
+                                    : index + 1}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="truncate font-semibold text-slate-950">
+                                    {displayName}
+                                  </div>
+                                  <div className="mt-1 flex min-w-0 flex-wrap gap-1">
+                                    {row.item.productCatalogId ? (
+                                      <Badge
+                                        variant="secondary"
+                                        className="h-5 bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                      >
+                                        Catalog item
+                                      </Badge>
+                                    ) : row.item.sku ? (
+                                      <Badge
+                                        variant="secondary"
+                                        className="h-5 max-w-[130px] truncate bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                      >
+                                        {row.item.sku}
+                                      </Badge>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              </div>
+                              {!row.item.productCatalogId && row.item.variantAttributes ? (
+                                <p className="truncate pl-9 text-[10px] text-blue-700">
+                                  {row.item.variantAttributes}
+                                </p>
+                              ) : null}
+                            </div>
+                          </TableCell>
+                          {displayIndex === 0 ? (
+                            <>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="text-center font-medium text-slate-800"
+                              >
+                                <span className="line-clamp-2">
+                                  {getWarehouseLabel(row.item.warehouseId)}
+                                </span>
+                              </TableCell>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="text-right font-semibold tabular-nums text-slate-900"
+                              >
+                                {row.originalOrderQuantity}
+                              </TableCell>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="text-right font-semibold tabular-nums text-emerald-700"
+                              >
+                                {row.deliveredQuantity}
+                              </TableCell>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="text-right font-semibold tabular-nums text-amber-700"
+                              >
+                                {row.remainingQuantity}
+                              </TableCell>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="text-right font-semibold tabular-nums text-slate-900"
+                              >
+                                <div>{stocksLoading ? '...' : row.availableQuantity}</div>
+                                <div className="text-[11px] text-slate-500">
+                                  {availableStockLabel}
+                                </div>
+                              </TableCell>
+                              <TableCell rowSpan={displayNames.length} className="text-center">
+                                <Badge
+                                  className={cn(
+                                    'h-5 px-1.5 text-[10px]',
+                                    row.isCompleted
+                                      ? 'bg-emerald-100 text-emerald-900'
+                                      : row.canChangePickPack
+                                        ? 'bg-amber-100 text-amber-900'
+                                        : 'bg-slate-100 text-slate-800'
+                                  )}
+                                >
+                                  {row.item.itemStatus}
+                                </Badge>
+                              </TableCell>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="align-middle text-xs text-slate-700"
+                              >
+                                <span className="line-clamp-2">
+                                  {row.item.itemComment?.trim() ? row.item.itemComment : '—'}
+                                </span>
+                              </TableCell>
+                              <TableCell rowSpan={displayNames.length} className="text-center">
+                                <Checkbox
+                                  aria-label={`Mark ${displayName} picked`}
+                                  checked={row.picked}
+                                  disabled={
+                                    !isEditing ||
+                                    !row.selected ||
+                                    row.isTerminalStatus ||
+                                    !row.canChangePickPack ||
+                                    isUpdatingStatus
+                                  }
+                                  onCheckedChange={(checked) =>
+                                    handlePickedChange(row, checked === true)
+                                  }
+                                  className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
+                                />
+                              </TableCell>
+                              <TableCell rowSpan={displayNames.length} className="text-center">
+                                <Checkbox
+                                  aria-label={`Mark ${displayName} packed`}
+                                  checked={row.packed}
+                                  disabled={
+                                    !isEditing ||
+                                    !row.selected ||
+                                    row.isTerminalStatus ||
+                                    (!row.canChangePickPack &&
+                                      row.item.itemStatusCode !== 'PICKED') ||
+                                    isUpdatingStatus
+                                  }
+                                  onCheckedChange={(checked) =>
+                                    handlePackedChange(row, checked === true)
+                                  }
+                                  className="mx-auto data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
+                                />
+                              </TableCell>
+                              <TableCell rowSpan={displayNames.length} className="align-top">
+                                <div className="ml-auto max-w-[150px] space-y-1">
+                                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+                                    <div
+                                      className={cn(
+                                        'h-full rounded-full',
+                                        row.isCompleted ? 'bg-emerald-500' : 'bg-cyan-500'
+                                      )}
+                                      style={{
+                                        width: `${
+                                          row.originalOrderQuantity > 0
+                                            ? Math.min(
+                                                100,
+                                                Math.round(
+                                                  (row.deliveredQuantity /
+                                                    row.originalOrderQuantity) *
+                                                    100
+                                                )
+                                              )
+                                            : 100
+                                        }%`,
+                                      }}
+                                    />
+                                  </div>
+                                  {isEditing ? (
+                                    <Input
+                                      aria-label={`Fulfill quantity for ${displayName}`}
+                                      name={`fulfillQuantity-${row.item.orderDetailId}`}
+                                      autoComplete="off"
+                                      inputMode="numeric"
+                                      type="number"
+                                      min={0}
+                                      placeholder="0"
+                                      value={row.quantity}
+                                      disabled={
+                                        !row.selected ||
+                                        row.isCompleted ||
+                                        row.deliverableQuantity === 0
+                                      }
+                                      onChange={(event) =>
+                                        updateDraftState(row.item.orderDetailId, {
+                                          quantity: event.target.value,
+                                        })
+                                      }
+                                      className="h-10 border-slate-300 text-right text-sm font-bold tabular-nums focus-visible:ring-2 focus-visible:ring-cyan-300 sm:h-8 sm:text-xs"
+                                    />
+                                  ) : (
+                                    <div className="text-right text-xs font-semibold text-slate-400">
+                                      —
+                                    </div>
+                                  )}
+                                  <div className="text-right text-[10px] font-semibold tabular-nums text-slate-500">
+                                    {row.enteredQuantity}/{row.remainingQuantity} To Fulfill
+                                  </div>
+                                  {row.validationMessage ? (
+                                    <p className="text-right text-[10px] font-medium text-rose-600">
+                                      {row.validationMessage}
+                                    </p>
+                                  ) : row.isCompleted ? (
+                                    <p className="text-right text-[10px] font-medium text-emerald-700">
+                                      Completed
+                                    </p>
+                                  ) : row.deliverableQuantity === 0 ? (
+                                    <p className="text-right text-[10px] font-medium text-amber-700">
+                                      No inventory
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </TableCell>
+                              <TableCell
+                                rowSpan={displayNames.length}
+                                className="text-center align-top"
+                              >
+                                <TableRowActions
+                                  row={row}
+                                  actions={[
+                                    {
+                                      id: 'mark-picked',
+                                      label: 'Mark picked',
+                                      onClick: async (selectedRow: (typeof rows)[number]) => {
+                                        await handlePickedChange(selectedRow, true);
+                                      },
+                                    },
+                                    {
+                                      id: 'mark-packed',
+                                      label: 'Mark packed',
+                                      onClick: async (selectedRow: (typeof rows)[number]) => {
+                                        await handlePackedChange(selectedRow, true);
+                                      },
+                                    },
+                                    {
+                                      id: 'back-to-manager',
+                                      label: 'Back to Manager',
+                                      onClick: (selectedRow: (typeof rows)[number]) => {
+                                        setBackToManagerItem({
+                                          orderItemId: selectedRow.item.orderDetailId,
+                                          orderId: selectedRow.item.orderId,
+                                        });
+                                      },
+                                    },
+                                  ]}
+                                />
+                              </TableCell>
+                            </>
+                          ) : null}
+                        </TableRow>
+                      ));
+                    })
+                  )}
                 </TableBody>
               </Table>
             </div>
