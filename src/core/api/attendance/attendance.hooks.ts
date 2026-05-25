@@ -90,6 +90,13 @@ export const getAdminUserAttendanceRecords = (
     signal,
   });
 
+export const getPendingAttendanceApprovals = (signal?: AbortSignal) =>
+  springServiceMutator<AttendanceRecordDTO[]>({
+    url: '/api/attendance/admin/pending-approvals',
+    method: 'GET',
+    signal,
+  });
+
 export const checkInAttendance = (payload: AttendanceLocationDTO) =>
   springServiceMutator<AttendanceRecordDTO>({
     url: '/api/attendance/check-in',
@@ -154,6 +161,25 @@ export const approveWeeklyAttendance = (payload: { userId: string; weekStartDate
     method: 'POST',
     params: payload,
   });
+
+export const approveAttendanceDay = (attendanceRecordId: number) =>
+  springServiceMutator<AttendanceRecordDTO>({
+    url: '/api/attendance/admin/approve-day',
+    method: 'POST',
+    params: { attendanceRecordId },
+  });
+
+export const invalidateAttendanceData = async (queryClient: QueryClient) => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.today }),
+    queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.activeAppointment }),
+    queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.appointmentHistory }),
+    queryClient.invalidateQueries({ queryKey: ['/api/attendance/my/history'] }),
+    queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/records'] }),
+    queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/user-records'] }),
+    queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.pendingApprovals }),
+  ]);
+};
 
 export const useGetMyTodayAttendance = (
   options?: { query?: Partial<UseQueryOptions<AttendanceTodayStatusDTO, Error>> },
@@ -292,6 +318,25 @@ export const useGetAdminUserAttendanceRecords = (
   return query;
 };
 
+export const useGetPendingAttendanceApprovals = (
+  options?: { query?: Partial<UseQueryOptions<AttendanceRecordDTO[], Error>> },
+  queryClient?: QueryClient
+): UseQueryResult<AttendanceRecordDTO[], Error> & { queryKey: QueryKey } => {
+  const queryOptions = options?.query ?? {};
+  const queryKey = queryOptions.queryKey ?? attendanceQueryKeys.pendingApprovals;
+  const queryFn: QueryFunction<AttendanceRecordDTO[]> = ({ signal }) =>
+    getPendingAttendanceApprovals(signal);
+
+  const query = useQuery({ queryKey, queryFn, ...queryOptions }, queryClient) as UseQueryResult<
+    AttendanceRecordDTO[],
+    Error
+  > & { queryKey: QueryKey };
+
+  query.queryKey = queryKey;
+
+  return query;
+};
+
 export const useCheckInAttendance = (
   options?: UseMutationOptions<AttendanceRecordDTO, Error, AttendanceLocationDTO>
 ): UseMutationResult<AttendanceRecordDTO, Error, AttendanceLocationDTO> => {
@@ -347,10 +392,23 @@ export const useSubmitApprovalRequest = (
 };
 
 export const useApproveWeeklyAttendance = (
-  options?: UseMutationOptions<AttendanceRecordDTO[], Error, { userId: string; weekStartDate: string }>
+  options?: UseMutationOptions<
+    AttendanceRecordDTO[],
+    Error,
+    { userId: string; weekStartDate: string }
+  >
 ): UseMutationResult<AttendanceRecordDTO[], Error, { userId: string; weekStartDate: string }> => {
   return useMutation({
     mutationFn: approveWeeklyAttendance,
+    ...options,
+  });
+};
+
+export const useApproveAttendanceDay = (
+  options?: UseMutationOptions<AttendanceRecordDTO, Error, number>
+): UseMutationResult<AttendanceRecordDTO, Error, number> => {
+  return useMutation({
+    mutationFn: approveAttendanceDay,
     ...options,
   });
 };

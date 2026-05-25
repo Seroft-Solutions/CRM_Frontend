@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import { AttendanceLocationName } from './attendance-location-name';
 import { formatDateTime, formatDurationFromMinutes } from './attendance-formatters';
+import { AttendanceApprovalStatusBadge } from './attendance-approval-status-badge';
 import { AttendanceStatusBadge } from './attendance-status-badge';
 
 type AttendanceTableProps = {
@@ -38,6 +39,7 @@ export function AttendanceTable({
             <TableHead>Check Out</TableHead>
             <TableHead>Working Hours</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Approval</TableHead>
             <TableHead>Check In Location</TableHead>
             <TableHead>Check Out Location</TableHead>
             {showActions ? <TableHead>Actions</TableHead> : null}
@@ -53,6 +55,9 @@ export function AttendanceTable({
               <TableCell>{formatWorkingHours(record.checkInTime, record.checkOutTime)}</TableCell>
               <TableCell>
                 <AttendanceStatusBadge status={record.status} />
+              </TableCell>
+              <TableCell>
+                <AttendanceApprovalStatusBadge status={record.approvalStatus} />
               </TableCell>
               <TableCell>
                 <AttendanceLocationName

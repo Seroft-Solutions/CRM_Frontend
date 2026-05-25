@@ -9,7 +9,9 @@ import { useRBAC } from '@/core/auth';
 import {
   AttendanceAppointmentDTO,
   AttendanceLocationDTO,
-  attendanceQueryKeys,
+  invalidateAttendanceData,
+  useApproveAttendanceDay,
+  useApproveWeeklyAttendance,
   useCheckInAttendanceAppointment,
   useCheckInAttendance,
   useGetAdminAttendanceAppointments,
@@ -19,6 +21,7 @@ import {
   useGetMyActiveAttendanceAppointment,
   useGetMyAttendanceHistory,
   useGetMyTodayAttendance,
+  useGetPendingAttendanceApprovals,
   useMarkLeaveAttendance,
 } from '@/core/api/attendance';
 import { useGetAllCalls } from '@/core/api/generated/spring/endpoints/call-resource/call-resource.gen';
@@ -279,6 +282,7 @@ export default function AttendancePage() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCameraStarting, setIsCameraStarting] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [approvingWeekKey, setApprovingWeekKey] = useState<string | null>(null);
   const appointmentCameraVideoRef = useRef<HTMLVideoElement | null>(null);
   const appointmentCameraCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const appointmentCameraStreamRef = useRef<MediaStream | null>(null);
@@ -361,6 +365,10 @@ export default function AttendancePage() {
     useGetAdminAttendanceAppointments(adminAppointmentParams, {
       query: { enabled: adminAccess },
     });
+  const { data: pendingApprovalRows = [], isLoading: isPendingApprovalsLoading } =
+    useGetPendingAttendanceApprovals({
+      query: { enabled: adminAccess },
+    });
 
   const { data: organizationSettings } = useQuery({
     queryKey: ['attendance-organization-settings'],
@@ -370,17 +378,10 @@ export default function AttendancePage() {
   });
 
   const invalidateAttendanceQueries = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.today }),
-      queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.activeAppointment }),
-      queryClient.invalidateQueries({ queryKey: attendanceQueryKeys.appointmentHistory }),
-      queryClient.invalidateQueries({
-        queryKey: attendanceQueryKeys.adminAppointmentHistory(adminAppointmentParams),
-      }),
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/my/history'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/records'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/user-records'] }),
-    ]);
+    await invalidateAttendanceData(queryClient);
+    await queryClient.invalidateQueries({
+      queryKey: ['/api/attendance/appointments/admin'],
+    });
   };
 
   const checkInMutation = useCheckInAttendance({
@@ -444,6 +445,28 @@ export default function AttendancePage() {
     },
   });
 
+  const approveDayMutation = useApproveAttendanceDay({
+    onSuccess: async () => {
+      toast.success('Attendance day approved');
+      await invalidateAttendanceQueries();
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Failed to approve attendance day');
+    },
+  });
+
+  const approveWeekMutation = useApproveWeeklyAttendance({
+    onSuccess: async () => {
+      toast.success('Attendance week approved');
+      setApprovingWeekKey(null);
+      await invalidateAttendanceQueries();
+    },
+    onError: (error) => {
+      setApprovingWeekKey(null);
+      toast.error(error?.message || 'Failed to approve attendance week');
+    },
+  });
+
   const handleCheckIn = async () => {
     try {
       const location = await getCurrentLocation();
@@ -488,6 +511,15 @@ export default function AttendancePage() {
 
   const handleMarkLeave = () => {
     leaveMutation.mutate();
+  };
+
+  const handleApproveAttendanceDay = (recordId: number) => {
+    approveDayMutation.mutate(recordId);
+  };
+
+  const handleApproveAttendanceWeek = (userId: string, weekStartDate: string, weekKey: string) => {
+    setApprovingWeekKey(weekKey);
+    approveWeekMutation.mutate({ userId, weekStartDate });
   };
 
   const leadOptions = useMemo(
@@ -794,8 +826,14 @@ export default function AttendancePage() {
           onAdminDateChange={setAdminDate}
           attendanceRows={adminRecords}
           appointmentRows={adminAppointments}
+          pendingApprovalRows={pendingApprovalRows}
           isAttendanceLoading={isAdminLoading}
           isAppointmentLoading={isAdminAppointmentsLoading}
+          isPendingApprovalsLoading={isPendingApprovalsLoading}
+          approvingDayId={approveDayMutation.variables ?? null}
+          approvingWeekKey={approvingWeekKey}
+          onApproveDay={(record) => handleApproveAttendanceDay(record.id)}
+          onApproveWeek={handleApproveAttendanceWeek}
           onViewDetails={(record) => handleAdminViewDetails(record.userId, record.userDisplayName)}
         />
       )}

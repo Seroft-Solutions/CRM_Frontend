@@ -1,5 +1,7 @@
 export * from './attendance-admin-card';
 
+export * from './attendance-approval-status-badge';
+
 export * from './attendance-appointment-table';
 
 export * from './attendance-details-access-card';
@@ -13,6 +15,8 @@ export * from './attendance-loading-row';
 export * from './attendance-location-name';
 
 export * from './attendance-my-history-card';
+
+export * from './attendance-pending-approvals-card';
 
 export * from './attendance-status-badge';
 

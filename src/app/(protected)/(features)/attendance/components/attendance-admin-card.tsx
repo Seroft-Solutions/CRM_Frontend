@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AttendanceAppointmentTable } from './attendance-appointment-table';
 import { AttendanceLoadingRow } from './attendance-loading-row';
+import { AttendancePendingApprovalsCard } from './attendance-pending-approvals-card';
 import { AttendanceTable } from './attendance-table';
 
 type AttendanceAdminCardProps = {
@@ -16,9 +17,15 @@ type AttendanceAdminCardProps = {
   onAdminDateChange: (value: string) => void;
   attendanceRows: AttendanceRecordDTO[];
   appointmentRows: AttendanceAppointmentDTO[];
+  pendingApprovalRows: AttendanceRecordDTO[];
   isAttendanceLoading: boolean;
   isAppointmentLoading: boolean;
+  isPendingApprovalsLoading: boolean;
+  approvingDayId?: number | null;
+  approvingWeekKey?: string | null;
   onViewDetails: (record: AttendanceRecordDTO) => void;
+  onApproveDay: (record: AttendanceRecordDTO) => void;
+  onApproveWeek: (userId: string, weekStartDate: string, weekKey: string) => void;
 };
 
 export function AttendanceAdminCard({
@@ -26,9 +33,15 @@ export function AttendanceAdminCard({
   onAdminDateChange,
   attendanceRows,
   appointmentRows,
+  pendingApprovalRows,
   isAttendanceLoading,
   isAppointmentLoading,
+  isPendingApprovalsLoading,
+  approvingDayId,
+  approvingWeekKey,
   onViewDetails,
+  onApproveDay,
+  onApproveWeek,
 }: AttendanceAdminCardProps) {
   const appointmentUsers = useMemo(() => {
     const groupedUsers = new Map<
@@ -109,22 +122,41 @@ export function AttendanceAdminCard({
           />
         </div>
         <Tabs defaultValue="attendance" className="gap-4">
-          <TabsList className="w-full justify-start sm:w-fit">
-            <TabsTrigger value="attendance">Attendance</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
+          <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+            <TabsTrigger value="attendance" className="shrink-0">
+              Attendance
+            </TabsTrigger>
+            <TabsTrigger value="pending-approvals" className="shrink-0">
+              Pending Approvals
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="shrink-0">
+              Appointments
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="attendance">
             {isAttendanceLoading ? (
-              <AttendanceLoadingRow message="Loading admin attendance..." />
+              <AttendanceLoadingRow message="Loading admin attendance…" />
             ) : (
               <AttendanceTable rows={attendanceRows} showActions onViewDetails={onViewDetails} />
             )}
           </TabsContent>
 
+          <TabsContent value="pending-approvals">
+            <AttendancePendingApprovalsCard
+              rows={pendingApprovalRows}
+              isLoading={isPendingApprovalsLoading}
+              embedded
+              approvingDayId={approvingDayId}
+              approvingWeekKey={approvingWeekKey}
+              onApproveDay={onApproveDay}
+              onApproveWeek={onApproveWeek}
+            />
+          </TabsContent>
+
           <TabsContent value="appointments">
             {isAppointmentLoading ? (
-              <AttendanceLoadingRow message="Loading admin appointment attendance..." />
+              <AttendanceLoadingRow message="Loading admin appointment attendance…" />
             ) : appointmentUsers.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No appointment attendance records found for the selected date.

@@ -4,6 +4,7 @@ import {
   format,
   getISOWeek,
   getISOWeekYear,
+  isBefore,
   parseISO,
   startOfISOWeek,
   subWeeks,
@@ -17,7 +18,7 @@ export type AttendanceWeekStatus =
   | 'CHECKED_OUT'
   | 'LEAVE'
   | 'INCOMPLETE'
-  | 'PENDING_APPROVE'
+  | 'SUBMITTED'
   | 'APPROVED';
 
 export type AttendanceWeekSummary = {
@@ -92,22 +93,25 @@ export function getWeekIdFromAttendanceDate(attendanceDate: string): string {
 }
 
 export function deriveWeekStatus(records: AttendanceRecordDTO[]): AttendanceWeekStatus {
-  const allApproved = records.length > 0 && records.every((record) => record.approvalStatus === 'APPROVED');
+  const allApproved =
+    records.length > 0 && records.every((record) => record.approvalStatus === 'APPROVED');
+
   if (allApproved) {
     return 'APPROVED';
   }
 
-  const hasPending = records.some((record) => record.approvalStatus === 'PENDING');
-  const hasApproved = records.some((record) => record.approvalStatus === 'APPROVED');
-  if (hasPending || hasApproved) {
-    return 'PENDING_APPROVE';
+  const hasSubmitted = records.some(
+    (record) => record.approvalStatus === 'SUBMITTED' || record.approvalStatus === 'PENDING'
+  );
+
+  if (hasSubmitted) {
+    return 'SUBMITTED';
   }
 
   if (
     records.some(
       (record) =>
-        record.status === 'CHECKED_IN_OFFICE' ||
-        record.status === 'CHECKED_IN_WORK_FROM_HOME'
+        record.status === 'CHECKED_IN_OFFICE' || record.status === 'CHECKED_IN_WORK_FROM_HOME'
     )
   ) {
     return 'ACTIVE';
@@ -122,6 +126,42 @@ export function deriveWeekStatus(records: AttendanceRecordDTO[]): AttendanceWeek
   }
 
   return 'INCOMPLETE';
+}
+
+export function isWeekComplete(fromDate: string, records: AttendanceRecordDTO[]): boolean {
+  const requiredDates = buildWeekDays(fromDate).map((day) => day.key);
+  const existingDates = new Set(records.map((record) => record.attendanceDate));
+
+  return requiredDates.length === 7 && requiredDates.every((date) => existingDates.has(date));
+}
+
+export function hasWeekPassed(fromDate: string, today: Date = new Date()): boolean {
+  if (!fromDate) {
+    return false;
+  }
+
+  const weekEnd = endOfISOWeek(parseISO(fromDate));
+
+  return isBefore(weekEnd, today);
+}
+
+export function canSubmitAttendanceWeek(fromDate: string, records: AttendanceRecordDTO[]): boolean {
+  if (!hasWeekPassed(fromDate) || !isWeekComplete(fromDate, records)) {
+    return false;
+  }
+
+  if (
+    records.some(
+      (record) =>
+        record.status === 'CHECKED_IN_OFFICE' || record.status === 'CHECKED_IN_WORK_FROM_HOME'
+    )
+  ) {
+    return false;
+  }
+
+  return records.every(
+    (record) => !record.approvalStatus || record.approvalStatus === 'NOT_APPROVED'
+  );
 }
 
 export function buildAttendanceWeekSummaries(
@@ -217,12 +257,11 @@ export function getWeekBoundaryDates(fromDate: string): {
   };
 }
 
-export function getPrimaryWeekRecord(
-  records: AttendanceRecordDTO[]
-): AttendanceRecordDTO | null {
+export function getPrimaryWeekRecord(records: AttendanceRecordDTO[]): AttendanceRecordDTO | null {
   return (
     records.find(
-      (record) => record.userDisplayName || record.userLogin || record.userEmail || record.checkInSource
+      (record) =>
+        record.userDisplayName || record.userLogin || record.userEmail || record.checkInSource
     ) ??
     records[0] ??
     null
@@ -276,5 +315,7 @@ export function getHoursForMode(
 }
 
 export function hasAnyValidTime(records: AttendanceRecordDTO[]): boolean {
-  return records.some((record) => isValidDateValue(record.checkInTime) || isValidDateValue(record.checkOutTime));
+  return records.some(
+    (record) => isValidDateValue(record.checkInTime) || isValidDateValue(record.checkOutTime)
+  );
 }

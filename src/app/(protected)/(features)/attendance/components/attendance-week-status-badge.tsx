@@ -5,9 +5,7 @@ type AttendanceWeekStatusBadgeProps = {
   status: AttendanceWeekStatus;
 };
 
-export function AttendanceWeekStatusBadge({
-  status,
-}: AttendanceWeekStatusBadgeProps) {
+export function AttendanceWeekStatusBadge({ status }: AttendanceWeekStatusBadgeProps) {
   if (status === 'ACTIVE') {
     return <Badge className="bg-orange-500 hover:bg-orange-500">Active</Badge>;
   }
@@ -20,8 +18,8 @@ export function AttendanceWeekStatusBadge({
     return <Badge variant="secondary">Leave</Badge>;
   }
 
-  if (status === 'PENDING_APPROVE') {
-    return <Badge className="bg-amber-500 hover:bg-amber-500">Pending Approval</Badge>;
+  if (status === 'SUBMITTED') {
+    return <Badge className="bg-amber-500 hover:bg-amber-500">Submitted</Badge>;
   }
 
   if (status === 'APPROVED') {

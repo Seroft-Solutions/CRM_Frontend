@@ -75,7 +75,7 @@ export type AttendanceRecordDTO = {
     | 'CHECKED_IN_WORK_FROM_HOME'
     | 'CHECKED_OUT'
     | string;
-  approvalStatus?: 'PENDING' | 'APPROVED' | null;
+  approvalStatus?: 'NOT_APPROVED' | 'SUBMITTED' | 'APPROVED' | 'PENDING' | null;
 };
 
 export type AttendanceTodayStatusDTO = {

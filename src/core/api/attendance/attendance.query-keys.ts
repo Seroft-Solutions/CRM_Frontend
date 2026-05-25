@@ -12,4 +12,5 @@ export const attendanceQueryKeys = {
     ['/api/attendance/admin/records', params] as const,
   adminUserRecords: (params?: AttendanceRecordsParamsDTO) =>
     ['/api/attendance/admin/user-records', params] as const,
+  pendingApprovals: ['/api/attendance/admin/pending-approvals'] as const,
 };

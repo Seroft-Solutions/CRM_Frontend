@@ -3,7 +3,7 @@ import { startOfISOWeek, parseISO, format } from 'date-fns';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AttendanceRecordDTO } from '@/core/api/attendance';
-import { useSubmitApprovalRequest } from '@/core/api/attendance';
+import { invalidateAttendanceData, useSubmitApprovalRequest } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -26,7 +26,11 @@ import {
   getRelatedAttendanceDates,
   getWorkingMinutes,
   deriveWeekStatus,
+  canSubmitAttendanceWeek,
+  isWeekComplete,
+  hasWeekPassed,
 } from './attendance-week-utils';
+import { AttendanceApprovalStatusBadge } from './attendance-approval-status-badge';
 import { AttendanceWeekStatusBadge } from './attendance-week-status-badge';
 
 type AttendanceWeekDetailCardProps = {
@@ -60,18 +64,19 @@ export function AttendanceWeekDetailCard({
 
   const weekStartDate = useMemo(() => {
     if (!fromDate) return '';
+
     return format(startOfISOWeek(parseISO(fromDate)), 'yyyy-MM-dd');
   }, [fromDate]);
 
-  const canSubmitRequest = weekStatus === 'CHECKED_OUT' || weekStatus === 'INCOMPLETE' || weekStatus === 'LEAVE';
+  const weekComplete = isWeekComplete(fromDate, rows);
+  const weekPassed = hasWeekPassed(fromDate);
+  const canSubmitRequest = canSubmitAttendanceWeek(fromDate, rows);
 
   const submitMutation = useSubmitApprovalRequest({
     onSuccess: async () => {
       toast.success('Attendance approval request submitted successfully');
       setIsSubmitDialogOpen(false);
-      await queryClient.invalidateQueries({ queryKey: ['/api/attendance/my/history'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/records'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/attendance/admin/user-records'] });
+      await invalidateAttendanceData(queryClient);
     },
     onError: (error) => {
       toast.error(error?.message || 'Failed to submit approval request');
@@ -85,9 +90,11 @@ export function AttendanceWeekDetailCard({
 
   function isDayInactive(dayKey: string): boolean {
     const record = recordsByDate.get(dayKey);
+
     if (!record) return true;
     if (record.status === 'LEAVE') return true;
     if (!record.checkInTime) return true;
+
     return false;
   }
 
@@ -117,6 +124,13 @@ export function AttendanceWeekDetailCard({
           </div>
         </CardHeader>
         <CardContent>
+          {!canSubmitRequest ? (
+            <div className="mb-4 rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              Submit is available only after the selected Monday-Sunday week has passed and all 7
+              daily records exist. Current check: {weekPassed ? 'week passed' : 'active week'},{' '}
+              {weekComplete ? '7 days present' : 'missing daily records'}.
+            </div>
+          ) : null}
           <div className="overflow-x-auto rounded-md border">
             <table className="min-w-full border-collapse text-sm">
               <thead className="bg-muted/40">
@@ -126,10 +140,15 @@ export function AttendanceWeekDetailCard({
                   </th>
                   {weekDays.map((day) => {
                     const inactive = isDayInactive(day.key);
+
                     return (
                       <th key={day.key} className="min-w-24 px-4 py-3 text-center font-medium">
                         <div className={inactive ? 'text-red-600' : ''}>{day.displayDate}</div>
-                        <div className={`text-xs font-normal ${inactive ? 'text-red-500' : 'text-muted-foreground'}`}>{day.label}</div>
+                        <div
+                          className={`text-xs font-normal ${inactive ? 'text-red-500' : 'text-muted-foreground'}`}
+                        >
+                          {day.label}
+                        </div>
                       </th>
                     );
                   })}
@@ -140,9 +159,12 @@ export function AttendanceWeekDetailCard({
                 {modeRows.map((mode) => {
                   const modeTotal = weekDays.reduce((sum, day) => {
                     const record = recordsByDate.get(day.key);
+
                     if (!record || record.checkInMode !== mode) return sum;
+
                     return sum + getWorkingMinutes(record);
                   }, 0);
+
                   return (
                     <tr key={mode} className="border-b">
                       <td className="sticky left-0 border-r bg-background px-4 py-3 font-medium">
@@ -183,6 +205,21 @@ export function AttendanceWeekDetailCard({
                   ))}
                   <td className="px-4 py-3 text-center font-bold">
                     {formatHoursDecimal(totalMinutes)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="sticky left-0 border-r bg-background px-4 py-3 font-medium">
+                    Approval Status
+                  </td>
+                  {weekDays.map((day) => (
+                    <td key={`approval-${day.key}`} className="px-4 py-3 text-center">
+                      <AttendanceApprovalStatusBadge
+                        status={recordsByDate.get(day.key)?.approvalStatus}
+                      />
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 text-center">
+                    <AttendanceWeekStatusBadge status={weekStatus} />
                   </td>
                 </tr>
               </tbody>
@@ -239,7 +276,8 @@ export function AttendanceWeekDetailCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Attendance Request</AlertDialogTitle>
             <AlertDialogDescription>
-              Requesting your confirmation to proceed with submitting the attendance request for manager approval.
+              Submit this completed Monday-Sunday week for manager approval. All 7 daily records
+              will be marked as submitted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
