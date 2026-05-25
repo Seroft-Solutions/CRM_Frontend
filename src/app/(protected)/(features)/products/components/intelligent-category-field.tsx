@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGetAllProductCategories } from '@/core/api/generated/spring/endpoints/product-category-resource/product-category-resource.gen';
 import { useGetAllProductSubCategories } from '@/core/api/generated/spring/endpoints/product-sub-category-resource/product-sub-category-resource.gen';
+import { ProductCategoryDTOStatus } from '@/core/api/generated/spring/schemas/ProductCategoryDTOStatus';
+import { ProductSubCategoryDTOStatus } from '@/core/api/generated/spring/schemas/ProductSubCategoryDTOStatus';
 
 interface CategoryValue {
   category?: number;
@@ -46,6 +48,7 @@ export function IntelligentCategoryField({
     {
       page: 0,
       size: 100,
+      'status.equals': ProductCategoryDTOStatus.ACTIVE,
     },
     {
       query: { queryKey: ['categories-for-product'] },
@@ -57,6 +60,7 @@ export function IntelligentCategoryField({
       {
         page: 0,
         size: 100,
+        'status.equals': ProductSubCategoryDTOStatus.ACTIVE,
         'categoryId.equals': value.category || undefined,
       },
       {
@@ -67,14 +71,29 @@ export function IntelligentCategoryField({
       }
     );
 
-  const categories = useMemo(() => categoriesResponse || [], [categoriesResponse]);
-  const subCategories = useMemo(() => subCategoriesResponse || [], [subCategoriesResponse]);
+  const categories = useMemo(
+    () =>
+      (categoriesResponse || []).filter(
+        (category) => category.status === ProductCategoryDTOStatus.ACTIVE
+      ),
+    [categoriesResponse]
+  );
+  const subCategories = useMemo(
+    () =>
+      (subCategoriesResponse || []).filter(
+        (subCategory) =>
+          subCategory.status === ProductSubCategoryDTOStatus.ACTIVE &&
+          subCategory.category?.status === ProductCategoryDTOStatus.ACTIVE
+      ),
+    [subCategoriesResponse]
+  );
 
   const { data: categorySearchResponse, isLoading: searchingCategories } =
     useGetAllProductCategories(
       {
         page: 0,
         size: 50,
+        'status.equals': ProductCategoryDTOStatus.ACTIVE,
         'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
       },
       {
@@ -90,6 +109,7 @@ export function IntelligentCategoryField({
       {
         page: 0,
         size: 50,
+        'status.equals': ProductSubCategoryDTOStatus.ACTIVE,
         'name.contains': searchQuery.length > 1 ? searchQuery : undefined,
       },
       {
@@ -100,9 +120,20 @@ export function IntelligentCategoryField({
       }
     );
 
-  const categoryResults = useMemo(() => categorySearchResponse || [], [categorySearchResponse]);
+  const categoryResults = useMemo(
+    () =>
+      (categorySearchResponse || []).filter(
+        (category) => category.status === ProductCategoryDTOStatus.ACTIVE
+      ),
+    [categorySearchResponse]
+  );
   const subCategoryResults = useMemo(
-    () => subCategorySearchResponse || [],
+    () =>
+      (subCategorySearchResponse || []).filter(
+        (subCategory) =>
+          subCategory.status === ProductSubCategoryDTOStatus.ACTIVE &&
+          subCategory.category?.status === ProductCategoryDTOStatus.ACTIVE
+      ),
     [subCategorySearchResponse]
   );
 

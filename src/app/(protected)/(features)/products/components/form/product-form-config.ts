@@ -227,6 +227,9 @@ export const productFormConfig: FormConfig = {
       required: false,
       multiple: false,
       category: 'classification',
+      customFilters: {
+        'status.equals': 'ACTIVE',
+      },
       api: {
         useGetAllHook: 'useGetAllProductCategories',
         useSearchHook: 'useSearchProductCategories',
@@ -253,6 +256,9 @@ export const productFormConfig: FormConfig = {
       required: false,
       multiple: false,
       category: 'classification',
+      customFilters: {
+        'status.equals': 'ACTIVE',
+      },
       api: {
         useGetAllHook: 'useGetAllProductSubCategories',
         useSearchHook: 'useSearchProductSubCategories',
