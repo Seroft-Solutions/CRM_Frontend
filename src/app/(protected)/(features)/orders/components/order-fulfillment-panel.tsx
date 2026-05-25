@@ -149,21 +149,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ['APPROVED', 'PICKED', 'PACKED'].includes(item.itemStatusCode ?? '')
     );
   }, [order.items, order.orderStatus]);
-  const pendingItems = useMemo(
-    () =>
-      order.items.filter(
-        (item) => Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity) > 0
-      ),
-    [order.items]
-  );
-  const totalPendingUnits = useMemo(
-    () =>
-      pendingItems.reduce(
-        (sum, item) => sum + Math.max(0, item.quantity) + Math.max(0, item.backOrderQuantity),
-        0
-      ),
-    [pendingItems]
-  );
   const catalogIds = useMemo(
     () =>
       Array.from(
@@ -516,7 +501,7 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
       ) : null}
 
       <div className="grid min-w-0 gap-3">
-        <section className="order-2 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-950 text-cyan-300">
@@ -529,20 +514,39 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              <Badge className="bg-slate-100 text-[11px] text-slate-800">
-                {selectedUnits} Selected Units
-              </Badge>
-              {hasValidationErrors ? (
-                <Badge className="bg-rose-100 text-[11px] text-rose-800">
-                  Quantity Check Required
+            <div className="flex flex-col gap-2 min-[460px]:flex-row min-[460px]:items-center min-[460px]:justify-end">
+              <div className="flex flex-wrap gap-1.5">
+                <Badge className="bg-slate-100 text-[11px] text-slate-800">
+                  {selectedUnits} Selected Units
                 </Badge>
-              ) : null}
-              {hasSelectedRowsMissingPickPack ? (
-                <Badge className="bg-amber-100 text-[11px] text-amber-900">
-                  Pick/Pack Required
-                </Badge>
-              ) : null}
+                {hasValidationErrors ? (
+                  <Badge className="bg-rose-100 text-[11px] text-rose-800">
+                    Quantity Check Required
+                  </Badge>
+                ) : null}
+                {hasSelectedRowsMissingPickPack ? (
+                  <Badge className="bg-amber-100 text-[11px] text-amber-900">
+                    Pick/Pack Required
+                  </Badge>
+                ) : null}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant={isEditing ? 'outline' : 'default'}
+                className={cn(
+                  'h-10 gap-2 px-3 text-xs min-[460px]:h-8',
+                  !canFulfillOrder ? 'cursor-not-allowed border-slate-200 text-slate-400' : '',
+                  isEditing
+                    ? 'border-slate-300 text-slate-800 hover:bg-slate-50'
+                    : 'bg-slate-950 text-white hover:bg-slate-800'
+                )}
+                disabled={!canFulfillOrder}
+                onClick={toggleEditMode}
+              >
+                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                {isEditing ? 'Cancel' : 'Edit'}
+              </Button>
             </div>
           </div>
 
@@ -889,96 +893,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
               </Table>
             </div>
           )}
-        </section>
-
-        <aside className="order-1">
-          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="mb-3 flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
-              <div className="min-w-0">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-slate-950">
-                  <PackageCheck className="h-4 w-4 text-cyan-700" aria-hidden="true" />
-                  Fulfillment Control
-                </h3>
-                <p className="text-xs text-slate-600">Pick, pack, and save selected lines.</p>
-              </div>
-              <Badge
-                className={cn(
-                  'text-[10px]',
-                  canSaveFulfillment
-                    ? 'bg-emerald-600 text-white'
-                    : isEditing
-                      ? 'bg-amber-100 text-amber-900'
-                      : 'bg-slate-100 text-slate-800'
-                )}
-              >
-                {canSaveFulfillment ? 'Ready To Save' : isEditing ? 'Editing' : 'Review'}
-              </Badge>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={isEditing ? 'outline' : 'default'}
-                className={cn(
-                  'min-h-11 gap-2 text-xs sm:min-h-9',
-                  !canFulfillOrder ? 'cursor-not-allowed border-slate-200 text-slate-400' : '',
-                  isEditing
-                    ? 'border-slate-300 text-slate-800 hover:bg-slate-50'
-                    : 'bg-slate-950 text-white hover:bg-slate-800'
-                )}
-                disabled={!canFulfillOrder}
-                onClick={toggleEditMode}
-              >
-                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                {isEditing ? 'Cancel' : 'Edit'}
-              </Button>
-              <Button
-                type="button"
-                className="min-h-11 gap-2 bg-emerald-600 text-white hover:bg-emerald-700 sm:min-h-9"
-                disabled={
-                  isGenerating || hasValidationErrors || !canFulfillOrder || !canSaveFulfillment
-                }
-                onClick={handleGenerate}
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                {isGenerating ? 'Saving...' : 'Save Fulfillment'}
-              </Button>
-            </div>
-
-            <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2">
-              {[
-                { label: 'Selected', value: selectedUnits, className: 'text-slate-950' },
-                { label: 'Pending', value: totalPendingUnits, className: 'text-amber-700' },
-                { label: 'Records', value: generations.length, className: 'text-slate-950' },
-              ].map((metric) => (
-                <div
-                  key={metric.label}
-                  className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2"
-                >
-                  <div className="truncate text-[10px] font-semibold uppercase text-slate-500">
-                    {metric.label}
-                  </div>
-                  <div
-                    className={cn('text-base font-black tabular-nums sm:text-lg', metric.className)}
-                  >
-                    {metric.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {isEditing ? (
-              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-600">Selected To Generate</span>
-                  <span className="font-black tabular-nums text-slate-950">
-                    {selectedUnits} Units
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Every fulfillment generation remains recorded with per-item quantities.
-                </p>
+          <div className="flex flex-col gap-2 border-t border-slate-200 bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-end">
+            {isEditing &&
+            ((selectedRows.length > 0 && !canSaveFulfillment) || hasValidationErrors) ? (
+              <div className="space-y-1 sm:mr-auto">
                 {selectedRows.length > 0 && !canSaveFulfillment ? (
                   <p className="text-xs font-medium text-amber-700">
                     Each selected row must have both Picked and Packed checked before fulfillment
@@ -992,8 +910,19 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                 ) : null}
               </div>
             ) : null}
-          </section>
-        </aside>
+            <Button
+              type="button"
+              className="h-11 gap-2 bg-emerald-600 text-white hover:bg-emerald-700 sm:h-9"
+              disabled={
+                isGenerating || hasValidationErrors || !canFulfillOrder || !canSaveFulfillment
+              }
+              onClick={handleGenerate}
+            >
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              {isGenerating ? 'Saving...' : 'Save Fulfillment'}
+            </Button>
+          </div>
+        </section>
       </div>
     </div>
   );
