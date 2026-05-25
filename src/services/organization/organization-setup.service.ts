@@ -1,7 +1,7 @@
 'use client';
 
 import { Session } from 'next-auth';
-import type { OrganizationDTO } from '@/core/api/generated/spring/schemas';
+import type { AreaDTO, OrganizationDTO } from '@/core/api/generated/spring/schemas';
 import { createOrganizationWithSchema } from '@/core/api/generated/spring';
 
 export interface OrganizationSetupRequest {
@@ -11,6 +11,7 @@ export interface OrganizationSetupRequest {
   organizationEmail?: string;
   whatsApp?: string;
   address?: string;
+  area?: AreaDTO | null;
   logo?: string;
 }
 
@@ -20,6 +21,11 @@ export interface OrganizationSetupResult {
 }
 
 interface GroupOption {
+  id?: string;
+  name?: string;
+}
+
+interface KeycloakOrganization {
   id?: string;
   name?: string;
 }
@@ -40,6 +46,8 @@ export class OrganizationSetupService {
    * TODO: Implement proper organization checking logic
    */
   static hasOrganization(session: Session | null): boolean {
+    void session;
+
     return false;
   }
 
@@ -48,6 +56,8 @@ export class OrganizationSetupService {
    * TODO: Implement proper organization retrieval logic
    */
   static getPrimaryOrganization(session: Session | null) {
+    void session;
+
     return null;
   }
 
@@ -65,10 +75,12 @@ export class OrganizationSetupService {
     try {
       console.log('Step 1: Getting Keycloak user ID...');
       const keycloakUserId = await this.getKeycloakUserId();
+
       console.log('✓ Step 1 completed - Keycloak user ID:', keycloakUserId);
 
       console.log('Step 2: Creating Keycloak organization...');
       const keycloakOrgId = await this.createKeycloakOrganization(request);
+
       console.log('✓ Step 2 completed - Keycloak org ID:', keycloakOrgId);
 
       console.log('Step 3: Adding user to organization...');
@@ -82,6 +94,7 @@ export class OrganizationSetupService {
       console.log('Step 4: Creating Spring organization with schema setup...');
       try {
         const springOrgId = await this.createSpringOrganization(request, keycloakOrgId);
+
         console.log('✓ Step 4 completed - Spring org ID:', springOrgId);
 
         console.log('✓ All steps completed successfully');
@@ -90,8 +103,8 @@ export class OrganizationSetupService {
           keycloakOrgId,
           springOrgId,
         };
-      } catch (error: any) {
-        if (error.message === 'SETUP_TIMEOUT') {
+      } catch (error) {
+        if (error instanceof Error && error.message === 'SETUP_TIMEOUT') {
           console.log('⚠️ Setup timed out on frontend, but backend may still be processing');
           console.log('✓ Returning partial result - progress tracking will handle completion');
 
@@ -132,6 +145,7 @@ export class OrganizationSetupService {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+
         console.warn('Super Admin seed: failed to create/invite user', {
           status: response.status,
           error,
@@ -145,6 +159,7 @@ export class OrganizationSetupService {
   private async findGroupByName(name: string): Promise<GroupOption | null> {
     try {
       const response = await fetch(`/api/keycloak/groups?search=${encodeURIComponent(name)}`);
+
       if (!response.ok) {
         return null;
       }
@@ -169,6 +184,7 @@ export class OrganizationSetupService {
 
     if (!response.ok) {
       const error = await response.json();
+
       throw new Error(error.error || 'Failed to get Keycloak user ID');
     }
 
@@ -218,8 +234,10 @@ export class OrganizationSetupService {
       throw new Error('Failed to retrieve created organization');
     }
 
-    const { organizations } = await listResponse.json();
-    const createdOrg = organizations.find((org: any) => org.name === request.organizationName);
+    const { organizations } = (await listResponse.json()) as {
+      organizations: KeycloakOrganization[];
+    };
+    const createdOrg = organizations.find((org) => org.name === request.organizationName);
 
     if (!createdOrg?.id) {
       throw new Error('Failed to retrieve created organization ID');
@@ -243,6 +261,7 @@ export class OrganizationSetupService {
 
     if (!response.ok) {
       const error = await response.json();
+
       throw new Error(error.error || 'Failed to add user to organization');
     }
 
@@ -262,13 +281,14 @@ export class OrganizationSetupService {
       domain: request.domain,
     });
 
-    const organizationDTO: OrganizationDTO = {
+    const organizationDTO: OrganizationDTO & { area?: Pick<AreaDTO, 'id'> } = {
       keycloakOrgId,
       name: request.organizationName,
       displayName: request.organizationName,
       ...(request.organizationCode && { code: request.organizationCode }),
       ...(request.whatsApp && { whatsApp: request.whatsApp }),
       ...(request.address && { address: request.address }),
+      ...(request.area?.id && { area: { id: request.area.id } }),
       ...(request.logo && { logo: request.logo }),
       status: 'ACTIVE',
       ...(request.domain && { domain: request.domain }),
@@ -284,8 +304,14 @@ export class OrganizationSetupService {
       }
 
       return response.id;
-    } catch (error: any) {
-      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '';
+      const errorCode =
+        typeof error === 'object' && error !== null && 'code' in error
+          ? String((error as { code?: unknown }).code)
+          : undefined;
+
+      if (errorCode === 'ECONNABORTED' || errorMessage.includes('timeout')) {
         console.log(
           '⚠️ Organization creation timed out on frontend, but backend may still be processing...'
         );

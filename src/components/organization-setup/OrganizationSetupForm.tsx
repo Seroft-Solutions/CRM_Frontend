@@ -12,6 +12,20 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, Loader2, Mail, User } from 'lucide-react';
 import { CrmCupLogo } from '@/components/branding/crm-cup-logo';
 import type { OrganizationSetupRequest } from '@/services/organization/organization-setup.service';
+import { IntelligentLocationField } from '@/app/(protected)/(features)/customers/components/intelligent-location-field';
+import type { AreaDTO } from '@/core/api/generated/spring/schemas';
+
+interface OrganizationSetupFormData
+  extends Omit<
+    OrganizationSetupRequest,
+    'organizationName' | 'organizationCode' | 'organizationEmail' | 'address'
+  > {
+  organizationName: string;
+  organizationCode: string;
+  organizationEmail?: string;
+  address: string;
+  area?: AreaDTO | null;
+}
 
 interface OrganizationSetupFormProps {
   onSubmit: (request: OrganizationSetupRequest) => Promise<void>;
@@ -25,13 +39,14 @@ export function OrganizationSetupForm({
   error,
 }: OrganizationSetupFormProps) {
   const { data: session } = useSession();
-  const [formData, setFormData] = useState<OrganizationSetupRequest>({
+  const [formData, setFormData] = useState<OrganizationSetupFormData>({
     organizationName: '',
     domain: '',
     organizationCode: '',
-    organizationEmail: session?.user?.email,
+    organizationEmail: session?.user?.email ?? undefined,
     whatsApp: '',
     address: '',
+    area: null,
   });
   const [validationError, setValidationError] = useState<string>('');
 
@@ -42,9 +57,10 @@ export function OrganizationSetupForm({
     if (
       !formData.organizationName.trim() ||
       !formData.organizationCode.trim() ||
+      !formData.area ||
       !formData.address?.trim()
     ) {
-      setValidationError('Organization name, code, and address are required.');
+      setValidationError('Organization name, code, city and zipcode, and address are required.');
 
       return;
     }
@@ -90,6 +106,7 @@ export function OrganizationSetupForm({
       organizationEmail: session?.user?.email || '',
       whatsApp: formData.whatsApp?.trim() || '',
       address: formData.address.trim(),
+      area: formData.area,
     });
   };
 
@@ -239,20 +256,35 @@ export function OrganizationSetupForm({
                 Enter 10-15 digits, with optional leading +.
               </p>
 
-              <Label htmlFor="warehouseAddress" className="text-sm font-medium">
+              <Label className="text-sm font-medium">City and Zipcode *</Label>
+              <IntelligentLocationField
+                value={formData.area ?? null}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, area: value }));
+
+                  if (validationError) {
+                    setValidationError('');
+                  }
+                }}
+                placeholder="Enter the City name and zipcode"
+                disabled={isLoading}
+              />
+
+              <Label htmlFor="organizationAddress" className="text-sm font-medium">
                 Address *
               </Label>
               <Textarea
-                id="warehouseAddress"
+                id="organizationAddress"
                 value={formData.address}
                 onChange={handleChange('address')}
-                placeholder="Enter full address (street, city, state, zip)"
+                placeholder="Enter street address"
+                autoComplete="street-address"
                 required
                 disabled={isLoading}
                 rows={4}
               />
               <p className="text-xs text-muted-foreground">
-                You can enter multiple lines for the warehouse address.
+                City and zipcode will be saved with the organization address.
               </p>
             </div>
 
@@ -262,6 +294,7 @@ export function OrganizationSetupForm({
                 isLoading ||
                 !formData.organizationName.trim() ||
                 !formData.organizationCode.trim() ||
+                !formData.area ||
                 !formData.address?.trim()
               }
               className="w-full"
