@@ -68,6 +68,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                 </Button>
                 {orderData &&
                   !isPickerPackerUser &&
+                  orderData.status !== 'DRAFT' &&
                   ['Created', 'Partially Approved', 'Pending'].includes(orderData.orderStatus) && (
                     <Button
                       asChild

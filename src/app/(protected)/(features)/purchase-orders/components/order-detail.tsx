@@ -303,16 +303,18 @@ export function OrderDetail({ order, headerSlot, isPickerPackerUser = false }: O
                   </Link>
                 </Button>
               ) : null}
-              <Button
-                asChild
-                size="sm"
-                className="h-6 px-2 text-[10px] gap-1 bg-sidebar-accent hover:bg-sidebar-accent/90 text-white"
-              >
-                <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
-                  <PackageCheck className="h-3 w-3" />
-                  Start Picking
-                </Link>
-              </Button>
+              {order.status !== 'DRAFT' ? (
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-6 px-2 text-[10px] gap-1 bg-sidebar-accent hover:bg-sidebar-accent/90 text-white"
+                >
+                  <Link href={`/purchase-orders/${order.orderId}/fulfillment`}>
+                    <PackageCheck className="h-3 w-3" />
+                    Start Picking
+                  </Link>
+                </Button>
+              ) : null}
             </div>
           </div>
 

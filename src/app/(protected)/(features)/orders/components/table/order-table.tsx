@@ -508,6 +508,7 @@ export function OrderTable({
   }, [assigneeOverrides, filteredOrders, sortColumn, sortDirection, statusOverrides]);
 
   const showAllColumns = statusFilter === 'All';
+  const isDraftView = entityStatus === 'DRAFT';
   const filteredCount = totalCount;
   const filteredTotalPages = Math.ceil(filteredCount / pageSize) || 1;
   const startIndex = filteredCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -864,7 +865,7 @@ export function OrderTable({
                   {getSortIcon('orderId')}
                 </Button>
               </TableHead>
-              {showAllColumns && (
+              {showAllColumns && !isDraftView && (
                 <TableHead className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <Button
                     variant="ghost"
@@ -965,7 +966,7 @@ export function OrderTable({
                   onChange={(e) => handleFilterChange('orderId', e.target.value)}
                 />
               </TableHead>
-              {showAllColumns && (
+              {showAllColumns && !isDraftView && (
                 <TableHead className="py-2">
                   <Select
                     value={filters.status || 'all'}
@@ -1092,10 +1093,15 @@ export function OrderTable({
               const isUpdatingThisRow = updatingOrderId === order.orderId;
               const isUpdatingAssignee = updatingAssigneeOrderId === order.orderId;
               const statusClassName = statusColors[displayedStatus] ?? statusColors.Unknown;
+              const isDraftOrder =
+                entityStatus === 'DRAFT' || String(displayedStatus).toLowerCase() === 'draft';
               const showApproveAction =
-                !isPickerPackerUser && saleOrderApproveActionStatuses.includes(displayedStatus);
+                !isDraftOrder &&
+                !isPickerPackerUser &&
+                saleOrderApproveActionStatuses.includes(displayedStatus);
               const showEditAndPackingActions =
                 !saleOrderViewOnlyStatuses.includes(displayedStatus);
+              const showPickingAction = showEditAndPackingActions && !isDraftOrder;
 
               const isExpanded = expandedOrderId === order.orderId;
 
@@ -1129,7 +1135,7 @@ export function OrderTable({
                         </div>
                       </div>
                     </TableCell>
-                    {showAllColumns && (
+                    {showAllColumns && !isDraftView && (
                       <TableCell>
                         <InlinePermissionGuard
                           requiredPermission="order:update"
@@ -1247,7 +1253,7 @@ export function OrderTable({
                             View
                           </Link>
                         </Button>
-                        {!isPickerPackerUser ? (
+                        {!isDraftOrder && !isPickerPackerUser ? (
                           <Button
                             type="button"
                             size="sm"
@@ -1271,16 +1277,18 @@ export function OrderTable({
                         )}
                         {showEditAndPackingActions && (
                           <>
-                            <Button
-                              asChild
-                              size="sm"
-                              className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
-                            >
-                              <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
-                                <Package className="h-3 w-3" />
-                                Start Picking
-                              </Link>
-                            </Button>
+                            {showPickingAction ? (
+                              <Button
+                                asChild
+                                size="sm"
+                                className="h-6 px-2 text-[10px] gap-1 bg-violet-500 hover:bg-violet-600 text-white rounded"
+                              >
+                                <Link href={`/orders/${order.orderId}/fulfillment?from=list`}>
+                                  <Package className="h-3 w-3" />
+                                  Start Picking
+                                </Link>
+                              </Button>
+                            ) : null}
                             {!isPickerPackerUser ? (
                               <Button
                                 asChild

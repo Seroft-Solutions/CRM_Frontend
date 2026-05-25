@@ -62,6 +62,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
               </Button>
               {orderData &&
                 !isPickerPackerUser &&
+                orderData.status !== 'DRAFT' &&
                 ['Created', 'PartiallyApproved', 'Pending'].includes(orderData.orderStatus) && (
                   <Button
                     asChild
@@ -74,7 +75,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                     </Link>
                   </Button>
                 )}
-              {orderData ? (
+              {orderData && orderData.status !== 'DRAFT' ? (
                 <Button
                   asChild
                   size="sm"

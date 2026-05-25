@@ -222,6 +222,7 @@ export interface OrderShippingDetail {
 export interface OrderRecord {
   orderId: number;
   orderStatus: OrderStatus;
+  status?: 'ACTIVE' | 'DRAFT';
   orderStatusCode?: number;
   orderTotalAmount: number;
   orderTaxRate: number;
@@ -314,6 +315,7 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
   return {
     orderId: order.id ?? 0,
     orderStatus: getOrderStatusLabel(orderStatusCode),
+    status: order.status,
     orderStatusCode,
     orderTotalAmount: resolveOrderTotal(order),
     orderTaxRate: order.orderTaxRate ?? 0,
