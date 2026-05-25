@@ -83,6 +83,7 @@ const statusColors: Record<OrderStatus, string> = {
 
 const saleOrderApproveActionStatuses: OrderStatus[] = ['Created', 'Partially Approved', 'Pending'];
 const saleOrderViewOnlyStatuses: OrderStatus[] = ['Shipped', 'Delivered', 'Cancelled'];
+const saleOrderPickingExcludedStatuses: OrderStatus[] = ['Created'];
 
 function formatCurrency(amount: number) {
   return amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
@@ -1101,7 +1102,7 @@ export function OrderTable({
                 saleOrderApproveActionStatuses.includes(displayedStatus);
               const showEditAndPackingActions =
                 !saleOrderViewOnlyStatuses.includes(displayedStatus);
-              const showPickingAction = showEditAndPackingActions && !isDraftOrder;
+              const showPickingAction = showEditAndPackingActions && !isDraftOrder && !saleOrderPickingExcludedStatuses.includes(displayedStatus);
 
               const isExpanded = expandedOrderId === order.orderId;
 

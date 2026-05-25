@@ -31,6 +31,7 @@ import type { ProductCatalogDTO } from '@/core/api/generated/spring/schemas';
 import { useWarehousesQuery } from '@/app/(protected)/(features)/warehouses/actions/warehouse-hooks';
 import type { IWarehouse } from '@/app/(protected)/(features)/warehouses/types/warehouse';
 import type { OrderDetailItem, OrderRecord, OrderStatus } from '../data/purchase-order-data';
+import { purchaseOrderPickingExcludedStatuses } from '../data/purchase-order-data';
 
 const statusTheme: Record<OrderStatus, { pill: string; dot: string }> = {
   Created: { pill: 'bg-amber-500/10 text-amber-600 ring-amber-500/20', dot: 'bg-amber-500' },
@@ -303,7 +304,7 @@ export function OrderDetail({ order, headerSlot, isPickerPackerUser = false }: O
                   </Link>
                 </Button>
               ) : null}
-              {order.status !== 'DRAFT' ? (
+              {order.status !== 'DRAFT' && !purchaseOrderPickingExcludedStatuses.includes(order.orderStatus) ? (
                 <Button
                   asChild
                   size="sm"

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { OrderDetailContainer } from '../components/order-detail-container';
 import { CheckCircle, ArrowLeft, Edit, ScanBarcode } from 'lucide-react';
 import { useState, use } from 'react';
-import { OrderRecord } from '../data/purchase-order-data';
+import { OrderRecord, purchaseOrderPickingExcludedStatuses } from '../data/purchase-order-data';
 import { InvoicePrintButton } from '@/components/invoice/InvoicePrintButton';
 import { useCurrentUserPickPackGroups } from '@/app/(protected)/(features)/orders/hooks';
 
@@ -75,7 +75,7 @@ export default function OrderDetailPage({ params }: OrderPageProps) {
                     </Link>
                   </Button>
                 )}
-              {orderData && orderData.status !== 'DRAFT' ? (
+              {orderData && orderData.status !== 'DRAFT' && !purchaseOrderPickingExcludedStatuses.includes(orderData.orderStatus) ? (
                 <Button
                   asChild
                   size="sm"

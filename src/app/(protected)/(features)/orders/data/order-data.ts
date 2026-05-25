@@ -43,6 +43,8 @@ export const orderStatusTabOrder = [
   'Cancelled',
 ] as const;
 
+export const saleOrderPickingExcludedStatuses: OrderStatus[] = ['Created'];
+
 export const paymentStatusOptions = ['Pending', 'Paid', 'Failed', 'Refunded'] as const;
 
 export const shippingMethodOptions = ['Courier', 'In-Store Pickup', 'Postal', 'Express'] as const;
