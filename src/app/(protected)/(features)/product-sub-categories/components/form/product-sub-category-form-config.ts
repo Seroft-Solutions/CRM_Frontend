@@ -11,19 +11,8 @@ export const productSubCategoryFormConfig: FormConfig = {
     {
       id: 'basic',
       title: 'Basic Information',
-      description: 'Enter essential details',
+      description: 'Enter essential details and classification',
       fields: ['name', 'code', 'description', 'remark', 'status'],
-      relationships: [],
-      validation: {
-        mode: 'onBlur',
-        validateOnNext: true,
-      },
-    },
-    {
-      id: 'classification',
-      title: 'Classification',
-      description: 'Set priority, status, and categories',
-      fields: [],
       relationships: ['category'],
       validation: {
         mode: 'onBlur',

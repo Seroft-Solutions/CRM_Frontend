@@ -56,6 +56,7 @@ export const productSubCategoryStepSchemas = {
     description: productSubCategoryFieldSchemas.description,
     remark: productSubCategoryFieldSchemas.remark,
     status: productSubCategoryFieldSchemas.status,
+    category: productSubCategoryFieldSchemas.category,
     createdBy: productSubCategoryFieldSchemas.createdBy,
     createdDate: productSubCategoryFieldSchemas.createdDate,
     lastModifiedBy: productSubCategoryFieldSchemas.lastModifiedBy,
