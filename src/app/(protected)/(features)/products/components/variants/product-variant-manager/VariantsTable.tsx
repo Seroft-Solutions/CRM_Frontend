@@ -15,6 +15,16 @@ import { VariantsTableHeader } from './VariantsTableHeader';
 import { VariantTableRow } from './VariantTableRow';
 import { Input } from '@/components/ui/input';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -100,13 +110,17 @@ export function VariantsTable({
   const [bulkPrice, setBulkPrice] = useState('');
   const [bulkWarehouseId, setBulkWarehouseId] = useState<number | undefined>(undefined);
   const [bulkStock, setBulkStock] = useState('');
+  const [pendingBulkPrice, setPendingBulkPrice] = useState<number | null>(null);
+  const [pendingBulkStock, setPendingBulkStock] = useState<{
+    warehouseId: number;
+    stock: number;
+  } | null>(null);
 
   const handleBulkPriceAdd = () => {
     const price = Number(bulkPrice);
 
     if (!isNaN(price) && price > 0 && onBulkPriceUpdate) {
-      onBulkPriceUpdate(price);
-      setBulkPrice('');
+      setPendingBulkPrice(price);
     }
   };
 
@@ -114,10 +128,32 @@ export function VariantsTable({
     const stock = Number(bulkStock);
 
     if (!isNaN(stock) && stock >= 0 && bulkWarehouseId !== undefined && onBulkStockUpdate) {
-      onBulkStockUpdate(bulkWarehouseId, stock);
-      setBulkStock('');
-      setBulkWarehouseId(undefined);
+      setPendingBulkStock({
+        warehouseId: bulkWarehouseId,
+        stock,
+      });
     }
+  };
+
+  const confirmBulkPriceUpdate = () => {
+    if (pendingBulkPrice === null || !onBulkPriceUpdate) {
+      return;
+    }
+
+    onBulkPriceUpdate(pendingBulkPrice);
+    setBulkPrice('');
+    setPendingBulkPrice(null);
+  };
+
+  const confirmBulkStockUpdate = () => {
+    if (!pendingBulkStock || !onBulkStockUpdate) {
+      return;
+    }
+
+    onBulkStockUpdate(pendingBulkStock.warehouseId, pendingBulkStock.stock);
+    setBulkStock('');
+    setBulkWarehouseId(undefined);
+    setPendingBulkStock(null);
   };
 
   const showTable = hasDrafts || totalExistingRows > 0;
@@ -137,160 +173,212 @@ export function VariantsTable({
     visibleEnumAttributes.length + (isViewMode ? 8 : 9) + (selection ? 1 : 0);
 
   return (
-    <div className="rounded-lg border bg-card">
-      <div className="flex flex-wrap items-center gap-4 px-4 py-3 border-b bg-muted/30">
-        <h4 className="text-sm font-semibold text-foreground">Variants</h4>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs border-green-300 bg-green-50 text-green-700">
-            {totalExistingRows} saved
-          </Badge>
-          {hasDrafts && (
-            <Badge className="bg-blue-500 text-white text-xs">{newDraftVariants.length} new</Badge>
-          )}
-          {hasDuplicates && (
-            <Badge className="bg-amber-500 text-white text-xs">
-              {duplicateDraftVariants.length} duplicate
-              {duplicateDraftVariants.length !== 1 ? 's' : ''}
+    <>
+      <div className="rounded-lg border bg-card">
+        <div className="flex flex-wrap items-center gap-4 px-4 py-3 border-b bg-muted/30">
+          <h4 className="text-sm font-semibold text-foreground">Variants</h4>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="text-xs border-green-300 bg-green-50 text-green-700"
+            >
+              {totalExistingRows} saved
             </Badge>
+            {hasDrafts && (
+              <Badge className="bg-blue-500 text-white text-xs">
+                {newDraftVariants.length} new
+              </Badge>
+            )}
+            {hasDuplicates && (
+              <Badge className="bg-amber-500 text-white text-xs">
+                {duplicateDraftVariants.length} duplicate
+                {duplicateDraftVariants.length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
+          {isViewMode && viewPriceHistoryHref && (
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="ml-auto h-8 px-3 text-xs font-semibold"
+            >
+              <Link href={viewPriceHistoryHref}>View Price History</Link>
+            </Button>
+          )}
+          {!isViewMode && (
+            <>
+              <div className="flex items-center gap-2 ml-auto border-l pl-4">
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                  Price:
+                </span>
+                <Input
+                  type="number"
+                  placeholder="Enter price"
+                  value={bulkPrice}
+                  onChange={(e) => setBulkPrice(e.target.value)}
+                  className="w-32 h-8 text-sm font-medium"
+                  min="0"
+                  step="0.01"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  className="h-8 px-3 text-xs font-semibold"
+                  onClick={handleBulkPriceAdd}
+                  disabled={!bulkPrice || Number(bulkPrice) <= 0}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Copy to all
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 border-l pl-4">
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                  Warehouse:
+                </span>
+                <Select
+                  value={bulkWarehouseId?.toString() || ''}
+                  onValueChange={(val) => setBulkWarehouseId(Number(val))}
+                >
+                  <SelectTrigger className="w-40 h-8 text-sm font-medium">
+                    <SelectValue placeholder="Select warehouse" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {warehouses.map((wh) => (
+                      <SelectItem key={wh.id} value={wh.id.toString()}>
+                        {wh.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  placeholder="Stock"
+                  value={bulkStock}
+                  onChange={(e) => setBulkStock(e.target.value)}
+                  className="w-28 h-8 text-sm font-medium"
+                  min="0"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  className="h-8 px-3 text-xs font-semibold"
+                  onClick={handleBulkStockAdd}
+                  disabled={!bulkWarehouseId || bulkStock === '' || Number(bulkStock) < 0}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add to all
+                </Button>
+              </div>
+            </>
           )}
         </div>
-        {isViewMode && viewPriceHistoryHref && (
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="ml-auto h-8 px-3 text-xs font-semibold"
-          >
-            <Link href={viewPriceHistoryHref}>View Price History</Link>
-          </Button>
-        )}
-        {!isViewMode && (
-          <>
-            <div className="flex items-center gap-2 ml-auto border-l pl-4">
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">
-                Price:
-              </span>
-              <Input
-                type="number"
-                placeholder="Enter price"
-                value={bulkPrice}
-                onChange={(e) => setBulkPrice(e.target.value)}
-                className="w-32 h-8 text-sm font-medium"
-                min="0"
-                step="0.01"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="default"
-                className="h-8 px-3 text-xs font-semibold"
-                onClick={handleBulkPriceAdd}
-                disabled={!bulkPrice || Number(bulkPrice) <= 0}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Copy to all
-              </Button>
-            </div>
-            <div className="flex items-center gap-2 border-l pl-4">
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">
-                Warehouse:
-              </span>
-              <Select
-                value={bulkWarehouseId?.toString() || ''}
-                onValueChange={(val) => setBulkWarehouseId(Number(val))}
-              >
-                <SelectTrigger className="w-40 h-8 text-sm font-medium">
-                  <SelectValue placeholder="Select warehouse" />
-                </SelectTrigger>
-                <SelectContent>
-                  {warehouses.map((wh) => (
-                    <SelectItem key={wh.id} value={wh.id.toString()}>
-                      {wh.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                type="number"
-                placeholder="Stock"
-                value={bulkStock}
-                onChange={(e) => setBulkStock(e.target.value)}
-                className="w-28 h-8 text-sm font-medium"
-                min="0"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="default"
-                className="h-8 px-3 text-xs font-semibold"
-                onClick={handleBulkStockAdd}
-                disabled={!bulkWarehouseId || bulkStock === '' || Number(bulkStock) < 0}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Add to all
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-      <div className="overflow-x-auto">
-        <Table className="table-fixed w-full min-w-[1200px]">
-          <VariantsTableHeader
-            visibleEnumAttributes={visibleEnumAttributes}
-            isViewMode={isViewMode}
-            selection={selection}
-            onCopySalePriceToAll={onCopySalePriceToAll}
-          />
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={totalColumnCount} className="h-24 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                    <p className="text-sm text-muted-foreground">Loading variants...</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : totalRowsToDisplay > 0 ? (
-              rows.map((item) => {
-                const rowErrors = validationErrors[item.rowKey] || [];
+        <div className="overflow-x-auto">
+          <Table className="table-fixed w-full min-w-[1200px]">
+            <VariantsTableHeader
+              visibleEnumAttributes={visibleEnumAttributes}
+              isViewMode={isViewMode}
+              selection={selection}
+              onCopySalePriceToAll={onCopySalePriceToAll}
+            />
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={totalColumnCount} className="h-24 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Loading variants...</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : totalRowsToDisplay > 0 ? (
+                rows.map((item) => {
+                  const rowErrors = validationErrors[item.rowKey] || [];
 
-                return (
-                  <VariantTableRow
-                    key={item.rowKey}
-                    item={item}
-                    allRows={rows}
-                    visibleEnumAttributes={visibleEnumAttributes}
-                    productName={productName}
-                    existingSkus={existingSkus}
-                    onUpdateDraft={onUpdateDraft}
-                    onApplyDraftImagesToVariants={onApplyDraftImagesToVariants}
-                    editingRowData={editingRowData}
-                    onEditRow={onEditRow}
-                    onMarkPrimaryExisting={onMarkPrimaryExisting}
-                    onUpdateEditingRow={onUpdateEditingRow}
-                    onSaveExisting={onSaveExisting}
-                    onCancelEdit={onCancelEdit}
-                    onDeleteRow={onDeleteRow}
-                    warehouses={warehouses}
-                    isViewMode={isViewMode}
-                    selection={selection}
-                    validationErrors={rowErrors}
-                  />
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={totalColumnCount} className="h-24 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    No variants to display for this filter.
-                  </p>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  return (
+                    <VariantTableRow
+                      key={item.rowKey}
+                      item={item}
+                      allRows={rows}
+                      visibleEnumAttributes={visibleEnumAttributes}
+                      productName={productName}
+                      existingSkus={existingSkus}
+                      onUpdateDraft={onUpdateDraft}
+                      onApplyDraftImagesToVariants={onApplyDraftImagesToVariants}
+                      editingRowData={editingRowData}
+                      onEditRow={onEditRow}
+                      onMarkPrimaryExisting={onMarkPrimaryExisting}
+                      onUpdateEditingRow={onUpdateEditingRow}
+                      onSaveExisting={onSaveExisting}
+                      onCancelEdit={onCancelEdit}
+                      onDeleteRow={onDeleteRow}
+                      warehouses={warehouses}
+                      isViewMode={isViewMode}
+                      selection={selection}
+                      validationErrors={rowErrors}
+                    />
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={totalColumnCount} className="h-24 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No variants to display for this filter.
+                    </p>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-    </div>
+
+      <AlertDialog
+        open={pendingBulkPrice !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingBulkPrice(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update variant prices?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The entered price will be added to all the variants, do you want to update the
+              existing price?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkPriceUpdate}>Update</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={pendingBulkStock !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingBulkStock(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Add stock to all variants?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Stock qty will be added to currently available qty
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmBulkStockUpdate}>Add</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
