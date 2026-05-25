@@ -1839,6 +1839,7 @@ export function OrderFormContent({
                 onToggleWarehouseVariant={handleToggleWarehouseVariant}
                 onToggleCatalogVariant={handleToggleCatalogVariant}
                 onAdjustItemQuantity={handleAdjustItemQuantity}
+                orderType="purchase"
               />
 
               <div className="rounded-none border border-border bg-muted/30 p-3 shadow-sm">

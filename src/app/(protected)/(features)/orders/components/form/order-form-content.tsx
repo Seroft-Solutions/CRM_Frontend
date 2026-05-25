@@ -476,6 +476,7 @@ export function VariantWarehousePanel({
   onToggleWarehouseVariant,
   onAdjustItemQuantity,
   onToggleCatalogVariant,
+  orderType = 'sale',
 }: {
   selectedItem?: OrderItemForm;
   selectedItemIndex: number | null;
@@ -494,6 +495,7 @@ export function VariantWarehousePanel({
     quantity: number,
     price: number | undefined
   ) => void;
+  orderType?: 'sale' | 'purchase';
 }) {
   const selectedProductId =
     selectedItem?.itemType === 'product' ? selectedItem.productId : undefined;
@@ -832,7 +834,7 @@ export function VariantWarehousePanel({
           warehouseCode,
           quantity:
             (stock.salesStockQuantity ?? stock.stockQuantity ?? 0) +
-            getReservedQuantityDelta(variant, stock),
+            (orderType === 'purchase' ? 1 : -1) * getReservedQuantityDelta(variant, stock),
         };
       });
     });
@@ -948,7 +950,8 @@ export function VariantWarehousePanel({
             item.warehouseCode ||
             item.warehouseStocks?.find((s) => s.warehouseId === item.warehouseId)?.warehouseName ||
             item.warehouseStocks?.find((s) => s.warehouseId === item.warehouseId)?.warehouseCode ||
-            variant?.variantStocks?.find((s) => s.warehouse?.id === item.warehouseId)?.warehouse?.name ||
+            variant?.variantStocks?.find((s) => s.warehouse?.id === item.warehouseId)?.warehouse
+              ?.name ||
             '-';
 
           return [
@@ -984,7 +987,15 @@ export function VariantWarehousePanel({
           className="w-full"
           columns={
             selectedCatalogId
-              ? ['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse', 'Sales Stock']
+              ? [
+                  'Image',
+                  'Color',
+                  'Size',
+                  'Qty',
+                  'Price',
+                  'Warehouse',
+                  orderType === 'purchase' ? 'Avail Stock' : 'Sales Stock',
+                ]
               : ['Image', 'Color', 'Size', 'Qty', 'Price', 'Warehouse']
           }
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
@@ -1039,7 +1050,7 @@ export function VariantWarehousePanel({
                   <th className="border border-border px-1 py-0.5 text-left font-bold">Color</th>
                   <th className="border border-border px-1 py-0.5 text-left font-bold">Size</th>
                   <th className="border border-border px-1 py-0.5 text-left font-bold">
-                    Sales Qty
+                    {orderType === 'purchase' ? 'Available Qty' : 'Sales Qty'}
                   </th>
                   <th className="border border-border px-1 py-0.5 text-left font-bold">Price</th>
                 </tr>
@@ -3246,6 +3257,7 @@ export function OrderFormContent({
                 onToggleWarehouseVariant={handleToggleWarehouseVariant}
                 onAdjustItemQuantity={handleAdjustItemQuantity}
                 onToggleCatalogVariant={handleToggleCatalogVariant}
+                orderType="sale"
               />
 
               <div className="rounded-none border border-border bg-muted/30 p-3 shadow-sm">
