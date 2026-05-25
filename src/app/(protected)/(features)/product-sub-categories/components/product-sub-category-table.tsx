@@ -321,17 +321,17 @@ export function ProductSubCategoryTable() {
   const handleRefresh = async () => {
     try {
       await queryClient.invalidateQueries({
-        queryKey: ['getAllProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories'],
+        refetchType: 'all',
       });
       await queryClient.invalidateQueries({
-        queryKey: ['countProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories/count'],
+        refetchType: 'all',
       });
 
       await queryClient.invalidateQueries({
-        queryKey: ['searchProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories/_search'],
+        refetchType: 'all',
       });
 
       await refetch();
@@ -583,15 +583,15 @@ export function ProductSubCategoryTable() {
     mutation: {
       onMutate: async (variables) => {
         await queryClient.cancelQueries({
-          queryKey: ['getAllProductSubCategories'],
+          queryKey: ['/api/product-sub-categories'],
         });
 
         await queryClient.cancelQueries({
-          queryKey: ['searchProductSubCategories'],
+          queryKey: ['/api/product-sub-categories/_search'],
         });
 
         const previousData = queryClient.getQueryData([
-          'getAllProductSubCategories',
+          '/api/product-sub-categories',
           {
             page: apiPage,
             size: pageSize,
@@ -603,7 +603,7 @@ export function ProductSubCategoryTable() {
         if (previousData && Array.isArray(previousData)) {
           queryClient.setQueryData(
             [
-              'getAllProductSubCategories',
+              '/api/product-sub-categories',
               {
                 page: apiPage,
                 size: pageSize,
@@ -623,7 +623,7 @@ export function ProductSubCategoryTable() {
         if (searchTerm) {
           queryClient.setQueryData(
             [
-              'searchProductSubCategories',
+              '/api/product-sub-categories/_search',
               {
                 query: searchTerm,
                 page: apiPage,
@@ -646,7 +646,7 @@ export function ProductSubCategoryTable() {
       onSuccess: (data, variables) => {
         queryClient.setQueryData(
           [
-            'getAllProductSubCategories',
+            '/api/product-sub-categories',
             {
               page: apiPage,
               size: pageSize,
@@ -663,7 +663,7 @@ export function ProductSubCategoryTable() {
         if (searchTerm) {
           queryClient.setQueryData(
             [
-              'searchProductSubCategories',
+              '/api/product-sub-categories/_search',
               {
                 query: searchTerm,
                 page: apiPage,
@@ -685,7 +685,7 @@ export function ProductSubCategoryTable() {
         if (context?.previousData) {
           queryClient.setQueryData(
             [
-              'getAllProductSubCategories',
+              '/api/product-sub-categories',
               {
                 page: apiPage,
                 size: pageSize,
@@ -700,17 +700,17 @@ export function ProductSubCategoryTable() {
       },
       onSettled: async () => {
         await queryClient.invalidateQueries({
-          queryKey: ['getAllProductSubCategories'],
-          refetchType: 'active',
+          queryKey: ['/api/product-sub-categories'],
+          refetchType: 'all',
         });
         await queryClient.invalidateQueries({
-          queryKey: ['countProductSubCategories'],
-          refetchType: 'active',
+          queryKey: ['/api/product-sub-categories/count'],
+          refetchType: 'all',
         });
 
         await queryClient.invalidateQueries({
-          queryKey: ['searchProductSubCategories'],
-          refetchType: 'active',
+          queryKey: ['/api/product-sub-categories/_search'],
+          refetchType: 'all',
         });
       },
     },
@@ -719,10 +719,11 @@ export function ProductSubCategoryTable() {
   const { mutate: updateEntityStatus, isPending: isUpdatingStatus } = useUpdateProductSubCategory({
     mutation: {
       onMutate: async (variables) => {
-        await queryClient.cancelQueries({ queryKey: ['getAllProductSubCategories'] });
+        await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories'] });
+        await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories/_search'] });
 
         const previousData = queryClient.getQueryData([
-          'getAllProductSubCategories',
+          '/api/product-sub-categories',
           {
             page: apiPage,
             size: pageSize,
@@ -730,10 +731,51 @@ export function ProductSubCategoryTable() {
             ...filterParams,
           },
         ]);
+        const previousSearchData = searchTerm
+          ? queryClient.getQueryData([
+              '/api/product-sub-categories/_search',
+              {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ])
+          : undefined;
+
+        const updateCurrentStatusView = (old: any[]) => {
+          if (!old) return old;
+
+          const newStatus = variables.data.status;
+          const currentFilter = getStatusFilter();
+          const currentStatusFilter = currentFilter['status.equals'];
+
+          console.log('Optimistic Update Debug:', {
+            newStatus,
+            currentStatusFilter,
+            activeStatusTab,
+            shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
+            comparison: `${currentStatusFilter} === ${newStatus}`,
+            entityId: variables.id,
+          });
+
+          if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
+            console.log(`Updating item ${variables.id} in place`);
+            return old.map((productSubCategory) =>
+              productSubCategory.id === variables.id
+                ? { ...productSubCategory, ...variables.data }
+                : productSubCategory
+            );
+          } else {
+            console.log(`Removing item ${variables.id} from current view`);
+            return old.filter((productSubCategory) => productSubCategory.id !== variables.id);
+          }
+        };
 
         queryClient.setQueryData(
           [
-            'getAllProductSubCategories',
+            '/api/product-sub-categories',
             {
               page: apiPage,
               size: pageSize,
@@ -741,37 +783,26 @@ export function ProductSubCategoryTable() {
               ...filterParams,
             },
           ],
-          (old: any[]) => {
-            if (!old) return old;
-
-            const newStatus = variables.data.status;
-            const currentFilter = getStatusFilter();
-            const currentStatusFilter = currentFilter['status.equals'];
-
-            console.log('Optimistic Update Debug:', {
-              newStatus,
-              currentStatusFilter,
-              activeStatusTab,
-              shouldStayInView: currentStatusFilter === newStatus || activeStatusTab === 'all',
-              comparison: `${currentStatusFilter} === ${newStatus}`,
-              entityId: variables.id,
-            });
-
-            if (currentStatusFilter === newStatus || activeStatusTab === 'all') {
-              console.log(`Updating item ${variables.id} in place`);
-              return old.map((productSubCategory) =>
-                productSubCategory.id === variables.id
-                  ? { ...productSubCategory, ...variables.data }
-                  : productSubCategory
-              );
-            } else {
-              console.log(`Removing item ${variables.id} from current view`);
-              return old.filter((productSubCategory) => productSubCategory.id !== variables.id);
-            }
-          }
+          updateCurrentStatusView
         );
 
-        return { previousData };
+        if (searchTerm) {
+          queryClient.setQueryData(
+            [
+              '/api/product-sub-categories/_search',
+              {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            updateCurrentStatusView
+          );
+        }
+
+        return { previousData, previousSearchData };
       },
       onSuccess: (data, variables) => {
         const statusLabel =
@@ -790,8 +821,9 @@ export function ProductSubCategoryTable() {
           console.log(
             `Updating count cache - removing 1 item due to status change from ${currentStatusFilter} to ${newStatus}`
           );
-          queryClient.setQueryData(['countProductSubCategories', filterParams], (old: number) =>
-            Math.max(0, (old || 0) - 1)
+          queryClient.setQueryData(
+            ['/api/product-sub-categories/count', filterParams],
+            (old: number) => Math.max(0, (old || 0) - 1)
           );
         }
       },
@@ -799,7 +831,7 @@ export function ProductSubCategoryTable() {
         if (context?.previousData) {
           queryClient.setQueryData(
             [
-              'getAllProductSubCategories',
+              '/api/product-sub-categories',
               {
                 page: apiPage,
                 size: pageSize,
@@ -810,21 +842,36 @@ export function ProductSubCategoryTable() {
             context.previousData
           );
         }
+        if (context?.previousSearchData && searchTerm) {
+          queryClient.setQueryData(
+            [
+              '/api/product-sub-categories/_search',
+              {
+                query: searchTerm,
+                page: apiPage,
+                size: pageSize,
+                sort: [`${sort},${order}`],
+                ...filterParams,
+              },
+            ],
+            context.previousSearchData
+          );
+        }
         handleProductSubCategoryError(error);
       },
       onSettled: async () => {
         await queryClient.invalidateQueries({
-          queryKey: ['getAllProductSubCategories'],
-          refetchType: 'active',
+          queryKey: ['/api/product-sub-categories'],
+          refetchType: 'all',
         });
         await queryClient.invalidateQueries({
-          queryKey: ['countProductSubCategories'],
-          refetchType: 'active',
+          queryKey: ['/api/product-sub-categories/count'],
+          refetchType: 'all',
         });
 
         await queryClient.invalidateQueries({
-          queryKey: ['searchProductSubCategories'],
-          refetchType: 'active',
+          queryKey: ['/api/product-sub-categories/_search'],
+          refetchType: 'all',
         });
       },
     },
@@ -941,10 +988,11 @@ export function ProductSubCategoryTable() {
   };
 
   const confirmBulkArchive = async () => {
-    await queryClient.cancelQueries({ queryKey: ['getAllProductSubCategories'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories/_search'] });
 
     const previousData = queryClient.getQueryData([
-      'getAllProductSubCategories',
+      '/api/product-sub-categories',
       {
         page: apiPage,
         size: pageSize,
@@ -976,17 +1024,17 @@ export function ProductSubCategoryTable() {
       await Promise.all(updatePromises);
 
       await queryClient.invalidateQueries({
-        queryKey: ['getAllProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories'],
+        refetchType: 'all',
       });
       await queryClient.invalidateQueries({
-        queryKey: ['countProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories/count'],
+        refetchType: 'all',
       });
 
       await queryClient.invalidateQueries({
-        queryKey: ['searchProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories/_search'],
+        refetchType: 'all',
       });
 
       productSubCategoryToast.custom.success(
@@ -998,7 +1046,7 @@ export function ProductSubCategoryTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllProductSubCategories',
+            '/api/product-sub-categories',
             {
               page: apiPage,
               size: pageSize,
@@ -1020,10 +1068,11 @@ export function ProductSubCategoryTable() {
   const confirmBulkStatusChange = async () => {
     if (!bulkNewStatus) return;
 
-    await queryClient.cancelQueries({ queryKey: ['getAllProductSubCategories'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories/_search'] });
 
     const previousData = queryClient.getQueryData([
-      'getAllProductSubCategories',
+      '/api/product-sub-categories',
       {
         page: apiPage,
         size: pageSize,
@@ -1057,17 +1106,17 @@ export function ProductSubCategoryTable() {
       await Promise.all(updatePromises);
 
       await queryClient.invalidateQueries({
-        queryKey: ['getAllProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories'],
+        refetchType: 'all',
       });
       await queryClient.invalidateQueries({
-        queryKey: ['countProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories/count'],
+        refetchType: 'all',
       });
 
       await queryClient.invalidateQueries({
-        queryKey: ['searchProductSubCategories'],
-        refetchType: 'active',
+        queryKey: ['/api/product-sub-categories/_search'],
+        refetchType: 'all',
       });
 
       const statusLabel =
@@ -1081,7 +1130,7 @@ export function ProductSubCategoryTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllProductSubCategories',
+            '/api/product-sub-categories',
             {
               page: apiPage,
               size: pageSize,
@@ -1148,7 +1197,7 @@ export function ProductSubCategoryTable() {
             if (isBulkOperation) {
               queryClient.setQueryData(
                 [
-                  'getAllProductSubCategories',
+                  '/api/product-sub-categories',
                   {
                     page: apiPage,
                     size: pageSize,
@@ -1165,7 +1214,7 @@ export function ProductSubCategoryTable() {
               if (searchTerm) {
                 queryClient.setQueryData(
                   [
-                    'searchProductSubCategories',
+                    '/api/product-sub-categories/_search',
                     {
                       query: searchTerm,
                       page: apiPage,
@@ -1207,10 +1256,10 @@ export function ProductSubCategoryTable() {
     relationshipName: string,
     newValue: number | null
   ) => {
-    await queryClient.cancelQueries({ queryKey: ['getAllProductSubCategories'] });
+    await queryClient.cancelQueries({ queryKey: ['/api/product-sub-categories'] });
 
     const previousData = queryClient.getQueryData([
-      'getAllProductSubCategories',
+      '/api/product-sub-categories',
       {
         page: apiPage,
         size: pageSize,
@@ -1253,7 +1302,7 @@ export function ProductSubCategoryTable() {
       if (previousData) {
         queryClient.setQueryData(
           [
-            'getAllProductSubCategories',
+            '/api/product-sub-categories',
             {
               page: apiPage,
               size: pageSize,
