@@ -657,7 +657,7 @@ export function ProductVariantManager({
 
     const basePrefixRaw = (productName.substring(0, 4) || 'PROD').toUpperCase();
     const basePrefix = normalizeSku(basePrefixRaw, 'PROD');
-    const defaultWarehouse = warehouses[0];
+    const defaultWarehouse = warehouses.length === 1 ? warehouses[0] : undefined;
 
     const selectionsForCrossProduct = enumAttributeOptions
       .map(({ attribute, options }) => ({
