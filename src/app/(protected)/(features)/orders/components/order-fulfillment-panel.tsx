@@ -658,10 +658,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                   ) : (
                     visibleRows.map((row, index) => {
                       const backlogResolved = row.isCompleted;
-                      const availableStockLabel =
-                        typeof row.item.variantId === 'number'
-                          ? 'Warehouse main stock'
-                          : 'Product main stock';
                       const isLegacyCatalog =
                         Boolean(row.item.productCatalogId) && !row.item.variantId;
                       const catalog =
@@ -721,34 +717,32 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                     ? `${index + 1}.${displayIndex + 1}`
                                     : index + 1}
                                 </div>
-                                <div className="min-w-0">
-                                  <div className="truncate font-semibold text-slate-950">
+                                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                                  <span className="truncate font-semibold text-slate-950">
                                     {displayName}
-                                  </div>
-                                  <div className="mt-1 flex min-w-0 flex-wrap gap-1">
-                                    {row.item.productCatalogId ? (
-                                      <Badge
-                                        variant="secondary"
-                                        className="h-5 bg-slate-100 px-1.5 text-[10px] text-slate-700"
-                                      >
-                                        Catalog item
-                                      </Badge>
-                                    ) : row.item.sku ? (
-                                      <Badge
-                                        variant="secondary"
-                                        className="h-5 max-w-[130px] truncate bg-slate-100 px-1.5 text-[10px] text-slate-700"
-                                      >
-                                        {row.item.sku}
-                                      </Badge>
-                                    ) : null}
-                                  </div>
+                                  </span>
+                                  {row.item.productCatalogId ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-5 shrink-0 bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                    >
+                                      Catalog item
+                                    </Badge>
+                                  ) : row.item.sku ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="h-5 max-w-[130px] shrink-0 truncate bg-slate-100 px-1.5 text-[10px] text-slate-700"
+                                    >
+                                      {row.item.sku}
+                                    </Badge>
+                                  ) : null}
+                                  {!row.item.productCatalogId && row.item.variantAttributes ? (
+                                    <span className="truncate text-[10px] text-blue-700">
+                                      {row.item.variantAttributes}
+                                    </span>
+                                  ) : null}
                                 </div>
                               </div>
-                              {!row.item.productCatalogId && row.item.variantAttributes ? (
-                                <p className="truncate pl-9 text-[10px] text-blue-700">
-                                  {row.item.variantAttributes}
-                                </p>
-                              ) : null}
                             </div>
                           </TableCell>
                           {displayIndex === 0 ? (
@@ -784,9 +778,6 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 className="text-right font-semibold tabular-nums text-slate-900"
                               >
                                 <div>{stocksLoading ? '...' : row.availableQuantity}</div>
-                                <div className="text-[11px] text-slate-500">
-                                  {availableStockLabel}
-                                </div>
                               </TableCell>
                               <TableCell rowSpan={displayNames.length} className="text-center">
                                 <Badge
@@ -896,16 +887,10 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                       —
                                     </div>
                                   )}
-                                  <div className="text-right text-[10px] font-semibold tabular-nums text-slate-500">
-                                    {row.enteredQuantity}/{row.remainingQuantity} To Fulfill
-                                  </div>
+
                                   {row.validationMessage ? (
                                     <p className="text-right text-[10px] font-medium text-rose-600">
                                       {row.validationMessage}
-                                    </p>
-                                  ) : row.isCompleted ? (
-                                    <p className="text-right text-[10px] font-medium text-emerald-700">
-                                      Completed
                                     </p>
                                   ) : row.deliverableQuantity === 0 ? (
                                     <p className="text-right text-[10px] font-medium text-amber-700">
