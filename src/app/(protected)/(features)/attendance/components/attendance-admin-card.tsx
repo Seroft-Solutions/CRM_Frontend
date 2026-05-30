@@ -1,23 +1,44 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { Check, ChevronsUpDown, ShieldCheck } from 'lucide-react';
 import { AttendanceAppointmentDTO, AttendanceRecordDTO } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { AttendanceAppointmentTable } from './attendance-appointment-table';
 import { AttendanceLoadingRow } from './attendance-loading-row';
 import { AttendancePendingApprovalsCard } from './attendance-pending-approvals-card';
 import { AttendanceTable } from './attendance-table';
 
+export type AttendanceAdminUserOption = {
+  id: string;
+  label: string;
+  description?: string;
+};
+
 type AttendanceAdminCardProps = {
   adminDate: string;
   onAdminDateChange: (value: string) => void;
+  userOptions: AttendanceAdminUserOption[];
+  selectedUserId: string;
+  onSelectedUserIdChange: (value: string) => void;
   attendanceRows: AttendanceRecordDTO[];
   appointmentRows: AttendanceAppointmentDTO[];
   pendingApprovalRows: AttendanceRecordDTO[];
+  isUserLoading: boolean;
   isAttendanceLoading: boolean;
   isAppointmentLoading: boolean;
   isPendingApprovalsLoading: boolean;
@@ -31,9 +52,13 @@ type AttendanceAdminCardProps = {
 export function AttendanceAdminCard({
   adminDate,
   onAdminDateChange,
+  userOptions,
+  selectedUserId,
+  onSelectedUserIdChange,
   attendanceRows,
   appointmentRows,
   pendingApprovalRows,
+  isUserLoading,
   isAttendanceLoading,
   isAppointmentLoading,
   isPendingApprovalsLoading,
@@ -43,6 +68,7 @@ export function AttendanceAdminCard({
   onApproveDay,
   onApproveWeek,
 }: AttendanceAdminCardProps) {
+  const [isUserSelectOpen, setIsUserSelectOpen] = useState(false);
   const appointmentUsers = useMemo(() => {
     const groupedUsers = new Map<
       string,
@@ -103,6 +129,7 @@ export function AttendanceAdminCard({
   const selectedUserAppointments = appointmentRows.filter(
     (appointment) => appointment.userId === selectedAppointmentUserId
   );
+  const selectedUserOption = userOptions.find((userOption) => userOption.id === selectedUserId);
 
   return (
     <Card>
@@ -114,12 +141,87 @@ export function AttendanceAdminCard({
         <CardDescription>All user attendance for the selected date.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="max-w-xs">
-          <Input
-            type="date"
-            value={adminDate}
-            onChange={(event) => onAdminDateChange(event.target.value)}
-          />
+        <div className="grid gap-4 md:grid-cols-[minmax(220px,280px)_minmax(280px,420px)]">
+          <div className="grid gap-2">
+            <Label htmlFor="admin-attendance-date">Date</Label>
+            <Input
+              id="admin-attendance-date"
+              type="date"
+              value={adminDate}
+              onChange={(event) => onAdminDateChange(event.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label>User</Label>
+            <Popover open={isUserSelectOpen} onOpenChange={setIsUserSelectOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isUserSelectOpen}
+                  className="justify-between"
+                  disabled={isUserLoading}
+                >
+                  <span className="truncate">
+                    {isUserLoading ? 'Loading users...' : selectedUserOption?.label || 'All users'}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[min(420px,calc(100vw-2rem))] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search users..." />
+                  <CommandList>
+                    <CommandEmpty>No users found.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="All users"
+                        onSelect={() => {
+                          onSelectedUserIdChange('');
+                          setIsUserSelectOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            selectedUserId === '' ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        <span>All users</span>
+                      </CommandItem>
+                      {userOptions.map((userOption) => (
+                        <CommandItem
+                          key={userOption.id}
+                          value={`${userOption.label} ${userOption.description ?? ''}`}
+                          onSelect={() => {
+                            onSelectedUserIdChange(userOption.id);
+                            setIsUserSelectOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              'mr-2 h-4 w-4',
+                              selectedUserId === userOption.id ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
+                          <span className="min-w-0">
+                            <span className="block truncate">{userOption.label}</span>
+                            {userOption.description ? (
+                              <span className="block truncate text-xs text-muted-foreground">
+                                {userOption.description}
+                              </span>
+                            ) : null}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
         <Tabs defaultValue="attendance" className="gap-4">
           <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">

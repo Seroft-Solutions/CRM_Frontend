@@ -18,6 +18,7 @@ import {
   useCheckOutAttendanceAppointment,
   useCheckOutAttendance,
   useGetAdminAttendanceRecords,
+  useGetAdminUserAttendanceRecords,
   useGetMyActiveAttendanceAppointment,
   useGetMyAttendanceHistory,
   useGetMyTodayAttendance,
@@ -58,6 +59,8 @@ import {
   getOrganizationSettings,
   type OrganizationSettings,
 } from '@/features/user-profile-management/services/organization-settings.service';
+import { useCurrentOrganization } from '@/hooks/useUserOrganizations';
+import { useOrganizationUsers } from '@/features/user-management/hooks';
 import {
   AttendanceAdminCard,
   AttendanceHeader,
@@ -266,8 +269,10 @@ export default function AttendancePage() {
   const queryClient = useQueryClient();
   const { isAdmin, hasGroup } = useRBAC();
   const adminAccess = isAdmin() || hasGroup('Admins') || hasGroup('Super Admins');
+  const currentOrganization = useCurrentOrganization();
 
   const [adminDate, setAdminDate] = useState<string>(getLocalDateInputValue());
+  const [selectedAttendanceUserId, setSelectedAttendanceUserId] = useState<string>('');
   const [historyFromDate, setHistoryFromDate] = useState<string>(getDefaultWeeklyFromDateValue());
   const [historyToDate, setHistoryToDate] = useState<string>(getLocalDateInputValue());
   const [pendingWorkFromHomeCheckIn, setPendingWorkFromHomeCheckIn] =
@@ -295,6 +300,16 @@ export default function AttendancePage() {
       sort: ['attendanceDate,desc', 'checkInTime,desc'],
     }),
     [adminDate]
+  );
+  const adminUserParams = useMemo(
+    () => ({
+      userId: selectedAttendanceUserId,
+      fromDate: adminDate,
+      toDate: adminDate,
+      size: 500,
+      sort: ['attendanceDate,desc', 'checkInTime,desc'],
+    }),
+    [adminDate, selectedAttendanceUserId]
   );
   const adminAppointmentParams = useMemo(
     () => ({
@@ -358,9 +373,13 @@ export default function AttendancePage() {
   const { data: adminRecords = [], isLoading: isAdminLoading } = useGetAdminAttendanceRecords(
     adminParams,
     {
-      query: { enabled: adminAccess },
+      query: { enabled: adminAccess && !selectedAttendanceUserId },
     }
   );
+  const { data: selectedUserAdminRecords = [], isLoading: isSelectedUserAdminLoading } =
+    useGetAdminUserAttendanceRecords(adminUserParams, {
+      query: { enabled: adminAccess && !!selectedAttendanceUserId },
+    });
   const { data: adminAppointments = [], isLoading: isAdminAppointmentsLoading } =
     useGetAdminAttendanceAppointments(adminAppointmentParams, {
       query: { enabled: adminAccess },
@@ -369,6 +388,15 @@ export default function AttendancePage() {
     useGetPendingAttendanceApprovals({
       query: { enabled: adminAccess },
     });
+  const { users: organizationUsers, isLoading: isOrganizationUsersLoading } = useOrganizationUsers(
+    adminAccess ? (currentOrganization?.id ?? '') : '',
+    {
+      page: 1,
+      size: 500,
+      sortBy: 'user',
+      sortDirection: 'asc',
+    }
+  );
 
   const { data: organizationSettings } = useQuery({
     queryKey: ['attendance-organization-settings'],
@@ -544,6 +572,51 @@ export default function AttendancePage() {
         })),
     [orderOptionsResponse]
   );
+
+  const adminUserOptions = useMemo(
+    () =>
+      organizationUsers
+        .filter((user) => !!user.id)
+        .map((user) => {
+          const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+          const label = fullName || user.username || user.email || user.id!;
+          const descriptionParts = [user.username, user.email]
+            .filter((value): value is string => !!value && value !== label)
+            .join(' | ');
+
+          return {
+            id: user.id!,
+            label,
+            description: descriptionParts || undefined,
+          };
+        })
+        .sort((left, right) => left.label.localeCompare(right.label)),
+    [organizationUsers]
+  );
+  const displayedAdminRecords = selectedAttendanceUserId ? selectedUserAdminRecords : adminRecords;
+  const displayedAdminAppointments = selectedAttendanceUserId
+    ? adminAppointments.filter((appointment) => appointment.userId === selectedAttendanceUserId)
+    : adminAppointments;
+  const displayedPendingApprovalRows = selectedAttendanceUserId
+    ? pendingApprovalRows.filter((record) => record.userId === selectedAttendanceUserId)
+    : pendingApprovalRows;
+  const isDisplayedAdminLoading = selectedAttendanceUserId
+    ? isSelectedUserAdminLoading
+    : isAdminLoading;
+
+  useEffect(() => {
+    if (!selectedAttendanceUserId || isOrganizationUsersLoading) {
+      return;
+    }
+
+    const selectedUserStillExists = adminUserOptions.some(
+      (userOption) => userOption.id === selectedAttendanceUserId
+    );
+
+    if (!selectedUserStillExists) {
+      setSelectedAttendanceUserId('');
+    }
+  }, [adminUserOptions, isOrganizationUsersLoading, selectedAttendanceUserId]);
 
   useEffect(() => {
     if (!appointmentPhoto) {
@@ -824,10 +897,14 @@ export default function AttendancePage() {
         <AttendanceAdminCard
           adminDate={adminDate}
           onAdminDateChange={setAdminDate}
-          attendanceRows={adminRecords}
-          appointmentRows={adminAppointments}
-          pendingApprovalRows={pendingApprovalRows}
-          isAttendanceLoading={isAdminLoading}
+          userOptions={adminUserOptions}
+          selectedUserId={selectedAttendanceUserId}
+          onSelectedUserIdChange={setSelectedAttendanceUserId}
+          attendanceRows={displayedAdminRecords}
+          appointmentRows={displayedAdminAppointments}
+          pendingApprovalRows={displayedPendingApprovalRows}
+          isUserLoading={isOrganizationUsersLoading}
+          isAttendanceLoading={isDisplayedAdminLoading}
           isAppointmentLoading={isAdminAppointmentsLoading}
           isPendingApprovalsLoading={isPendingApprovalsLoading}
           approvingDayId={approveDayMutation.variables ?? null}
