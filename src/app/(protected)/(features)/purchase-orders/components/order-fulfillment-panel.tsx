@@ -775,40 +775,43 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-900 text-[10px] font-bold text-white sm:h-6 sm:w-6">
                               {index + 1}
                             </div>
-                            <div className="min-w-0">
-                              <div className="truncate font-semibold text-slate-950">
+                            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="truncate font-semibold text-slate-950">
                                 {row.item.productName || row.item.sku || `Item #${index + 1}`}
-                              </div>
-                              <div className="mt-1 flex min-w-0 flex-wrap gap-1">
-                                {row.item.sku ? (
-                                  <Badge
-                                    variant="secondary"
-                                    className="h-5 max-w-[110px] truncate bg-slate-100 px-1.5 text-[10px] text-slate-700 sm:max-w-[130px]"
-                                  >
-                                    {row.item.sku}
-                                  </Badge>
-                                ) : null}
-                                {scannerOpen && row.resolvedBarcodeText ? (
-                                  <Badge
-                                    variant="outline"
-                                    className="h-5 max-w-[130px] truncate border-blue-200 bg-blue-50 px-1.5 text-[10px] text-blue-800"
-                                  >
-                                    {row.resolvedBarcodeText}
-                                  </Badge>
-                                ) : null}
+                              </span>
+                              {row.item.sku ? (
                                 <Badge
-                                  className={cn(
-                                    'h-5 px-1.5 text-[10px]',
-                                    row.isCompleted
-                                      ? 'bg-emerald-100 text-emerald-900'
-                                      : row.isFulfillable
-                                        ? 'bg-amber-100 text-amber-900'
-                                        : 'bg-slate-100 text-slate-800'
-                                  )}
+                                  variant="secondary"
+                                  className="h-5 max-w-[110px] shrink-0 truncate bg-slate-100 px-1.5 text-[10px] text-slate-700 sm:max-w-[130px]"
                                 >
-                                  {row.item.itemStatus}
+                                  {row.item.sku}
                                 </Badge>
-                              </div>
+                              ) : null}
+                              {row.item.variantAttributes ? (
+                                <span className="truncate text-[10px] text-blue-700">
+                                  {row.item.variantAttributes}
+                                </span>
+                              ) : null}
+                              {scannerOpen && row.resolvedBarcodeText ? (
+                                <Badge
+                                  variant="outline"
+                                  className="h-5 max-w-[130px] shrink-0 truncate border-blue-200 bg-blue-50 px-1.5 text-[10px] text-blue-800"
+                                >
+                                  {row.resolvedBarcodeText}
+                                </Badge>
+                              ) : null}
+                              <Badge
+                                className={cn(
+                                  'h-5 shrink-0 px-1.5 text-[10px]',
+                                  row.isCompleted
+                                    ? 'bg-emerald-100 text-emerald-900'
+                                    : row.isFulfillable
+                                      ? 'bg-amber-100 text-amber-900'
+                                      : 'bg-slate-100 text-slate-800'
+                                )}
+                              >
+                                {row.item.itemStatus}
+                              </Badge>
                             </div>
                           </div>
                         </TableCell>
@@ -863,20 +866,9 @@ export function OrderFulfillmentPanel({ order }: { order: OrderRecord }) {
                                 —
                               </div>
                             )}
-                            <div className="text-right text-[10px] font-semibold tabular-nums text-slate-500">
-                              {row.enteredQuantity}/{row.remainingQuantity} Ready
-                            </div>
                             {row.validationMessage ? (
                               <p className="text-right text-[10px] font-medium text-rose-600">
                                 {row.validationMessage}
-                              </p>
-                            ) : row.isCompleted ? (
-                              <p className="text-right text-[10px] font-medium text-emerald-700">
-                                Completed
-                              </p>
-                            ) : !row.isFulfillable ? (
-                              <p className="text-right text-[10px] font-medium text-slate-500">
-                                Needs approval
                               </p>
                             ) : null}
                           </div>
