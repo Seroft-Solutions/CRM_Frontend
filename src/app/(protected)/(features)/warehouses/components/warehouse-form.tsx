@@ -26,6 +26,7 @@ import {
 } from '../actions/warehouse-hooks';
 import type { IWarehouseArea, IWarehouseShelf } from '../types/warehouse';
 import type { AreaDTO } from '@/core/api/generated/spring/schemas/AreaDTO';
+import { useGetAreaWithFullHierarchy } from '@/core/api/generated/spring/endpoints/area-resource/area-resource.gen';
 import { IntelligentLocationField } from '../../customers/components/intelligent-location-field';
 
 const warehouseShelfSchema = z.object({
@@ -102,6 +103,9 @@ const createEmptyShelf = (): WarehouseFormValues['areas'][number]['shelves'][num
   name: '',
   capacity: '',
 });
+
+const hasCompleteLocationDisplayData = (area: AreaDTO | undefined | null): boolean =>
+  Boolean(area?.city?.name && area?.pincode);
 
 const AreaShelvesFields = ({ areaIndex, form, control, onRemoveArea }: AreaShelvesProps) => {
   const {
@@ -249,6 +253,23 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
   const { data: existingWarehouse, isLoading: isLoadingWarehouse } = useWarehouseQuery(id);
   const { mutate: createWarehouse, isPending: isCreating } = useCreateWarehouseMutation();
   const { mutate: updateWarehouse, isPending: isUpdating } = useUpdateWarehouseMutation();
+  const existingArea =
+    existingWarehouse?.area && typeof existingWarehouse.area.id === 'number'
+      ? (existingWarehouse.area as AreaDTO)
+      : undefined;
+  const shouldHydrateExistingArea = Boolean(
+    existingArea?.id && !hasCompleteLocationDisplayData(existingArea)
+  );
+  const {
+    data: hydratedExistingArea,
+    isLoading: isLoadingExistingArea,
+    isError: isHydratingExistingAreaError,
+  } = useGetAreaWithFullHierarchy(existingArea?.id ?? 0, {
+    query: {
+      enabled: shouldHydrateExistingArea,
+      queryKey: ['warehouse-area-with-hierarchy', existingArea?.id],
+    },
+  });
 
   const form = useForm<WarehouseFormValues>({
     resolver: zodResolver(warehouseFormSchema),
@@ -276,14 +297,17 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
       return;
     }
 
+    if (shouldHydrateExistingArea && !hydratedExistingArea && !isHydratingExistingAreaError) {
+      return;
+    }
+
+    const selectedArea = hydratedExistingArea ?? existingArea;
+
     form.reset({
       name: existingWarehouse.name,
       code: existingWarehouse.code,
       address: existingWarehouse.address || '',
-      area:
-        existingWarehouse.area && typeof existingWarehouse.area.id === 'number'
-          ? (existingWarehouse.area as AreaDTO)
-          : undefined,
+      area: selectedArea,
       areas: (existingWarehouse.areas || []).map((area) => {
         const legacyArea = area as IWarehouseArea & { capacity?: number };
         const mappedShelves: WarehouseFormValues['areas'][number]['shelves'] = (
@@ -313,7 +337,14 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
         };
       }),
     });
-  }, [existingWarehouse, form]);
+  }, [
+    existingArea,
+    existingWarehouse,
+    form,
+    hydratedExistingArea,
+    isHydratingExistingAreaError,
+    shouldHydrateExistingArea,
+  ]);
 
   const setFieldErrorsFromServer = (error: unknown) => {
     const message = extractErrorMessage(error).toLowerCase();
@@ -371,7 +402,7 @@ export function WarehouseForm({ id }: WarehouseFormProps) {
     });
   };
 
-  if (id && isLoadingWarehouse) {
+  if (id && (isLoadingWarehouse || isLoadingExistingArea)) {
     return (
       <div className="flex h-52 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
