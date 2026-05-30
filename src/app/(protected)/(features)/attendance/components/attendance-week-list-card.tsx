@@ -10,7 +10,7 @@ import { formatDurationFromMinutes } from './attendance-formatters';
 import { AttendanceWeekStatusBadge } from './attendance-week-status-badge';
 import {
   buildAttendanceWeekSummaries,
-  formatWeekPeriodLong,
+  formatWeekDate,
   WEEKLY_LIST_PAGE_SIZE,
 } from './attendance-week-utils';
 
@@ -93,7 +93,8 @@ export function AttendanceWeekListCard({
                   <tr className="border-b">
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Week ID</th>
-                    <th className="px-4 py-3 font-medium">Period</th>
+                    <th className="px-4 py-3 font-medium">Start Date</th>
+                    <th className="px-4 py-3 font-medium">End Date</th>
                     <th className="px-4 py-3 font-medium">Days Worked</th>
                     <th className="px-4 py-3 font-medium">Total Hours</th>
                     <th className="px-4 py-3 font-medium">ST /Hr</th>
@@ -114,15 +115,14 @@ export function AttendanceWeekListCard({
                         </Link>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {formatWeekPeriodLong(week.fromDate, week.toDate)}
+                        {formatWeekDate(week.fromDate)}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {formatWeekDate(week.toDate)}
                       </td>
                       <td className="px-4 py-3">{week.daysWorked}</td>
-                      <td className="px-4 py-3">
-                        {formatDurationFromMinutes(week.totalMinutes)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {formatDurationFromMinutes(week.totalMinutes)}
-                      </td>
+                      <td className="px-4 py-3">{formatDurationFromMinutes(week.totalMinutes)}</td>
+                      <td className="px-4 py-3">{formatDurationFromMinutes(week.totalMinutes)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -149,9 +149,7 @@ export function AttendanceWeekListCard({
                   variant="outline"
                   size="icon"
                   disabled={page >= pageCount - 1}
-                  onClick={() =>
-                    setPage((currentPage) => Math.min(currentPage + 1, pageCount - 1))
-                  }
+                  onClick={() => setPage((currentPage) => Math.min(currentPage + 1, pageCount - 1))}
                   aria-label="Next page"
                 >
                   <ChevronRight className="h-4 w-4" />

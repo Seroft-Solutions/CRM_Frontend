@@ -191,11 +191,18 @@ export function buildAttendanceWeekSummaries(
         (sum, record) => sum + getWorkingMinutes(record),
         0
       );
+      const weekDate = parseISO(sortedRecords[0]?.attendanceDate ?? '');
+      const weekStartDate = Number.isNaN(weekDate.getTime())
+        ? ''
+        : format(startOfISOWeek(weekDate), 'yyyy-MM-dd');
+      const weekEndDate = Number.isNaN(weekDate.getTime())
+        ? ''
+        : format(endOfISOWeek(weekDate), 'yyyy-MM-dd');
 
       return {
         weekId,
-        fromDate: sortedRecords[0]?.attendanceDate ?? '',
-        toDate: sortedRecords[sortedRecords.length - 1]?.attendanceDate ?? '',
+        fromDate: weekStartDate,
+        toDate: weekEndDate,
         totalMinutes,
         status: deriveWeekStatus(sortedRecords),
         daysWorked: sortedRecords.filter((record) => !!record.checkInTime).length,
@@ -225,6 +232,14 @@ export function formatWeekPeriodLong(fromDate: string, toDate: string): string {
   const to = parseISO(toDate);
 
   return `${format(from, 'MMM dd, yyyy')} - ${format(to, 'MMM dd, yyyy')}`;
+}
+
+export function formatWeekDate(date: string): string {
+  if (!date) {
+    return 'N/A';
+  }
+
+  return format(parseISO(date), 'MMM dd, yyyy');
 }
 
 export function buildWeekDays(fromDate: string): AttendanceWeekDay[] {
