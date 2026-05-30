@@ -9,9 +9,5 @@ export function AttendanceApprovalStatusBadge({ status }: AttendanceApprovalStat
     return <Badge className="bg-blue-600 hover:bg-blue-600">Approved</Badge>;
   }
 
-  if (status === 'SUBMITTED' || status === 'PENDING') {
-    return <Badge className="bg-amber-500 hover:bg-amber-500">Submitted</Badge>;
-  }
-
-  return <Badge variant="secondary">Not Approved</Badge>;
+  return <Badge className="bg-amber-500 hover:bg-amber-500">Pending Approval</Badge>;
 }

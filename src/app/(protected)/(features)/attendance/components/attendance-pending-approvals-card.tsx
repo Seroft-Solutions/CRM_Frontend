@@ -70,8 +70,7 @@ export function AttendancePendingApprovalsCard({
               week.records.map((record) => [record.attendanceDate, record])
             );
             const submittedDays = week.records.filter(
-              (record) =>
-                record.approvalStatus === 'SUBMITTED' || record.approvalStatus === 'PENDING'
+              (record) => record.approvalStatus === 'SUBMITTED'
             );
 
             return (
@@ -108,9 +107,7 @@ export function AttendancePendingApprovalsCard({
                     <TableBody>
                       {days.map((day) => {
                         const record = recordsByDate.get(day.key);
-                        const canApprove =
-                          record?.approvalStatus === 'SUBMITTED' ||
-                          record?.approvalStatus === 'PENDING';
+                        const canApprove = record?.approvalStatus === 'SUBMITTED';
 
                         return (
                           <TableRow key={day.key}>
@@ -210,11 +207,7 @@ function buildPendingApprovalWeeks(rows: AttendanceRecordDTO[]): PendingApproval
   });
 
   return Array.from(groupedWeeks.values())
-    .filter((week) =>
-      week.records.some(
-        (record) => record.approvalStatus === 'SUBMITTED' || record.approvalStatus === 'PENDING'
-      )
-    )
+    .filter((week) => week.records.some((record) => record.approvalStatus === 'SUBMITTED'))
     .map((week) => ({
       ...week,
       records: [...week.records].sort((left, right) =>

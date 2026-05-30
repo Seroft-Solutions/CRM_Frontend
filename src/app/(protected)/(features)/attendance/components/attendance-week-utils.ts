@@ -100,9 +100,7 @@ export function deriveWeekStatus(records: AttendanceRecordDTO[]): AttendanceWeek
     return 'APPROVED';
   }
 
-  const hasSubmitted = records.some(
-    (record) => record.approvalStatus === 'SUBMITTED' || record.approvalStatus === 'PENDING'
-  );
+  const hasSubmitted = records.some((record) => record.approvalStatus === 'SUBMITTED');
 
   if (hasSubmitted) {
     return 'SUBMITTED';
@@ -160,7 +158,10 @@ export function canSubmitAttendanceWeek(fromDate: string, records: AttendanceRec
   }
 
   return records.every(
-    (record) => !record.approvalStatus || record.approvalStatus === 'NOT_APPROVED'
+    (record) =>
+      !record.approvalStatus ||
+      record.approvalStatus === 'PENDING' ||
+      record.approvalStatus === 'NOT_APPROVED'
   );
 }
 

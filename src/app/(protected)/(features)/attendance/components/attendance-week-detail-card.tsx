@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { startOfISOWeek, parseISO, format } from 'date-fns';
+import { format, parseISO, startOfISOWeek } from 'date-fns';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AttendanceRecordDTO } from '@/core/api/attendance';
 import { invalidateAttendanceData, useSubmitApprovalRequest } from '@/core/api/attendance';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   buildWeekDays,
+  canSubmitAttendanceWeek,
   formatHoursDecimal,
   formatWeekPeriod,
   getHoursForDay,
@@ -26,9 +28,8 @@ import {
   getRelatedAttendanceDates,
   getWorkingMinutes,
   deriveWeekStatus,
-  canSubmitAttendanceWeek,
-  isWeekComplete,
   hasWeekPassed,
+  isWeekComplete,
 } from './attendance-week-utils';
 import { AttendanceApprovalStatusBadge } from './attendance-approval-status-badge';
 import { AttendanceWeekStatusBadge } from './attendance-week-status-badge';
@@ -98,6 +99,24 @@ export function AttendanceWeekDetailCard({
     return false;
   }
 
+  function getDayStatusTextClass(dayKey: string): string {
+    const record = recordsByDate.get(dayKey);
+
+    if (isDayInactive(dayKey)) {
+      return 'text-red-600';
+    }
+
+    if (record?.approvalStatus === 'APPROVED') {
+      return 'text-emerald-600';
+    }
+
+    if (record?.approvalStatus === 'PENDING' || record?.approvalStatus === 'SUBMITTED') {
+      return 'text-amber-600';
+    }
+
+    return 'text-muted-foreground';
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -110,17 +129,15 @@ export function AttendanceWeekDetailCard({
           </div>
           <div className="flex items-center gap-3">
             <AttendanceWeekStatusBadge status={weekStatus} />
-            {canSubmitRequest && (
-              <Button
-                type="button"
-                size="sm"
-                className="bg-amber-600 text-white hover:bg-amber-700"
-                onClick={() => setIsSubmitDialogOpen(true)}
-                disabled={submitMutation.isPending}
-              >
-                Submit Request
-              </Button>
-            )}
+            <Button
+              type="button"
+              size="sm"
+              className="bg-amber-600 text-white hover:bg-amber-700"
+              onClick={() => setIsSubmitDialogOpen(true)}
+              disabled={!canSubmitRequest || submitMutation.isPending}
+            >
+              Submit Request
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -139,14 +156,12 @@ export function AttendanceWeekDetailCard({
                     Day
                   </th>
                   {weekDays.map((day) => {
-                    const inactive = isDayInactive(day.key);
+                    const dayStatusTextClass = getDayStatusTextClass(day.key);
 
                     return (
                       <th key={day.key} className="min-w-24 px-4 py-3 text-center font-medium">
-                        <div className={inactive ? 'text-red-600' : ''}>{day.displayDate}</div>
-                        <div
-                          className={`text-xs font-normal ${inactive ? 'text-red-500' : 'text-muted-foreground'}`}
-                        >
+                        <div className={dayStatusTextClass}>{day.displayDate}</div>
+                        <div className={cn('text-xs font-normal', dayStatusTextClass)}>
                           {day.label}
                         </div>
                       </th>
@@ -276,8 +291,8 @@ export function AttendanceWeekDetailCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Attendance Request</AlertDialogTitle>
             <AlertDialogDescription>
-              Submit this completed Monday-Sunday week for manager approval. All 7 daily records
-              will be marked as submitted.
+              Submit this completed Monday-Sunday week for manager approval. The week status will be
+              marked as submitted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
