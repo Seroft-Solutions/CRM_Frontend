@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Download, Loader2, Printer } from 'lucide-react';
@@ -9,6 +9,11 @@ import { useReactToPrint } from 'react-to-print';
 import { Button } from '@/components/ui/button';
 import { useOrganizationDetails, useUserOrganizations } from '@/hooks/useUserOrganizations';
 import type { PurchaseOrderFulfillmentGenerationResponse } from '@/core/api/purchase-order-fulfillment-generations';
+import { getGetProductVariantQueryOptions } from '@/core/api/generated/spring/endpoints/product-variant-resource/product-variant-resource.gen';
+import { useGetAllProductVariantSelections } from '@/core/api/generated/spring/endpoints/product-variant-selection-resource/product-variant-selection-resource.gen';
+import { useGetAllSystemConfigAttributeOptions } from '@/core/api/generated/spring/endpoints/system-config-attribute-option-resource/system-config-attribute-option-resource.gen';
+import type { ProductVariantDTO } from '@/core/api/generated/spring/schemas/ProductVariantDTO';
+import type { ProductVariantSelectionDTO } from '@/core/api/generated/spring/schemas/ProductVariantSelectionDTO';
 import { getOrganizationSettings } from '@/features/user-profile-management/services/organization-settings.service';
 import type { OrderRecord } from '../data/purchase-order-data';
 import {
@@ -230,6 +235,56 @@ const getWhatsAppHref = (value?: string | null) => {
   const normalizedNumber = normalizeWhatsAppNumber(value);
 
   return normalizedNumber ? `https://wa.me/${normalizedNumber}` : '';
+};
+
+const getVariantSelectionDisplayValue = (
+  selection: ProductVariantSelectionDTO | NonNullable<ProductVariantDTO['selections']>[number],
+  optionLabelsById?: Map<number, string>
+) => {
+  const optionId = selection.option?.id;
+  const resolvedOptionLabel =
+    typeof optionId === 'number' ? optionLabelsById?.get(optionId) : undefined;
+
+  return (
+    selection.option?.label ||
+    resolvedOptionLabel ||
+    selection.rawValue ||
+    selection.option?.code ||
+    ''
+  );
+};
+
+const getVariantSelectionValue = (
+  selections:
+    | ProductVariantSelectionDTO[]
+    | NonNullable<ProductVariantDTO['selections']>
+    | undefined,
+  aliases: string[],
+  optionLabelsById?: Map<number, string>
+) => {
+  const normalizedAliases = aliases.map(normalizeAttributeKey);
+  const resolvedSelections = selections ?? [];
+
+  const matchingSelection = resolvedSelections.find((selection) => {
+    const normalizedLabel = normalizeAttributeKey(
+      selection.attribute?.label || selection.attribute?.name || ''
+    );
+
+    return normalizedAliases.some(
+      (alias) =>
+        normalizedLabel === alias ||
+        normalizedLabel.endsWith(alias) ||
+        normalizedLabel.includes(alias) ||
+        normalizedLabel === `${alias}label` ||
+        normalizedLabel === `${alias}name` ||
+        normalizedLabel.endsWith(`${alias}label`) ||
+        normalizedLabel.endsWith(`${alias}name`)
+    );
+  });
+
+  return matchingSelection
+    ? getVariantSelectionDisplayValue(matchingSelection, optionLabelsById)
+    : '';
 };
 
 const COLOR_PROPERTIES = [
@@ -465,6 +520,7 @@ export function OrderFulfillmentHistoryDetail({
           item.productName ||
           orderItem?.productName ||
           `Order item #${item.orderDetailId ?? index + 1}`,
+        variantId: orderItem?.variantId,
         sku: item.sku || orderItem?.sku || '—',
         displayName: resolveInvoiceItemName(
           item.productName ||
@@ -492,18 +548,180 @@ export function OrderFulfillmentHistoryDetail({
     });
   }, [generation.items, order.items, originalOrderQuantityByOrderDetailId]);
 
-  const invoiceSubtotal = useMemo(
-    () => invoiceItems.reduce((sum, item) => sum + item.lineTotal, 0),
+  const invoiceVariantIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          invoiceItems
+            .map((item) => item.variantId)
+            .filter(
+              (variantId): variantId is number => typeof variantId === 'number' && variantId > 0
+            )
+        )
+      ),
     [invoiceItems]
   );
+
+  const variantQueries = useQueries({
+    queries: invoiceVariantIds.map((variantId) =>
+      getGetProductVariantQueryOptions(variantId, {
+        query: {
+          enabled: variantId > 0,
+          staleTime: 30_000,
+        },
+      })
+    ),
+  });
+
+  const variantById = useMemo(() => {
+    const nextMap = new Map<number, ProductVariantDTO>();
+
+    variantQueries.forEach((query, index) => {
+      const variantId = invoiceVariantIds[index];
+      const variant = query.data as ProductVariantDTO | undefined;
+
+      if (variantId && variant) {
+        nextMap.set(variantId, variant);
+      }
+    });
+
+    return nextMap;
+  }, [invoiceVariantIds, variantQueries]);
+
+  const { data: variantSelections = [] } = useGetAllProductVariantSelections(
+    invoiceVariantIds.length > 0
+      ? {
+          'variantId.in': invoiceVariantIds,
+          size: Math.max(invoiceVariantIds.length * 6, 100),
+        }
+      : undefined,
+    {
+      query: {
+        enabled: invoiceVariantIds.length > 0,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const selectionsByVariantId = useMemo(() => {
+    const nextMap = new Map<number, ProductVariantSelectionDTO[]>();
+
+    variantSelections.forEach((selection) => {
+      const variantId = selection.variant?.id;
+
+      if (typeof variantId !== 'number') {
+        return;
+      }
+
+      const existingSelections = nextMap.get(variantId) ?? [];
+
+      existingSelections.push(selection);
+      nextMap.set(variantId, existingSelections);
+    });
+
+    return nextMap;
+  }, [variantSelections]);
+
+  const optionIdsMissingLabels = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          [
+            ...variantSelections,
+            ...Array.from(variantById.values()).flatMap((variant) => variant.selections ?? []),
+          ]
+            .map((selection) => {
+              const optionId = selection.option?.id;
+
+              if (typeof optionId !== 'number' || selection.option?.label) {
+                return null;
+              }
+
+              return optionId;
+            })
+            .filter((optionId): optionId is number => typeof optionId === 'number')
+        )
+      ),
+    [variantSelections, variantById]
+  );
+
+  const { data: optionRows = [] } = useGetAllSystemConfigAttributeOptions(
+    optionIdsMissingLabels.length > 0
+      ? {
+          'id.in': optionIdsMissingLabels,
+          size: optionIdsMissingLabels.length,
+        }
+      : undefined,
+    {
+      query: {
+        enabled: optionIdsMissingLabels.length > 0,
+        staleTime: 30_000,
+      },
+    }
+  );
+
+  const optionLabelsById = useMemo(
+    () => new Map(optionRows.map((option) => [option.id!, option.label] as const)),
+    [optionRows]
+  );
+
+  const resolvedInvoiceItems = useMemo(
+    () =>
+      invoiceItems.map((item) => {
+        const variant =
+          typeof item.variantId === 'number' ? variantById.get(item.variantId) : undefined;
+        const variantSelectionsForItem =
+          typeof item.variantId === 'number'
+            ? selectionsByVariantId.get(item.variantId)
+            : undefined;
+        const colorName =
+          getVariantSelectionValue(
+            variantSelectionsForItem,
+            ['color', 'colour', 'shade'],
+            optionLabelsById
+          ) ||
+          getVariantSelectionValue(
+            variant?.selections,
+            ['color', 'colour', 'shade'],
+            optionLabelsById
+          ) ||
+          item.colorName ||
+          '';
+        const sizeQty =
+          getVariantSelectionValue(
+            variantSelectionsForItem,
+            ['size', 'sizes', 'sizelabel', 'sizename'],
+            optionLabelsById
+          ) ||
+          getVariantSelectionValue(
+            variant?.selections,
+            ['size', 'sizes', 'sizelabel', 'sizename'],
+            optionLabelsById
+          ) ||
+          item.sizeQty ||
+          '';
+
+        return {
+          ...item,
+          colorName,
+          sizeQty,
+        };
+      }),
+    [invoiceItems, optionLabelsById, selectionsByVariantId, variantById]
+  );
+
+  const invoiceSubtotal = useMemo(
+    () => resolvedInvoiceItems.reduce((sum, item) => sum + item.lineTotal, 0),
+    [resolvedInvoiceItems]
+  );
   const invoiceTotalQuantity = useMemo(
-    () => invoiceItems.reduce((sum, item) => sum + item.receivedQuantity, 0),
-    [invoiceItems]
+    () => resolvedInvoiceItems.reduce((sum, item) => sum + item.receivedQuantity, 0),
+    [resolvedInvoiceItems]
   );
   const invoiceItemSummary = useMemo(() => {
     const quantityByLabel = new Map<string, number>();
 
-    invoiceItems.forEach((item) => {
+    resolvedInvoiceItems.forEach((item) => {
       const label = item.summaryLabel || normalizeSummaryLabel(item.productName);
 
       quantityByLabel.set(label, (quantityByLabel.get(label) ?? 0) + item.receivedQuantity);
@@ -513,7 +731,7 @@ export function OrderFulfillmentHistoryDetail({
       label,
       quantity,
     }));
-  }, [invoiceItems]);
+  }, [resolvedInvoiceItems]);
   const invoiceDateLabel = formatInvoiceDisplayDate(generation.createdDate);
   const orderNumberLabel = `PO/${order.orderId}-${generation.generationNumber ?? generation.id ?? ''}`;
   const transportLabel = compactTextValue(order.shipping.shippingMethod);
@@ -858,8 +1076,8 @@ export function OrderFulfillmentHistoryDetail({
                   </tr>
                 </thead>
                 <tbody>
-                  {invoiceItems.length > 0 ? (
-                    invoiceItems.map((item, index) => (
+                  {resolvedInvoiceItems.length > 0 ? (
+                    resolvedInvoiceItems.map((item, index) => (
                       <tr
                         key={item.id}
                         className={index % 2 === 0 ? 'invoice-lighter-fill' : 'invoice-light-fill'}
