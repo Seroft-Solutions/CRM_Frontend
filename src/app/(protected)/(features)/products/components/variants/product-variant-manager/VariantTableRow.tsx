@@ -692,7 +692,7 @@ export function VariantTableRow({
             <div className="space-y-2 min-w-[260px]">
               {getVariantStocks().map((variantStock, stockIndex) => (
                 <div
-                  key={`${item.rowKey}-stock-${stockIndex}`}
+                  key={`${item.rowKey}-stock-${stockIndex}-${variantStock.warehouseId ?? 'none'}`}
                   className="grid grid-cols-[minmax(0,1fr)_5rem_auto] items-center gap-2"
                 >
                   {hasSingleWarehouse ? (
