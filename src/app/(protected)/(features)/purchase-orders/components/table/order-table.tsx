@@ -971,9 +971,6 @@ export function OrderTable({
                               )}
                             </Button>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatDateTime(order.createdDate)}
-                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -1016,14 +1013,9 @@ export function OrderTable({
                       </TableCell>
                     )}
                     <TableCell>
-                      <div className="space-y-1">
                         <div className="font-bold text-slate-900">
                           {formatCurrency(order.orderTotalAmount)}
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          Base {formatCurrency(order.orderBaseAmount)}
-                        </div>
-                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="inline-flex h-6 min-w-[28px] items-center justify-center rounded bg-slate-100 text-[12px] font-bold text-slate-700 px-1.5">
@@ -1032,34 +1024,14 @@ export function OrderTable({
                     </TableCell>
                     {showAllColumns && (
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-semibold text-slate-700">
-                            {order.shipping.shippingMethod || 'Not set'}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {order.shipping.shippingAmount
-                              ? formatCurrency(order.shipping.shippingAmount)
-                              : 'Included'}
-                          </div>
-                          {order.shipping.shippingId ? (
-                            <Badge
-                              variant="outline"
-                              className="bg-sidebar-accent/10 text-xs text-sidebar-accent-foreground"
-                            >
-                              #{order.shipping.shippingId}
-                            </Badge>
-                          ) : null}
+                        <div className="font-semibold text-slate-700">
+                          {order.shipping.shippingMethod || 'Not set'}
                         </div>
                       </TableCell>
                     )}
                     {showAllColumns && (
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {sundryCreditorContact}
-                          </div>
-                        </div>
+                        <div className="font-semibold text-slate-800">{sundryCreditorName}</div>
                       </TableCell>
                     )}
                     {showAllColumns && (
