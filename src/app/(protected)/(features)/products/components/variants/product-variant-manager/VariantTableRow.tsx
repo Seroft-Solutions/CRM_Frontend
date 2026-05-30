@@ -213,8 +213,14 @@ export function VariantTableRow({
   };
 
   const handleAddWarehouseStock = () => {
+    const currentStocks = getVariantStocks();
+
+    if (currentStocks.some((variantStock) => typeof variantStock.warehouseId !== 'number')) {
+      return;
+    }
+
     const selectedWarehouseIds = new Set(
-      getVariantStocks()
+      currentStocks
         .map((variantStock) => variantStock.warehouseId)
         .filter((warehouseId): warehouseId is number => typeof warehouseId === 'number')
     );
@@ -227,12 +233,16 @@ export function VariantTableRow({
     }
 
     const nextStocks = [
-      ...getVariantStocks(),
-      {
-        warehouseId: firstAvailableWarehouse.id,
-        warehouseName: firstAvailableWarehouse.name,
-        stockQuantity: 0,
-      },
+      ...currentStocks,
+      hasSingleWarehouse
+        ? {
+            warehouseId: firstAvailableWarehouse.id,
+            warehouseName: firstAvailableWarehouse.name,
+            stockQuantity: 0,
+          }
+        : {
+            stockQuantity: 0,
+          },
     ];
 
     updateVariantStocks(nextStocks);
@@ -241,7 +251,7 @@ export function VariantTableRow({
   const handleRemoveWarehouseStock = (stockIndex: number) => {
     const currentStocks = getVariantStocks();
 
-    if (currentStocks.length <= 1) {
+    if (hasSingleWarehouse && currentStocks.length <= 1) {
       return;
     }
 
@@ -271,9 +281,12 @@ export function VariantTableRow({
   );
   const hasSingleWarehouse = warehouses.length === 1;
   const singleWarehouse = hasSingleWarehouse ? warehouses[0] : undefined;
-  const canAddMoreWarehouseRows = warehouses.some(
-    (warehouse) => !selectedWarehouseIds.has(warehouse.id)
+  const hasUnselectedWarehouseRow = getVariantStocks().some(
+    (variantStock) => typeof variantStock.warehouseId !== 'number'
   );
+  const canAddMoreWarehouseRows =
+    !hasUnselectedWarehouseRow &&
+    warehouses.some((warehouse) => !selectedWarehouseIds.has(warehouse.id));
   const getAvailableWarehousesForRow = (stockIndex: number) => {
     const currentWarehouseId = getVariantStocks()[stockIndex]?.warehouseId;
 
@@ -769,7 +782,7 @@ export function VariantTableRow({
                     type="button"
                     className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={() => handleRemoveWarehouseStock(stockIndex)}
-                    disabled={getVariantStocks().length <= 1}
+                    disabled={hasSingleWarehouse && getVariantStocks().length <= 1}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -785,7 +798,11 @@ export function VariantTableRow({
                   disabled={!canAddMoreWarehouseRows}
                 >
                   <Plus className="h-3 w-3 mr-1" />
-                  {canAddMoreWarehouseRows ? 'Add warehouse' : 'All warehouses added'}
+                  {hasUnselectedWarehouseRow
+                    ? 'Select warehouse first'
+                    : canAddMoreWarehouseRows
+                      ? 'Add warehouse'
+                      : 'All warehouses added'}
                 </Button>
               )}
               {hasWarehouseError && (

@@ -710,18 +710,22 @@ export function ProductVariantManager({
           current.map((s) => ({ attributeId: s.attributeId, optionId: s.optionId }))
         );
 
+        const variantStocks: VariantWarehouseStock[] = defaultWarehouse
+          ? [
+              {
+                warehouseId: defaultWarehouse.id,
+                warehouseName: defaultWarehouse.name,
+                stockQuantity: 0,
+              },
+            ]
+          : [];
+
         const variant = {
           key,
           sku,
           price: 0,
           stockQuantity: 0,
-          variantStocks: [
-            {
-              warehouseId: defaultWarehouse?.id,
-              warehouseName: defaultWarehouse?.name,
-              stockQuantity: 0,
-            },
-          ],
+          variantStocks,
           status: defaultGeneratedStatus,
           isPrimary: false,
           imageFiles: createEmptyImageFiles(),
