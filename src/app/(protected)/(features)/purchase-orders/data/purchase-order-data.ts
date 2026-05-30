@@ -230,6 +230,7 @@ export interface OrderRecord {
   orderTaxRate: number;
   orderBaseAmount: number;
   sundryCreditor?: PurchaseOrderDTO['sundryCreditor'];
+  orderComment?: string;
   phone: string;
   email: string;
   paymentStatus: PaymentStatus;
@@ -323,6 +324,7 @@ export const mapOrderDtoToRecord = (order: PurchaseOrderDTO): OrderRecord => {
     orderTaxRate: order.orderTaxRate ?? 0,
     orderBaseAmount: order.orderBaseAmount ?? 0,
     sundryCreditor: order.sundryCreditor ?? undefined,
+    orderComment: order.orderComment ?? undefined,
     phone: order.phone ?? '',
     email: order.email ?? '',
     paymentStatus: getPaymentStatusLabel(paymentStatusCode),

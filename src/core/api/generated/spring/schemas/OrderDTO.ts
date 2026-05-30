@@ -43,6 +43,11 @@ export interface OrderDTO {
   discountCode?: string;
   /**
    * @minLength 0
+   * @maxLength 1000
+   */
+  orderComment?: string;
+  /**
+   * @minLength 0
    * @maxLength 100
    */
   assignee?: string;

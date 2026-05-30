@@ -1358,7 +1358,7 @@ export function OrderFormContent({
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
       discountCode: initialOrder?.discountCode || '',
-      orderComment: '',
+      orderComment: initialOrder?.orderComment || '',
     };
   }, [customerId, initialOrder]);
 
@@ -2706,6 +2706,7 @@ export function OrderFormContent({
         email: selectedCustomerEmail || undefined,
         paymentStatus: paymentStatusCode,
         discountCode: formState.discountCode?.trim() || undefined,
+        orderComment: formState.orderComment?.trim() || undefined,
         status: 'DRAFT',
       } as OrderDTO;
 
@@ -2978,6 +2979,7 @@ export function OrderFormContent({
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
       discountCode: discountCode || undefined,
+      orderComment: formState.orderComment?.trim() || undefined,
       status: 'ACTIVE',
     };
 

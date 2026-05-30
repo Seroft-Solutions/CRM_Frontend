@@ -353,7 +353,7 @@ export function OrderFormContent({
       customerId: initialOrder?.sundryCreditor?.id ? String(initialOrder.sundryCreditor.id) : '',
       shippingMethod: initialOrder?.shipping.shippingMethod || '',
       shippingId: initialOrder?.shipping.shippingId || '',
-      orderComment: '',
+      orderComment: initialOrder?.orderComment || '',
     };
   }, [initialOrder]);
   const [formState, setFormState] = useState<OrderFormState>(defaultState);
@@ -1375,6 +1375,7 @@ export function OrderFormContent({
         phone: selectedCustomerPhone || undefined,
         email: selectedCustomerEmail || undefined,
         paymentStatus: paymentStatusCode,
+        orderComment: formState.orderComment?.trim() || undefined,
         status: 'DRAFT',
       };
 
@@ -1584,6 +1585,7 @@ export function OrderFormContent({
       phone: selectedCustomerPhone || undefined,
       email: selectedCustomerEmail || undefined,
       paymentStatus: paymentStatusCode,
+      orderComment: formState.orderComment?.trim() || undefined,
       status: 'ACTIVE',
     };
 

@@ -23,6 +23,7 @@ export interface PurchaseOrderDTO {
   email?: string;
   paymentStatus?: number;
   sundryCreditor?: SundryCreditorDTO;
+  orderComment?: string;
   updatedBy?: number;
   lastUpdated?: string;
   createdBy?: string;
