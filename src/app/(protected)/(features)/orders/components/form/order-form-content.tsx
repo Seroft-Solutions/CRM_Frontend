@@ -473,6 +473,7 @@ export function VariantWarehousePanel({
   selectedItem,
   selectedItemIndex,
   items,
+  itemErrors,
   onToggleWarehouseVariant,
   onAdjustItemQuantity,
   onToggleCatalogVariant,
@@ -481,6 +482,7 @@ export function VariantWarehousePanel({
   selectedItem?: OrderItemForm;
   selectedItemIndex: number | null;
   items: OrderItemForm[];
+  itemErrors?: ItemErrors[];
   onToggleWarehouseVariant: (
     variant: ProductVariantDTO,
     stock: NonNullable<ProductVariantDTO['variantStocks']>[number],
@@ -968,6 +970,13 @@ export function VariantWarehousePanel({
             warehouseDisplay,
           ];
         });
+  const getCartRowClassName = (rowIndex: number) => {
+    const itemIndex = selectedCatalogId ? selectedItemIndex : selectedProductItems[rowIndex]?.index;
+
+    return typeof itemIndex === 'number' && itemErrors?.[itemIndex]?.quantity
+      ? 'bg-red-50 text-red-800 font-semibold [&>td]:border-red-300'
+      : undefined;
+  };
 
   return (
     <div className="overflow-x-auto border border-border bg-card shadow-sm">
@@ -1000,6 +1009,7 @@ export function VariantWarehousePanel({
           }
           emptyMessage={selectedCatalogId ? 'No catalog variants' : 'Select warehouse variants'}
           rows={itemParamRows}
+          rowClassName={getCartRowClassName}
           titleExtra={
             selectedCatalogId ? (
               <div className="flex items-center gap-1.5">
@@ -2574,8 +2584,12 @@ export function OrderFormContent({
 
       if (!hasData) return;
 
-      if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
+      const quantity = item.quantity.trim();
+
+      if (quantity && !/^\d+$/.test(quantity)) {
         nextItemErrors[index].quantity = 'Use a whole number.';
+      } else if (quantity && Number.parseInt(quantity, 10) <= 0) {
+        nextItemErrors[index].quantity = 'Quantity must be greater than 0.';
       }
 
       if (item.itemPrice.trim()) {
@@ -2626,6 +2640,29 @@ export function OrderFormContent({
 
   const saveDraft = async (): Promise<boolean> => {
     if (isEditing) return false;
+
+    const draftItemErrors: ItemErrors[] = items.map(() => ({}));
+
+    items.forEach((item, index) => {
+      const quantity = item.quantity.trim();
+
+      if (
+        hasItemData(item) &&
+        quantity &&
+        /^\d+$/.test(quantity) &&
+        Number.parseInt(quantity, 10) <= 0
+      ) {
+        draftItemErrors[index].quantity = 'Quantity must be greater than 0.';
+      }
+    });
+
+    if (draftItemErrors.some((entry) => Object.keys(entry).length > 0)) {
+      pendingErrorScrollRef.current = true;
+      setErrors((prev) => ({ ...prev, items: draftItemErrors }));
+      toast.error('Please fix the highlighted item quantities.');
+
+      return false;
+    }
 
     const statusTransitionError = getOrderStatusTransitionError(undefined, formState.orderStatus, {
       isEditing: false,
@@ -3256,6 +3293,7 @@ export function OrderFormContent({
                 selectedItem={selectedItemIndex !== null ? items[selectedItemIndex] : undefined}
                 selectedItemIndex={selectedItemIndex}
                 items={items}
+                itemErrors={errors.items}
                 onToggleWarehouseVariant={handleToggleWarehouseVariant}
                 onAdjustItemQuantity={handleAdjustItemQuantity}
                 onToggleCatalogVariant={handleToggleCatalogVariant}

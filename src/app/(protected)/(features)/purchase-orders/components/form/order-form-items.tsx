@@ -948,21 +948,16 @@ export function OrderFormItems({
     return groups;
   }, [items]);
 
-  const getCatalogGroupPrice = (
-    entries: Array<{ item: OrderItemForm; index: number }>
-  ) => {
+  const getCatalogGroupPrice = (entries: Array<{ item: OrderItemForm; index: number }>) => {
     const catalogId = entries[0]?.item.productCatalogId;
-    const catalog = catalogId
-      ? catalogData.find((c) => c.id === catalogId)
-      : undefined;
+    const catalog = catalogId ? catalogData.find((c) => c.id === catalogId) : undefined;
 
     return catalog?.price ?? undefined;
   };
 
-  const getCatalogGroupTotal = (
-    entries: Array<{ item: OrderItemForm; index: number }>
-  ) => {
+  const getCatalogGroupTotal = (entries: Array<{ item: OrderItemForm; index: number }>) => {
     const price = getCatalogGroupPrice(entries);
+
     if (price === undefined) return undefined;
 
     const qty = Number.parseInt(entries[0]?.item.quantity, 10) || 0;
@@ -995,6 +990,7 @@ export function OrderFormItems({
     const hasGroupHeader = options?.hasGroupHeader ?? false;
     const showLineItemFields =
       item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
+    const quantityErrorMessage = itemErrors?.[index]?.quantity;
     const desktopGridClass = showLineItemFields
       ? 'lg:grid-cols-[minmax(0,2.6fr)_minmax(120px,0.75fr)_minmax(140px,0.85fr)_minmax(120px,0.75fr)_auto]'
       : 'lg:grid-cols-[minmax(0,2.6fr)_auto]';
@@ -1035,9 +1031,12 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-9 border-slate-300"
+                className={cn(
+                  'h-9 border-slate-300',
+                  quantityErrorMessage && 'border-red-300 bg-red-50 focus-visible:ring-red-500'
+                )}
               />
-              <FieldError message={itemErrors?.[index]?.quantity} />
+              <FieldError message={quantityErrorMessage} />
             </div>
           ) : null}
 
@@ -1131,6 +1130,7 @@ export function OrderFormItems({
     const hasGroupHeader = options?.hasGroupHeader ?? false;
     const showLineItemFields =
       item.itemType === 'catalog' || Boolean(item.variantId) || !showProductSelector;
+    const quantityErrorMessage = itemErrors?.[index]?.quantity;
 
     return (
       <div
@@ -1200,9 +1200,12 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-9 border-slate-300"
+                className={cn(
+                  'h-9 border-slate-300',
+                  quantityErrorMessage && 'border-red-300 bg-red-50 focus-visible:ring-red-500'
+                )}
               />
-              <FieldError message={itemErrors?.[index]?.quantity} />
+              <FieldError message={quantityErrorMessage} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-600">Status</Label>

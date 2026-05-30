@@ -1258,8 +1258,12 @@ export function OrderFormContent({
 
       if (!hasData) return;
 
-      if (item.quantity.trim() && !/^\d+$/.test(item.quantity.trim())) {
+      const quantity = item.quantity.trim();
+
+      if (quantity && !/^\d+$/.test(quantity)) {
         nextItemErrors[index].quantity = 'Use a whole number.';
+      } else if (quantity && Number.parseInt(quantity, 10) <= 0) {
+        nextItemErrors[index].quantity = 'Quantity must be greater than 0.';
       }
 
       if (item.itemPrice.trim()) {
@@ -1303,6 +1307,29 @@ export function OrderFormContent({
 
   const saveDraft = async (): Promise<boolean> => {
     if (isEditing) return false;
+
+    const draftItemErrors: ItemErrors[] = items.map(() => ({}));
+
+    items.forEach((item, index) => {
+      const quantity = item.quantity.trim();
+
+      if (
+        hasItemData(item) &&
+        quantity &&
+        /^\d+$/.test(quantity) &&
+        Number.parseInt(quantity, 10) <= 0
+      ) {
+        draftItemErrors[index].quantity = 'Quantity must be greater than 0.';
+      }
+    });
+
+    if (draftItemErrors.some((entry) => Object.keys(entry).length > 0)) {
+      pendingErrorScrollRef.current = true;
+      setErrors((prev) => ({ ...prev, items: draftItemErrors }));
+      toast.error('Please fix the highlighted item quantities.');
+
+      return false;
+    }
 
     setSubmitting(true);
 
@@ -1838,6 +1865,7 @@ export function OrderFormContent({
                 selectedItem={selectedItemIndex !== null ? items[selectedItemIndex] : undefined}
                 selectedItemIndex={selectedItemIndex}
                 items={items}
+                itemErrors={errors.items}
                 onToggleWarehouseVariant={handleToggleWarehouseVariant}
                 onToggleCatalogVariant={handleToggleCatalogVariant}
                 onAdjustItemQuantity={handleAdjustItemQuantity}

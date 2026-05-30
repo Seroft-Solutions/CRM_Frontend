@@ -1315,7 +1315,10 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-9 border-border"
+                className={cn(
+                  'h-9 border-border',
+                  quantityErrorMessage && 'border-red-300 bg-red-50 focus-visible:ring-red-500'
+                )}
               />
               {availableQuantity !== undefined && (
                 <p className="mt-1 text-[11px] text-slate-500">
@@ -1407,7 +1410,10 @@ export function OrderFormItems({
                   placeholder="0"
                   value={item.quantity}
                   onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                  className="h-9 border-border"
+                  className={cn(
+                    'h-9 border-border',
+                    quantityErrorMessage && 'border-red-300 bg-red-50 focus-visible:ring-red-500'
+                  )}
                 />
                 {availableQuantity !== undefined && (
                   <p className="mt-1 text-[11px] text-slate-500">
@@ -1600,7 +1606,10 @@ export function OrderFormItems({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(event) => onItemChange(index, 'quantity', event.target.value)}
-                className="h-9 border-border"
+                className={cn(
+                  'h-9 border-border',
+                  quantityErrorMessage && 'border-red-300 bg-red-50 focus-visible:ring-red-500'
+                )}
               />
               {availableQuantity !== undefined && (
                 <p className="text-[11px] text-slate-500">
@@ -1876,7 +1885,10 @@ export function OrderFormItems({
               }
             }}
             readOnly={isProductVariantGroup || isCatalogVariantGroup}
-            className="h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-foreground shadow-none focus-visible:ring-1"
+            className={cn(
+              'h-7 rounded-none border-0 bg-transparent px-1 text-right text-xs font-bold text-foreground shadow-none focus-visible:ring-1',
+              itemErrors?.[index]?.quantity && 'bg-red-50 text-red-700 focus-visible:ring-red-500'
+            )}
           />
           <FieldError message={itemErrors?.[index]?.quantity} />
         </td>
