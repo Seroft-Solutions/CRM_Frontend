@@ -14,6 +14,7 @@ import {
   Phone,
   Mail,
   Clock,
+  MessageSquareText,
   Package,
   Undo2,
   Tag,
@@ -149,6 +150,28 @@ function Metric({
           {value}
         </div>
         {sub && <div className="text-[10px] text-slate-400 mt-0.5 truncate">{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function OrderCommentPanel({ comment }: { comment?: string }) {
+  const displayComment = comment?.trim();
+
+  return (
+    <div className="flex items-start gap-2 border-b border-slate-300 bg-white px-4 py-2.5">
+      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sidebar-accent">
+        <MessageSquareText className="h-3.5 w-3.5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Comment</h2>
+        <div
+          className={`mt-1 max-h-16 overflow-y-auto whitespace-pre-wrap text-[12px] leading-5 ${
+            displayComment ? 'text-slate-700' : 'italic text-slate-400'
+          }`}
+        >
+          {displayComment || 'No comment added'}
+        </div>
       </div>
     </div>
   );
@@ -303,6 +326,8 @@ export function OrderDetail({ order, headerSlot, isPickerPackerUser = false }: O
         </div>
       </div>
 
+      <OrderCommentPanel comment={order.orderComment} />
+
       {/* ── 2-column body ── */}
       <div className="flex-1 grid grid-cols-[1fr_280px] min-h-0">
         {/* ── LEFT: Items table ── */}
@@ -342,7 +367,8 @@ export function OrderDetail({ order, headerSlot, isPickerPackerUser = false }: O
                   </Button>
                 </>
               ) : null}
-              {order.status !== 'DRAFT' && !saleOrderPickingExcludedStatuses.includes(order.orderStatus) ? (
+              {order.status !== 'DRAFT' &&
+              !saleOrderPickingExcludedStatuses.includes(order.orderStatus) ? (
                 <Button
                   asChild
                   size="sm"
