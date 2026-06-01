@@ -17,8 +17,9 @@ export function formatDurationFromMinutes(totalMinutes?: number | null): string 
     return '0h 0m';
   }
 
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = Math.round(totalMinutes % 60);
+  const roundedMinutes = Math.round(totalMinutes);
+  const hours = Math.floor(roundedMinutes / 60);
+  const minutes = roundedMinutes % 60;
 
   return `${hours}h ${minutes}m`;
 }

@@ -20,7 +20,6 @@ import {
 import {
   buildWeekDays,
   canSubmitAttendanceWeek,
-  formatHoursDecimal,
   formatWeekPeriod,
   getHoursForDay,
   getHoursForMode,
@@ -32,6 +31,7 @@ import {
   isWeekComplete,
 } from './attendance-week-utils';
 import { AttendanceApprovalStatusBadge } from './attendance-approval-status-badge';
+import { formatDurationFromMinutes } from './attendance-formatters';
 import { AttendanceWeekStatusBadge } from './attendance-week-status-badge';
 
 type AttendanceWeekDetailCardProps = {
@@ -191,7 +191,7 @@ export function AttendanceWeekDetailCard({
                         </td>
                       ))}
                       <td className="px-4 py-3 text-center font-medium">
-                        {formatHoursDecimal(modeTotal)}
+                        {formatDurationFromMinutes(modeTotal)}
                       </td>
                     </tr>
                   );
@@ -206,7 +206,7 @@ export function AttendanceWeekDetailCard({
                     </td>
                   ))}
                   <td className="px-4 py-3 text-center font-medium">
-                    {formatHoursDecimal(totalMinutes)}
+                    {formatDurationFromMinutes(totalMinutes)}
                   </td>
                 </tr>
                 <tr className="bg-muted/30">
@@ -219,7 +219,7 @@ export function AttendanceWeekDetailCard({
                     </td>
                   ))}
                   <td className="px-4 py-3 text-center font-bold">
-                    {formatHoursDecimal(totalMinutes)}
+                    {formatDurationFromMinutes(totalMinutes)}
                   </td>
                 </tr>
                 <tr>
@@ -261,7 +261,7 @@ export function AttendanceWeekDetailCard({
               }
             />
             <PostingField label="Email" value={primaryRecord?.userEmail || 'N/A'} />
-            <PostingField label="Total ST Hours" value={formatHoursDecimal(totalMinutes)} />
+            <PostingField label="Total ST Hours" value={formatDurationFromMinutes(totalMinutes)} />
           </div>
 
           <div className="space-y-3">

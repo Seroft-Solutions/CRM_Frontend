@@ -10,6 +10,7 @@ import {
   subWeeks,
 } from 'date-fns';
 import type { AttendanceRecordDTO } from '@/core/api/attendance';
+import { formatDurationFromMinutes } from './attendance-formatters';
 
 export const WEEKLY_LIST_PAGE_SIZE = 8;
 
@@ -59,19 +60,6 @@ export function getWorkingMinutes(record?: AttendanceRecordDTO | null): number {
   }
 
   return (endedAt - startedAt) / 60000;
-}
-
-export function formatHoursDecimal(totalMinutes?: number | null): string {
-  if (
-    totalMinutes === undefined ||
-    totalMinutes === null ||
-    !Number.isFinite(totalMinutes) ||
-    totalMinutes <= 0
-  ) {
-    return '0.00';
-  }
-
-  return (totalMinutes / 60).toFixed(2);
 }
 
 export function getLocalDateInputValue(date: Date = new Date()): string {
@@ -310,7 +298,7 @@ export function getRelatedAttendanceDates(records: AttendanceRecordDTO[]): strin
 }
 
 export function getHoursForDay(record?: AttendanceRecordDTO | null): string {
-  return formatHoursDecimal(getWorkingMinutes(record));
+  return formatDurationFromMinutes(getWorkingMinutes(record));
 }
 
 export function getHoursForMode(
@@ -327,7 +315,7 @@ export function getHoursForMode(
     return '—';
   }
 
-  return formatHoursDecimal(workingMinutes);
+  return formatDurationFromMinutes(workingMinutes);
 }
 
 export function hasAnyValidTime(records: AttendanceRecordDTO[]): boolean {
